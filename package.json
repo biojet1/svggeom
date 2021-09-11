@@ -1,0 +1,15 @@
+{
+  "name": "svggeom",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "up": "python -B -m ghdevapi up -A biojet1/svggeom . -m . -r main -a",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
