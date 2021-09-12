@@ -11,7 +11,8 @@
     "c8rephtml": "c8 report -r html",
     "c8report": "c8 report -r text-lcov > coverage/lcov.info",
     "up": "python -B -m ghdevapi up -A biojet1/svggeom . -m . -r main -a",
-    "up:devel": "python -B -m ghdevapi up -A biojet1/svggeom . -m . -r devel -a"
+    "up:devel": "python -B -m ghdevapi up -A biojet1/svggeom . -m . -r devel -a",
+    "compile": "tsc"
   },
   "devDependencies": {
     "tap": "^15.0.9",
