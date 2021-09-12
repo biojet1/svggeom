@@ -1,6 +1,6 @@
 'uses strict';
 import test from 'tap';
-import {Path} from '../dist/dom/path.js';
+import {Path} from '../dist/index.js';
 import {enum_path_data, test_segment} from './path.utils.js';
 import './utils.js';
 const CI = !!process.env.CI;
