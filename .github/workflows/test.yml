@@ -35,7 +35,9 @@ jobs:
       - run: npm i codecov c8 typescript@rc --save-dev
       - run: npm run build --if-present
       # - run: npm run compile
-      - run: npm run test
+      # - run: npm run test
+      - run: c8 npx tap --no-coverage --reporter=terse test/path.line.tap.js
+
 
       - run: |
           mkdir -p coverage
