@@ -7,7 +7,7 @@
     ".": "./dist/index.js"
   },
   "scripts": {
-    "test": "c8 npx tap --no-coverage --reporter=terse 'test/*.tap.*js'",
+    "test": "c8 npx tap -t600 --no-coverage --reporter=terse 'test/*.tap.*js'",
     "c8rephtml": "c8 report -r html",
     "c8report": "c8 report -r text-lcov > coverage/lcov.info",
     "up": "python -B -m ghdevapi up -A biojet1/svggeom . -m . -r main -a",
