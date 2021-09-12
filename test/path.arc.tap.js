@@ -5,6 +5,7 @@ import {Arc, Cubic, Path} from '../dist/index.js';
 import test from 'tap';
 import os from 'os';
 import fs from 'fs';
+const CI = !!process.env.CI;
 
 function dbgwrite(name, pC, pX) {
 	function* gen() {
@@ -27,7 +28,7 @@ function dbgwrite(name, pC, pX) {
 let I = 0, as_cubic=0;
 for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
 	++I;
-	test.test(item.d, {bail: 1}, function (t) {
+	test.test(item.d, {bail: !CI}, function (t) {
 		let seg = Arc.fromEndPoint(
 			item.start,
 			item.radius[0],

@@ -37,8 +37,6 @@ jobs:
       - run: npm run compile
       - run: npm run test
       # - run: c8 npx tap --no-coverage --reporter=terse test/path.line.tap.js
-
-
       - run: |
           mkdir -p coverage
           npm run c8report
@@ -50,8 +48,8 @@ jobs:
       #     token: ${{ secrets.CODECOV_TOKEN }}
       #     files: coverage/lcov.info
 
-      - name: Coveralls
-        uses: coverallsapp/github-action@1.1.3
-        with:
-          # path-to-lcov: ${{ github.workspace }}/coverage/lcov.info
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Coveralls
+      #   uses: coverallsapp/github-action@1.1.3
+      #   with:
+      #     # path-to-lcov: ${{ github.workspace }}/coverage/lcov.info
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}

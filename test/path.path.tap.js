@@ -3,6 +3,7 @@ import test from 'tap';
 import {Path} from '../dist/dom/path.js';
 import {enum_path_data, test_segment} from './path.utils.js';
 import './utils.js';
+const CI = !!process.env.CI;
 
 for await (const item of enum_path_data({SEGMENTS: ''})) {
 	const {d} = item;
@@ -14,7 +15,7 @@ for await (const item of enum_path_data({SEGMENTS: ''})) {
 			continue;
 	}
 
-	test.test(`<${d}>`, {bail: 1}, function (t) {
+	test.test(`<${d}>`, {bail: !CI}, function (t) {
 		let seg = Path.fromPath(d);
 		test_segment(t, seg, item, {len_epsilon:0.32,point_epsilon:0.0573,delta_epsilon:1e-7,slope_epsilon:0.0045});
 		t.end();
