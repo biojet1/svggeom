@@ -12,6 +12,7 @@ for await (const item of enum_path_data({SEGMENTS: ''})) {
 		case 'M0,0L10,0l10,0':
 		case 'm0,0h10z':
 		case 'm0,0h10Z':
+		// case 'M10,30 A20,20,0,0,1,50,30 A20,20,0,0,1,90,30 Q90,60,50,90 Q10,60,10,30 ZM 80 80 A 45 45, 0, 0, 0, 125 125 L 125 80 Z':
 			continue;
 	}
 
