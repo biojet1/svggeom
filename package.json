@@ -12,6 +12,9 @@
     "c8report": "c8 report -r text-lcov > coverage/lcov.info",
     "up": "python -B -m ghdevapi up -A biojet1/svggeom . -m . -r main -a",
     "up:devel": "python -B -m ghdevapi up -A biojet1/svggeom . -m . -r devel -a",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "fix": "gts fix",
     "compile": "tsc"
   },
   "devDependencies": {
@@ -22,6 +25,12 @@
     "reports-dir": "/tmp/svggeom.c8/rep",
     "temp-directory": "/tmp/svggeom.c8/tmp",
     "src": "dist"
+  },
+  "eslintConfig": {
+    "indent": [
+      "error",
+      "tab"
+    ]
   },
   "type": "module",
   "author": "",

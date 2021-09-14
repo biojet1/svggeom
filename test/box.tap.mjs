@@ -1,6 +1,6 @@
 'uses strict';
 import {spawn} from 'child_process';
-import {Box} from '../dist/box.js';
+import {Box, Matrix} from '../dist/index.js';
 import test from 'tap';
 const CI = !!process.env.CI;
 
@@ -64,7 +64,20 @@ for await (const item of enum_box_data({})) {
 		t.equal(box2.y, y, 'y', ex);
 		t.equal(box2.width, width, 'width', ex);
 		t.equal(box2.height, height, 'height', ex);
+		t.ok(box2.isValid());
+		t.ok(box.isValid());
+		const box3 = box.transform(Matrix.from("translate(100, -100)"))
 
+		t.equal(box3.centerX, centerX+100, 'centerX', box3);
+		t.equal(box3.centerY, centerY-100, 'centerY', box3);
+		t.equal(box3.width, width, 'width', ex);
+		t.equal(box3.height, height, 'height', ex);
 		t.end();
 	});
 }
+	// test.test(`Box extra`, {bail: !CI}, function (t) {
+ //        self.assertEqual(tuple(BoundingBox((0, 10), (0, 10)) +
+ //                               BoundingBox((-10, 0), (-10, 0))), ((-10, 10), (-10, 10)))
+
+	// });
+
