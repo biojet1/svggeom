@@ -37,8 +37,6 @@ jobs:
       - run: npm run compile
       - run: npm run test
       # - run: c8 npx tap --no-coverage --reporter=terse test/path.line.tap.js
-
-
       - run: |
           mkdir -p coverage
           npm run c8report

@@ -1,7 +1,7 @@
 'uses strict';
 import test from 'tap';
 import {enum_path_data} from './path.utils.js';
-import {Path} from '../dist/path.js';
+import {Path} from '../dist/index.js';
 import './utils.js';
 
 for await (const item of enum_path_data({SEGMENTS: 'Parsed'})) {

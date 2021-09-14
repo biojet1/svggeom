@@ -1,7 +1,7 @@
 'uses strict';
 import {enum_path_data, test_segment} from './path.utils.js';
 import './utils.js';
-import {Line} from '../dist/path.js';
+import {Line} from '../dist/index.js';
 import test from 'tap';
 
 

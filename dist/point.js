@@ -49,7 +49,7 @@ export class Point {
     normalize() {
         const abs = this.abs();
         if (!abs)
-            throw new Error("Can't normalize vector of zero length");
+            throw new TypeError("Can't normalize vector of zero length");
         return this.div(abs);
     }
     reflectAt(p) {

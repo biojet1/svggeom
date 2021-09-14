@@ -1,8 +1,7 @@
 'uses strict';
 import {spawn} from 'child_process';
 import test from 'tap';
-import {Path, Cubic, Arc, Line} from '../dist/path.js';
-import {Matrix} from '../dist/matrix.js';
+import {Path, Matrix, Cubic, Arc, Line} from '../dist/index.js';
 import {enum_path_data} from './path.utils.js';
 import './utils.js';
 const CI = !!process.env.CI;
