@@ -84,7 +84,7 @@ export class Quadratic extends Cubic {
 		const [y1, y2, y3] = [p1.y, c.y, p2.y];
 		const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
 		const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
-		return new Box([xmin, ymin, xmax - xmin, ymax - ymin]);
+		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 
 	toPathFragment() {

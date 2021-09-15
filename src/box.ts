@@ -12,10 +12,10 @@ export class Box {
 	private static _not = new (class extends Box {
 		// NoBox has no valid values so it cant be merged
 		constructor() {
-			super([NaN, NaN, NaN, NaN]);
+			super(NaN, NaN, NaN, NaN);
 		}
 		merge(box: Box): Box {
-			return box === this ? this : new Box(box);
+			return box === this ? this : Box.new(box);
 		}
 
 		transform(m: any) {
@@ -25,49 +25,53 @@ export class Box {
 			return false;
 		}
 	})();
-	constructor(source: string | number[] | Box) {
+	private constructor(x: number, y: number, width: number, height: number) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		// // if (arguments.length <= 0) {
+		// // 	this.x = this.y = this.width = this.height = NaN;
+		// // 	return Box._not;
+		// // }
+		// // const base = [0, 0, 0, 0];
+		// // const v =
+		// // 	typeof source === "string"
+		// // 		? source.split(/[\s,]+/).map(parseFloat)
+		// // 		: Array.isArray(source)
+		// // 		? source
+		// // 		: typeof source === "object"
+		// // 		? [
+		// // 				source.left != null ? source.left : source.x,
+		// // 				source.top != null ? source.top : source.y,
+		// // 				source.width,
+		// // 				source.height,
+		// // 		  ]
+		// // 		: arguments.length === 4
+		// // 		? [].slice.call(arguments)
+		// // 		: base;
 		// if (arguments.length <= 0) {
 		// 	this.x = this.y = this.width = this.height = NaN;
 		// 	return Box._not;
+		// } else if (typeof source === "string") {
+		// 	const v = source.split(/[\s,]+/).map(parseFloat);
+		// 	this.x = v[0];
+		// 	this.y = v[1];
+		// 	this.width = v[2];
+		// 	this.height = v[3];
+		// } else if (Array.isArray(source)) {
+		// 	this.x = source[0];
+		// 	this.y = source[1];
+		// 	this.width = source[2];
+		// 	this.height = source[3];
+		// } else if (typeof source === "object") {
+		// 	this.x = source.left || source.x || 0;
+		// 	this.y = source.top || source.y || 0;
+		// 	this.width = source.width;
+		// 	this.height = source.height;
+		// } else {
+		// 	throw new TypeError(`Invalid box argument ${arguments}`);
 		// }
-		// const base = [0, 0, 0, 0];
-		// const v =
-		// 	typeof source === "string"
-		// 		? source.split(/[\s,]+/).map(parseFloat)
-		// 		: Array.isArray(source)
-		// 		? source
-		// 		: typeof source === "object"
-		// 		? [
-		// 				source.left != null ? source.left : source.x,
-		// 				source.top != null ? source.top : source.y,
-		// 				source.width,
-		// 				source.height,
-		// 		  ]
-		// 		: arguments.length === 4
-		// 		? [].slice.call(arguments)
-		// 		: base;
-		if (arguments.length <= 0) {
-			this.x = this.y = this.width = this.height = NaN;
-			return Box._not;
-		} else if (typeof source === "string") {
-			const v = source.split(/[\s,]+/).map(parseFloat);
-			this.x = v[0];
-			this.y = v[1];
-			this.width = v[2];
-			this.height = v[3];
-		} else if (Array.isArray(source)) {
-			this.x = source[0];
-			this.y = source[1];
-			this.width = source[2];
-			this.height = source[3];
-		} else if (typeof source === "object") {
-			this.x = source.left || source.x || 0;
-			this.y = source.top || source.y || 0;
-			this.width = source.width;
-			this.height = source.height;
-		} else {
-			throw new TypeError(`Invalid box argument ${arguments}`);
-		}
 	}
 	get left() {
 		return this.x;
@@ -107,17 +111,17 @@ export class Box {
 
 	// Merge rect box with another, return a new instance
 	merge(box: Box): Box {
-		if (!box.isValid()) return new Box(this);
+		if (!box.isValid()) return Box.new(this);
 
 		const x = Math.min(this.x, box.x);
 		const y = Math.min(this.y, box.y);
 
-		return new Box([
+		return new Box(
 			x,
 			y,
 			Math.max(this.x + this.width, box.x + box.width) - x,
-			Math.max(this.y + this.height, box.y + box.height) - y,
-		]);
+			Math.max(this.y + this.height, box.y + box.height) - y
+		);
 	}
 
 	transform(m: any) {
@@ -142,7 +146,6 @@ export class Box {
 			yMin = Math.min(yMin, y);
 			yMax = Math.max(yMax, y);
 		});
-		// return new Box([xMin, yMin, xMax - xMin, yMax - yMin]);
 		return Box.fromExtrema(xMin, xMax, yMin, yMax);
 	}
 	isValid() {
@@ -162,56 +165,45 @@ export class Box {
 		width: number,
 		height: number
 	) {
-		return new Box([x, y, width, height]);
+		return new Box(x, y, width, height);
+	}
+
+	public static new(first: number | number[] | string | Box) {
+		switch (typeof first) {
+			case "string": {
+				const v = first.split(/[\s,]+/).map(parseFloat);
+				return new Box(v[0], v[1], v[2], v[3]);
+			}
+			case "number":
+				return new Box(first, arguments[1], arguments[2], arguments[3]);
+			case "undefined":
+				return Box._not;
+			case "object":
+				if (Array.isArray(first)) {
+					return new Box(first[0], first[1], first[2], first[3]);
+				} else {
+					const { left, x, top, y, width, height } = first;
+					return new Box(left || x || 0, top || y || 0, width, height);
+				}
+			default:
+				throw new TypeError(`Invalid box argument ${arguments}`);
+		}
+		// if (arguments.length <= 0) {
+		// 	return Box._not;
+		// } else if (typeof arguments[0] === "string") {
+		// 	const v = source.split(/[\s,]+/).map(parseFloat);
+		// 	return new Box(v[0], v[1], v[2], v[3]);
+		// } else if (typeof arguments[0] === "number") {
+
+		// } else if (Array.isArray(source)) {
+		// 	return new Box(source[0], source[1], source[2], source[3]);
+		// } else if (typeof source === "object") {
+		// 	this.x = source.left || source.x || 0;
+		// 	this.y = source.top || source.y || 0;
+		// 	this.width = source.width;
+		// 	this.height = source.height;
+		// } else {
+		// 	throw new TypeError(`Invalid box argument ${arguments}`);
+		// }
 	}
 }
-
-// export class Interval {
-// 	readonly min: number;
-// 	readonly max: number;
-
-// 	constructor(min: number | number[] | Interval, max: number = 0) {
-// 		const { length } = arguments;
-// 		if (length <= 0) {
-// 			this.min = 0;
-// 			this.max = 0;
-// 		} else if (typeof min === "number") {
-// 			this.min = min;
-// 			this.max = max;
-// 		} else if (Array.isArray(min)) {
-// 			this.min = min[0];
-// 			this.max = min[1];
-// 		} else {
-// 			this.min = min.min;
-// 			this.max = min.max;
-// 		}
-// 	}
-
-// 	get center() {
-// 		const { min, max } = this;
-// 		return min + (max - min) / 2;
-// 	}
-// 	get size() {
-// 		const { min, max } = this;
-// 		return max - min;
-// 	}
-// 	contains(v: number) {
-// 		const { min, max } = this;
-// 		return max <= v && v <= max;
-// 	}
-// 	equals(other: Interval) {
-// 		return this.max == other.max && this.min == other.min;
-// 	}
-// 	isValid() {
-// 		return true;
-// 	}
-// 	merge(other: Interval) {
-// 		if (!other.isValid()) {
-// 			return new Interval(this);
-// 		}
-// 		return new Interval(
-// 			Math.min(this.min, other.min),
-// 			Math.max(this.max, other.max)
-// 		);
-// 	}
-// }

@@ -291,7 +291,7 @@ export function parseDesc(d: string) {
 				absolute = true;
 			case "z":
 				{
-					segments.push(new Close(start, (pos = moved.clone())));
+					segments.push(new Close(start, (pos = moved)));
 				}
 				break;
 			case "L":

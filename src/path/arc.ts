@@ -210,7 +210,7 @@ export class Arc extends Segment {
 		}
 		const [xmin, xmax] = [Math.min(...xtrema), Math.max(...xtrema)];
 		const [ymin, ymax] = [Math.min(...ytrema), Math.max(...ytrema)];
-		return new Box([xmin, ymin, xmax - xmin, ymax - ymin]);
+		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 	clone() {
 		return new Arc(

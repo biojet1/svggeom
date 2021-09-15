@@ -37,7 +37,7 @@ export class Matrix {
 				Number.isFinite(this.f)
 			)
 		)
-			throw Error(`${JSON.stringify(arguments)}`);
+			throw TypeError(`${JSON.stringify(arguments)}`);
 	}
 
 	inverse() {

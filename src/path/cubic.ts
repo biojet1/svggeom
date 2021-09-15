@@ -97,7 +97,7 @@ export class Cubic extends Segment {
 		const { p1, c1, c2, p2 } = this;
 		const [xmin, xmax] = cubic_extrema(p1.x, c1.x, c2.x, p2.x);
 		const [ymin, ymax] = cubic_extrema(p1.y, c1.y, c2.y, p2.y);
-		return new Box([xmin, ymin, xmax - xmin, ymax - ymin]);
+		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 
 		// def update_bounding_box(self, first, last_two_points, bbox):
 		//     from .transforms import cubic_extrema

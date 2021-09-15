@@ -9,18 +9,21 @@ export async function* enum_box_data(env) {
 		stdio: ["ignore", "pipe", "inherit"],
 		env: { ...process.env, ...env },
 	});
-	let last;
+	let last,
+		i = 0;
+
 	for await (const chunk of pyproc.stdout) {
 		const lines = ((last ?? "") + chunk.toString()).split(/\r?\n/);
 		last = lines.pop();
+
 		for (const item of lines.map((value) => JSON.parse(value))) {
 			// console.log(item.points);
-			yield item;
+			yield [i++, item];
 		}
 	}
 }
 
-for await (const item of enum_box_data({})) {
+for await (const [i, item] of enum_box_data({})) {
 	const {
 		x,
 		y,
@@ -39,7 +42,10 @@ for await (const item of enum_box_data({})) {
 	} = item;
 
 	test.test(`Box(${x},${y},${width},${height})`, { bail: !CI }, function (t) {
-		let box = Box.fromRect(x, y, width, height);
+		let box =
+			i % 2 === 0
+				? Box.fromRect(x, y, width, height)
+				: Box.new(`${x}, ${y}, ${width}, ${height}`);
 		let box2 = Box.fromExtrema(xMin, xMax, yMin, yMax);
 		const ex = [item, box];
 
@@ -71,21 +77,20 @@ for await (const item of enum_box_data({})) {
 		t.equal(box3.centerY, centerY - 100, "centerY", box3);
 		t.equal(box3.width, width, "width", ex);
 		t.equal(box3.height, height, "height", ex);
-		const not = new Box();
+		const not = Box.new();
 		t.strictSame(not.merge(box2), box2);
 		t.strictSame(not.merge(not), not);
 
 		t.end();
-
 	});
 }
 
 test.test(`Box extra`, { bail: !CI }, function (t) {
-	const not = new Box();
+	const not = Box.not();
 	t.notOk(not.isValid());
-	t.strictSame(new Box(), not);
+	t.strictSame(Box.new(), not);
 	t.strictSame(not.transform(Matrix.from("translate(100, -100)")), not);
-	t.throws(() => new Box(false), TypeError, "wrong new params");
+	t.throws(() => Box.new(false), TypeError, "wrong new params");
 
 	// self.assertEqual(tuple(BoundingBox((0, 10), (0, 10)) +
 	//                        BoundingBox((-10, 0), (-10, 0))), ((-10, 10), (-10, 10)))
