@@ -21,14 +21,14 @@ test.test(`point properties`, { bail: !CI }, function (t) {
 test.test(`point construct`, { bail: !CI }, function (t) {
 	t.throws(() => Point.at(5, NaN), TypeError, "must be finite");
 	t.same(Point.fromArray([42, 72]).toArray(), [42, 72], "fromArray");
-	t.strictSame(Point.from().toPath(), "M 0 0", "Point.from()");
+	t.strictSame(Point.new().toPath(), "M 0 0", "Point.new()");
 	t.strictSame(
-		Point.from(-1).toString(),
+		Point.new(-1).toString(),
 		"Point(-1, 0)",
-		"Point.from(number)"
+		"Point.new(number)"
 	);
-	t.strictSame(Point.from([42, 72]).toPath(), "M 42 72", "Point.from(array)");
-	t.throws(() => Point.from(NaN), TypeError, "must be finite");
+	t.strictSame(Point.new([42, 72]).toPath(), "M 42 72", "Point.new(array)");
+	t.throws(() => Point.new(NaN), TypeError, "must be finite");
 	t.end();
 });
 

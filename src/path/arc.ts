@@ -27,8 +27,8 @@ export class Arc extends Segment {
 		arc: boolean | number,
 		sweep: boolean | number
 	) {
-		p1 = Point.from(p1);
-		p2 = Point.from(p2);
+		p1 = Point.new(p1);
+		p2 = Point.new(p2);
 
 		if (!(Number.isFinite(φ) && Number.isFinite(rx) && Number.isFinite(ry)))
 			throw Error(`${JSON.stringify(arguments)}`);
@@ -151,8 +151,8 @@ export class Arc extends Segment {
 		if (!rx || !ry) {
 			return new Line(p1, p2);
 		}
-		p1 = Point.from(p1);
-		p2 = Point.from(p2);
+		p1 = Point.new(p1);
+		p2 = Point.new(p2);
 		return new Arc(p1, p2, rx, ry, φ, arc, sweep);
 	}
 	static fromCenterForm(

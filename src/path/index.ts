@@ -51,7 +51,7 @@ export abstract class Segment {
 
 export class Line extends Segment {
 	constructor(p1: Point | number[], p2: Point | number[]) {
-		super(Point.from(p1), Point.from(p2));
+		super(Point.new(p1), Point.new(p2));
 	}
 
 	bbox() {

@@ -16,21 +16,21 @@ export class Cubic extends Segment {
 		c2: Point | number[],
 		p2: Point | number[]
 	) {
-		super(Point.from(p1), Point.from(p2));
+		super(Point.new(p1), Point.new(p2));
 
-		// this.p1 = Point.from(p1);
-		this.c1 = Point.from(c1);
-		this.c2 = Point.from(c2);
-		// this.p2 = Point.from(p2);
+		// this.p1 = Point.new(p1);
+		this.c1 = Point.new(c1);
+		this.c2 = Point.new(c2);
+		// this.p2 = Point.new(p2);
 	}
 	// static fromQuad(
 	// 	start: Point | number[],
 	// 	control: Point | number[],
 	// 	end: Point | number[]
 	// ) {
-	// 	// const p1 = Point.from(start);
-	// 	// const c = Point.from(control);
-	// 	// const p2 = Point.from(end);
+	// 	// const p1 = Point.new(start);
+	// 	// const c = Point.new(control);
+	// 	// const p2 = Point.new(end);
 
 	// 	// const c1 = p1.equals(c) ? p1 : p1.mul(1 / 3).add(c.mul(2 / 3));
 	// 	// const c2 = p2.equals(c) ? p2 : c.mul(2 / 3).add(p2.mul(1 / 3));

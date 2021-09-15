@@ -119,7 +119,7 @@ export class Point {
 
 	// static methods
 
-	static from(x?: number[] | Point | number, y?: any) {
+	static new(x?: number[] | Point | number, y?: any) {
 		if (typeof x == "number") {
 			return new Point(x, y as number);
 		} else if (Array.isArray(x)) {
