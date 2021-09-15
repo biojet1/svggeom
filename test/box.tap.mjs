@@ -42,11 +42,20 @@ for await (const [i, item] of enum_box_data({})) {
 	} = item;
 
 	test.test(`Box(${x},${y},${width},${height})`, { bail: !CI }, function (t) {
-		let box =
-			i % 2 === 0
-				? Box.fromRect(x, y, width, height)
-				: Box.new(`${x}, ${y}, ${width}, ${height}`);
-		let box2 = Box.fromExtrema(xMin, xMax, yMin, yMax);
+		let box2, box;
+		switch (i % 3) {
+			case 1:
+				box = Box.fromRect(x, y, width, height);
+				box2 = Box.fromExtrema(xMin, xMax, yMax, yMin);
+				break;
+			case 1:
+				box = Box.new(`${x}, ${y}, ${width}, ${height}`);
+				box2 = Box.fromExtrema(xMax, xMin, yMin, yMax);
+				break;
+			default:
+				box = Box.new(x, y, width, height);
+				box2 = Box.fromExtrema(xMin, xMax, yMin, yMax);
+		}
 		const ex = [item, box];
 
 		t.equal(box.x, x, "x", ex);
@@ -71,7 +80,9 @@ for await (const [i, item] of enum_box_data({})) {
 		t.equal(box2.height, height, "height", ex);
 		t.ok(box2.isValid());
 		t.ok(box.isValid());
-		const box3 = box.transform(Matrix.from("translate(100, -100)"));
+		t.strictSame(box.clone().centerX, box2.centerX);
+		t.strictSame(box2.clone().centerY, box.centerY);
+		const box3 = box.transform(Matrix.parse("translate(100, -100)"));
 
 		t.equal(box3.centerX, centerX + 100, "centerX", box3);
 		t.equal(box3.centerY, centerY - 100, "centerY", box3);
@@ -80,7 +91,6 @@ for await (const [i, item] of enum_box_data({})) {
 		const not = Box.new();
 		t.strictSame(not.merge(box2), box2);
 		t.strictSame(not.merge(not), not);
-
 		t.end();
 	});
 }
@@ -89,7 +99,7 @@ test.test(`Box extra`, { bail: !CI }, function (t) {
 	const not = Box.not();
 	t.notOk(not.isValid());
 	t.strictSame(Box.new(), not);
-	t.strictSame(not.transform(Matrix.from("translate(100, -100)")), not);
+	t.strictSame(not.transform(Matrix.parse("translate(100, -100)")), not);
 	t.throws(() => Box.new(false), TypeError, "wrong new params");
 
 	// self.assertEqual(tuple(BoundingBox((0, 10), (0, 10)) +

@@ -54,7 +54,7 @@ export class Arc extends Segment {
 		const φrad = (φ * PI) / 180;
 		const cosφ = Math.cos(φrad);
 		const sinφ = Math.sin(φrad);
-		const rotM = Matrix.fromHexad(cosφ, -sinφ, sinφ, cosφ, 0, 0);
+		const rotM = Matrix.hexad(cosφ, -sinφ, sinφ, cosφ, 0, 0);
 		// https://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
 		// (eq. 5.1)
 		// p1ˈ = when mid point of p1 and p2 is at 0,0 rotated to line up ellipse axes
@@ -165,7 +165,7 @@ export class Arc extends Segment {
 	) {
 		const cosφ = Math.cos((φ / 180) * PI);
 		const sinφ = Math.sin((φ / 180) * PI);
-		const m = Matrix.fromHexad(cosφ, sinφ, -sinφ, cosφ, 0, 0);
+		const m = Matrix.hexad(cosφ, sinφ, -sinφ, cosφ, 0, 0);
 		const p1 = Point.at(
 			rx * Math.cos((θ / 180) * PI),
 			ry * Math.sin((θ / 180) * PI)

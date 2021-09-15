@@ -44,8 +44,8 @@ function* matrixes() {
 
 let c = 0;
 for await (const [m1, m2] of matrixes()) {
-	const M1 = Matrix.fromTransform(m1);
-	const M2 = Matrix.from(m2);
+	const M1 = Matrix.parse(m1);
+	const M2 = Matrix.new(m2);
 	const extra = [M1, M2];
 
 	// if (!M1.isURT()) {
@@ -93,14 +93,21 @@ test.test(`matrixes etc`, { bail: !CI }, function (t) {
 		)
 	);
 
-	t.same(Matrix.from().toArray(), [1, 0, 0, 1, 0, 0]);
+	t.same(Matrix.new().toArray(), [1, 0, 0, 1, 0, 0]);
 	t.same(
-		Matrix.from("matrix(1, 0, 0, 1, 0, 0)"),
-		Matrix.from([1, 0, 0, 1, 0, 0])
+		Matrix.new("matrix(1, 0, 0, 1, 0, 0)"),
+		Matrix.new([1, 0, 0, 1, 0, 0])
 	);
-	t.same(Matrix.from().toString(), "matrix(1, 0, 0, 1, 0, 0)");
-	t.same(Matrix.translateY(4.1).translateX(1.4).describe().replace(/\s+/g, ''), "translate(1.4,4.1)");
-	t.throws(() => Matrix.from([1, 0, 0, 1, 0, NaN]), TypeError, "must be finite");
+	t.same(Matrix.new().toString(), "matrix(1, 0, 0, 1, 0, 0)");
+	t.same(
+		Matrix.translateY(4.1).translateX(1.4).describe().replace(/\s+/g, ""),
+		"translate(1.4,4.1)"
+	);
+	t.throws(
+		() => Matrix.new([1, 0, 0, 1, 0, NaN]),
+		TypeError,
+		"must be finite"
+	);
 
 	t.end();
 });
