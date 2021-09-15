@@ -12,6 +12,8 @@ const iterator = Symbol.iterator;
 // const parseDesc = pathParser;
 export class Path {
 	private _segs: Segment[];
+	private _length?: number;
+	private _lengths?: Array<number>;
 	private constructor(segs: Segment[]) {
 		this._segs = segs;
 	}
@@ -22,7 +24,7 @@ export class Path {
 	getBBox() {
 		return this._segs.reduce(
 			(box, seg) => box.merge(seg.bbox()),
-			Box.not()
+			Box.new()
 		);
 	}
 	get length() {
@@ -31,7 +33,7 @@ export class Path {
 	bbox() {
 		return this._segs.reduce(
 			(box, seg) => box.merge(seg.bbox()),
-			Box.not()
+			Box.new()
 		);
 	}
 	// segments() {
@@ -40,9 +42,6 @@ export class Path {
 	[iterator]() {
 		return this._segs.values();
 	}
-
-	private _length: number | undefined;
-	private _lengths: Array<number> | undefined;
 
 	private calcLength() {
 		if (this._lengths) {

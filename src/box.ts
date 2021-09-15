@@ -132,7 +132,7 @@ export class Box {
 		return new Box(x, y, width, height);
 	}
 
-	public static new(first: number | number[] | string | Box) {
+	public static new(first?: number | number[] | string | Box) {
 		switch (typeof first) {
 			case "string": {
 				const v = first.split(/[\s,]+/).map(parseFloat);
