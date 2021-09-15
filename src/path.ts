@@ -1,4 +1,4 @@
-import { parseDesc } from "./path/parser.js";
+import { /*pathParser,*/ parseDesc } from "./path/parser.js";
 import { Segment } from "./path/index.js";
 import { Box } from "./box.js";
 // import assert from "assert";
@@ -8,6 +8,7 @@ interface IDescOpt {
 	smooth?: boolean;
 	short?: boolean;
 }
+// const parseDesc = pathParser;
 export class Path {
 	private segs: Segment[];
 	private constructor(segs: Segment[]) {
@@ -386,7 +387,7 @@ export class Path {
 	static parse(d: string): Path {
 		try {
 			return new Path(parseDesc(d));
-			// return new Path(pathParser(d, new Array<Segment>()));
+			// return new Path(pathParser(d));
 		} catch (err) {
 			console.error("Failed to parse ", d);
 			throw err;
@@ -395,6 +396,7 @@ export class Path {
 	static parseDesc(d: string): Path {
 		try {
 			return new Path(parseDesc(d));
+			// return new Path(pathParser(d));
 		} catch (err) {
 			console.error("Failed to parse ", d);
 			throw err;
