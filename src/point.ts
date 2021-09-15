@@ -1,6 +1,6 @@
 export class Point {
-	x: number;
-	y: number;
+	readonly x: number;
+	readonly y: number;
 	// [k: string]: number;
 	// Initialize
 	private constructor(x: number = 0, y: number = 0, z: number = 0) {
@@ -20,12 +20,14 @@ export class Point {
 
 		return x * x + y * y;
 	}
+
 	closeTo(p: Point, eta = 1e-12) {
 		return (
 			this.equals(p) ||
 			(Math.abs(this.x - p.x) < eta && Math.abs(this.y - p.y) < eta)
 		);
 	}
+
 	dot(p: Point) {
 		return this.x * p.x + this.y * p.y;
 	}
@@ -54,6 +56,7 @@ export class Point {
 	normal() {
 		return new Point(this.y, -this.x);
 	}
+
 	div(factor: number) {
 		return new Point(this.x / factor, this.y / factor);
 	}
@@ -88,18 +91,16 @@ export class Point {
 	}
 
 	// Misc methods
-	native() {
-		//   // create new point
-		//   var point = new SVGPoint()
+	// native() {
+	// 	//   // create new point
+	// 	//   var point = new SVGPoint()
+	// 	//   // update with current values
+	// 	//   point.x = this.x
+	// 	//   point.y = this.y
+	// 	//   return point
+	// 	return this;
+	// }
 
-		//   // update with current values
-		//   point.x = this.x
-		//   point.y = this.y
-
-		//   return point
-
-		return this;
-	}
 	clone() {
 		return new Point(this.x, this.y);
 	}
@@ -111,6 +112,7 @@ export class Point {
 	toPath() {
 		return ["M", this.x, this.y].join(" ");
 	}
+
 	toString() {
 		return `Point(${this.x}, ${this.y})`;
 	}

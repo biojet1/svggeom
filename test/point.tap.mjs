@@ -1,6 +1,6 @@
 "uses strict";
 import { spawn } from "child_process";
-import { Point } from "../dist/point.js";
+import { Point } from "../dist/index.js";
 import test from "tap";
 const CI = !!process.env.CI;
 

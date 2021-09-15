@@ -1,8 +1,8 @@
-import {Point} from '../point.js';
-import {Box} from '../box.js';
-import {Segment} from './index.js';
-import {Matrix} from '../matrix.js';
-import {Cubic} from './cubic.js';
+import { Point } from "../point.js";
+import { Box } from "../box.js";
+import { Segment } from "./index.js";
+import { Matrix } from "../matrix.js";
+import { Cubic } from "./cubic.js";
 
 export class Quadratic extends Cubic {
 	readonly c: Point;
@@ -21,8 +21,9 @@ export class Quadratic extends Cubic {
 		super(p1, c1, c2, p2);
 		this.c = c;
 	}
+
 	slopeAt(t: number): Point {
-		const {p1, c, p2} = this;
+		const { p1, c, p2 } = this;
 
 		if (t >= 1) {
 			return p2.sub(c);
@@ -38,8 +39,9 @@ export class Quadratic extends Cubic {
 		const b = p2.sub(c).mul(t);
 		return a.add(b).mul(2); // 1st derivative;
 	}
+
 	pointAt(t: number) {
-		const {p1, c, p2} = this;
+		const { p1, c, p2 } = this;
 		const v = 1 - t;
 		return Point.at(
 			v * v * p1.x + 2 * v * t * c.x + t * t * p2.x,
@@ -50,9 +52,9 @@ export class Quadratic extends Cubic {
 
 	splitAt(t: number) {
 		const {
-			p1: {x: x1, y: y1},
-			c: {x: cx, y: cy},
-			p2: {x: x2, y: y2},
+			p1: { x: x1, y: y1 },
+			c: { x: cx, y: cy },
+			p2: { x: x2, y: y2 },
 		} = this;
 		const mx1 = (1 - t) * x1 + t * cx;
 		const mx2 = (1 - t) * cx + t * x2;
@@ -63,13 +65,21 @@ export class Quadratic extends Cubic {
 		const myt = (1 - t) * my1 + t * my2;
 
 		return [
-			new Quadratic(Point.at(x1, y1), Point.at(mx1, my1), Point.at(mxt, myt)),
-			new Quadratic(Point.at(mxt, myt), Point.at(mx2, my2), Point.at(x2, y2)),
+			new Quadratic(
+				Point.at(x1, y1),
+				Point.at(mx1, my1),
+				Point.at(mxt, myt)
+			),
+			new Quadratic(
+				Point.at(mxt, myt),
+				Point.at(mx2, my2),
+				Point.at(x2, y2)
+			),
 		];
 	}
 
 	bbox() {
-		const {p1, c, p2} = this;
+		const { p1, c, p2 } = this;
 		const [x1, x2, x3] = [p1.x, c.x, p2.x];
 		const [y1, y2, y3] = [p1.y, c.y, p2.y];
 		const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
@@ -78,8 +88,8 @@ export class Quadratic extends Cubic {
 	}
 
 	toPathFragment() {
-		const {c, p2} = this;
-		return ['Q', c.x, c.y, p2.x, p2.y];
+		const { c, p2 } = this;
+		return ["Q", c.x, c.y, p2.x, p2.y];
 	}
 	// length() {
 	// 	const {p1, c, p2} = this;
@@ -134,12 +144,12 @@ export class Quadratic extends Cubic {
 	// 	return s;
 	// }
 	transform(M: any) {
-		const {p1, c, p2} = this;
+		const { p1, c, p2 } = this;
 		return new Quadratic(p1.transform(M), c.transform(M), p2.transform(M));
 	}
 
 	reversed() {
-		const {p1, c, p2} = this;
+		const { p1, c, p2 } = this;
 		return new Quadratic(p2, c, p1);
 	}
 }
@@ -161,7 +171,7 @@ export class Quadratic extends Cubic {
 //         cmin, cmax = _is_bigger((a - b) / (a + c - 2 * b))
 
 //     return cmin, cmax
-function quadratic_extrema(a:number, b:number, c:number) {
+function quadratic_extrema(a: number, b: number, c: number) {
 	const atol = 1e-9;
 	const cmin = Math.min(a, c);
 	const cmax = Math.max(a, c);

@@ -66,7 +66,7 @@ export class Box {
 			this.width = source.width;
 			this.height = source.height;
 		} else {
-			throw new Error(`Invalid box argument ${arguments}`);
+			throw new TypeError(`Invalid box argument ${arguments}`);
 		}
 	}
 	get left() {
