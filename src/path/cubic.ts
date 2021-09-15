@@ -131,7 +131,7 @@ export class Cubic extends Segment {
 		}
 		return ux + uy;
 	}
-	length() {
+	get length() {
 		return this.lengthAt();
 	}
 	lengthAt(t = 1) {

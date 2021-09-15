@@ -223,7 +223,7 @@ export class Arc extends Segment {
 			this.sweep
 		);
 	}
-	length() {
+	get length() {
 		const { p1, p2 } = this;
 		if (p1.equals(p2)) return 0;
 

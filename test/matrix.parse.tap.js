@@ -79,6 +79,7 @@ for await (const [m1, m2] of matrixes()) {
 		while (i-- > 0) {
 			t.almostEqual(p[i], q[i], 1e-11, `${i}`, extra);
 		}
+		t.ok(M1.equals(Matrix.new(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f), 1e-15));
 		t.end();
 	});
 	++c;

@@ -4,7 +4,7 @@ import {Box} from '../box.js';
 export abstract class Segment {
 	readonly p1: Point;
 	readonly p2: Point;
-	abstract length(): number;
+	abstract get length(): number;
 	abstract toPathFragment(): (string | number)[];
 	abstract bbox(): Box;
 	abstract pointAt(t: number): Point;
@@ -64,7 +64,7 @@ export class Line extends Segment {
 		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 
-	length() {
+	get length() {
 		return this.p2.sub(this.p1).abs();
 	}
 

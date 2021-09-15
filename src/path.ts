@@ -8,27 +8,37 @@ interface IDescOpt {
 	smooth?: boolean;
 	short?: boolean;
 }
+const iterator = Symbol.iterator;
 // const parseDesc = pathParser;
 export class Path {
-	private segs: Segment[];
+	private _segs: Segment[];
 	private constructor(segs: Segment[]) {
-		this.segs = segs;
+		this._segs = segs;
 	}
 
 	getTotalLength() {
 		return this.calcLength();
 	}
 	getBBox() {
-		return this.segs.reduce((box, seg) => box.merge(seg.bbox()), Box.not());
+		return this._segs.reduce(
+			(box, seg) => box.merge(seg.bbox()),
+			Box.not()
+		);
 	}
-	length() {
+	get length() {
 		return this.calcLength();
 	}
 	bbox() {
-		return this.segs.reduce((box, seg) => box.merge(seg.bbox()), Box.not());
+		return this._segs.reduce(
+			(box, seg) => box.merge(seg.bbox()),
+			Box.not()
+		);
 	}
-	segments() {
-		return this.segs;
+	// segments() {
+	// 	return this._segs;
+	// }
+	[iterator]() {
+		return this._segs.values();
 	}
 
 	private _length: number | undefined;
@@ -38,7 +48,7 @@ export class Path {
 		if (this._lengths) {
 			return this._length;
 		}
-		const lens = this.segs.map((c: Segment) => c.length());
+		const lens = this._segs.map((c: Segment) => c.length);
 		const len = (this._length = lens.reduce((a, b) => a + b, 0));
 		this._lengths = lens.map((v) => v / len);
 		return len;
@@ -47,22 +57,22 @@ export class Path {
 		return this._lengths || [];
 	}
 	get firstPoint() {
-		const segs = this.segs;
+		const segs = this._segs;
 
 		for (const seg of segs) {
 			return seg.p1;
 		}
 	}
 	get lastPoint() {
-		const segs = this.segs;
+		const segs = this._segs;
 		const { length } = segs;
 		if (length > 0) {
-			return segs[length - 1];
+			return segs[length - 1].p2;
 		}
 	}
 
 	segmentAt(T: number): [Segment | undefined, number, number] {
-		const segs = this.segs;
+		const segs = this._segs;
 		if (segs.length > 0) {
 			this.calcLength();
 			const { lengths } = this;
@@ -98,7 +108,7 @@ export class Path {
 	isContinuous() {
 		// Checks if a path is continuous with respect to its
 		// parameterization.
-		const segs = this.segs;
+		const segs = this._segs;
 		const f = segs.length - 1;
 		let i = 0;
 		while (i < f) {
@@ -113,7 +123,7 @@ export class Path {
 	}
 
 	isClosed() {
-		const { segs } = this;
+		const { _segs: segs } = this;
 		const n = segs.length;
 		if (n > 0 && this.isContinuous()) {
 			return segs[0].p1.equals(segs[n - 1].p2);
@@ -136,7 +146,7 @@ export class Path {
 	splitAt(T: number) {
 		const [seg, t, i] = this.segmentAt(T);
 		if (seg) {
-			const { segs } = this;
+			const { _segs: segs } = this;
 			let s;
 			let a = segs.slice(0, i);
 			let b = segs.slice(i + 1);
@@ -158,7 +168,7 @@ export class Path {
 	cutAt(T: number): Path {
 		const [seg, t, i] = this.segmentAt(T < 0 ? -T : T);
 		if (seg) {
-			const { segs } = this;
+			const { _segs: segs } = this;
 			if (T < 0) {
 				const a = segs.slice(i + 1);
 				const s = seg.cropAt(t, 1);
@@ -195,11 +205,11 @@ export class Path {
 		return new Path([]);
 	}
 	transform(M: any) {
-		return new Path(this.segs.map((seg) => seg.transform(M)));
+		return new Path(this._segs.map((seg) => seg.transform(M)));
 	}
 
 	reversed() {
-		return new Path(this.segs.map((seg) => seg.reversed()).reverse());
+		return new Path(this._segs.map((seg) => seg.reversed()).reverse());
 	}
 
 	private *enumDesc(params: IDescOpt) {
@@ -210,7 +220,7 @@ export class Path {
 			short = false,
 		} = params;
 
-		let segs = this.segs;
+		let segs = this._segs;
 		const n = segs.length;
 		let self_closed = false;
 
@@ -372,7 +382,7 @@ export class Path {
 	}
 
 	*enumSubPaths() {
-		const { segs } = this;
+		const { _segs: segs } = this;
 		let prev;
 		let subpath_start = 0;
 		for (const [i, seg] of segs.entries()) {
@@ -393,21 +403,41 @@ export class Path {
 			throw err;
 		}
 	}
-	static parseDesc(d: string): Path {
-		try {
-			return new Path(parseDesc(d));
-			// return new Path(pathParser(d));
-		} catch (err) {
-			console.error("Failed to parse ", d);
-			throw err;
-		}
-	}
+	// static parse1(d: string): Path {
+	// 	try {
+	// 		return new Path(parseDesc(d));
+	// 	} catch (err) {
+	// 		console.error("Failed to parse ", d);
+	// 		throw err;
+	// 	}
+	// }
+	// static parse2(d: string): Path {
+	// 	try {
+	// 		return new Path(pathParser(d));
+	// 	} catch (err) {
+	// 		console.error("Failed to parse ", d);
+	// 		throw err;
+	// 	}
+	// }
+	// static fromPath(d: string): Path {
+	// 	return new Path(parseDesc(d));
+	// 	// return new Path(pathParser(d, new Array<Segment>()));
+	// }
 
-	static fromPath(d: string): Path {
-		return new Path(parseDesc(d));
-		// return new Path(pathParser(d, new Array<Segment>()));
-	}
-	static from(v?: Segment[] | string | Segment | Path): Path {
+	// static from(v?: Segment[] | string | Segment | Path): Path {
+	// 	if (Array.isArray(v)) {
+	// 		return new Path(v);
+	// 	} else if (!v) {
+	// 		return new Path([]);
+	// 	} else if (v instanceof Path) {
+	// 		return v;
+	// 	} else if (v instanceof Segment) {
+	// 		return new Path([v]);
+	// 	} else {
+	// 		return Path.parse(v);
+	// 	}
+	// }
+	static new(v?: Segment[] | string | Segment | Path): Path {
 		if (Array.isArray(v)) {
 			return new Path(v);
 		} else if (!v) {
@@ -416,7 +446,6 @@ export class Path {
 			return v;
 		} else if (v instanceof Segment) {
 			return new Path([v]);
-			// } else if (typeof v === "string") {
 		} else {
 			return Path.parse(v);
 		}

@@ -48,7 +48,7 @@ for await (const [i, item] of enum_box_data({})) {
 				box = Box.fromRect(x, y, width, height);
 				box2 = Box.fromExtrema(xMin, xMax, yMax, yMin);
 				break;
-			case 1:
+			case 2:
 				box = Box.new(`${x}, ${y}, ${width}, ${height}`);
 				box2 = Box.fromExtrema(xMax, xMin, yMin, yMax);
 				break;
@@ -91,6 +91,7 @@ for await (const [i, item] of enum_box_data({})) {
 		const not = Box.new();
 		t.strictSame(not.merge(box2), box2);
 		t.strictSame(not.merge(not), not);
+		t.strictSame(box.merge(not), box);
 		t.end();
 	});
 }

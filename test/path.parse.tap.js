@@ -30,7 +30,7 @@ for await (const item of enum_path_data({SEGMENTS: 'Parsed'})) {
 	}
 
 	test.test(`SPTPaths<${d}>`, {bail: 1}, function (t) {
-		// const p = Path.fromPath(d);
+		// const p = Path.parse(d);
 		const p = Path.parseDesc(d);
 		const abs = p.descArray({relative: false, close: close, short: false});
 
@@ -57,7 +57,7 @@ for await (const item of enum_path_data({SEGMENTS: 'SEPaths'})) {
 	const eps = 0.00005;
 	test.test(`SEPaths<${d}>`, {bail: 1}, function (t) {
 		const p = Path.parseDesc(item.d);
-		// const p = Path.fromPath(item.d);
+		// const p = Path.parse(item.d);
 		const abs = p.descArray({relative: false, close: true});
 
 		t.sameDescs(abs, item.abs, eps, `ABS`, p);

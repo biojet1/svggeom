@@ -25,7 +25,7 @@ for await (const item of enum_path_data({
 	const opt = {write_svg: true, epsilon: 0.00032};
 
 	test.test(`<${d}>`, {bail: 1}, function (t) {
-		const p = Path.fromPath(item.d);
+		const p = Path.parse(item.d);
 		for (const [i, [T, A]] of item.transforms.entries()) {
 			const m = Matrix.parse(T);
 			let p2;

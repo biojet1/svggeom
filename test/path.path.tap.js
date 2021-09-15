@@ -16,7 +16,7 @@ for await (const item of enum_path_data({SEGMENTS: ''})) {
 	}
 
 	test.test(`<${d}>`, {bail: !CI}, function (t) {
-		let seg = Path.fromPath(d);
+		let seg = Path.parse(d);
 		test_segment(t, seg, item, {len_epsilon:0.32,point_epsilon:0.0573,delta_epsilon:1e-7,slope_epsilon:0.0045});
 		t.end();
 	});
