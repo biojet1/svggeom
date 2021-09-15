@@ -18,6 +18,9 @@
     "prepare": "tsc",
     "compile": "tsc"
   },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "tap": "^15.0.9",
     "typescript": "^4.4"
