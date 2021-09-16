@@ -271,15 +271,17 @@ export class Matrix {
 			case "object":
 				if (Array.isArray(first)) {
 					return Matrix.fromArray(first);
-				} else if ((this as any).nodeType === 1) {
+				} else if ((first as any).nodeType === 1) {
 					return Matrix.fromElement(first as any as ElementLike);
 				} else {
-					const { a, d, b, c, e, f } = this as any;
+					const { a, d, b, c, e, f } = first as any;
 
 					return Matrix.hexad(a, b, c, d, e, f);
 				}
 			default:
-				throw new TypeError(`Invalid matrix argument ${Array.from(arguments)}`);
+				throw new TypeError(
+					`Invalid matrix argument ${Array.from(arguments)}`
+				);
 		}
 	}
 
@@ -290,12 +292,14 @@ export class Matrix {
 		const a = Matrix.new(A).toArray();
 		const b = Matrix.new(B).toArray();
 		const n = a.length;
-		// console.log('interpolate T', A, B, a, b);
+		// console.log("interpolate T", A, B, a, b);
 		return function (t: number) {
 			let c = [0, 0, 0, 0, 0, 0];
 			for (let i = 0; i < n; ++i)
 				c[i] = a[i] === b[i] ? b[i] : a[i] * (1 - t) + b[i] * t;
-			return Matrix.compose(Matrix.fromArray(c).decompose());
+			// console.log("compose", c);
+			// return Matrix.compose(Matrix.fromArray(c).decompose());
+			return Matrix.fromArray(c);
 		};
 	}
 	static translate(x = 0, y = 0) {

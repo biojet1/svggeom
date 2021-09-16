@@ -80,6 +80,15 @@ for await (const [m1, m2] of matrixes()) {
 			t.almostEqual(p[i], q[i], 1e-11, `${i}`, extra);
 		}
 		t.ok(M1.equals(Matrix.new(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f), 1e-15));
+		t.ok(M1.equals(Matrix.new(M2), 1e-15));
+		t.ok(M1.equals(Matrix.new(q), 1e-15));
+		t.ok(
+			M2.equals(
+				Matrix.new({ nodeType: 1, getAttribute: (s) => m1 }),
+				1e-15
+			)
+		);
+
 		t.end();
 	});
 	++c;
@@ -109,6 +118,12 @@ test.test(`matrixes etc`, { bail: !CI }, function (t) {
 		TypeError,
 		"must be finite"
 	);
+
+	const fn = Matrix.interpolate([10, 20, 30, 40, 50, 60], [20, 30, 40, 50, 60, 70])
+
+	t.same(fn(0).toArray(), [10, 20, 30, 40, 50, 60]);
+	t.same(fn(0.5).toArray(), [15, 25, 35, 45, 55, 65]);
+	t.same(fn(1).toArray(), [20, 30, 40, 50, 60, 70]);
 
 	t.end();
 });
