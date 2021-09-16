@@ -95,8 +95,8 @@ for await (const [m1, m2] of matrixes()) {
 }
 console.log(`${c} matrixes CI(${CI})`);
 test.test(`matrixes etc`, { bail: !CI }, function (t) {
-	t.ok(Matrix.translateX(42).equals(Matrix.translate(42, 0)));
-	t.ok(Matrix.translateY(42).equals(Matrix.translate(0, 42)));
+	t.ok(Matrix.translateX(42).clone().equals(Matrix.translate(42, 0)));
+	t.ok(Matrix.translateY(42).clone().equals(Matrix.translate(0, 42)));
 	t.ok(
 		Matrix.translate(-1, -4).equals(
 			Matrix.translateX(-1).translate(0, -2).translateY(-2)
@@ -118,12 +118,51 @@ test.test(`matrixes etc`, { bail: !CI }, function (t) {
 		TypeError,
 		"must be finite"
 	);
+	t.throws(() => Matrix.new(true), TypeError);
 
-	const fn = Matrix.interpolate([10, 20, 30, 40, 50, 60], [20, 30, 40, 50, 60, 70])
+	t.end();
+});
 
+test.test(`test_interpolate`, { bail: !CI }, function (t) {
+	const fn = Matrix.interpolate(
+		[10, 20, 30, 40, 50, 60],
+		[20, 30, 40, 50, 60, 70]
+	);
 	t.same(fn(0).toArray(), [10, 20, 30, 40, 50, 60]);
 	t.same(fn(0.5).toArray(), [15, 25, 35, 45, 55, 65]);
 	t.same(fn(1).toArray(), [20, 30, 40, 50, 60, 70]);
+	t.end();
+});
 
+test.test(`test_new_from_skew`, { bail: !CI }, function (t) {
+	t.ok(
+		Matrix.new()
+			.skewX(10)
+			.equals(Matrix.new("matrix(1 0 0.176327 1 0 0)"), 1e-5)
+	);
+	t.ok(
+		Matrix.new()
+			.skewY(10)
+			.equals(Matrix.new("matrix(1 0.176327 0 1 0 0)"), 1e-5)
+	);
+	t.end();
+});
+
+test.test(`test_matrix_inversion`, { bail: !CI }, function (t) {
+	t.ok(
+		Matrix.new("rotate(45)")
+			.inverse()
+			.equals(Matrix.parse("rotate(-45)"), 1e-11)
+	);
+	t.ok(
+		Matrix.new("scale(4)")
+			.inverse()
+			.equals(Matrix.parse("scale(0.25)"), 1e-11)
+	);
+	t.ok(
+		Matrix.new("translate(12, 10)")
+			.inverse()
+			.equals(Matrix.parse("translate(-12, -10)"))
+	);
 	t.end();
 });
