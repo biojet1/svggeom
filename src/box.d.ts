@@ -1,0 +1,45 @@
+export declare class Box {
+    readonly x: number;
+    readonly y: number;
+    readonly height: number;
+    readonly width: number;
+    private static _not;
+    private constructor();
+    clone(): Box;
+    get left(): number;
+    get xMin(): number;
+    get top(): number;
+    get yMin(): number;
+    get right(): number;
+    get xMax(): number;
+    get bottom(): number;
+    get yMax(): number;
+    get centerX(): number;
+    get centerY(): number;
+    merge(box: Box): Box;
+    transform(m: any): Box;
+    isValid(): boolean;
+    static not(): {
+        merge(box: Box): Box;
+        transform(m: any): any;
+        isValid(): boolean;
+        readonly x: number;
+        readonly y: number;
+        readonly height: number;
+        readonly width: number;
+        clone(): Box;
+        readonly left: number;
+        readonly xMin: number;
+        readonly top: number;
+        readonly yMin: number;
+        readonly right: number;
+        readonly xMax: number;
+        readonly bottom: number;
+        readonly yMax: number;
+        readonly centerX: number;
+        readonly centerY: number;
+    };
+    static fromExtrema(x1: number, x2: number, y1: number, y2: number): Box;
+    static fromRect(x: number, y: number, width: number, height: number): Box;
+    static new(first?: number | number[] | string | Box): Box;
+}

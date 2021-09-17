@@ -15,11 +15,14 @@
     "lint": "gts lint",
     "clean": "gts clean",
     "fix": "gts fix",
+    "dts": "npm-dts generate",
     "prepare": "tsc",
     "compile": "tsc"
   },
+  "_types": "index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "*.d.ts"
   ],
   "devDependencies": {
     "tap": "^15.0.9",

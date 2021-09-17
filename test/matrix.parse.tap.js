@@ -88,7 +88,12 @@ for await (const [m1, m2] of matrixes()) {
 				1e-15
 			)
 		);
-
+		t.ok(
+			M1.equals(
+				Matrix.fromElement({ nodeType: 1, getAttribute: (s) => m1 }),
+				1e-15
+			)
+		);
 		t.end();
 	});
 	++c;
@@ -126,11 +131,11 @@ test.test(`matrixes etc`, { bail: !CI }, function (t) {
 test.test(`test_interpolate`, { bail: !CI }, function (t) {
 	const fn = Matrix.interpolate(
 		[10, 20, 30, 40, 50, 60],
-		[20, 30, 40, 50, 60, 70]
+		[20, 30, 30, 50, 60, 70]
 	);
 	t.same(fn(0).toArray(), [10, 20, 30, 40, 50, 60]);
-	t.same(fn(0.5).toArray(), [15, 25, 35, 45, 55, 65]);
-	t.same(fn(1).toArray(), [20, 30, 40, 50, 60, 70]);
+	t.same(fn(0.5).toArray(), [15, 25, 30, 45, 55, 65]);
+	t.same(fn(1).toArray(), [20, 30, 30, 50, 60, 70]);
 	t.end();
 });
 
@@ -163,6 +168,16 @@ test.test(`test_matrix_inversion`, { bail: !CI }, function (t) {
 		Matrix.new("translate(12, 10)")
 			.inverse()
 			.equals(Matrix.parse("translate(-12, -10)"))
+	);
+	t.end();
+});
+
+test.test(`test_new_from_rotate`, { bail: !CI }, function (t) {
+	t.ok(
+		Matrix.parse("rotate(90 10 12)").equals(
+			Matrix.parse("matrix(6.12323e-17 1 -1 6.12323e-17 22 2)"),
+			1e-4
+		)
 	);
 	t.end();
 });
