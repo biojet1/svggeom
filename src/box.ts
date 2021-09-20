@@ -146,6 +146,11 @@ export class Box {
 	public static not() {
 		return Box._not;
 	}
+	private static _empty?: Box;
+	public static empty() {
+		const { _empty } = Box;
+		return _empty || (Box._empty = new Box(0, 0, 0, 0));
+	}
 	public static fromExtrema(x1: number, x2: number, y1: number, y2: number) {
 		if (x1 > x2) [x1, x2] = [x2, x1];
 		if (y1 > y2) [y1, y2] = [y2, y1];

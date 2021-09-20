@@ -268,6 +268,13 @@ export function parseDesc(d: string) {
 	let moved = Point.at();
 	let last_command;
 
+	const num = function () {
+		const v = array.pop();
+		if (!v) {
+			throw new Error(`Number expected '${v}' '${d}'`);
+		}
+		return parseFloat(v);
+	};
 	while (array.length > 0) {
 		let absolute = false;
 		const command = array.pop();
@@ -278,8 +285,8 @@ export function parseDesc(d: string) {
 				absolute = true;
 			case "m":
 				{
-					const x = parseFloat(array.pop() || "0");
-					const y = parseFloat(array.pop() || "0");
+					const x = num();
+					const y = num();
 					if (absolute) {
 						pos = moved = Point.at(x, y);
 					} else {
@@ -298,8 +305,8 @@ export function parseDesc(d: string) {
 				absolute = true;
 			case "l":
 				{
-					const x = parseFloat(array.pop() || "0");
-					const y = parseFloat(array.pop() || "0");
+					const x = num();
+					const y = num();
 					if (absolute) {
 						pos = Point.at(x, y);
 					} else {
@@ -312,7 +319,7 @@ export function parseDesc(d: string) {
 				absolute = true;
 			case "h":
 				{
-					const v = parseFloat(array.pop() || "0");
+					const v = num();
 					if (absolute) {
 						pos = Point.at(v, pos.y);
 					} else {
@@ -325,7 +332,7 @@ export function parseDesc(d: string) {
 				absolute = true;
 			case "v":
 				{
-					const v = parseFloat(array.pop() || "0");
+					const v = num();
 					if (absolute) {
 						pos = Point.at(pos.x, v);
 					} else {
@@ -338,19 +345,18 @@ export function parseDesc(d: string) {
 				absolute = true;
 			case "a":
 				{
-					const rx = parseFloat(array.pop() || "0");
-					const ry = parseFloat(array.pop() || "0");
-					const rotation = parseFloat(array.pop() || "0");
-					const arc = parseFloat(array.pop() || "0");
-					const sweep = parseFloat(array.pop() || "0");
-					const x = parseFloat(array.pop() || "0");
-					const y = parseFloat(array.pop() || "0");
+					const rx = num();
+					const ry = num();
+					const rotation = num();
+					const arc = num();
+					const sweep = num();
+					const x = num();
+					const y = num();
 					if (absolute) {
 						pos = Point.at(x, y);
 					} else {
 						pos = pos.add(Point.at(x, y));
 					}
-
 					segments.push(
 						Arc.fromEndPoint(
 							start,
@@ -368,12 +374,12 @@ export function parseDesc(d: string) {
 				absolute = true;
 			case "c":
 				{
-					const c1x = parseFloat(array.pop() || "0");
-					const c1y = parseFloat(array.pop() || "0");
-					const c2x = parseFloat(array.pop() || "0");
-					const c2y = parseFloat(array.pop() || "0");
-					const x = parseFloat(array.pop() || "0");
-					const y = parseFloat(array.pop() || "0");
+					const c1x = num();
+					const c1y = num();
+					const c2x = num();
+					const c2y = num();
+					const x = num();
+					const y = num();
 					let c1 = Point.at(c1x, c1y);
 					let c2 = Point.at(c2x, c2y);
 					if (absolute) {
@@ -390,10 +396,10 @@ export function parseDesc(d: string) {
 				absolute = true;
 			case "q":
 				{
-					const cx = parseFloat(array.pop() || "0");
-					const cy = parseFloat(array.pop() || "0");
-					const x = parseFloat(array.pop() || "0");
-					const y = parseFloat(array.pop() || "0");
+					const cx = num();
+					const cy = num();
+					const x = num();
+					const y = num();
 					let con = Point.at(cx, cy);
 					if (absolute) {
 						pos = Point.at(x, y);
@@ -401,7 +407,6 @@ export function parseDesc(d: string) {
 						con = con.add(pos);
 						pos = pos.add(Point.at(x, y));
 					}
-
 					segments.push(new Quadratic(start, con, pos));
 				}
 				break;
@@ -409,10 +414,10 @@ export function parseDesc(d: string) {
 				absolute = true;
 			case "s":
 				{
-					const cx = parseFloat(array.pop() || "0");
-					const cy = parseFloat(array.pop() || "0");
-					const x = parseFloat(array.pop() || "0");
-					const y = parseFloat(array.pop() || "0");
+					const cx = num();
+					const cy = num();
+					const x = num();
+					const y = num();
 
 					// Smooth curve. First control point is the "reflection" of
 					// the second control point in the previous path.
@@ -449,8 +454,8 @@ export function parseDesc(d: string) {
 				absolute = true;
 			case "t":
 				{
-					const x = parseFloat(array.pop() || "0");
-					const y = parseFloat(array.pop() || "0");
+					const x = num();
+					const y = num();
 					let c;
 					const last =
 						segments.length > 0 && segments[segments.length - 1];

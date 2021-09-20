@@ -394,14 +394,15 @@ export class Path {
 		yield new Path(segs.slice(subpath_start));
 	}
 	static parse(d: string): Path {
-		try {
-			return new Path(parseDesc(d));
-			// return new Path(pathParser(d));
-		} catch (err) {
-			console.error("Failed to parse ", d);
-			throw err;
-		}
+		return new Path(parseDesc(d));
 	}
+	// static tryParse(d: string): Path {
+	// 	try {
+	// 		return new Path(parseDesc(d));
+	// 	} catch (err) {
+	// 		return new Path([]);
+	// 	}
+	// }
 	// static parse1(d: string): Path {
 	// 	try {
 	// 		return new Path(parseDesc(d));

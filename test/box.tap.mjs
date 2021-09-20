@@ -101,6 +101,7 @@ test.test(`Box extra`, { bail: !CI }, function (t) {
 	const not = Box.not();
 	t.notOk(not.isValid());
 	t.strictSame(Box.new(), not);
+	t.same(Box.empty().toArray(), [0, 0, 0, 0]);
 	t.strictSame(not.transform(Matrix.parse("translate(100, -100)")), not);
 	t.throws(() => Box.new(false), TypeError, "wrong new params");
 
