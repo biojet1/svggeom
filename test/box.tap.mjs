@@ -92,6 +92,7 @@ for await (const [i, item] of enum_box_data({})) {
 		t.strictSame(not.merge(box2), box2);
 		t.strictSame(not.merge(not), not);
 		t.strictSame(box.merge(not), box);
+		t.same(box2.toArray(), [x, y, width, height]);
 		t.end();
 	});
 }
@@ -105,5 +106,54 @@ test.test(`Box extra`, { bail: !CI }, function (t) {
 
 	// self.assertEqual(tuple(BoundingBox((0, 10), (0, 10)) +
 	//                        BoundingBox((-10, 0), (-10, 0))), ((-10, 10), (-10, 10)))
+	t.end();
+});
+
+const B = Box.new("-130,-90,130,90");
+const D = Box.new("-60,-50,150,90");
+const C = Box.new("-60,-50,60,50");
+const A = Box.new("-210,-150,80,60");
+const E = Box.new("-130,-90,0,0");
+const F = Box.new("-130,-90,70,90");
+const G = Box.new("-60,-90,60,40");
+test.test(`Box overlap`, { bail: !CI }, function (t) {
+	const bbox2 = Box.new([
+		[2, 3],
+		[1, 2],
+	]);
+	const bbox1 = Box.new([
+		[0, 1],
+		[2, 3],
+	]);
+	t.same(bbox1.overlap(bbox1).toArray(), bbox1.toArray());
+	t.same(bbox2.overlap(bbox2).toArray(), bbox2.toArray());
+	t.strictSame(bbox1.overlap(bbox2), Box.not());
+	t.strictSame(bbox2.overlap(bbox1), Box.not());
+
+	t.same(Box.not().overlap(bbox1).toArray(), bbox1.toArray());
+
+	// const bbox1 = Box.new([-210, -150, 60, 3]);
+	// Array.from(document.getElementsByTagName("rect")).sort().map(e=>`const ${e.id} = Box.new('${e.x.baseVal.value},${e.y.baseVal.value},${e.width.baseVal.value},${e.height.baseVal.value}');`).join('\n')
+	t.same(B.overlap(D).toArray(), C.toArray());
+	t.same(D.overlap(B).toArray(), C.toArray());
+	t.same(A.overlap(B).toArray(), E.toArray());
+	t.same(B.overlap(A).toArray(), E.toArray());
+	t.strictSame(A.overlap(C), Box.not());
+	t.strictSame(C.overlap(A), Box.not());
+	t.end();
+});
+
+test.test(`Box merge`, { bail: !CI }, function (t) {
+	t.same(C.merge(D).toArray(), D.toArray());
+	t.same(D.merge(C).toArray(), D.toArray());
+	t.same(B.overlap(C).merge(D).toArray(), D.toArray());
+	t.same(E.merge(C).merge(F).toArray(), B.toArray());
+	const not = Box.not();
+
+	for (const b of [A, B, C, D, E, F]) {
+		t.same(not.merge(b).toArray(), b.toArray());
+		t.same(b.merge(not).toArray(), b.toArray());
+	}
+
 	t.end();
 });

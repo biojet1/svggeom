@@ -9,15 +9,14 @@ export class Box {
 	readonly y: number;
 	readonly height: number;
 	readonly width: number;
-	private static _not = new (class extends Box {
+	private static _not: Box = new (class extends Box {
 		// NoBox has no valid values so it cant be merged
 		constructor() {
 			super(NaN, NaN, NaN, NaN);
 		}
 		merge(box: Box): Box {
-			return box === this ? this : Box.new(box);
+			return box;
 		}
-
 		transform(m: any) {
 			return this;
 		}
@@ -115,6 +114,35 @@ export class Box {
 	isValid() {
 		return true;
 	}
+	toArray() {
+		const { x, y, width, height } = this;
+		return [x, y, width, height];
+	}
+	overlap(other: Box): Box {
+		if (!this.isValid()) {
+			return other;
+		} else if (!other.isValid()) {
+			return this;
+		} else {
+			const { xMin: xMin1, yMin: yMin1, xMax: xMax1, yMax: yMax1 } = this;
+			const {
+				xMin: xMin2,
+				yMin: yMin2,
+				xMax: xMax2,
+				yMax: yMax2,
+			} = other;
+			const xMin = Math.max(xMin1, xMin2);
+			const xMax = Math.min(xMax1, xMax2);
+			if (xMax >= xMin) {
+				const yMin = Math.max(yMin1, yMin2);
+				const yMax = Math.min(yMax1, yMax2);
+				if (yMax >= yMin) {
+					return Box.fromExtrema(xMin, xMax, yMin, yMax);
+				}
+			}
+		}
+		return Box._not;
+	}
 	public static not() {
 		return Box._not;
 	}
@@ -132,7 +160,9 @@ export class Box {
 		return new Box(x, y, width, height);
 	}
 
-	public static new(first?: number | number[] | string | Box) {
+	public static new(
+		first?: number | number[] | [number[], number[]] | string | Box
+	) {
 		switch (typeof first) {
 			case "string": {
 				const v = first.split(/[\s,]+/).map(parseFloat);
@@ -144,7 +174,24 @@ export class Box {
 				return Box._not;
 			case "object":
 				if (Array.isArray(first)) {
-					return new Box(first[0], first[1], first[2], first[3]);
+					const x = first[0];
+					if (Array.isArray(x)) {
+						const [x1, x2] = first[0] as number[];
+						const [y1, y2] = first[1] as number[];
+						return Box.fromExtrema(
+							x1 as number,
+							x2 as number,
+							y1 as number,
+							y2 as number
+						);
+					} else {
+						return new Box(
+							first[0] as number,
+							first[1] as number,
+							first[2] as number,
+							first[3] as number
+						);
+					}
 				} else {
 					const { left, x, top, y, width, height } = first;
 					return new Box(
