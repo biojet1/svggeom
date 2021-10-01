@@ -1,10 +1,6 @@
 import { Point } from "./point.js";
 
 export class Box {
-	// readonly bottom: number;
-	// readonly left: number;
-	// readonly right: number;
-	// readonly top: number;
 	readonly x: number;
 	readonly y: number;
 	readonly height: number;
@@ -24,7 +20,7 @@ export class Box {
 			return false;
 		}
 	})();
-	private constructor(x: number, y: number, width: number, height: number) {
+	protected constructor(x: number, y: number, width: number, height: number) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -34,6 +30,10 @@ export class Box {
 		const { x, y, width, height } = this;
 
 		return new Box(x, y, width, height);
+	}
+
+	private _notsup() {
+		return new Error(`Not Supported`);
 	}
 
 	get left() {
@@ -74,16 +74,24 @@ export class Box {
 
 	// Merge rect box with another, return a new instance
 	merge(box: Box): Box {
-		if (!box.isValid()) return Box.new(this);
+		if (!this.isValid()) {
+			return box;
+		} else if (!box.isValid()) {
+			return this;
+		}
 
-		const x = Math.min(this.x, box.x);
-		const y = Math.min(this.y, box.y);
+		// if (!box.isValid()) return Box.new(this);
+		const { x: x1, y: y1, width: width1, height: height1 } = this;
+		const { x: x2, y: y2, width: width2, height: height2 } = box;
+
+		const x = Math.min(x1, x2);
+		const y = Math.min(y1, y2);
 
 		return new Box(
 			x,
 			y,
-			Math.max(this.x + this.width, box.x + box.width) - x,
-			Math.max(this.y + this.height, box.y + box.height) - y
+			Math.max(x1 + width1, x2 + width2) - x,
+			Math.max(y1 + height1, y2 + height2) - y
 		);
 	}
 
@@ -117,6 +125,10 @@ export class Box {
 	toArray() {
 		const { x, y, width, height } = this;
 		return [x, y, width, height];
+	}
+	toString() {
+		const { x, y, width, height } = this;
+		return `${x}, ${y}, ${width}, ${height}`;
 	}
 	overlap(other: Box): Box {
 		if (!this.isValid()) {
@@ -210,4 +222,30 @@ export class Box {
 				throw new TypeError(`Invalid box argument ${arguments}`);
 		}
 	}
+	// final(){
+	// 	return Object.isFrozen(this) ? this : Box.new(this);
+	// }
+	// mut(){
+	// 	return Object.isFrozen(this) ? Box.mut(this) : this;
+	// }
+	freeze(){
+		return Object.freeze(this);
+	}
 }
+
+export class BoxMut {
+	x: number;
+	y: number;
+	height: number;
+	width: number;
+
+	constructor(x: number, y: number, width: number, height: number) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+	}
+}
+type BoxRO = Readonly<BoxMut>;
+
+// export class BoxFin extends BoxRO {}

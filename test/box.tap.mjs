@@ -50,7 +50,8 @@ for await (const [i, item] of enum_box_data({})) {
 				break;
 			case 2:
 				box = Box.new(`${x}, ${y}, ${width}, ${height}`);
-				box2 = Box.fromExtrema(xMax, xMin, yMin, yMax);
+				box2 = Box.new(`${left} ${top} ${width} ${height}`);
+				// box2 = Box.fromExtrema(xMax, xMin, yMin, yMax);
 				break;
 			default:
 				box = Box.new(x, y, width, height);
@@ -155,6 +156,25 @@ test.test(`Box merge`, { bail: !CI }, function (t) {
 		t.same(not.merge(b).toArray(), b.toArray());
 		t.same(b.merge(not).toArray(), b.toArray());
 	}
+	let box = Box.not();
 
+	for (const b of [C, G, F]) {
+		box = box.merge(b);
+	}
+	t.same(box.toArray(), B.toArray());
+
+	t.end();
+});
+
+test.test(`Box mutable`, { bail: !CI }, function (t) {
+	const a = new Box([0, 0, 100, 100]);
+	// const b = new BoxRO(0, 0, 100, 100);
+
+	a.x = 80;
+	t.strictSame(a.x, 80);
+	t.throws(() => {
+		a.freeze().x = 60;
+	}, TypeError);
+	t.strictSame(a.x, 80);
 	t.end();
 });

@@ -30,6 +30,9 @@ export class Path {
 	get length() {
 		return this.calcLength();
 	}
+	get totalLength() {
+		return this.calcLength();
+	}
 	bbox() {
 		return this._segs.reduce(
 			(box, seg) => box.merge(seg.bbox()),
@@ -140,6 +143,11 @@ export class Path {
 	pointAt(T: number) {
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.pointAt(t);
+	}
+
+	pointAtLength(L: number) {
+		const {totalLength} = this;
+		return totalLength && this.pointAt(L/totalLength);
 	}
 
 	splitAt(T: number) {

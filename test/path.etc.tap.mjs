@@ -40,6 +40,8 @@ test.test(`Path etc`, { bail: !CI }, function (t) {
 	t.ok(p.isContinuous());
 	t.strictSame(segs.length, 3);
 	// t.same(segs[0].p2.toArray(), [225, 45]);
+	p = Path.parse(`m 0 0 h 200 v 300 h -200 Z`);
+	t.ok(p.pointAtLength(300).closeTo(Point.at(200, 100), 1e-12));
 
 	t.end();
 });

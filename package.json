@@ -25,7 +25,9 @@
     "*.d.ts"
   ],
   "devDependencies": {
-    "tap": "^15.0.9",
+    "tap": "^15.0.9"
+  },
+  "_": {
     "typescript": "^4.4"
   },
   "c8": {
