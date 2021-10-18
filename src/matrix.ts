@@ -6,12 +6,12 @@ export class Matrix {
 	// [ a, c, e ] [ sx*cosψ, -sy*sinψ, tx ]
 	// [ b, d, f ] [ sx*sinψ,  sy*cosψ, ty ]
 
-	readonly a: number;
-	readonly b: number;
-	readonly c: number;
-	readonly d: number;
-	readonly e: number;
-	readonly f: number;
+	a: number;
+	b: number;
+	c: number;
+	d: number;
+	e: number;
+	f: number;
 	private constructor(m: undefined | number[] = undefined) {
 		// if (arguments.length === 6) {
 		// 	m = arguments;
@@ -78,6 +78,31 @@ export class Matrix {
 			a * E + c * F + e * 1,
 			b * E + d * F + f * 1
 		);
+		// return this.clone().multiplySelf();
+	}
+
+	multiplySelf(m: Matrix): Matrix {
+		const { a, d, b, c, e, f } = this;
+		const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
+		this.a = a * A + c * B + e * 0;
+		this.b = b * A + d * B + f * 0;
+		this.c = a * C + c * D + e * 0;
+		this.d = b * C + d * D + f * 0;
+		this.e = a * E + c * F + e * 1;
+		this.f = b * E + d * F + f * 1;
+		return this;
+	}
+
+	preMultiplySelf(m: Matrix): Matrix {
+		const { a, d, b, c, e, f } = m;
+		const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
+		this.a = a * A + c * B + e * 0;
+		this.b = b * A + d * B + f * 0;
+		this.c = a * C + c * D + e * 0;
+		this.d = b * C + d * D + f * 0;
+		this.e = a * E + c * F + e * 1;
+		this.f = b * E + d * F + f * 1;
+		return this;
 	}
 
 	rotate(ang: number, x: number = 0, y: number = 0): Matrix {
@@ -310,6 +335,13 @@ export class Matrix {
 	}
 	static translateX(v: number) {
 		return Matrix.hexad(1, 0, 0, 1, v, 0);
+	}
+
+	final() {
+		return Object.isFrozen(this) ? this : Object.freeze(this.clone());
+	}
+	mut() {
+		return Object.isFrozen(this) ? this.clone() : this;
 	}
 }
 

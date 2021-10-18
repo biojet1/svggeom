@@ -1,14 +1,15 @@
 import { Point } from "./point.js";
 
 export class Box {
-	readonly x: number;
-	readonly y: number;
-	readonly height: number;
-	readonly width: number;
+	x: number;
+	y: number;
+	height: number;
+	width: number;
 	private static _not: Box = new (class extends Box {
 		// NoBox has no valid values so it cant be merged
 		constructor() {
 			super(NaN, NaN, NaN, NaN);
+			Object.freeze(this);
 		}
 		merge(box: Box): Box {
 			return box;
@@ -58,18 +59,57 @@ export class Box {
 	get bottom() {
 		return this.yMax;
 	}
+
 	get yMax() {
 		const { y, height } = this;
 		return y + height;
 	}
-
+	set yMax(n: number) {
+		const { y } = this;
+		if (n < y) {
+			this.y = n;
+			this.height = y - n;
+		} else {
+			this.height = n - y;
+		}
+	}
 	get centerX() {
 		const { x, width } = this;
 		return x + width / 2;
 	}
+
+	set centerX(n: number) {
+		const { width } = this;
+		this.x = n - width / 2;
+	}
+
 	get centerY() {
 		const { y, height } = this;
 		return y + height / 2;
+	}
+
+	set centerY(n: number) {
+		const { height } = this;
+		this.y = n - height / 2;
+	}
+	mergeSelf(box: Box): Box {
+		if (!this.isValid()) {
+			return box;
+		} else if (!box.isValid()) {
+			return this;
+		}
+
+		// if (!box.isValid()) return Box.new(this);
+		const { x: x1, y: y1, width: width1, height: height1 } = this;
+		const { x: x2, y: y2, width: width2, height: height2 } = box;
+
+		const x = Math.min(x1, x2);
+		const y = Math.min(y1, y2);
+		this.x = x;
+		this.y = y;
+		this.width = Math.max(x1 + width1, x2 + width2) - x;
+		this.height = Math.max(y1 + height1, y2 + height2) - y;
+		return this;
 	}
 
 	// Merge rect box with another, return a new instance
@@ -222,30 +262,31 @@ export class Box {
 				throw new TypeError(`Invalid box argument ${arguments}`);
 		}
 	}
-	// final(){
-	// 	return Object.isFrozen(this) ? this : Box.new(this);
-	// }
-	// mut(){
-	// 	return Object.isFrozen(this) ? Box.mut(this) : this;
-	// }
-	freeze(){
+	final() {
+		return Object.isFrozen(this) ? this : Object.freeze(this.clone());
+	}
+	mut() {
+		return Object.isFrozen(this) ? this.clone() : this;
+	}
+	freeze() {
 		return Object.freeze(this);
 	}
 }
 
-export class BoxMut {
-	x: number;
-	y: number;
-	height: number;
-	width: number;
+// export class BoxMut {
+// 	x: number;
+// 	y: number;
+// 	height: number;
+// 	width: number;
 
-	constructor(x: number, y: number, width: number, height: number) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-	}
-}
-type BoxRO = Readonly<BoxMut>;
+// 	constructor(x: number, y: number, width: number, height: number) {
+// 		this.x = x;
+// 		this.y = y;
+// 		this.width = width;
+// 		this.height = height;
+// 	}
+// }
+
+// type BoxRO = Readonly<BoxMut>;
 
 // export class BoxFin extends BoxRO {}
