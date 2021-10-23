@@ -110,10 +110,10 @@ test.test(`matrixes etc`, { bail: !CI }, function (t) {
 
 	t.same(Matrix.new().toArray(), [1, 0, 0, 1, 0, 0]);
 	t.same(
-		Matrix.new("matrix(1, 0, 0, 1, 0, 0)"),
+		Matrix.new("matrix(1,0,0,1,0,0)"),
 		Matrix.new([1, 0, 0, 1, 0, 0])
 	);
-	t.same(Matrix.new().toString(), "matrix(1, 0, 0, 1, 0, 0)");
+	t.same(Matrix.new().toString(), "matrix(1,0,0,1,0,0)");
 	t.same(
 		Matrix.translateY(4.1).translateX(1.4).describe().replace(/\s+/g, ""),
 		"translate(1.4,4.1)"

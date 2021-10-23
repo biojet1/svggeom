@@ -3,9 +3,66 @@ import { Box } from "../box.js";
 import { Segment, Line } from "./index.js";
 import { Cubic } from "./cubic.js";
 import { Matrix } from "../matrix.js";
-// import assert from "assert";
 import { a2c } from "./a2c.js";
-const { PI } = Math;
+const { abs, atan, tan, cos, sin, sqrt, acos, atan2, pow, PI, min, max, ceil } =
+	Math;
+
+function cossin(θ: number) {
+	switch (θ) {
+		case 0:
+			return [+1, +0];
+		case 30:
+			return [sqrt(3) / 2, 0.5];
+		case 45:
+			return [sqrt(2) / 2, sqrt(2) / 2];
+		case 60:
+			return [0.5, sqrt(3) / 2];
+		case 90:
+			return [+0, +1];
+		case 120:
+			return [-0.5, sqrt(3) / 2];
+		case 135:
+			return [-sqrt(2) / 2, sqrt(2) / 2];
+		case 150:
+			return [-sqrt(3) / 2, 0.5];
+		case 180:
+			return [-1, +0];
+		case 210:
+			return [-sqrt(3) / 2, -0.5];
+		case 225:
+			return [-sqrt(2) / 2, -sqrt(2) / 2];
+		case 240:
+			return [-0.5, -sqrt(3) / 2];
+		case 270:
+			return [-0, -1];
+		case 300:
+			return [0.5, -sqrt(3) / 2];
+		case 315:
+			return [sqrt(2) / 2, -sqrt(2) / 2];
+		case 330:
+			return [sqrt(3) / 2, -0.5];
+		default:
+			const r = (θ * PI) / 180;
+			return [cos(r), sin(r)];
+	}
+}
+function unit_vector_angle(ux: number, uy: number, vx: number, vy: number) {
+	const sign = ux * vy - uy * vx < 0 ? -1 : 1;
+	var dot = ux * vx + uy * vy;
+
+	// Add this to work with arbitrary vectors:
+	// dot /= Math.sqrt(ux * ux + uy * uy) * Math.sqrt(vx * vx + vy * vy);
+
+	// rounding errors, e.g. -1.0000000000000002 can screw up this
+	if (dot > 1.0) {
+		dot = 1.0;
+	}
+	if (dot < -1.0) {
+		dot = -1.0;
+	}
+
+	return sign * Math.acos(dot);
+}
 export class Arc extends Segment {
 	readonly rx: number;
 	readonly ry: number;
@@ -34,110 +91,151 @@ export class Arc extends Segment {
 			throw Error(`${JSON.stringify(arguments)}`);
 
 		const ec = pointOnEllipticalArc(p1, rx, ry, φ, !!arc, !!sweep, p2, 1);
-
-		// https://www.w3.org/TR/SVG/implnote.html#ArcCorrectionOutOfRangeRadii
-		if (!rx || !ry) {
-			console.log([rx, ry], φ, [arc, sweep], p1, p2);
-			throw new Error("Not an ellipse");
-
-			// return new Line(p1, p2);
-		}
+		// https://svgwg.org/svg2-draft/implnote.html#ArcConversionEndpointToCenter
 		super(p1, p2);
-
 		this.phi = φ;
 		this.arc = arc ? 1 : 0;
 		this.sweep = sweep ? 1 : 0;
 		φ = ((φ % 360) + 360) % 360; // from -30 -> 330
-		rx = Math.abs(rx);
-		ry = Math.abs(ry);
+		const [cosφ, sinφ] = cossin(φ);
 		// Calculate cos and sin of angle phi
-		const φrad = (φ * PI) / 180;
-		const cosφ = Math.cos(φrad);
-		const sinφ = Math.sin(φrad);
+		// const φrad = (φ * PI) / 180;
+		// const cosφ = cos(φrad);
+		// const sinφ = sin(φrad);
+
 		const rotM = Matrix.hexad(cosφ, -sinφ, sinφ, cosφ, 0, 0);
 		// https://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
 		// (eq. 5.1)
 		// p1ˈ = when mid point of p1 and p2 is at 0,0 rotated to line up ellipse axes
 		// transaltion discarded
+		// if (1) {
+		const { x: x1, y: y1 } = p1;
+		const { x: x2, y: y2 } = p2;
+		const x1ˈ = (cosφ * (x1 - x2) + sinφ * (y1 - y2)) / 2;
+		const y1ˈ = (-sinφ * (x1 - x2) + cosφ * (y1 - y2)) / 2;
+		// }
+
 		const p1ˈ = Point.at((p1.x - p2.x) / 2, (p1.y - p2.y) / 2).transform(
 			rotM
 		);
-		// (eq. 6.2)
-		// Make sure the radius fit with the arc and correct if neccessary
+		if (p1ˈ.x !== x1ˈ) throw Error(`${p1ˈ.x}, ${x1ˈ}`);
+		if (p1ˈ.y !== y1ˈ) throw Error(`${p1ˈ.y}, ${y1ˈ}`);
+
+		if (1) {
+			// https://svgwg.org/svg2-draft/implnote.html#ArcCorrectionOutOfRangeRadii
+			// B.2.5. Correction of out-of-range radii
+			if (!rx || !ry) {
+				// Step 1: Ensure radii are non-zero
+				console.log([rx, ry], φ, [arc, sweep], p1, p2);
+				throw new Error("Not an ellipse");
+			} else {
+				// Step 2: Ensure radii are positive (eq. 6.1)
+				rx = abs(rx);
+				ry = abs(ry);
+			}
+			// Step 3: Ensure radii are large enough
+		}
+
 		const rxSq = rx ** 2;
 		const rySq = ry ** 2;
-		const ratio = p1ˈ.x ** 2 / rxSq + p1ˈ.y ** 2 / rySq;
-		// (eq. 6.3)
-		// if (ratio < 0) {
-		// 	// due to rounding errors it might be e.g. -1.3877787807814457e-17
-		// 	ratio = 0;
-		// }
-		if (ratio > 1) {
-			rx = Math.sqrt(ratio) * rx;
-			ry = Math.sqrt(ratio) * ry;
+		const y1ˈSq = y1ˈ ** 2;
+		const x1ˈSq = x1ˈ ** 2;
+
+		// (eq. 6.2)
+		// Make sure the radius fit with the arc and correct if neccessary
+		if (1) {
+			const ratio = p1ˈ.x ** 2 / rxSq + p1ˈ.y ** 2 / rySq;
+			const Λ = x1ˈ ** 2 / rxSq + y1ˈ ** 2 / rySq;
+			if (ratio !== Λ) throw Error(`${Λ}, ${ratio}`);
+			// (eq. 6.3)
+			// if (Λ > 1) {
+			// 	rx = sqrt(Λ) * rx;
+			// 	rx = sqrt(Λ) * rx;
+			// }
+			if (ratio > 1) {
+				rx = sqrt(ratio) * rx;
+				ry = sqrt(ratio) * ry;
+			}
 		}
+		this.rx = rx;
+		this.ry = ry;
+		this.cosφ = cosφ;
+		this.sinφ = sinφ;
 		// (eq. 5.2)
+
 		const divisor1 = rxSq * p1ˈ.y ** 2;
 		const divisor2 = rySq * p1ˈ.x ** 2;
 		const dividend = rxSq * rySq - divisor1 - divisor2;
 		const v1 = dividend / (divisor1 + divisor2);
-		const mult = v1 <= 0 ? 0 : Math.sqrt(v1);
+		const mult = v1 <= 0 ? 0 : sqrt(v1);
 
 		let cenˈ = Point.at((rx * p1ˈ.y) / ry, (-ry * p1ˈ.x) / rx).mul(mult);
 		if (this.arc === this.sweep) cenˈ = cenˈ.mul(-1);
+
 		// (eq. 5.3)
 		const cen = cenˈ
 			.transform(rotM)
 			.add(Point.at((p1.x + p2.x) / 2, (p1.y + p2.y) / 2));
-		const anglePoint = Point.at(
-			(p1ˈ.x - cenˈ.x) / rx,
-			(p1ˈ.y - cenˈ.y) / ry
-		);
-		/* For eq. 5.4 see angleTo function */
-		// (eq. 5.5)
-		const θ = Point.at(1, 0).angleTo(anglePoint);
-		if (!(Number.isFinite(θ) && Number.isFinite(rx) && Number.isFinite(ry)))
-			throw Error(`${anglePoint}: ${θ}`);
+		if (1) {
+			const s1 = rxSq * y1ˈSq;
+			const s2 = rySq * x1ˈSq;
+			const v1 = (rxSq * rySq - s1 - s2) / (s1 + s2);
+			const m1 = v1 <= 0 ? 0 : sqrt(v1);
+			let cxˈ = (rx * y1ˈ * m1) / ry;
+			let cyˈ = (-ry * x1ˈ * m1) / rx;
+			if (!!arc === !!sweep) {
+				cxˈ *= -1;
+				cyˈ *= -1;
+			}
+			if (abs(cenˈ.x - cxˈ) > 1e-9) throw Error(`${cenˈ.x}, ${cxˈ}`);
+			if (abs(cenˈ.y - cyˈ) > 1e-9) throw Error(`${cenˈ.y}, ${cyˈ}`);
+			// (eq. 5.3)
+			const cx = cosφ * cxˈ - sinφ * cyˈ + (x1 + x2) / 2;
+			const cy = sinφ * cxˈ + cosφ * cyˈ + (y1 + y2) / 2;
+			// if (abs(cen.x - cx) > 1e-9)
+			// 	throw Error(`${cen.x}, ${cx} ..${cen.y}, ${cy}`);
+			// if (abs(cen.y - cy) > 1e-9) throw Error(`${cen.y}, ${cy}`);
 
-		// (eq. 5.6)
-		let Δθ = anglePoint.angleTo(
-			Point.at((-p1ˈ.x - cenˈ.x) / rx, (-p1ˈ.y - cenˈ.y) / ry)
-		);
-		Δθ = Δθ % (2 * PI);
-		if (!sweep && Δθ > 0) Δθ -= 2 * PI;
-		if (sweep && Δθ < 0) Δθ += 2 * PI;
-		this.rx = rx;
-		this.ry = ry;
-		this.cen = cen;
-		this.cosφ = cosφ;
-		this.sinφ = sinφ;
-		this.rtheta = θ;
-		this.rdelta = Δθ;
-		// try {
-		// 	assert.equal(this.cen.y, ec.ellipticalArcCenter.y);
-		// 	assert.equal(this.cen.x, ec.ellipticalArcCenter.x);
-		// 	assert.equal(this.rx, ec.resultantRx);
-		// 	assert.equal(this.ry, ec.resultantRy);
-		// 	assert.equal(p1ˈ.y, ec.transformedPoint.y);
-		// 	assert.equal(p1ˈ.x, ec.transformedPoint.x);
-		// 	assert.equal(θ, ec.ellipticalArcStartAngle);
-		// 	// console.log(this);
-		// } catch (err) {
-		// 	console.log(this, ec);
-		// 	throw err;
-		// }
+			const v1x = (x1ˈ - cxˈ) / rx;
+			const v1y = (y1ˈ - cyˈ) / ry;
+			const v2x = (-x1ˈ - cxˈ) / rx;
+			const v2y = (-y1ˈ - cyˈ) / ry;
 
-		// x:
-		// 	Math.cos(xAxisRotationRadians) * ellipseComponentX -
-		// 	Math.sin(xAxisRotationRadians) * ellipseComponentY +
-		// 	center.x,
-		// y:
-		// 	Math.sin(xAxisRotationRadians) * ellipseComponentX +
-		// 	Math.cos(xAxisRotationRadians) * ellipseComponentY +
-		// 	center.y,
-		// ellipticalArcStartAngle: startAngle,
-		// ellipticalArcEndAngle: startAngle + sweepAngle,
-		// ellipticalArcAngle: angle,
+			const theta1 = unit_vector_angle(1, 0, v1x, v1y);
+			let delta_theta = unit_vector_angle(v1x, v1y, v2x, v2y);
+
+			if (sweep === 0 && delta_theta > 0) {
+				delta_theta -= PI * 2;
+			}
+			if (sweep === 1 && delta_theta < 0) {
+				delta_theta += PI * 2;
+			}
+			this.cen = Point.at(cx, cy);
+			this.rtheta = theta1;
+			this.rdelta = delta_theta;
+			return;
+		}
+
+		// const anglePoint = Point.at(
+		// 	(p1ˈ.x - cenˈ.x) / rx,
+		// 	(p1ˈ.y - cenˈ.y) / ry
+		// );
+		// /* For eq. 5.4 see angleTo function */
+		// // (eq. 5.5)
+		// const θ = Point.at(1, 0).angleTo(anglePoint);
+		// if (!(Number.isFinite(θ) && Number.isFinite(rx) && Number.isFinite(ry)))
+		// 	throw Error(`${anglePoint}: ${θ}`);
+
+		// // (eq. 5.6)
+		// let Δθ = anglePoint.angleTo(
+		// 	Point.at((-p1ˈ.x - cenˈ.x) / rx, (-p1ˈ.y - cenˈ.y) / ry)
+		// );
+		// Δθ = Δθ % (2 * PI);
+		// if (!sweep && Δθ > 0) Δθ -= 2 * PI;
+		// if (sweep && Δθ < 0) Δθ += 2 * PI;
+		// this.cen = cen;
+		// this.rtheta = θ;
+		// this.rdelta = Δθ;
 	}
 	static fromEndPoint(
 		p1: any,
@@ -163,28 +261,24 @@ export class Arc extends Segment {
 		θ: number,
 		Δθ: number
 	) {
-		const cosφ = Math.cos((φ / 180) * PI);
-		const sinφ = Math.sin((φ / 180) * PI);
+		const cosφ = cos((φ / 180) * PI);
+		const sinφ = sin((φ / 180) * PI);
 		const m = Matrix.hexad(cosφ, sinφ, -sinφ, cosφ, 0, 0);
-		const p1 = Point.at(
-			rx * Math.cos((θ / 180) * PI),
-			ry * Math.sin((θ / 180) * PI)
-		)
+		const p1 = Point.at(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
 			.transform(m)
 			.add(c);
 		const p2 = Point.at(
-			rx * Math.cos(((θ + Δθ) / 180) * PI),
-			ry * Math.sin(((θ + Δθ) / 180) * PI)
+			rx * cos(((θ + Δθ) / 180) * PI),
+			ry * sin(((θ + Δθ) / 180) * PI)
 		)
 			.transform(m)
 			.add(c);
-		const arc = Math.abs(Δθ) > 180 ? 1 : 0;
+		const arc = abs(Δθ) > 180 ? 1 : 0;
 		const sweep = Δθ > 0 ? 1 : 0;
 		return new Arc(p1, p2, rx, ry, φ, arc, sweep);
 	}
 	bbox() {
 		const { rx, ry, cosφ, sinφ, p1, p2, rdelta, rtheta, phi } = this;
-		const { PI } = Math;
 		let atan_x, atan_y;
 		if (cosφ == 0) {
 			atan_x = PI / 2;
@@ -193,9 +287,9 @@ export class Arc extends Segment {
 			atan_x = 0;
 			atan_y = PI / 2;
 		} else {
-			const tanφ = Math.tan(phi);
-			atan_x = Math.atan(-(ry / rx) * tanφ);
-			atan_y = Math.atan(ry / rx / tanφ);
+			const tanφ = tan(phi);
+			atan_x = atan(-(ry / rx) * tanφ);
+			atan_y = atan(ry / rx / tanφ);
 		}
 		const xtrema = [p1.x, p2.x];
 		const ytrema = [p1.y, p2.y];
@@ -208,8 +302,8 @@ export class Arc extends Segment {
 			0 <= tx && tx <= 1 && xtrema.push(this.pointAt(tx).x);
 			0 <= ty && ty <= 1 && ytrema.push(this.pointAt(ty).y);
 		}
-		const [xmin, xmax] = [Math.min(...xtrema), Math.max(...xtrema)];
-		const [ymin, ymax] = [Math.min(...ytrema), Math.max(...ytrema)];
+		const [xmin, xmax] = [min(...xtrema), max(...xtrema)];
+		const [ymin, ymax] = [min(...ytrema), max(...ytrema)];
 		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 	clone() {
@@ -247,18 +341,24 @@ export class Arc extends Segment {
 			return p2;
 		}
 		const { rx, ry, cosφ, sinφ, rtheta, rdelta, cen } = this;
-		const θ = (((180 * rtheta + 180 * rdelta * t) / PI) * PI) / 180;
-		const sinθ = Math.sin(θ);
-		const cosθ = Math.cos(θ);
+		// const θ = (((180 * rtheta + 180 * rdelta * t) / PI) * PI) / 180;
+		// const sinθ = sin(θ);
+		// const cosθ = cos(θ);
+		const [cosθ, sinθ] = cossin((180 * rtheta + 180 * rdelta * t) / PI);
 		// (eq. 3.1) https://svgwg.org/svg2-draft/implnote.html#ArcParameterizationAlternatives
-		return Point.at(
-			rx * cosφ * cosθ - ry * sinφ * sinθ + cen.x,
-			rx * sinφ * cosθ + ry * cosφ * sinθ + cen.y
-		);
+		try {
+			return Point.at(
+				rx * cosφ * cosθ - ry * sinφ * sinθ + cen.x,
+				rx * sinφ * cosθ + ry * cosφ * sinθ + cen.y
+			);
+		} catch (err) {
+			console.log(rtheta, rdelta, rx, cosφ, cosθ, ry, sinφ, sinθ, cen.x);
+			throw err;
+		}
 	}
 	splitAt(t: number) {
 		const { rx, ry, phi, sweep, rdelta, p1, p2 } = this;
-		const deltaA = Math.abs(rdelta);
+		const deltaA = abs(rdelta);
 		const delta1 = deltaA * t;
 		const delta2 = deltaA * (1 - t);
 		const pT = this.pointAt(t);
@@ -297,8 +397,8 @@ export class Arc extends Segment {
 		// throw new Error('Not implemented');
 		const { rx, ry, cosφ, sinφ, rdelta, rtheta } = this;
 		const θ = rtheta + t * rdelta;
-		const sinθ = Math.sin(θ);
-		const cosθ = Math.cos(θ);
+		const sinθ = sin(θ);
+		const cosθ = cos(θ);
 		const k = rdelta;
 
 		return Point.at(
@@ -332,17 +432,15 @@ export class Arc extends Segment {
 			const A = (d ** 2 / rx ** 2 + c ** 2 / ry ** 2) / detT2;
 			const B = -((d * b) / rx ** 2 + (c * a) / ry ** 2) / detT2;
 			const D = (b ** 2 / rx ** 2 + a ** 2 / ry ** 2) / detT2;
-			const theta = Math.atan2(-2 * B, D - A) / 2;
+			const theta = atan2(-2 * B, D - A) / 2;
 			// console.log('theta', theta_deg, theta, A, B, D, a, c, b, d, detT2);
 			const DA = D - A;
 			const l2 = 4 * B ** 2 + DA ** 2;
-			const delta = l2
-				? (0.5 * (-DA * DA - 4 * B * B)) / Math.sqrt(l2)
-				: 0;
+			const delta = l2 ? (0.5 * (-DA * DA - 4 * B * B)) / sqrt(l2) : 0;
 			const half = (A + D) / 2;
 			// if (skewX || scaleX != 1 || scaleY != 1) {
-			// 	rx = 1.0 / Math.sqrt(half + delta);
-			// 	ry = 1.0 / Math.sqrt(half - delta);
+			// 	rx = 1.0 / sqrt(half + delta);
+			// 	ry = 1.0 / sqrt(half - delta);
 			// }
 
 			// phi = (theta * 180.0) / PI;
@@ -442,7 +540,7 @@ export class Arc extends Segment {
 		// def as_cubic_curves(self, arc_required=None):
 		// if (!arc_required) {
 		// 	const sweep_limit = PI / 6; // tau / 12.0
-		// 	// arc_required = parseInt(Math.ceil(Math.abs(rdelta) / sweep_limit));
+		// 	// arc_required = parseInt(ceil(abs(rdelta) / sweep_limit));
 		// 	if (!arc_required) {
 		// 		return;
 		// 	}
@@ -584,8 +682,8 @@ function pointOnEllipticalArc(
 	t: number
 ): any {
 	// In accordance to: http://www.w3.org/TR/SVG/implnote.html#ArcOutOfRangeParameters
-	rx = Math.abs(rx);
-	ry = Math.abs(ry);
+	rx = abs(rx);
+	ry = abs(ry);
 	xAxisRotation = mod(xAxisRotation, 360);
 	const xAxisRotationRadians = toRadians(xAxisRotation);
 	// If the endpoints are identical, then this is equivalent to omitting the elliptical arc segment entirely.
@@ -606,34 +704,30 @@ function pointOnEllipticalArc(
 	const dx = (p0.x - p1.x) / 2;
 	const dy = (p0.y - p1.y) / 2;
 	const transformedPoint = {
-		x:
-			Math.cos(xAxisRotationRadians) * dx +
-			Math.sin(xAxisRotationRadians) * dy,
-		y:
-			-Math.sin(xAxisRotationRadians) * dx +
-			Math.cos(xAxisRotationRadians) * dy,
+		x: cos(xAxisRotationRadians) * dx + sin(xAxisRotationRadians) * dy,
+		y: -sin(xAxisRotationRadians) * dx + cos(xAxisRotationRadians) * dy,
 	};
 	// Ensure radii are large enough
 	const radiiCheck =
-		Math.pow(transformedPoint.x, 2) / Math.pow(rx, 2) +
-		Math.pow(transformedPoint.y, 2) / Math.pow(ry, 2);
+		pow(transformedPoint.x, 2) / pow(rx, 2) +
+		pow(transformedPoint.y, 2) / pow(ry, 2);
 	if (radiiCheck > 1) {
-		rx = Math.sqrt(radiiCheck) * rx;
-		ry = Math.sqrt(radiiCheck) * ry;
+		rx = sqrt(radiiCheck) * rx;
+		ry = sqrt(radiiCheck) * ry;
 	}
 
 	// Step #2: Compute transformedCenter
 	const cSquareNumerator =
-		Math.pow(rx, 2) * Math.pow(ry, 2) -
-		Math.pow(rx, 2) * Math.pow(transformedPoint.y, 2) -
-		Math.pow(ry, 2) * Math.pow(transformedPoint.x, 2);
+		pow(rx, 2) * pow(ry, 2) -
+		pow(rx, 2) * pow(transformedPoint.y, 2) -
+		pow(ry, 2) * pow(transformedPoint.x, 2);
 	const cSquareRootDenom =
-		Math.pow(rx, 2) * Math.pow(transformedPoint.y, 2) +
-		Math.pow(ry, 2) * Math.pow(transformedPoint.x, 2);
+		pow(rx, 2) * pow(transformedPoint.y, 2) +
+		pow(ry, 2) * pow(transformedPoint.x, 2);
 	let cRadicand = cSquareNumerator / cSquareRootDenom;
 	// Make sure this never drops below zero because of precision
 	cRadicand = cRadicand < 0 ? 0 : cRadicand;
-	const cCoef = (largeArcFlag !== sweepFlag ? 1 : -1) * Math.sqrt(cRadicand);
+	const cCoef = (largeArcFlag !== sweepFlag ? 1 : -1) * sqrt(cRadicand);
 	const transformedCenter = {
 		x: cCoef * ((rx * transformedPoint.y) / ry),
 		y: cCoef * (-(ry * transformedPoint.x) / rx),
@@ -642,12 +736,12 @@ function pointOnEllipticalArc(
 	// Step #3: Compute center
 	const center = {
 		x:
-			Math.cos(xAxisRotationRadians) * transformedCenter.x -
-			Math.sin(xAxisRotationRadians) * transformedCenter.y +
+			cos(xAxisRotationRadians) * transformedCenter.x -
+			sin(xAxisRotationRadians) * transformedCenter.y +
 			(p0.x + p1.x) / 2,
 		y:
-			Math.sin(xAxisRotationRadians) * transformedCenter.x +
-			Math.cos(xAxisRotationRadians) * transformedCenter.y +
+			sin(xAxisRotationRadians) * transformedCenter.x +
+			cos(xAxisRotationRadians) * transformedCenter.y +
 			(p0.y + p1.y) / 2,
 	};
 
@@ -682,17 +776,17 @@ function pointOnEllipticalArc(
 
 	// From http://www.w3.org/TR/SVG/implnote.html#ArcParameterizationAlternatives
 	const angle = startAngle + sweepAngle * t;
-	const ellipseComponentX = rx * Math.cos(angle);
-	const ellipseComponentY = ry * Math.sin(angle);
+	const ellipseComponentX = rx * cos(angle);
+	const ellipseComponentY = ry * sin(angle);
 
 	const point = {
 		x:
-			Math.cos(xAxisRotationRadians) * ellipseComponentX -
-			Math.sin(xAxisRotationRadians) * ellipseComponentY +
+			cos(xAxisRotationRadians) * ellipseComponentX -
+			sin(xAxisRotationRadians) * ellipseComponentY +
 			center.x,
 		y:
-			Math.sin(xAxisRotationRadians) * ellipseComponentX +
-			Math.cos(xAxisRotationRadians) * ellipseComponentY +
+			sin(xAxisRotationRadians) * ellipseComponentX +
+			cos(xAxisRotationRadians) * ellipseComponentY +
 			center.y,
 		ellipticalArcStartAngle: startAngle,
 		ellipticalArcEndAngle: startAngle + sweepAngle,
@@ -757,28 +851,27 @@ const toRadians = (angle: number) => {
 };
 
 const distance = (p0: any, p1: any) => {
-	return Math.sqrt(Math.pow(p1.x - p0.x, 2) + Math.pow(p1.y - p0.y, 2));
+	return sqrt(pow(p1.x - p0.x, 2) + pow(p1.y - p0.y, 2));
 };
 
-const clamp = (val: number, min: number, max: number) => {
-	return Math.min(Math.max(val, min), max);
+const clamp = (val: number, min1: number, max1: number) => {
+	return min(max(val, min1), max1);
 };
 
 const angleBetween = (v0: any, v1: any) => {
 	const p = v0.x * v1.x + v0.y * v1.y;
-	const n = Math.sqrt(
-		(Math.pow(v0.x, 2) + Math.pow(v0.y, 2)) *
-			(Math.pow(v1.x, 2) + Math.pow(v1.y, 2))
+	const n = sqrt(
+		(pow(v0.x, 2) + pow(v0.y, 2)) * (pow(v1.x, 2) + pow(v1.y, 2))
 	);
 	const sign = v0.x * v1.y - v0.y * v1.x < 0 ? -1 : 1;
-	const angle = sign * Math.acos(p / n);
+	const angle = sign * acos(p / n);
 
 	return angle;
 };
 
 // function arc_transform(seg: Arc, M: any) {
 // 	function NEARZERO(B) {
-// 		if (Math.abs(B) < 0.0000000000000001) return true;
+// 		if (abs(B) < 0.0000000000000001) return true;
 // 		else return false;
 // 	}
 // 	let {rx, ry, phi, arc: large_arc_flag, sweep: sweep_flag, p2} = seg;
@@ -794,8 +887,8 @@ const angleBetween = (v0: any, v1: any) => {
 // 	phi = phi * (PI / 180); // deg->rad
 // 	rot = phi;
 
-// 	const sinφ = Math.sin(rot);
-// 	const cosφ = Math.cos(rot);
+// 	const sinφ = sin(rot);
+// 	const cosφ = cos(rot);
 // 	const {a, b, c, d} = M;
 
 // 	// build ellipse representation matrix (unit circle transformation).
@@ -828,19 +921,19 @@ const angleBetween = (v0: any, v1: any) => {
 
 // 		// Clamp (precision issues might need this.. not likely, but better save than sorry)
 // 		if (K < 0) K = 0;
-// 		else K = Math.sqrt(K);
+// 		else K = sqrt(K);
 
 // 		A2 = 0.5 * (A + C + K * ac);
 // 		C2 = 0.5 * (A + C - K * ac);
-// 		phi = 0.5 * Math.atan2(B, ac);
+// 		phi = 0.5 * atan2(B, ac);
 // 	}
 
 // 	// This can get slightly below zero due to rounding issues.
 // 	// it'sinφ save to clamp to zero in this case (this yields a zero length halfaxis)
 // 	if (A2 < 0) A2 = 0;
-// 	else A2 = Math.sqrt(A2);
+// 	else A2 = sqrt(A2);
 // 	if (C2 < 0) C2 = 0;
-// 	else C2 = Math.sqrt(C2);
+// 	else C2 = sqrt(C2);
 
 // 	// now A2 and C2 are half-axis:
 // 	if (ac <= 0) {

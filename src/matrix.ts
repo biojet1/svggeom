@@ -12,7 +12,7 @@ export class Matrix {
 	d: number;
 	e: number;
 	f: number;
-	private constructor(m: undefined | number[] = undefined) {
+	constructor(m: undefined | number[] = undefined) {
 		// if (arguments.length === 6) {
 		// 	m = arguments;
 		// }
@@ -140,7 +140,8 @@ export class Matrix {
 	}
 
 	toString() {
-		return `matrix(${this.a}, ${this.b}, ${this.c}, ${this.d}, ${this.e}, ${this.f})`;
+		const { a, d, b, c, e, f } = this;
+		return `matrix(${a},${b},${c},${d},${e},${f})`;
 	}
 
 	translate(x = 0, y = 0) {
@@ -155,6 +156,14 @@ export class Matrix {
 	// toHexad() {
 	// 	return [this.a, this.b, this.c, this.d, this.e, this.f];
 	// }
+	setHexad(a: number, b: number, c: number, d: number, e: number, f: number) {
+		this.a = a;
+		this.b = b;
+		this.c = c;
+		this.d = d;
+		this.e = e;
+		this.f = f;
+	}
 
 	equals(other: Matrix, epsilon = 0) {
 		const { a, d, b, c, e, f } = this;
@@ -255,6 +264,7 @@ export class Matrix {
 			}
 		return m;
 	}
+
 	[shot: string]: any;
 	static fromElement(node: ElementLike): Matrix {
 		return Matrix.parse(node.getAttribute("transform") || "");

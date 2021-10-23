@@ -1,3 +1,6 @@
+const { isFinite } = Number;
+const { sqrt, abs, acos, sign } = Math;
+
 export class Point {
 	readonly x: number;
 	readonly y: number;
@@ -6,13 +9,13 @@ export class Point {
 	private constructor(x: number = 0, y: number = 0, z: number = 0) {
 		this.x = x;
 		this.y = y;
-		if (!(Number.isFinite(this.x) && Number.isFinite(this.y)))
+		if (!(isFinite(this.x) && isFinite(this.y)))
 			throw TypeError(`Not finite ${JSON.stringify(arguments)}`);
 	}
 	// Query methods
 
 	abs() {
-		return Math.sqrt(this.absQuad());
+		return sqrt(this.absQuad());
 	}
 
 	absQuad() {
@@ -24,7 +27,7 @@ export class Point {
 	closeTo(p: Point, eta = 1e-12) {
 		return (
 			this.equals(p) ||
-			(Math.abs(this.x - p.x) < eta && Math.abs(this.y - p.y) < eta)
+			(abs(this.x - p.x) < eta && abs(this.y - p.y) < eta)
 		);
 	}
 
@@ -37,19 +40,18 @@ export class Point {
 	}
 
 	angleTo(p: Point) {
-		let sign = Math.sign(this.x * p.y - this.y * p.x);
-		sign = sign || 1;
+		let sig = sign(this.x * p.y - this.y * p.x);
 		// return (
-		// 	sign *
-		// 	Math.acos(
+		// 	(sig || 1) *
+		// 	acos(
 		// 		Math.round((this.dot(p) / (this.abs() * p.abs())) * 1000000) / 1000000
 		// 	)
 		// );
 		let v = (this.dot(p) * 1000000) / (this.abs() * p.abs()) / 1000000;
-		// v = v < -1.0 ? Math.PI : v > 1.0 ? 0 : Math.acos(v);
-		v = Math.acos(v);
-		// v = Math.max(-1, Math.min(1, v));
-		return sign * v;
+		// v = v < -1.0 ? PI : v > 1.0 ? 0 : acos(v);
+		v = acos(v);
+		// v = max(-1, min(1, v));
+		return (sig || 1) * v;
 	}
 
 	// Methods returning new Point
@@ -117,6 +119,12 @@ export class Point {
 		return `Point(${this.x}, ${this.y})`;
 	}
 
+	final() {
+		return Object.isFrozen(this) ? this : Object.freeze(this.clone());
+	}
+	mut() {
+		return Object.isFrozen(this) ? this.clone() : this;
+	}
 	// static methods
 
 	static new(x?: number[] | Point | number, y?: any) {
