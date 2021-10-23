@@ -108,12 +108,12 @@ export class Arc extends Segment {
 		// (eq. 5.1)
 		// p1ˈ = when mid point of p1 and p2 is at 0,0 rotated to line up ellipse axes
 		// transaltion discarded
-		// if (1) {
+
 		const { x: x1, y: y1 } = p1;
 		const { x: x2, y: y2 } = p2;
 		const x1ˈ = (cosφ * (x1 - x2) + sinφ * (y1 - y2)) / 2;
 		const y1ˈ = (-sinφ * (x1 - x2) + cosφ * (y1 - y2)) / 2;
-		// }
+
 
 		const p1ˈ = Point.at((p1.x - p2.x) / 2, (p1.y - p2.y) / 2).transform(
 			rotM
@@ -163,20 +163,20 @@ export class Arc extends Segment {
 		this.sinφ = sinφ;
 		// (eq. 5.2)
 
-		const divisor1 = rxSq * p1ˈ.y ** 2;
-		const divisor2 = rySq * p1ˈ.x ** 2;
-		const dividend = rxSq * rySq - divisor1 - divisor2;
-		const v1 = dividend / (divisor1 + divisor2);
-		const mult = v1 <= 0 ? 0 : sqrt(v1);
+		// const divisor1 = rxSq * p1ˈ.y ** 2;
+		// const divisor2 = rySq * p1ˈ.x ** 2;
+		// const dividend = rxSq * rySq - divisor1 - divisor2;
+		// const v1 = dividend / (divisor1 + divisor2);
+		// const mult = v1 <= 0 ? 0 : sqrt(v1);
 
-		let cenˈ = Point.at((rx * p1ˈ.y) / ry, (-ry * p1ˈ.x) / rx).mul(mult);
-		if (this.arc === this.sweep) cenˈ = cenˈ.mul(-1);
+		// let cenˈ = Point.at((rx * p1ˈ.y) / ry, (-ry * p1ˈ.x) / rx).mul(mult);
+		// if (this.arc === this.sweep) cenˈ = cenˈ.mul(-1);
 
 		// (eq. 5.3)
-		const cen = cenˈ
-			.transform(rotM)
-			.add(Point.at((p1.x + p2.x) / 2, (p1.y + p2.y) / 2));
-		if (1) {
+		// const cen = cenˈ
+		// 	.transform(rotM)
+		// 	.add(Point.at((p1.x + p2.x) / 2, (p1.y + p2.y) / 2));
+		// if (1) {
 			const s1 = rxSq * y1ˈSq;
 			const s2 = rySq * x1ˈSq;
 			const v1 = (rxSq * rySq - s1 - s2) / (s1 + s2);
@@ -187,8 +187,8 @@ export class Arc extends Segment {
 				cxˈ *= -1;
 				cyˈ *= -1;
 			}
-			if (abs(cenˈ.x - cxˈ) > 1e-9) throw Error(`${cenˈ.x}, ${cxˈ}`);
-			if (abs(cenˈ.y - cyˈ) > 1e-9) throw Error(`${cenˈ.y}, ${cyˈ}`);
+			// if (abs(cenˈ.x - cxˈ) > 1e-9) throw Error(`${cenˈ.x}, ${cxˈ}`);
+			// if (abs(cenˈ.y - cyˈ) > 1e-9) throw Error(`${cenˈ.y}, ${cyˈ}`);
 			// (eq. 5.3)
 			const cx = cosφ * cxˈ - sinφ * cyˈ + (x1 + x2) / 2;
 			const cy = sinφ * cxˈ + cosφ * cyˈ + (y1 + y2) / 2;
@@ -213,8 +213,8 @@ export class Arc extends Segment {
 			this.cen = Point.at(cx, cy);
 			this.rtheta = theta1;
 			this.rdelta = delta_theta;
-			return;
-		}
+			// return;
+		// }
 
 		// const anglePoint = Point.at(
 		// 	(p1ˈ.x - cenˈ.x) / rx,
