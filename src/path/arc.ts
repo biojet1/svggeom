@@ -90,7 +90,7 @@ export class Arc extends Segment {
 		if (!(Number.isFinite(φ) && Number.isFinite(rx) && Number.isFinite(ry)))
 			throw Error(`${JSON.stringify(arguments)}`);
 
-		const ec = pointOnEllipticalArc(p1, rx, ry, φ, !!arc, !!sweep, p2, 1);
+		// const ec = pointOnEllipticalArc(p1, rx, ry, φ, !!arc, !!sweep, p2, 1);
 		// https://svgwg.org/svg2-draft/implnote.html#ArcConversionEndpointToCenter
 		super(p1, p2);
 		this.phi = φ;
@@ -98,12 +98,8 @@ export class Arc extends Segment {
 		this.sweep = sweep ? 1 : 0;
 		φ = ((φ % 360) + 360) % 360; // from -30 -> 330
 		const [cosφ, sinφ] = cossin(φ);
-		// Calculate cos and sin of angle phi
-		// const φrad = (φ * PI) / 180;
-		// const cosφ = cos(φrad);
-		// const sinφ = sin(φrad);
 
-		const rotM = Matrix.hexad(cosφ, -sinφ, sinφ, cosφ, 0, 0);
+		// const rotM = Matrix.hexad(cosφ, -sinφ, sinφ, cosφ, 0, 0);
 		// https://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
 		// (eq. 5.1)
 		// p1ˈ = when mid point of p1 and p2 is at 0,0 rotated to line up ellipse axes
@@ -114,19 +110,18 @@ export class Arc extends Segment {
 		const x1ˈ = (cosφ * (x1 - x2) + sinφ * (y1 - y2)) / 2;
 		const y1ˈ = (-sinφ * (x1 - x2) + cosφ * (y1 - y2)) / 2;
 
-
-		const p1ˈ = Point.at((p1.x - p2.x) / 2, (p1.y - p2.y) / 2).transform(
-			rotM
-		);
-		if (p1ˈ.x !== x1ˈ) throw Error(`${p1ˈ.x}, ${x1ˈ}`);
-		if (p1ˈ.y !== y1ˈ) throw Error(`${p1ˈ.y}, ${y1ˈ}`);
+		// const p1ˈ = Point.at((p1.x - p2.x) / 2, (p1.y - p2.y) / 2).transform(
+		// 	rotM
+		// );
+		// if (p1ˈ.x !== x1ˈ) throw Error(`${p1ˈ.x}, ${x1ˈ}`);
+		// if (p1ˈ.y !== y1ˈ) throw Error(`${p1ˈ.y}, ${y1ˈ}`);
 
 		if (1) {
 			// https://svgwg.org/svg2-draft/implnote.html#ArcCorrectionOutOfRangeRadii
 			// B.2.5. Correction of out-of-range radii
 			if (!rx || !ry) {
 				// Step 1: Ensure radii are non-zero
-				console.log([rx, ry], φ, [arc, sweep], p1, p2);
+				// console.log([rx, ry], φ, [arc, sweep], p1, p2);
 				throw new Error("Not an ellipse");
 			} else {
 				// Step 2: Ensure radii are positive (eq. 6.1)
@@ -144,18 +139,18 @@ export class Arc extends Segment {
 		// (eq. 6.2)
 		// Make sure the radius fit with the arc and correct if neccessary
 		if (1) {
-			const ratio = p1ˈ.x ** 2 / rxSq + p1ˈ.y ** 2 / rySq;
+			// const ratio = p1ˈ.x ** 2 / rxSq + p1ˈ.y ** 2 / rySq;
 			const Λ = x1ˈ ** 2 / rxSq + y1ˈ ** 2 / rySq;
-			if (ratio !== Λ) throw Error(`${Λ}, ${ratio}`);
+			// if (ratio !== Λ) throw Error(`${Λ}, ${ratio}`);
 			// (eq. 6.3)
-			// if (Λ > 1) {
-			// 	rx = sqrt(Λ) * rx;
-			// 	rx = sqrt(Λ) * rx;
-			// }
-			if (ratio > 1) {
-				rx = sqrt(ratio) * rx;
-				ry = sqrt(ratio) * ry;
+			if (Λ > 1) {
+				rx = sqrt(Λ) * rx;
+				ry = sqrt(Λ) * ry;
 			}
+			// if (ratio > 1) {
+			// 	rx = sqrt(ratio) * rx;
+			// 	ry = sqrt(ratio) * ry;
+			// }
 		}
 		this.rx = rx;
 		this.ry = ry;
@@ -177,43 +172,43 @@ export class Arc extends Segment {
 		// 	.transform(rotM)
 		// 	.add(Point.at((p1.x + p2.x) / 2, (p1.y + p2.y) / 2));
 		// if (1) {
-			const s1 = rxSq * y1ˈSq;
-			const s2 = rySq * x1ˈSq;
-			const v1 = (rxSq * rySq - s1 - s2) / (s1 + s2);
-			const m1 = v1 <= 0 ? 0 : sqrt(v1);
-			let cxˈ = (rx * y1ˈ * m1) / ry;
-			let cyˈ = (-ry * x1ˈ * m1) / rx;
-			if (!!arc === !!sweep) {
-				cxˈ *= -1;
-				cyˈ *= -1;
-			}
-			// if (abs(cenˈ.x - cxˈ) > 1e-9) throw Error(`${cenˈ.x}, ${cxˈ}`);
-			// if (abs(cenˈ.y - cyˈ) > 1e-9) throw Error(`${cenˈ.y}, ${cyˈ}`);
-			// (eq. 5.3)
-			const cx = cosφ * cxˈ - sinφ * cyˈ + (x1 + x2) / 2;
-			const cy = sinφ * cxˈ + cosφ * cyˈ + (y1 + y2) / 2;
-			// if (abs(cen.x - cx) > 1e-9)
-			// 	throw Error(`${cen.x}, ${cx} ..${cen.y}, ${cy}`);
-			// if (abs(cen.y - cy) > 1e-9) throw Error(`${cen.y}, ${cy}`);
+		const s1 = rxSq * y1ˈSq;
+		const s2 = rySq * x1ˈSq;
+		const v1 = (rxSq * rySq - s1 - s2) / (s1 + s2);
+		const m1 = v1 <= 0 ? 0 : sqrt(v1) * (!!arc === !!sweep ? -1 : 1);
+		let cxˈ = (rx * y1ˈ * m1) / ry;
+		let cyˈ = (-ry * x1ˈ * m1) / rx;
+		// if (!!arc === !!sweep) {
+		// 	cxˈ *= -1;
+		// 	cyˈ *= -1;
+		// }
+		// if (abs(cenˈ.x - cxˈ) > 1e-9) throw Error(`${cenˈ.x}, ${cxˈ}`);
+		// if (abs(cenˈ.y - cyˈ) > 1e-9) throw Error(`${cenˈ.y}, ${cyˈ}`);
+		// (eq. 5.3)
+		const cx = cosφ * cxˈ - sinφ * cyˈ + (x1 + x2) / 2;
+		const cy = sinφ * cxˈ + cosφ * cyˈ + (y1 + y2) / 2;
+		// if (abs(cen.x - cx) > 1e-9)
+		// 	throw Error(`${cen.x}, ${cx} ..${cen.y}, ${cy}`);
+		// if (abs(cen.y - cy) > 1e-9) throw Error(`${cen.y}, ${cy}`);
 
-			const v1x = (x1ˈ - cxˈ) / rx;
-			const v1y = (y1ˈ - cyˈ) / ry;
-			const v2x = (-x1ˈ - cxˈ) / rx;
-			const v2y = (-y1ˈ - cyˈ) / ry;
+		const v1x = (x1ˈ - cxˈ) / rx;
+		const v1y = (y1ˈ - cyˈ) / ry;
+		const v2x = (-x1ˈ - cxˈ) / rx;
+		const v2y = (-y1ˈ - cyˈ) / ry;
 
-			const theta1 = unit_vector_angle(1, 0, v1x, v1y);
-			let delta_theta = unit_vector_angle(v1x, v1y, v2x, v2y);
+		const theta1 = unit_vector_angle(1, 0, v1x, v1y);
+		let delta_theta = unit_vector_angle(v1x, v1y, v2x, v2y);
 
-			if (sweep === 0 && delta_theta > 0) {
-				delta_theta -= PI * 2;
-			}
-			if (sweep === 1 && delta_theta < 0) {
-				delta_theta += PI * 2;
-			}
-			this.cen = Point.at(cx, cy);
-			this.rtheta = theta1;
-			this.rdelta = delta_theta;
-			// return;
+		if (sweep === 0 && delta_theta > 0) {
+			delta_theta -= PI * 2;
+		}
+		if (sweep === 1 && delta_theta < 0) {
+			delta_theta += PI * 2;
+		}
+		this.cen = Point.at(cx, cy);
+		this.rtheta = theta1;
+		this.rdelta = delta_theta;
+		// return;
 		// }
 
 		// const anglePoint = Point.at(
@@ -415,8 +410,8 @@ export class Arc extends Segment {
 		const p2_ = p2.transform(matrix);
 		const { rotate, scaleX, scaleY, skewX } = matrix.decompose();
 		if (scaleX == scaleY && scaleX != 1) {
-			rx *= scaleX;
-			ry *= scaleX;
+			rx = rx*scaleX;
+			ry = ry*scaleX;
 		}
 
 		OUT: if (rotate || skewX || scaleX != 1 || scaleY != 1) {
