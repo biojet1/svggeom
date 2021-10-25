@@ -1,6 +1,7 @@
 import { Point } from "./point.js";
 
-const { abs, atan, tan, cos, sin, sqrt, acos, atan2, PI, ceil } = Math;
+const { abs, atan, tan, cos, sin, sqrt, acos, atan2, PI, ceil, max } = Math;
+const TAU = PI * 2;
 
 export function cossin(θ: number) {
 	θ = ((θ % 360) + 360) % 360; // from -30 -> 330
@@ -188,13 +189,94 @@ export function arcParams(
 	const v2y = (-y1ˈ - cyˈ) / ry;
 
 	const theta1 = unit_vector_angle(1, 0, v1x, v1y);
-	let delta_theta = unit_vector_angle(v1x, v1y, v2x, v2y);
+	const delta_theta = unit_vector_angle(v1x, v1y, v2x, v2y);
 
-	if (!sweep && delta_theta > 0) {
-		delta_theta -= PI * 2;
+	// if (!sweep && delta_theta > 0) {
+	// 	delta_theta -= PI * 2;
+	// }
+	// if (sweep && delta_theta < 0) {
+	// 	delta_theta += PI * 2;
+	// }
+	// delta_theta += ;
+
+	return [
+		φ,
+		rx,
+		ry,
+		sinφ,
+		cosφ,
+		cx,
+		cy,
+		theta1,
+		delta_theta +
+			(sweep ? (delta_theta < 0 ? +TAU : 0) : delta_theta > 0 ? -TAU : 0),
+	];
+}
+
+function approximate_unit_arc(theta1: number, delta_theta: number) {
+	var alpha = (4 / 3) * tan(delta_theta / 4);
+
+	var x1 = cos(theta1);
+	var y1 = sin(theta1);
+	var x2 = cos(theta1 + delta_theta);
+	var y2 = sin(theta1 + delta_theta);
+
+	return [
+		x1,
+		y1,
+		x1 - y1 * alpha,
+		y1 + x1 * alpha,
+		x2 + y2 * alpha,
+		y2 - x2 * alpha,
+		x2,
+		y2,
+	];
+}
+
+export function arcToCurve(
+	rx: number,
+	ry: number,
+	cx: number,
+	cy: number,
+	sin_phi: number,
+	cos_phi: number,
+	theta1: number,
+	delta_theta: number
+) {
+	var result = [];
+
+	// Split an arc to multiple segments, so each segment
+	// will be less than τ/4 (= 90°)
+	//
+	const segments = max(ceil(abs(delta_theta) / (TAU / 12)), 1);
+	delta_theta /= segments;
+
+	for (var i = 0; i < segments; i++) {
+		result.push(approximate_unit_arc(theta1, delta_theta));
+		theta1 += delta_theta;
 	}
-	if (sweep && delta_theta < 0) {
-		delta_theta += PI * 2;
-	}
-	return [φ, rx, ry, sinφ, cosφ, cx, cy, theta1, delta_theta];
+
+	// We have a bezier approximation of a unit circle,
+	// now need to transform back to the original ellipse
+	//
+	return result.map(function (curve) {
+		for (let i = 0; i < curve.length; i += 2) {
+			let x = curve[i + 0];
+			let y = curve[i + 1];
+
+			// scale
+			x *= rx;
+			y *= ry;
+
+			// rotate
+			const xp = cos_phi * x - sin_phi * y;
+			const yp = sin_phi * x + cos_phi * y;
+
+			// translate
+			curve[i + 0] = xp + cx;
+			curve[i + 1] = yp + cy;
+		}
+
+		return curve;
+	});
 }
