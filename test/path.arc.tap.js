@@ -69,6 +69,7 @@ for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
 					len_epsilon: 0.082,
 					slope_epsilon: 5e-5,
 					point_epsilon: 0.8,
+					// point_epsilon: 1.5,
 					on_fail: function () {
 						console.error(`[${sp}]`);
 

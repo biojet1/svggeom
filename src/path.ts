@@ -159,16 +159,6 @@ export class Path {
 			let b = segs.slice(i + 1);
 			(s = seg.cropAt(0, t)) && a.push(s);
 			(s = seg.cropAt(t, 1)) && b.unshift(s);
-			// const a = new Path(
-			// 	segs
-			// 		.slice(0, i)
-			// 		.filter((v) => !!v)
-			// 		.concat([seg.cropAt(0, t)])
-			// 		.filter((v) => !!v)
-			// );
-			// const b = new Path(
-			// 	[seg.cropAt(t, 1)].concat(segs.slice(i + 1)).filter((v) => !!v)
-			// );
 			return [new Path(a), new Path(b)];
 		}
 	}

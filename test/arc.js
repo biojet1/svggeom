@@ -103,6 +103,7 @@ vB.setAttribute("d", `M0,0L${v2x},${v2y}`);
 // prx.cy.baseVal.value = sinφ * cxˈ + cosφ * cyˈ + (y1 + y2) / 2;
 // pry.cx.baseVal.value = cosφ * 0 - sinφ * 0 + (x1 + x2) / 2;
 // pry.cy.baseVal.value = sinφ * 0 + cosφ * 0 + (y1 + y2) / 2;
+
 pl.setAttribute(
     "points",
     [
@@ -117,9 +118,16 @@ pl.setAttribute(
         [-rx, ry],
         [-rx, -ry],
         [0, -ry],
-        [0, 0],
+        [0, 0, true],
     ]
-        .map(([x, y]) => {
+        .map(([x, y, t]) => {
+            if (t) {
+                return [
+                    cosφ * +x - sinφ * +y + (x1 + x2) / 2,
+                    sinφ * +x + cosφ * +y + (y1 + y2) / 2,
+                ];
+            }
+
             return [
                 cosφ * (cxˈ + x) - sinφ * (cyˈ + y) + (x1 + x2) / 2,
                 sinφ * (cxˈ + x) + cosφ * (cyˈ + y) + (y1 + y2) / 2,

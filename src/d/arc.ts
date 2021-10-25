@@ -3,13 +3,9 @@ import { Box } from "../box.js";
 import { Segment, Line } from "./index.js";
 import { Cubic } from "./cubic.js";
 import { Matrix } from "../matrix.js";
-import { a2c } from "./a2c.js";
-import {
-	cossin,
-	unit_vector_angle,
-	segment_length,
-	arcParams,
-} from "../util.js";
+// import { a2c } from "./a2c.js";
+import { cossin, unit_vector_angle } from "../util.js";
+
 const { abs, atan, tan, cos, sin, sqrt, acos, atan2, pow, PI, min, max, ceil } =
 	Math;
 
@@ -25,30 +21,28 @@ export class Arc extends Segment {
 	readonly cen: Point;
 	readonly rtheta: number;
 	readonly rdelta: number;
-	// readonly cx: number;
-	// readonly cy: number;
 	private constructor(
-		p1: Point | number[],
-		p2: Point | number[],
+		prev: Segment,
+		p: Point,
 		rx: number,
 		ry: number,
 		φ: number,
 		arc: boolean | number,
 		sweep: boolean | number
 	) {
-		p1 = Point.new(p1);
-		p2 = Point.new(p2);
+		const p1 = prev.p2;
+		const p2 = Point.new(p);
 
 		if (!(Number.isFinite(φ) && Number.isFinite(rx) && Number.isFinite(ry)))
 			throw Error(`${JSON.stringify(arguments)}`);
 
 		// const ec = pointOnEllipticalArc(p1, rx, ry, φ, !!arc, !!sweep, p2, 1);
 		// https://svgwg.org/svg2-draft/implnote.html#ArcConversionEndpointToCenter
-		super(p1, p2);
-
+		super(p2);
 		this.phi = φ;
 		this.arc = arc ? 1 : 0;
 		this.sweep = sweep ? 1 : 0;
+		φ = ((φ % 360) + 360) % 360; // from -30 -> 330
 		const [cosφ, sinφ] = cossin(φ);
 
 		// const rotM = Matrix.hexad(cosφ, -sinφ, sinφ, cosφ, 0, 0);
@@ -59,19 +53,6 @@ export class Arc extends Segment {
 
 		const { x: x1, y: y1 } = p1;
 		const { x: x2, y: y2 } = p2;
-		// this.cx = 0;
-		// this.cy = 0;
-		// [
-		// 	this.phi,
-		// 	this.rx,
-		// 	this.ry,
-		// 	this.sinφ,
-		// 	this.cosφ,
-		// 	this.cx,
-		// 	this.cy,
-		// 	this.rtheta,
-		// 	this.rdelta,
-		// ] = arcParams(x1, y1, rx, ry, φ, !!arc, !!sweep, x2, y2);
 		const x1ˈ = (cosφ * (x1 - x2) + sinφ * (y1 - y2)) / 2;
 		const y1ˈ = (-sinφ * (x1 - x2) + cosφ * (y1 - y2)) / 2;
 
@@ -197,6 +178,10 @@ export class Arc extends Segment {
 		// this.rtheta = θ;
 		// this.rdelta = Δθ;
 	}
+	set prev(prev: Segment | undefined) {
+		this._prev = prev;
+	}
+
 	static fromEndPoint(
 		p1: any,
 		rx: number,
@@ -301,10 +286,10 @@ export class Arc extends Segment {
 			return p2;
 		}
 		const { rx, ry, cosφ, sinφ, rtheta, rdelta, cen } = this;
-		const θ = rtheta + rdelta * t;
-		const sinθ = sin(θ);
-		const cosθ = cos(θ);
-		// const [cosθ, sinθ] = cossin((180 * rtheta + 180 * rdelta * t) / PI);
+		// const θ = (((180 * rtheta + 180 * rdelta * t) / PI) * PI) / 180;
+		// const sinθ = sin(θ);
+		// const cosθ = cos(θ);
+		const [cosθ, sinθ] = cossin((180 * rtheta + 180 * rdelta * t) / PI);
 		// (eq. 3.1) https://svgwg.org/svg2-draft/implnote.html#ArcParameterizationAlternatives
 		try {
 			return Point.at(
@@ -557,6 +542,8 @@ export class Arc extends Segment {
 		//         current_t = next_t
 	}
 }
+const LENGTH_MIN_DEPTH = 17;
+const LENGTH_ERROR = 1e-12;
 // const LENGTH_MIN_DEPTH = 100;
 // const LENGTH_ERROR = 1;
 // def segment_length(curve, start, end, start_point, end_point,
@@ -577,6 +564,51 @@ export class Arc extends Segment {
 //                                error, min_depth, depth))
 //     # This is accurate enough.
 //     return length2
+function segment_length(
+	curve: Arc,
+	start: number,
+	end: number,
+	start_point: Point,
+	end_point: Point,
+	error = LENGTH_ERROR,
+	min_depth = LENGTH_MIN_DEPTH,
+	depth = 0
+): number {
+	const mid = (start + end) / 2;
+	const mid_point = curve.pointAt(mid);
+	const length = end_point.sub(start_point).abs();
+	const first_half = mid_point.sub(start_point).abs();
+	const second_half = end_point.sub(mid_point).abs();
+	const length2 = first_half + second_half;
+	if (length2 - length > error || depth < min_depth) {
+		// Calculate the length of each segment:
+		depth += 1;
+		return (
+			segment_length(
+				curve,
+				start,
+				mid,
+				start_point,
+				mid_point,
+				error,
+				min_depth,
+				depth
+			) +
+			segment_length(
+				curve,
+				mid,
+				end,
+				mid_point,
+				end_point,
+				error,
+				min_depth,
+				depth
+			)
+		);
+	}
+	// This is accurate enough.
+	return length2;
+}
 
 // interface PointOnEllipticalArc {
 // 	x: number;
@@ -584,203 +616,203 @@ export class Arc extends Segment {
 // 	ellipticalArcAngle: number;
 // }
 
-// function pointOnEllipticalArc(
-// 	p0: Point,
-// 	rx: number,
-// 	ry: number,
-// 	xAxisRotation: number,
-// 	largeArcFlag: boolean,
-// 	sweepFlag: boolean,
-// 	p1: Point,
-// 	t: number
-// ): any {
-// 	// In accordance to: http://www.w3.org/TR/SVG/implnote.html#ArcOutOfRangeParameters
-// 	rx = abs(rx);
-// 	ry = abs(ry);
-// 	xAxisRotation = mod(xAxisRotation, 360);
-// 	const xAxisRotationRadians = toRadians(xAxisRotation);
-// 	// If the endpoints are identical, then this is equivalent to omitting the elliptical arc segment entirely.
-// 	if (p0.x === p1.x && p0.y === p1.y) {
-// 		return { x: p0.x, y: p0.y, ellipticalArcAngle: 0 }; // Check if angle is correct
+function pointOnEllipticalArc(
+	p0: Point,
+	rx: number,
+	ry: number,
+	xAxisRotation: number,
+	largeArcFlag: boolean,
+	sweepFlag: boolean,
+	p1: Point,
+	t: number
+): any {
+	// In accordance to: http://www.w3.org/TR/SVG/implnote.html#ArcOutOfRangeParameters
+	rx = abs(rx);
+	ry = abs(ry);
+	xAxisRotation = mod(xAxisRotation, 360);
+	const xAxisRotationRadians = toRadians(xAxisRotation);
+	// If the endpoints are identical, then this is equivalent to omitting the elliptical arc segment entirely.
+	if (p0.x === p1.x && p0.y === p1.y) {
+		return { x: p0.x, y: p0.y, ellipticalArcAngle: 0 }; // Check if angle is correct
+	}
+
+	// If rx = 0 or ry = 0 then this arc is treated as a straight line segment joining the endpoints.
+	if (rx === 0 || ry === 0) {
+		//return this.pointOnLine(p0, p1, t);
+		return { x: 0, y: 0, ellipticalArcAngle: 0 }; // Check if angle is correct
+	}
+
+	// Following "Conversion from endpoint to center parameterization"
+	// http://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
+
+	// Step #1: Compute transformedPoint
+	const dx = (p0.x - p1.x) / 2;
+	const dy = (p0.y - p1.y) / 2;
+	const transformedPoint = {
+		x: cos(xAxisRotationRadians) * dx + sin(xAxisRotationRadians) * dy,
+		y: -sin(xAxisRotationRadians) * dx + cos(xAxisRotationRadians) * dy,
+	};
+	// Ensure radii are large enough
+	const radiiCheck =
+		pow(transformedPoint.x, 2) / pow(rx, 2) +
+		pow(transformedPoint.y, 2) / pow(ry, 2);
+	if (radiiCheck > 1) {
+		rx = sqrt(radiiCheck) * rx;
+		ry = sqrt(radiiCheck) * ry;
+	}
+
+	// Step #2: Compute transformedCenter
+	const cSquareNumerator =
+		pow(rx, 2) * pow(ry, 2) -
+		pow(rx, 2) * pow(transformedPoint.y, 2) -
+		pow(ry, 2) * pow(transformedPoint.x, 2);
+	const cSquareRootDenom =
+		pow(rx, 2) * pow(transformedPoint.y, 2) +
+		pow(ry, 2) * pow(transformedPoint.x, 2);
+	let cRadicand = cSquareNumerator / cSquareRootDenom;
+	// Make sure this never drops below zero because of precision
+	cRadicand = cRadicand < 0 ? 0 : cRadicand;
+	const cCoef = (largeArcFlag !== sweepFlag ? 1 : -1) * sqrt(cRadicand);
+	const transformedCenter = {
+		x: cCoef * ((rx * transformedPoint.y) / ry),
+		y: cCoef * (-(ry * transformedPoint.x) / rx),
+	};
+
+	// Step #3: Compute center
+	const center = {
+		x:
+			cos(xAxisRotationRadians) * transformedCenter.x -
+			sin(xAxisRotationRadians) * transformedCenter.y +
+			(p0.x + p1.x) / 2,
+		y:
+			sin(xAxisRotationRadians) * transformedCenter.x +
+			cos(xAxisRotationRadians) * transformedCenter.y +
+			(p0.y + p1.y) / 2,
+	};
+
+	// Step #4: Compute start/sweep angles
+	// Start angle of the elliptical arc prior to the stretch and rotate operations.
+	// Difference between the start and end angles
+	const startVector = {
+		x: (transformedPoint.x - transformedCenter.x) / rx,
+		y: (transformedPoint.y - transformedCenter.y) / ry,
+	};
+	const startAngle = angleBetween(
+		{
+			x: 1,
+			y: 0,
+		},
+		startVector
+	);
+
+	const endVector = {
+		x: (-transformedPoint.x - transformedCenter.x) / rx,
+		y: (-transformedPoint.y - transformedCenter.y) / ry,
+	};
+	let sweepAngle = angleBetween(startVector, endVector);
+
+	if (!sweepFlag && sweepAngle > 0) {
+		sweepAngle -= 2 * PI;
+	} else if (sweepFlag && sweepAngle < 0) {
+		sweepAngle += 2 * PI;
+	}
+	// We use % instead of `mod(..)` because we want it to be -360deg to 360deg(but actually in radians)
+	sweepAngle %= 2 * PI;
+
+	// From http://www.w3.org/TR/SVG/implnote.html#ArcParameterizationAlternatives
+	const angle = startAngle + sweepAngle * t;
+	const ellipseComponentX = rx * cos(angle);
+	const ellipseComponentY = ry * sin(angle);
+
+	const point = {
+		x:
+			cos(xAxisRotationRadians) * ellipseComponentX -
+			sin(xAxisRotationRadians) * ellipseComponentY +
+			center.x,
+		y:
+			sin(xAxisRotationRadians) * ellipseComponentX +
+			cos(xAxisRotationRadians) * ellipseComponentY +
+			center.y,
+		ellipticalArcStartAngle: startAngle,
+		ellipticalArcEndAngle: startAngle + sweepAngle,
+		ellipticalArcAngle: angle,
+		ellipticalArcCenter: center,
+		resultantRx: rx,
+		resultantRy: ry,
+		transformedPoint: transformedPoint,
+	};
+
+	return point;
+}
+
+// const approximateArcLengthOfCurve = (
+// 	resolution: number,
+// 	pointOnCurveFunc: (t: number) => Point
+// ) => {
+// 	// Resolution is the number of segments we use
+// 	resolution = resolution ? resolution : 500;
+
+// 	let resultantArcLength = 0;
+// 	const arcLengthMap = [];
+// 	const approximationLines = [];
+
+// 	let prevPoint = pointOnCurveFunc(0);
+// 	let nextPoint;
+// 	for (let i = 0; i < resolution; i++) {
+// 		const t = clamp(i * (1 / resolution), 0, 1);
+// 		nextPoint = pointOnCurveFunc(t);
+// 		resultantArcLength += distance(prevPoint, nextPoint);
+// 		approximationLines.push([prevPoint, nextPoint]);
+
+// 		arcLengthMap.push({
+// 			t: t,
+// 			arcLength: resultantArcLength,
+// 		});
+
+// 		prevPoint = nextPoint;
 // 	}
+// 	// Last stretch to the endpoint
+// 	nextPoint = pointOnCurveFunc(1);
+// 	approximationLines.push([prevPoint, nextPoint]);
+// 	resultantArcLength += distance(prevPoint, nextPoint);
+// 	arcLengthMap.push({
+// 		t: 1,
+// 		arcLength: resultantArcLength,
+// 	});
 
-// 	// If rx = 0 or ry = 0 then this arc is treated as a straight line segment joining the endpoints.
-// 	if (rx === 0 || ry === 0) {
-// 		//return this.pointOnLine(p0, p1, t);
-// 		return { x: 0, y: 0, ellipticalArcAngle: 0 }; // Check if angle is correct
-// 	}
-
-// 	// Following "Conversion from endpoint to center parameterization"
-// 	// http://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
-
-// 	// Step #1: Compute transformedPoint
-// 	const dx = (p0.x - p1.x) / 2;
-// 	const dy = (p0.y - p1.y) / 2;
-// 	const transformedPoint = {
-// 		x: cos(xAxisRotationRadians) * dx + sin(xAxisRotationRadians) * dy,
-// 		y: -sin(xAxisRotationRadians) * dx + cos(xAxisRotationRadians) * dy,
+// 	return {
+// 		arcLength: resultantArcLength,
+// 		arcLengthMap: arcLengthMap,
+// 		approximationLines: approximationLines,
 // 	};
-// 	// Ensure radii are large enough
-// 	const radiiCheck =
-// 		pow(transformedPoint.x, 2) / pow(rx, 2) +
-// 		pow(transformedPoint.y, 2) / pow(ry, 2);
-// 	if (radiiCheck > 1) {
-// 		rx = sqrt(radiiCheck) * rx;
-// 		ry = sqrt(radiiCheck) * ry;
-// 	}
-
-// 	// Step #2: Compute transformedCenter
-// 	const cSquareNumerator =
-// 		pow(rx, 2) * pow(ry, 2) -
-// 		pow(rx, 2) * pow(transformedPoint.y, 2) -
-// 		pow(ry, 2) * pow(transformedPoint.x, 2);
-// 	const cSquareRootDenom =
-// 		pow(rx, 2) * pow(transformedPoint.y, 2) +
-// 		pow(ry, 2) * pow(transformedPoint.x, 2);
-// 	let cRadicand = cSquareNumerator / cSquareRootDenom;
-// 	// Make sure this never drops below zero because of precision
-// 	cRadicand = cRadicand < 0 ? 0 : cRadicand;
-// 	const cCoef = (largeArcFlag !== sweepFlag ? 1 : -1) * sqrt(cRadicand);
-// 	const transformedCenter = {
-// 		x: cCoef * ((rx * transformedPoint.y) / ry),
-// 		y: cCoef * (-(ry * transformedPoint.x) / rx),
-// 	};
-
-// 	// Step #3: Compute center
-// 	const center = {
-// 		x:
-// 			cos(xAxisRotationRadians) * transformedCenter.x -
-// 			sin(xAxisRotationRadians) * transformedCenter.y +
-// 			(p0.x + p1.x) / 2,
-// 		y:
-// 			sin(xAxisRotationRadians) * transformedCenter.x +
-// 			cos(xAxisRotationRadians) * transformedCenter.y +
-// 			(p0.y + p1.y) / 2,
-// 	};
-
-// 	// Step #4: Compute start/sweep angles
-// 	// Start angle of the elliptical arc prior to the stretch and rotate operations.
-// 	// Difference between the start and end angles
-// 	const startVector = {
-// 		x: (transformedPoint.x - transformedCenter.x) / rx,
-// 		y: (transformedPoint.y - transformedCenter.y) / ry,
-// 	};
-// 	const startAngle = angleBetween(
-// 		{
-// 			x: 1,
-// 			y: 0,
-// 		},
-// 		startVector
-// 	);
-
-// 	const endVector = {
-// 		x: (-transformedPoint.x - transformedCenter.x) / rx,
-// 		y: (-transformedPoint.y - transformedCenter.y) / ry,
-// 	};
-// 	let sweepAngle = angleBetween(startVector, endVector);
-
-// 	if (!sweepFlag && sweepAngle > 0) {
-// 		sweepAngle -= 2 * PI;
-// 	} else if (sweepFlag && sweepAngle < 0) {
-// 		sweepAngle += 2 * PI;
-// 	}
-// 	// We use % instead of `mod(..)` because we want it to be -360deg to 360deg(but actually in radians)
-// 	sweepAngle %= 2 * PI;
-
-// 	// From http://www.w3.org/TR/SVG/implnote.html#ArcParameterizationAlternatives
-// 	const angle = startAngle + sweepAngle * t;
-// 	const ellipseComponentX = rx * cos(angle);
-// 	const ellipseComponentY = ry * sin(angle);
-
-// 	const point = {
-// 		x:
-// 			cos(xAxisRotationRadians) * ellipseComponentX -
-// 			sin(xAxisRotationRadians) * ellipseComponentY +
-// 			center.x,
-// 		y:
-// 			sin(xAxisRotationRadians) * ellipseComponentX +
-// 			cos(xAxisRotationRadians) * ellipseComponentY +
-// 			center.y,
-// 		ellipticalArcStartAngle: startAngle,
-// 		ellipticalArcEndAngle: startAngle + sweepAngle,
-// 		ellipticalArcAngle: angle,
-// 		ellipticalArcCenter: center,
-// 		resultantRx: rx,
-// 		resultantRy: ry,
-// 		transformedPoint: transformedPoint,
-// 	};
-
-// 	return point;
-// }
-
-// // const approximateArcLengthOfCurve = (
-// // 	resolution: number,
-// // 	pointOnCurveFunc: (t: number) => Point
-// // ) => {
-// // 	// Resolution is the number of segments we use
-// // 	resolution = resolution ? resolution : 500;
-
-// // 	let resultantArcLength = 0;
-// // 	const arcLengthMap = [];
-// // 	const approximationLines = [];
-
-// // 	let prevPoint = pointOnCurveFunc(0);
-// // 	let nextPoint;
-// // 	for (let i = 0; i < resolution; i++) {
-// // 		const t = clamp(i * (1 / resolution), 0, 1);
-// // 		nextPoint = pointOnCurveFunc(t);
-// // 		resultantArcLength += distance(prevPoint, nextPoint);
-// // 		approximationLines.push([prevPoint, nextPoint]);
-
-// // 		arcLengthMap.push({
-// // 			t: t,
-// // 			arcLength: resultantArcLength,
-// // 		});
-
-// // 		prevPoint = nextPoint;
-// // 	}
-// // 	// Last stretch to the endpoint
-// // 	nextPoint = pointOnCurveFunc(1);
-// // 	approximationLines.push([prevPoint, nextPoint]);
-// // 	resultantArcLength += distance(prevPoint, nextPoint);
-// // 	arcLengthMap.push({
-// // 		t: 1,
-// // 		arcLength: resultantArcLength,
-// // 	});
-
-// // 	return {
-// // 		arcLength: resultantArcLength,
-// // 		arcLengthMap: arcLengthMap,
-// // 		approximationLines: approximationLines,
-// // 	};
-// // };
-
-// const mod = (x: number, m: number) => {
-// 	return ((x % m) + m) % m;
 // };
 
-// const toRadians = (angle: number) => {
-// 	return angle * (PI / 180);
-// };
+const mod = (x: number, m: number) => {
+	return ((x % m) + m) % m;
+};
 
-// const distance = (p0: any, p1: any) => {
-// 	return sqrt(pow(p1.x - p0.x, 2) + pow(p1.y - p0.y, 2));
-// };
+const toRadians = (angle: number) => {
+	return angle * (PI / 180);
+};
 
-// const clamp = (val: number, min1: number, max1: number) => {
-// 	return min(max(val, min1), max1);
-// };
+const distance = (p0: any, p1: any) => {
+	return sqrt(pow(p1.x - p0.x, 2) + pow(p1.y - p0.y, 2));
+};
 
-// const angleBetween = (v0: any, v1: any) => {
-// 	const p = v0.x * v1.x + v0.y * v1.y;
-// 	const n = sqrt(
-// 		(pow(v0.x, 2) + pow(v0.y, 2)) * (pow(v1.x, 2) + pow(v1.y, 2))
-// 	);
-// 	const sign = v0.x * v1.y - v0.y * v1.x < 0 ? -1 : 1;
-// 	const angle = sign * acos(p / n);
+const clamp = (val: number, min1: number, max1: number) => {
+	return min(max(val, min1), max1);
+};
 
-// 	return angle;
-// };
+const angleBetween = (v0: any, v1: any) => {
+	const p = v0.x * v1.x + v0.y * v1.y;
+	const n = sqrt(
+		(pow(v0.x, 2) + pow(v0.y, 2)) * (pow(v1.x, 2) + pow(v1.y, 2))
+	);
+	const sign = v0.x * v1.y - v0.y * v1.x < 0 ? -1 : 1;
+	const angle = sign * acos(p / n);
+
+	return angle;
+};
 
 // function arc_transform(seg: Arc, M: any) {
 // 	function NEARZERO(B) {
