@@ -146,8 +146,8 @@ export class Path {
 	}
 
 	pointAtLength(L: number) {
-		const {totalLength} = this;
-		return totalLength && this.pointAt(L/totalLength);
+		const { totalLength } = this;
+		return totalLength && this.pointAt(L / totalLength);
 	}
 
 	splitAt(T: number) {
@@ -305,8 +305,8 @@ export class Path {
 				yield rx;
 				yield ry;
 				yield phi;
-				yield arc;
-				yield sweep;
+				yield arc ? 1 : 0;
+				yield sweep ? 1 : 0;
 				yield p2.x;
 				yield p2.y;
 			} else if (seg instanceof Quadratic) {

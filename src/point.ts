@@ -1,5 +1,5 @@
 const { isFinite } = Number;
-const { sqrt, abs, acos, sign } = Math;
+const { sqrt, abs, acos, sign, cos, sin, hypot } = Math;
 
 export class Point {
 	readonly x: number;
@@ -56,15 +56,19 @@ export class Point {
 
 	// Methods returning new Point
 	normal() {
-		return new Point(this.y, -this.x);
+		const { x, y } = this;
+		return new Point(y, -x);
 	}
 
 	div(factor: number) {
-		return new Point(this.x / factor, this.y / factor);
+		const { x, y } = this;
+		return new Point(x / factor, y / factor);
 	}
 
 	add(p: Point) {
-		return new Point(this.x + p.x, this.y + p.y);
+		const { x: x1, y: y1 } = this;
+		const { x: x2, y: y2 } = p;
+		return new Point(x1 + x2, y1 + y2);
 	}
 
 	sub(p: Point) {
@@ -91,17 +95,20 @@ export class Point {
 
 		return new Point(a * x + c * y + e, b * x + d * y + f);
 	}
+	// def rotate(self, angle):
+	//     """rotate self counterclockwise by angle"""
+	//     # https://stackoverflow.com/questions/4780119/2d-euclidean-vector-rotations
+	//     x, y = self[0], self[1]
+	//     cs, sn = cos(angle), sin(angle)
+	//     return self.__class__(x * cs - y * sn, x * sn + y * cs)
+
+	rotate(rad: number) {
+		const { x, y } = this;
+		const [cs, sn] = [cos(rad), sin(rad)];
+		return new Point(x * cs - y * sn, x * sn + y * cs);
+	}
 
 	// Misc methods
-	// native() {
-	// 	//   // create new point
-	// 	//   var point = new SVGPoint()
-	// 	//   // update with current values
-	// 	//   point.x = this.x
-	// 	//   point.y = this.y
-	// 	//   return point
-	// 	return this;
-	// }
 
 	clone() {
 		return new Point(this.x, this.y);

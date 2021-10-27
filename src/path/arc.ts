@@ -22,7 +22,6 @@ export class Arc extends Segment {
 	//
 	readonly cosφ: number;
 	readonly sinφ: number;
-	// readonly cen: Point;
 	readonly rtheta: number;
 	readonly rdelta: number;
 	readonly cx: number;
@@ -36,11 +35,11 @@ export class Arc extends Segment {
 		arc: boolean | number,
 		sweep: boolean | number
 	) {
+		if (!(Number.isFinite(φ) && Number.isFinite(rx) && Number.isFinite(ry)))
+			throw Error(`${JSON.stringify(arguments)}`);
 		p1 = Point.new(p1);
 		p2 = Point.new(p2);
 
-		if (!(Number.isFinite(φ) && Number.isFinite(rx) && Number.isFinite(ry)))
-			throw Error(`${JSON.stringify(arguments)}`);
 		const { x: x1, y: y1 } = p1;
 		const { x: x2, y: y2 } = p2;
 		super(p1, p2);
