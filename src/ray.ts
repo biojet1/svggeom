@@ -187,57 +187,64 @@ export class Ray {
 		return NaN;
 	}
 
-	nearestPointOfLine(p1: Point, p2: Point) {
-		const { x, y } = this._pos;
-		const { x: x1, y: y1 } = p1;
-		const { x: x2, y: y2 } = p2;
-		const [dx, dy] = [x2 - x1, y2 - y1];
-		if (dx && dy) {
-			const m = dy / dx; // from: (y2-y1)/(x2-x1)
-			const b = y1 - m * x1; // from: y=mx+b
-			const a = -b * m; // from: m = -(a/b)
-			const c = -(a * x1 + b * y1); // from: ax+by+c=0
-			const d = a * a + b * b;
-			const n = b * x - a * y;
-			// console.log(a,b,c,d,m,n,dx,dy)
-			// console.log((b * n - a * c) / d, (-a * n - b * c) / d)
-			return Point.at((b * n - a * c) / d, (-a * n - b * c) / d);
-		} else if (!dx) {
-			return Point.at(x1, y);
-		} else if (!dy) {
-			return Point.at(x, y1);
-		}
-		return NaN;
+	nearestPointOfLine(a: Point, b: Point) {
+		const { pos } = this;
+		const a_to_p = pos.sub(a);
+		const a_to_b = b.sub(a);
+		const t = a_to_p.dot(a_to_b) / a_to_b.absQuad();
+		return a.add(a_to_b.mul(t));
 	}
+
+	intersectOfLine(a: Point, b: Point) {
+		const { pos, head } = this;
+		const { x: x1, y: y1 } = a;
+		const { x: x2, y: y2 } = b;
+		const { x: x3, y: y3 } = pos;
+		const { x: x4, y: y4 } = pos.add(head);
+		const e1 = x1 * y2 - y1 * x2;
+		const e2 = x3 * y4 - y3 * x4;
+		const dx = [x1 - x2, x3 - x4];
+		const dy = [y1 - y2, y3 - y4];
+		const d = dx[0] * dy[1] - dy[0] * dx[1];
+		return Point.at(
+			(e1 * dx[1] - dx[0] * e2) / d,
+			(e1 * dy[1] - dy[0] * e2) / d
+		);
+	}
+
+	// def to_intersect(self, p1, p2):
+	//     x1, y1 = p1
+	//     x2, y2 = p2
+	//     x3, y3 = self.pos()
+	//     x4, y4 = self.pos() + self.headingv()
+	//     e1 = x1 * y2 - y1 * x2
+	//     e2 = x3 * y4 - y3 * x4
+	//     dx = ((x1 - x2), (x3 - x4))
+	//     dy = ((y1 - y2), (y3 - y4))
+	//     d = dx[0] * dy[1] - dy[0] * dx[1]
+	//     self.goto((e1 * dx[1] - dx[0] * e2) / d, (e1 * dy[1] - dy[0] * e2) / d)
+	//     return self
+
 	nearestPointFromPoint(p: Point) {
 		const A = new Ray();
 		const { pos, head } = this;
-		A.goto(p).nearestPointOfLine(pos, pos.add(head));
+		return A.goto(p).nearestPointOfLine(pos, pos.add(head));
 	}
-	/*
 
-    def nearest_point_from_point(self, p):
-        q = self.pos()
-        return self.__class__(p).nearest_point_of_line(q, q + self.headingv())
+	toNearestPointOfLine(a: Point, b: Point) {
+		this._pos = this.nearestPointOfLine(a, b);
+		return this;
+	}
 
-    def nearest_point_of_line(self, p1, p2):
-        x, y = self.pos()
-        dx, dy = p2[0] - p1[0], p2[1] - p1[1]
-        if dx == 0:  # line is vertical
-            assert dy != 0
-            return Vec2D(p1[0], y)
-        elif dy == 0:  # line is horizontal
-            return Vec2D(x, p1[1])
-        else:
-            m = dy / dx  # from: (y2-y1)/(x2-x1)
-            b = p1[1] - m * p1[0]  # from: y=mx+b
-            a = -b * m  # from: m = -(a/b)
-            c = -(a * p1[0] + b * p1[1])  # from: ax+by+c=0
-            d = a * a + b * b
-            n = b * x - a * y
-            assert d != 0
-            return Vec2D((b * n - a * c) / d, (-a * n - b * c) / d)
+	toNearestPointFromPoint(p: Point) {
+		const { pos, head } = this;
+		this._pos = Ray.new(p).nearestPointOfLine(pos, pos.add(head));
+		return this;
+	}
 
-
-*/
+	static new(x: number | Point, y?: number) {
+		const A = new Ray();
+		A._pos = Po(x, y);
+		return A;
+	}
 }

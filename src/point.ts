@@ -1,5 +1,5 @@
 const { isFinite } = Number;
-const { sqrt, abs, acos, sign, cos, sin, hypot } = Math;
+const { sqrt, abs, acos, sign, cos, sin, hypot, atan2 } = Math;
 
 export class Point {
 	readonly x: number;
@@ -16,23 +16,42 @@ export class Point {
 
 	abs() {
 		return sqrt(this.absQuad());
+		// const { x, y } = this;
+		// return hypot(x, y);
 	}
 
 	absQuad() {
 		const { x, y } = this;
-
 		return x * x + y * y;
 	}
 
-	closeTo(p: Point, eta = 1e-12) {
-		return (
-			this.equals(p) ||
-			(abs(this.x - p.x) < eta && abs(this.y - p.y) < eta)
-		);
+	closeTo(p: Point, epsilon = 1e-12) {
+		const { x: x1, y: y1 } = this;
+		const { x: x2, y: y2 } = p;
+		return abs(x1 - x2) < epsilon && abs(y1 - y2) < epsilon;
 	}
 
 	dot(p: Point) {
-		return this.x * p.x + this.y * p.y;
+		const { x: x1, y: y1 } = this;
+		const { x: x2, y: y2 } = p;
+		return x1 * x2 + y1 * y2;
+	}
+
+	cross(p: Point) {
+		const { x: x1, y: y1 } = this;
+		const { x: x2, y: y2 } = p;
+		return x1 * y2 - y1 * x2;
+	}
+	// def angle(self):
+	//     # type: () -> Optional[float]
+	//     """The angle of the vector when represented in polar coordinates"""
+	//     if self.x == 0 and self.y == 0:
+	//         return None
+	//     return atan2(self.y, self.x)
+
+	get angle() {
+		const { x, y } = this;
+		return atan2(y, x);
 	}
 
 	equals(p: Point) {
@@ -40,7 +59,7 @@ export class Point {
 	}
 
 	angleTo(p: Point) {
-		let sig = sign(this.x * p.y - this.y * p.x);
+		let sig = sign(this.cross(p));
 		// return (
 		// 	(sig || 1) *
 		// 	acos(
@@ -72,11 +91,14 @@ export class Point {
 	}
 
 	sub(p: Point) {
-		return new Point(this.x - p.x, this.y - p.y);
+		const { x: x1, y: y1 } = this;
+		const { x: x2, y: y2 } = p;
+		return new Point(x1 - x2, y1 - y2);
 	}
 
 	mul(factor: number) {
-		return new Point(this.x * factor, this.y * factor);
+		const { x, y } = this;
+		return new Point(x * factor, y * factor);
 	}
 
 	normalize() {
@@ -153,6 +175,27 @@ export class Point {
 	static fromArray(v: number[]) {
 		return new Point(...v);
 	}
+
+	static fromPolar(radius: number, theta: number = 0) {
+		if (radius) {
+			return new Point(radius * cos(theta), radius * sin(theta));
+		}
+		return new Point(0, 0);
+	}
+
+	// @staticmethod
+	// def from_polar(radius, theta):
+	//     # type: (float, Optional[float]) -> Optional[Vector2d]
+	//     """Creates a Vector2d from polar coordinates
+
+	//     None is returned when theta is None and radius is not zero.
+	//     """
+	//     if radius == 0.0:
+	//         return Vector2d(0.0, 0.0)
+	//     if theta is not None:
+	//         return Vector2d(radius * cos(theta), radius * sin(theta))
+	//     # A vector with a radius but no direction is invalid
+	//     return None
 }
 
 // export class PointMut extends Point {

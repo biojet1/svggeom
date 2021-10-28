@@ -181,14 +181,46 @@ test.test(`away`, { bail: !CI }, function (t) {
 	t.end();
 });
 
-function* spiralOfTheodorus(N = 17) {
+function* spiralOfTheodorus(opt) {
 	const { atan, cos, sin, sqrt } = Math;
+	if (typeof opt !== "object") {
+		opt = { n: opt };
+	}
+	const { n: N, scale, rotate, transalteX, translateY } = opt;
+	const sx = scale || 1;
+	const sy = scale || 1;
+	const tx = transalteX || 0;
+	const ty = translateY || 0;
+	const cosφ = rotate && cos(rotate);
+	const sinφ = rotate && sin(rotate);
+
+	const ONE = 1
+
 	let φsum = 0;
 	for (let n = 1; n < N; ++n) {
-		const φ = atan(1 / sqrt(n));
-		const r = sqrt(n + 1);
+		const φ = atan(ONE / sqrt(n));
+		let r;
+		if (scale) {
+			// x *= scale;
+			// y *= scale;
+			// r *= scale;r
+			r = sqrt(n + ONE);
+		} else {
+			r = sqrt(n + ONE);
+		}
 		φsum += φ;
-		yield [n, r, r * cos(φsum), r * sin(φsum), φ, φsum];
+		let x = r * cos(φsum);
+		let y = r * sin(φsum);
+
+		// // rotate
+		// const xp = cos_phi * x - sin_phi * y;
+		// const yp = sin_phi * x + cos_phi * y;
+
+		// // translate
+		// curve[i + 0] = xp + cx;
+		// curve[i + 1] = yp + cy;
+
+		yield [n, r, x, y, φ, φsum];
 	}
 }
 
@@ -196,12 +228,19 @@ test.test(`Spiral of Theodorus`, { bail: !CI }, function (t) {
 	const { PI } = Math;
 	let A = new Ray();
 	let B = new Ray();
-	B.translate(1, 1).left();
-	const O = Point.at(0, 0);
-	for (const [n, r, x, y, φ, φsum] of spiralOfTheodorus(CI ? 44 : 13)) {
+	let O = Point.at(4, 4);
+	for (const [n, r, x, y, φ, φsum] of spiralOfTheodorus({
+		n: CI ? 444 : 13,
+		scale: Math.E,
+	})) {
+		if (n === 1) {
+			B.translate(x, y).left();
+			O = Ray.new(x, y).left(φ).back(r).pos.clone();
+		}
 		const P = Point.at(x, y);
-		// console.log(n, r, x, y, (φ / PI) * 180, (φsum / PI) * 180);
+		console.log(n, r, x, y, (φ / PI) * 180, (φsum / PI) * 180);
 		A.reset().left(φsum).forward(r);
+
 		t.almostEqual(A.x, x, 1e-11);
 		t.almostEqual(A.y, y, 1e-11);
 		t.almostEqual(B.x, x, 1e-11);
@@ -212,9 +251,7 @@ test.test(`Spiral of Theodorus`, { bail: !CI }, function (t) {
 
 		t.ok(B.clone().back(1).pos.closeTo(P));
 		t.almostEqual(B.distanceFromLine(O, P), 1, 1e-11);
-		// t.ok(B.clone().nearestPointOfLine(P, O).pos.closeTo(P));
-
-
+		t.ok(B.clone().nearestPointOfLine(P, O).closeTo(P));
 	}
 
 	t.end();
