@@ -170,6 +170,16 @@ export class Ray {
 		return this;
 	}
 
+	after(x: number | Point, y?: number) {
+		const v = Po(x, y);
+		return this.away(v).goto(v);
+	}
+
+	before(x: number | Point, y?: number) {
+		const v = Po(x, y);
+		return this.towards(v).goto(v);
+	}
+
 	// Calc
 	distanceFromLine(p1: Point, p2: Point) {
 		const { x, y } = this._pos;
@@ -189,10 +199,17 @@ export class Ray {
 
 	nearestPointOfLine(a: Point, b: Point) {
 		const { pos } = this;
-		const a_to_p = pos.sub(a);
-		const a_to_b = b.sub(a);
+		const a_to_p = pos.sub(a); // a → p
+		const a_to_b = b.sub(a); // a → b
 		const t = a_to_p.dot(a_to_b) / a_to_b.absQuad();
 		return a.add(a_to_b.mul(t));
+		// return a.add(a_to_p.dot(a_to_b).div(a_to_p.abs()));
+	}
+
+	nearestPointFromPoint(p: Point) {
+		const A = new Ray();
+		const { pos, head } = this;
+		return A.goto(p).nearestPointOfLine(pos, pos.add(head));
 	}
 
 	intersectOfLine(a: Point, b: Point) {
@@ -225,12 +242,6 @@ export class Ray {
 	//     self.goto((e1 * dx[1] - dx[0] * e2) / d, (e1 * dy[1] - dy[0] * e2) / d)
 	//     return self
 
-	nearestPointFromPoint(p: Point) {
-		const A = new Ray();
-		const { pos, head } = this;
-		return A.goto(p).nearestPointOfLine(pos, pos.add(head));
-	}
-
 	toNearestPointOfLine(a: Point, b: Point) {
 		this._pos = this.nearestPointOfLine(a, b);
 		return this;
@@ -242,9 +253,38 @@ export class Ray {
 		return this;
 	}
 
+	toMidPoint(a: Point, b: Point) {
+		return this.toPointT(0.5, a, b);
+	}
+
+	toPointT(t: number, a: Point, b: Point) {
+		// const { pos, head } = this;
+		// this._pos = b.sub(a).mul(t).add(a);
+		// return this;
+		return this.goto(b.sub(a).mul(t).add(a));
+	}
+
 	static new(x: number | Point, y?: number) {
 		const A = new Ray();
 		A._pos = Po(x, y);
 		return A;
+	}
+
+	static towards(x: number | Point, y?: number) {
+		return new Ray().towards(Po(x, y));
+	}
+	static away(x: number | Point, y?: number) {
+		return new Ray().away(Po(x, y));
+	}
+	static goto(x: number | Point, y?: number) {
+		return new Ray().goto(Po(x, y));
+	}
+
+	static after(x: number | Point, y?: number) {
+		return new Ray().after(Po(x, y));
+	}
+
+	static before(x: number | Point, y?: number) {
+		return new Ray().before(Po(x, y));
 	}
 }

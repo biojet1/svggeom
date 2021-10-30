@@ -1,5 +1,5 @@
 const { isFinite } = Number;
-const { sqrt, abs, acos, sign, cos, sin, hypot, atan2 } = Math;
+const { sqrt, abs, acos, sign, cos, sin, hypot, atan2, PI } = Math;
 
 export class Point {
 	readonly x: number;
@@ -59,18 +59,20 @@ export class Point {
 	}
 
 	angleTo(p: Point) {
-		let sig = sign(this.cross(p));
-		// return (
-		// 	(sig || 1) *
-		// 	acos(
-		// 		Math.round((this.dot(p) / (this.abs() * p.abs())) * 1000000) / 1000000
-		// 	)
-		// );
-		let v = (this.dot(p) * 1000000) / (this.abs() * p.abs()) / 1000000;
-		// v = v < -1.0 ? PI : v > 1.0 ? 0 : acos(v);
-		v = acos(v);
-		// v = max(-1, min(1, v));
-		return (sig || 1) * v;
+		return p.sub(this).angle;
+
+		// let sig = sign(this.cross(p));
+		// // return (
+		// // 	(sig || 1) *
+		// // 	acos(
+		// // 		Math.round((this.dot(p) / (this.abs() * p.abs())) * 1000000) / 1000000
+		// // 	)
+		// // );
+		// let v = (this.dot(p) * 1000000) / (this.abs() * p.abs()) / 1000000;
+		// // v = v < -1.0 ? PI : v > 1.0 ? 0 : acos(v);
+		// v = acos(v);
+		// // v = max(-1, min(1, v));
+		// return (sig || 1) * v;
 	}
 
 	// Methods returning new Point
@@ -182,20 +184,21 @@ export class Point {
 		}
 		return new Point(0, 0);
 	}
-
-	// @staticmethod
-	// def from_polar(radius, theta):
-	//     # type: (float, Optional[float]) -> Optional[Vector2d]
-	//     """Creates a Vector2d from polar coordinates
-
-	//     None is returned when theta is None and radius is not zero.
-	//     """
-	//     if radius == 0.0:
-	//         return Vector2d(0.0, 0.0)
-	//     if theta is not None:
-	//         return Vector2d(radius * cos(theta), radius * sin(theta))
-	//     # A vector with a radius but no direction is invalid
-	//     return None
+	static polar(radius: number = 1, theta: number = 0) {
+		if (radius) {
+			return new Point(radius * cos(theta), radius * sin(theta));
+		}
+		return new Point(0, 0);
+	}
+	static radians(n: number) {
+		return Point.polar(1, n);
+	}
+	static degrees(n: number) {
+		return Point.radians((n * PI) / 180);
+	}
+	static grade(n: number) {
+		return Point.degrees((n * 9) / 10);
+	}
 }
 
 // export class PointMut extends Point {

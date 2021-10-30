@@ -194,7 +194,7 @@ function* spiralOfTheodorus(opt) {
 	const cosφ = rotate && cos(rotate);
 	const sinφ = rotate && sin(rotate);
 
-	const ONE = 1
+	const ONE = 1;
 
 	let φsum = 0;
 	for (let n = 1; n < N; ++n) {
@@ -238,7 +238,7 @@ test.test(`Spiral of Theodorus`, { bail: !CI }, function (t) {
 			O = Ray.new(x, y).left(φ).back(r).pos.clone();
 		}
 		const P = Point.at(x, y);
-		console.log(n, r, x, y, (φ / PI) * 180, (φsum / PI) * 180);
+		// console.log(n, r, x, y, (φ / PI) * 180, (φsum / PI) * 180);
 		A.reset().left(φsum).forward(r);
 
 		t.almostEqual(A.x, x, 1e-11);
@@ -256,3 +256,60 @@ test.test(`Spiral of Theodorus`, { bail: !CI }, function (t) {
 
 	t.end();
 });
+
+test.test(`RegularPentagon`, { bail: !CI }, function (t) {
+	const { PI, E, LN10, LOG2E, sqrt } = Math;
+	function degrees(r) {
+		const d = (r / PI) * 180;
+		return ((d % 360) + 360) % 360;
+	}
+	// https://mathworld.wolfram.com/RegularPentagon.html
+	const φ = (1 + sqrt(5)) / 2;
+	const c1 = (sqrt(5) - 1) / 4;
+	const c2 = (sqrt(5) + 1) / 4;
+	const s1 = sqrt(10 + 2 * sqrt(5)) / 4;
+	const s2 = sqrt(10 - 2 * sqrt(5)) / 4;
+	const R = 1;
+	const a = (R * 10) / sqrt(50 + 10 * sqrt(5));
+	const r = (sqrt(25 + 10 * sqrt(5)) * a) / 10;
+	console.log(c1, s1, c2, s2, r, R);
+
+	let A = Ray.after(c1, s1);
+	let x, y;
+	t.almostEqual(A.distance(Point.at(0, 0)), R, 1e-11);
+	t.almostEqual(A.distance(Point.at(-c2, -s2)), a + a / φ, 1e-11);
+
+	[x, y] = A.clone()
+		.left((PI * 3) / 10)
+		.forward(a)
+		.pos.toArray();
+	t.almostEqual(x, 1, 1e-11);
+	t.almostEqual(y, 0, 1e-11);
+
+	[x, y] = A.clone()
+		.right((PI * 3) / 10)
+		.forward(a)
+		.pos.toArray();
+	t.almostEqual(x, -c2, 1e-11);
+	t.almostEqual(y, s2, 1e-11);
+
+	[x, y] = A.clone()
+		.toNearestPointOfLine(Point.at(-c2, -s2), Point.at(c1, -s1))
+		.pos.toArray();
+
+	A.toMidPoint(Point.at(-c2, -s2), Point.at(c1, -s1));
+	t.almostEqual(A.x, x, 1e-11);
+	t.almostEqual(A.y, y, 1e-11);
+	A.toNearestPointFromPoint(Point.at(c1, -s1));
+	t.almostEqual(A.x, x, 1e-11);
+	t.almostEqual(A.y, y, 1e-11);
+
+	[x, y] = A.clone().back(r).pos.toArray();
+	t.almostEqual(x, 0, 1e-11);
+	t.almostEqual(y, 0, 1e-11);
+
+	t.end();
+});
+
+
+
