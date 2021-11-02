@@ -151,6 +151,10 @@ export class Ray {
 		return this;
 	}
 
+	turnd(deg: number ) {
+		return this.turn((deg * TAU) / 360);
+	}
+
 	left(rad?: number) {
 		if (rad) {
 			this._head = this.head.rotated(rad);
@@ -224,10 +228,10 @@ export class Ray {
 
 		if (dx && dy) {
 			return abs(dx * (y1 - y) - dy * (x1 - x)) / sqrt(dx ** 2 + dy ** 2);
-		} else if (!dy) {
-			return abs(y1 - y); // dy === 0
-		} else if (!dx) {
+		} else if (dy) {
 			return abs(x1 - x); // dx === 0
+		} else if (dx) {
+			return abs(y1 - y); // dy === 0
 		}
 		return NaN;
 	}
@@ -242,9 +246,8 @@ export class Ray {
 	}
 
 	nearestPointFromPoint(p: Point) {
-		const A = new Ray();
 		const { pos, head } = this;
-		return A.goto(p).nearestPointOfLine(pos, pos.add(head));
+		return Ray.goto(p).nearestPointOfLine(pos, pos.add(head));
 	}
 
 	intersectOfLine(a: Point, b: Point) {
@@ -271,7 +274,7 @@ export class Ray {
 
 	toNearestPointFromPoint(p: Point) {
 		const { pos, head } = this;
-		this._pos = Ray.new(p).nearestPointOfLine(pos, pos.add(head));
+		this._pos = Ray.goto(p).nearestPointOfLine(pos, pos.add(head));
 		return this;
 	}
 
