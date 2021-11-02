@@ -1,5 +1,5 @@
 "uses strict";
-import { Ray, Point } from "../dist/index.js";
+import { Ray, Point, Draw } from "../dist/index.js";
 import "./utils.js";
 import test from "tap";
 const CI = !!process.env.CI;
@@ -134,7 +134,7 @@ test.test(`delta`, { bail: !CI }, function (t) {
 	let A = new Ray();
 	let B = new Ray();
 
-	t.same(A.delta(-3, 4).toArray(), [-3, 4]);
+	t.same(A.delta(-3, 4).toArray(), [-3, 4, 0]);
 	// t.almostEqual(ray.distance(Point.at(-3, -4)), 5, 1e-11);
 	// t.almostEqual(ray.distance(B.forward(-3).left().back(4)), 5, 1e-11);
 
@@ -311,5 +311,57 @@ test.test(`RegularPentagon`, { bail: !CI }, function (t) {
 	t.end();
 });
 
+test.test(`side`, { bail: !CI }, function (t) {
+	const { PI, E, LN10, LOG2E, sqrt } = Math;
+	let A;
 
+	A = Ray.towards(0, 1);
+	t.equal(A.side(-E, +E), 1);
+	t.equal(A.side(-E, -E), 1);
+	t.equal(A.side(E, +E), -1);
+	t.equal(A.side(E, -E), -1);
+	t.equal(A.side(0, -PI), 0);
 
+	A = Ray.towards(0, -1);
+	t.equal(A.side(-E, +E), -1);
+	t.equal(A.side(-E, -E), -1);
+	t.equal(A.side(E, +E), 1);
+	t.equal(A.side(E, -E), 1);
+	t.equal(A.side(0, PI), 0);
+
+	A = Ray.towards(1 / 2, sqrt(3) / 2).normalToSide(Point.at(-PI, E));
+	t.almostEqual(A.h, -sqrt(3) / 2, 1e-11);
+	t.almostEqual(A.v, 1 / 2, 1e-11);
+
+	A = Ray.towards(1 / 2, sqrt(3) / 2).normalToSide(Point.at(0, -E));
+	t.almostEqual(A.h, sqrt(3) / 2, 1e-11);
+	t.almostEqual(A.v, -1 / 2, 1e-11);
+
+	t.end();
+});
+
+test.test(`draw`, { bail: !CI }, function (t) {
+	const { PI, E, LN10, LOG2E, sqrt } = Math;
+	let d;
+
+	d = new Draw();
+	d.quadraticCurveTo(3, 4, 5, 6);
+
+	console.log(d);
+	const s = "M1,2Q3,4,5,6";
+	t.equal(Draw.moveTo(1, 2).quadraticCurveTo(3, 4, 5, 6) + "", s);
+	t.equal(Draw.moveTo(Point.at(1, 2)).quadraticCurveTo(3, 4, 5, 6) + "", s);
+	t.equal(
+		Draw.moveTo(Point.at(1, 2)).quadraticCurveTo(3, 4, Point.at(5, 6)) + "",
+		s
+	);
+	t.equal(
+		Draw.moveTo(Point.at(1, 2)).quadraticCurveTo(
+			Point.at(3, 4),
+			Point.at(5, 6)
+		) + "",
+		s
+	);
+
+	t.end();
+});

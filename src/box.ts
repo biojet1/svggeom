@@ -134,7 +134,13 @@ export class Box {
 			Math.max(y1 + height1, y2 + height2) - y
 		);
 	}
-
+	// translated
+	// resized
+	inflated(h: number, v?: number): Box {
+		v = v ?? h;
+		const { x, y, width, height } = this;
+		return new Box(x - h, y - v, h + width + h, v + height + v);
+	}
 	transform(m: any) {
 		let xMin = Infinity;
 		let xMax = -Infinity;

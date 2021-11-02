@@ -3,3 +3,5 @@ export * from "./ray.js";
 export * from "./box.js";
 export * from "./matrix.js";
 export * from "./path.js";
+export * from "./draw.js";
+

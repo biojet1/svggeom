@@ -1,4 +1,5 @@
 import { Point } from "./point.js";
+
 const { abs, atan, tan, cos, sin, sqrt, acos, atan2, PI, ceil, max } = Math;
 const TAU = PI * 2;
 
@@ -14,28 +15,42 @@ function Po(x: number | Point, y?: number) {
 export class Ray {
 	_pos: Point;
 	_head: Point;
+
 	constructor() {
 		this._pos = Point.at(0.0, 0.0);
 		this._head = Point.at(1.0, 0.0);
 	}
 
+	// copy
 	clone() {
 		const ray = new Ray();
 		ray._pos = this._pos;
 		ray._head = this._head;
 		return ray;
 	}
+
+	turned(rad: number | Point) {
+		return Ray.goto(this._pos).turn(rad);
+	}
+
+	moved(x: number | Point, y?: number) {
+		return Ray.goto(x, y).turn(this._head);
+	}
+
 	// Query
 
 	get x() {
 		return this._pos.x;
 	}
+
 	get y() {
 		return this._pos.y;
 	}
+
 	get h() {
 		return this._head.x;
 	}
+
 	get v() {
 		return this._head.y;
 	}
@@ -58,6 +73,13 @@ export class Ray {
 		return (this.heading * 180) / PI;
 	}
 
+	*[Symbol.iterator](): Iterator<number> {
+		const { x, y, z } = this._pos;
+		yield x;
+		yield y;
+		yield z;
+	}
+
 	distance(x: number | Point, y?: number) {
 		return this.delta(x, y).abs();
 	}
@@ -66,18 +88,14 @@ export class Ray {
 		return Po(x, y).sub(this.pos);
 	}
 
-	// def side(self, x, y=None):
-	//     return self.delta(x, y).hypot()
-	// def delta(self, x, y=None):
-	//     if y is not None:
-	//         pos = Vec2D(x, y)
-	//     elif isinstance(x, Vec2D):
-	//         pos = x
-	//     elif isinstance(x, (tuple, list)):
-	//         pos = Vec2D(*x)
-	//     elif isinstance(x, self.__class__):
-	//         pos = x._position
-	//     return pos - self._position
+	side(x: number | Point, y?: number) {
+		const { pos, head } = this;
+		const [Ax, Ay] = pos;
+		const [Bx, By] = pos.add(head);
+		const [X, Y] = Po(x, y);
+		const d = (Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax);
+		return d > 0 ? 1 : d < 0 ? -1 : 0;
+	}
 
 	// Move
 
@@ -115,11 +133,27 @@ export class Ray {
 		return this;
 	}
 
+	along(t: number, x: number | Point, y?: number) {
+		const { pos } = this;
+		this._pos = pos.add(Po(x, y).sub(pos).mul(t));
+		return this;
+	}
+
 	// Turn
+
+	turn(rad: number | Point) {
+		if (typeof rad === "object") {
+			const { x: x1, y: y1 } = rad;
+			this._head = Point.at(x1, y1);
+		} else if (rad) {
+			this._head = Point.radians(rad);
+		}
+		return this;
+	}
 
 	left(rad?: number) {
 		if (rad) {
-			this._head = this.head.rotate(rad);
+			this._head = this.head.rotated(rad);
 		} else {
 			const { h, v } = this;
 			this._head = Point.at(-v, h);
@@ -128,19 +162,19 @@ export class Ray {
 	}
 
 	leftd(deg: number) {
-		switch (deg) {
-			case 90:
-				return this.left();
-			case 180:
-				return this.back();
-		}
+		// switch (deg) {
+		// 	case 90:
+		// 		return this.left();
+		// 	case 180:
+		// 		return this.back();
+		// }
 		return this.left((deg * TAU) / 360);
 	}
 
 	right(rad?: number) {
 		// move turtle forward by specified distance
 		if (rad) {
-			this._head = this.head.rotate(-rad);
+			this._head = this.head.rotated(-rad);
 		} else {
 			const { h, v } = this;
 			this._head = Point.at(v, -h);
@@ -149,24 +183,25 @@ export class Ray {
 	}
 
 	rightd(deg: number) {
-		switch (deg) {
-			case 90:
-				return this.right();
-			case 180:
-				return this.back();
-		}
+		// switch (deg) {
+		// 	case 90:
+		// 		return this.right();
+		// 	case 180:
+		// 		return this.back();
+		// }
 		return this.right((deg * TAU) / 360);
 	}
 
 	// Aimed Move
 
 	towards(x: number | Point, y?: number) {
-		this._head = Po(x, y).sub(this.pos);
+		// Po(x, y).subtractSelf(this.pos).normalizeSelf();
+		this._head = Po(x, y).sub(this.pos).normalize();
 		return this;
 	}
 
 	away(x: number | Point, y?: number) {
-		this._head = this.pos.sub(Po(x, y));
+		this._head = this.pos.sub(Po(x, y)).normalize();
 		return this;
 	}
 
@@ -217,9 +252,9 @@ export class Ray {
 		const { x: x1, y: y1 } = a;
 		const { x: x2, y: y2 } = b;
 		const { x: x3, y: y3 } = pos;
-		const { x: x4, y: y4 } = pos.add(head);
-		const e1 = x1 * y2 - y1 * x2;
-		const e2 = x3 * y4 - y3 * x4;
+		const { x: x4, y: y4 } = pos.add(head); // d
+		const e1 = x1 * y2 - y1 * x2; // a.cross(b)
+		const e2 = x3 * y4 - y3 * x4; // pos.cross(d)
 		const dx = [x1 - x2, x3 - x4];
 		const dy = [y1 - y2, y3 - y4];
 		const d = dx[0] * dy[1] - dy[0] * dx[1];
@@ -228,19 +263,6 @@ export class Ray {
 			(e1 * dy[1] - dy[0] * e2) / d
 		);
 	}
-
-	// def to_intersect(self, p1, p2):
-	//     x1, y1 = p1
-	//     x2, y2 = p2
-	//     x3, y3 = self.pos()
-	//     x4, y4 = self.pos() + self.headingv()
-	//     e1 = x1 * y2 - y1 * x2
-	//     e2 = x3 * y4 - y3 * x4
-	//     dx = ((x1 - x2), (x3 - x4))
-	//     dy = ((y1 - y2), (y3 - y4))
-	//     d = dx[0] * dy[1] - dy[0] * dx[1]
-	//     self.goto((e1 * dx[1] - dx[0] * e2) / d, (e1 * dy[1] - dy[0] * e2) / d)
-	//     return self
 
 	toNearestPointOfLine(a: Point, b: Point) {
 		this._pos = this.nearestPointOfLine(a, b);
@@ -253,17 +275,26 @@ export class Ray {
 		return this;
 	}
 
+	normalToSide(a: Point) {
+		const s = this.side(a);
+		const { x, y } = this.head;
+		if (s > 0) {
+			this._head = Point.at(-y, x);
+		} else if (s < 0) {
+			this._head = Point.at(y, -x);
+		}
+		return this;
+	}
+
 	toMidPoint(a: Point, b: Point) {
 		return this.toPointT(0.5, a, b);
 	}
 
 	toPointT(t: number, a: Point, b: Point) {
-		// const { pos, head } = this;
-		// this._pos = b.sub(a).mul(t).add(a);
-		// return this;
 		return this.goto(b.sub(a).mul(t).add(a));
 	}
 
+	//////
 	static new(x: number | Point, y?: number) {
 		const A = new Ray();
 		A._pos = Po(x, y);
@@ -273,9 +304,11 @@ export class Ray {
 	static towards(x: number | Point, y?: number) {
 		return new Ray().towards(Po(x, y));
 	}
+
 	static away(x: number | Point, y?: number) {
 		return new Ray().away(Po(x, y));
 	}
+
 	static goto(x: number | Point, y?: number) {
 		return new Ray().goto(Po(x, y));
 	}
