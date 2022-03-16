@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"  viewBox="-50 -50 400 400">
+<rect x="0" y="0" width="350" height="350" fill="none" stroke="grey"/>  <path d="M 10 315
+           L 110 215
+           A 36 60 0 0 1 150.71 170.29
+           L 172.55 152.45
+           A 30 50 -15 0 1 215.1 109.9
+           L 315 10" stroke="black" fill="green" stroke-width=".5" fill-opacity="0.5"/>
+
+
+<circle id="p1" cx="1000" cy="1000" r="2" fill="blue"/>
+<circle id="p1ˈ" cx="1000" cy="1000" r="2" fill="blue"/>
+<circle id="p2" cx="1000" cy="1000" r="2" fill="red"/>
+<circle id="p1ˈn" cx="1000" cy="1000" r="2" fill="cyan"/>
+<circle id="cenˈ" cx="1000" cy="1000" r="2" fill="lime"/>
+<circle id="cen" cx="1000" cy="1000" r="2" fill="green"/>
+
+<circle id="prx" cx="1000" cy="1000" r="2" fill="slate"/>
+<circle id="pry" cx="1000" cy="1000" r="2" fill="slate"/>
+
+
+<ellipse cx="144.931" cy="229.512" rx="36" ry="60" fill="none" stroke="blue"/>
+<ellipse cx="115.779" cy="155.778" rx="36" ry="60" fill="none" stroke="blue"/>
+
+<ellipse id="e0"   cx="0" cy="0" rx="1000" ry="1000" fill="none" stroke="grey"/>
+<ellipse id="e1"   cx="0" cy="0" rx="1000" ry="1000" fill="none" stroke="grey"/>
+
+<polyline id="pl"   points="0,0 200,200" fill="none" stroke="grey"/>
+
+
+ <g transform="scale(20)">
+
+   <path id="vA"  stroke="orange" fill="none" stroke-width=".09" fill-opacity="0.5"/>
+   <path id="vB"  stroke="pink" fill="none" stroke-width=".09" fill-opacity="0.5"/>
+  <path d="M0,0 L1,0 M0,0 L0,1" stroke="red" fill="none" stroke-width=".09" stroke-opacity="0.5"/>
+
+
+<circle id="unit" cx="0" cy="0" r="1" fill="none"  stroke-width=".01" stroke="grey"/>
+                                   </g>
+  <script xlink:href="arc.js" ></script>
+</svg>

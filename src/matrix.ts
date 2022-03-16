@@ -6,12 +6,12 @@ export class Matrix {
 	// [ a, c, e ] [ sx*cosψ, -sy*sinψ, tx ]
 	// [ b, d, f ] [ sx*sinψ,  sy*cosψ, ty ]
 
-	readonly a: number;
-	readonly b: number;
-	readonly c: number;
-	readonly d: number;
-	readonly e: number;
-	readonly f: number;
+	a: number;
+	b: number;
+	c: number;
+	d: number;
+	e: number;
+	f: number;
 	constructor(m: undefined | number[] = undefined) {
 		// if (arguments.length === 6) {
 		// 	m = arguments;
@@ -37,9 +37,12 @@ export class Matrix {
 				Number.isFinite(this.f)
 			)
 		)
-			throw Error(`${JSON.stringify(arguments)}`);
+			throw TypeError(`${JSON.stringify(arguments)}`);
 	}
-
+	clone() {
+		const { a, d, b, c, e, f } = this;
+		return new Matrix([a, b, c, d, e, f]);
+	}
 	inverse() {
 		// Get the current parameters out of the matrix
 		const { a, d, b, c, e, f } = this;
@@ -60,14 +63,14 @@ export class Matrix {
 
 		// Construct the inverted matrix
 
-		return Matrix.fromHexad(na, nb, nc, nd, ne, nf);
+		return Matrix.hexad(na, nb, nc, nd, ne, nf);
 	}
 
 	multiply(m: Matrix): Matrix {
 		const { a, d, b, c, e, f } = this;
 		const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
 
-		return Matrix.fromHexad(
+		return Matrix.hexad(
 			a * A + c * B + e * 0,
 			b * A + d * B + f * 0,
 			a * C + c * D + e * 0,
@@ -75,6 +78,31 @@ export class Matrix {
 			a * E + c * F + e * 1,
 			b * E + d * F + f * 1
 		);
+		// return this.clone().multiplySelf();
+	}
+
+	multiplySelf(m: Matrix): Matrix {
+		const { a, d, b, c, e, f } = this;
+		const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
+		this.a = a * A + c * B + e * 0;
+		this.b = b * A + d * B + f * 0;
+		this.c = a * C + c * D + e * 0;
+		this.d = b * C + d * D + f * 0;
+		this.e = a * E + c * F + e * 1;
+		this.f = b * E + d * F + f * 1;
+		return this;
+	}
+
+	preMultiplySelf(m: Matrix): Matrix {
+		const { a, d, b, c, e, f } = m;
+		const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
+		this.a = a * A + c * B + e * 0;
+		this.b = b * A + d * B + f * 0;
+		this.c = a * C + c * D + e * 0;
+		this.d = b * C + d * D + f * 0;
+		this.e = a * E + c * F + e * 1;
+		this.f = b * E + d * F + f * 1;
+		return this;
 	}
 
 	rotate(ang: number, x: number = 0, y: number = 0): Matrix {
@@ -82,7 +110,7 @@ export class Matrix {
 		const cosθ = Math.cos(θ);
 		const sinθ = Math.sin(θ);
 		return this.multiply(
-			Matrix.fromHexad(
+			Matrix.hexad(
 				cosθ,
 				sinθ,
 				-sinθ,
@@ -94,19 +122,12 @@ export class Matrix {
 	}
 
 	scale(scaleX: number, scaleY = scaleX) {
-		return this.multiply(Matrix.fromHexad(scaleX, 0, 0, scaleY, 0, 0));
+		return this.multiply(Matrix.hexad(scaleX, 0, 0, scaleY, 0, 0));
 	}
 
 	skew(x: number, y: number) {
 		return this.multiply(
-			Matrix.fromHexad(
-				1,
-				Math.tan(radians(y)),
-				Math.tan(radians(x)),
-				1,
-				0,
-				0
-			)
+			Matrix.hexad(1, Math.tan(radians(y)), Math.tan(radians(x)), 1, 0, 0)
 		);
 	}
 
@@ -119,11 +140,12 @@ export class Matrix {
 	}
 
 	toString() {
-		return `matrix(${this.a}, ${this.b}, ${this.c}, ${this.d}, ${this.e}, ${this.f})`;
+		const { a, d, b, c, e, f } = this;
+		return `matrix(${a},${b},${c},${d},${e},${f})`;
 	}
 
 	translate(x = 0, y = 0) {
-		return this.multiply(Matrix.fromHexad(1, 0, 0, 1, x, y));
+		return this.multiply(Matrix.hexad(1, 0, 0, 1, x, y));
 	}
 	translateY(v: number) {
 		return this.translate(0, v);
@@ -134,6 +156,14 @@ export class Matrix {
 	// toHexad() {
 	// 	return [this.a, this.b, this.c, this.d, this.e, this.f];
 	// }
+	setHexad(a: number, b: number, c: number, d: number, e: number, f: number) {
+		this.a = a;
+		this.b = b;
+		this.c = c;
+		this.d = d;
+		this.e = e;
+		this.f = f;
+	}
 
 	equals(other: Matrix, epsilon = 0) {
 		const { a, d, b, c, e, f } = this;
@@ -203,7 +233,7 @@ export class Matrix {
 
 		// return `translate(${dec.translateX}, ${dec.translateY}) rotate(${dec.rotate}) skewX(${dec.skewX}) scale(${dec.scaleX}, ${dec.scaleY})`;
 	}
-	public static fromHexad(
+	public static hexad(
 		a: number = 1,
 		b: number = 0,
 		c: number = 0,
@@ -217,41 +247,11 @@ export class Matrix {
 	public static fromArray(m: number[]): Matrix {
 		return new Matrix(m);
 	}
-	public static fromTransform(d: string): Matrix {
+	public static parse(d: string): Matrix {
 		d = d.trim();
-		// return d
-		// 	? d
-
-		// 			.split(/\)\s*,?\s*/)
-		// 			// .filter(str => !!str)
-		// 			.slice(0, -1)
-		// 			.map(function (str) {
-		// 				// generate key => value pairs
-		// 				const kv = str.trim().split("(");
-		// 				return [
-		// 					kv[0].trim(),
-		// 					kv[1].split(/[\s,]+/).map(function (str) {
-		// 						return parseFloat(str.trim());
-		// 					}),
-		// 				];
-		// 			})
-		// 			// merge every transformation into one matrix
-		// 			.reduce(function (
-		// 				matrix: Matrix,
-		// 				transform: [string, number[]]
-		// 			) {
-		// 				return transform[0] === "matrix"
-		// 					? matrix.multiply(Matrix.fromArray(transform[1]))
-		// 					: matrix[transform[0]].apply(matrix, transform[1]);
-		// 			},
-		// 			new Matrix())
-		// 	: new Matrix();
 		let m = new Matrix();
 		if (d)
-			for (const str of d
-				.split(/\)\s*,?\s*/)
-				// .filter(str => !!str)
-				.slice(0, -1)) {
+			for (const str of d.split(/\)\s*,?\s*/).slice(0, -1)) {
 				const kv = str.trim().split("(");
 				const name = kv[0].trim();
 				const args = kv[1].split(/[\s,]+/).map(function (str) {
@@ -264,51 +264,100 @@ export class Matrix {
 			}
 		return m;
 	}
+
 	[shot: string]: any;
-	static fromElement(node: Element): Matrix {
-		return Matrix.fromTransform(node.getAttribute("transform") || "");
+	static fromElement(node: ElementLike): Matrix {
+		return Matrix.parse(node.getAttribute("transform") || "");
 	}
 	// public static from(node: any) {
-	// 	return Matrix.fromTransform(node.getAttribute('transform') || '').trim();
+	// 	return Matrix.parse(node.getAttribute('transform') || '').trim();
 	// }
 	// getAttribute
-	static from(v: string | Element | number[]): Matrix {
-		if (Array.isArray(v)) {
-			return Matrix.fromArray(v);
-		} else if (!v) {
-			return new Matrix();
-		} else if (typeof v === "string") {
-			return Matrix.fromTransform(v);
-		} else if (v instanceof Matrix) {
-			return v;
-		} else {
-			return Matrix.fromElement(v);
+	// static from(v: string | ElementLike | number[]): Matrix {
+	// 	if (Array.isArray(v)) {
+	// 		return Matrix.fromArray(v);
+	// 	} else if (!v) {
+	// 		return new Matrix();
+	// 	} else if (typeof v === "string") {
+	// 		return Matrix.parse(v);
+	// 	} else if (v instanceof Matrix) {
+	// 		return v;
+	// 	} else {
+	// 		return Matrix.fromElement(v);
+	// 	}
+	// }
+	public static new(
+		first: number | number[] | string | Matrix | ElementLike
+	) {
+		switch (typeof first) {
+			case "string":
+				return Matrix.parse(first);
+			case "number":
+				return Matrix.hexad(
+					first,
+					arguments[1],
+					arguments[2],
+					arguments[3],
+					arguments[4],
+					arguments[5]
+				);
+			case "undefined":
+				return new Matrix();
+			case "object":
+				if (Array.isArray(first)) {
+					return Matrix.fromArray(first);
+				} else if ((first as any).nodeType === 1) {
+					return Matrix.fromElement(first as any as ElementLike);
+				} else {
+					const { a, d, b, c, e, f } = first as any;
+
+					return Matrix.hexad(a, b, c, d, e, f);
+				}
+			default:
+				throw new TypeError(
+					`Invalid matrix argument ${Array.from(arguments)}`
+				);
 		}
 	}
+
 	static interpolate(
-		A: string | Element | number[],
-		B: string | Element | number[]
+		A: number[] | string | Matrix | ElementLike,
+		B: number[] | string | Matrix | ElementLike
 	) {
-		const a = Matrix.from(A).toArray();
-		const b = Matrix.from(B).toArray();
+		const a = Matrix.new(A).toArray();
+		const b = Matrix.new(B).toArray();
 		const n = a.length;
-		// console.log('interpolate T', A, B, a, b);
+		// console.log("interpolate T", A, B, a, b);
 		return function (t: number) {
 			let c = [0, 0, 0, 0, 0, 0];
 			for (let i = 0; i < n; ++i)
 				c[i] = a[i] === b[i] ? b[i] : a[i] * (1 - t) + b[i] * t;
-			return Matrix.compose(Matrix.fromArray(c).decompose());
+			// console.log("compose", c);
+			// return Matrix.compose(Matrix.fromArray(c).decompose());
+			return Matrix.fromArray(c);
 		};
 	}
 	static translate(x = 0, y = 0) {
-		return Matrix.fromHexad(1, 0, 0, 1, x, y);
+		return Matrix.hexad(1, 0, 0, 1, x, y);
 	}
 	static translateY(v: number) {
-		return Matrix.fromHexad(1, 0, 0, 1, 0, v);
+		return Matrix.hexad(1, 0, 0, 1, 0, v);
 	}
 	static translateX(v: number) {
-		return Matrix.fromHexad(1, 0, 0, 1, v, 0);
+		return Matrix.hexad(1, 0, 0, 1, v, 0);
 	}
+
+	final() {
+		return Object.isFrozen(this) ? this : Object.freeze(this.clone());
+	}
+	mut() {
+		return Object.isFrozen(this) ? this.clone() : this;
+	}
+}
+
+interface ElementLike {
+	nodeType: number;
+	getAttribute(name: string): null | string;
 }
 
 function closeEnough(a: number, b: number, threshold = 1e-6) {

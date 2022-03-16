@@ -44,8 +44,8 @@ function* matrixes() {
 
 let c = 0;
 for await (const [m1, m2] of matrixes()) {
-	const M1 = Matrix.fromTransform(m1);
-	const M2 = Matrix.from(m2);
+	const M1 = Matrix.parse(m1);
+	const M2 = Matrix.new(m2);
 	const extra = [M1, M2];
 
 	// if (!M1.isURT()) {
@@ -79,20 +79,105 @@ for await (const [m1, m2] of matrixes()) {
 		while (i-- > 0) {
 			t.almostEqual(p[i], q[i], 1e-11, `${i}`, extra);
 		}
+		t.ok(M1.equals(Matrix.new(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f), 1e-15));
+		t.ok(M1.equals(Matrix.new(M2), 1e-15));
+		t.ok(M1.equals(Matrix.new(q), 1e-15));
+		t.ok(
+			M2.equals(
+				Matrix.new({ nodeType: 1, getAttribute: (s) => m1 }),
+				1e-15
+			)
+		);
+		t.ok(
+			M1.equals(
+				Matrix.fromElement({ nodeType: 1, getAttribute: (s) => m1 }),
+				1e-15
+			)
+		);
 		t.end();
 	});
 	++c;
 }
 console.log(`${c} matrixes CI(${CI})`);
 test.test(`matrixes etc`, { bail: !CI }, function (t) {
-	t.ok(Matrix.translateX(42).equals(Matrix.translate(42, 0)));
+	t.ok(Matrix.translateX(42).clone().equals(Matrix.translate(42, 0)));
+	t.ok(Matrix.translateY(42).clone().equals(Matrix.translate(0, 42)));
 	t.ok(
 		Matrix.translate(-1, -4).equals(
 			Matrix.translateX(-1).translate(0, -2).translateY(-2)
 		)
 	);
 
-	t.same(Matrix.from().toArray(), [1, 0, 0, 1, 0, 0]);
+	t.same(Matrix.new().toArray(), [1, 0, 0, 1, 0, 0]);
+	t.same(
+		Matrix.new("matrix(1,0,0,1,0,0)"),
+		Matrix.new([1, 0, 0, 1, 0, 0])
+	);
+	t.same(Matrix.new().toString(), "matrix(1,0,0,1,0,0)");
+	t.same(
+		Matrix.translateY(4.1).translateX(1.4).describe().replace(/\s+/g, ""),
+		"translate(1.4,4.1)"
+	);
+	t.throws(
+		() => Matrix.new([1, 0, 0, 1, 0, NaN]),
+		TypeError,
+		"must be finite"
+	);
+	t.throws(() => Matrix.new(true), TypeError);
 
+	t.end();
+});
+
+test.test(`test_interpolate`, { bail: !CI }, function (t) {
+	const fn = Matrix.interpolate(
+		[10, 20, 30, 40, 50, 60],
+		[20, 30, 30, 50, 60, 70]
+	);
+	t.same(fn(0).toArray(), [10, 20, 30, 40, 50, 60]);
+	t.same(fn(0.5).toArray(), [15, 25, 30, 45, 55, 65]);
+	t.same(fn(1).toArray(), [20, 30, 30, 50, 60, 70]);
+	t.end();
+});
+
+test.test(`test_new_from_skew`, { bail: !CI }, function (t) {
+	t.ok(
+		Matrix.new()
+			.skewX(10)
+			.equals(Matrix.new("matrix(1 0 0.176327 1 0 0)"), 1e-5)
+	);
+	t.ok(
+		Matrix.new()
+			.skewY(10)
+			.equals(Matrix.new("matrix(1 0.176327 0 1 0 0)"), 1e-5)
+	);
+	t.end();
+});
+
+test.test(`test_matrix_inversion`, { bail: !CI }, function (t) {
+	t.ok(
+		Matrix.new("rotate(45)")
+			.inverse()
+			.equals(Matrix.parse("rotate(-45)"), 1e-11)
+	);
+	t.ok(
+		Matrix.new("scale(4)")
+			.inverse()
+			.equals(Matrix.parse("scale(0.25)"), 1e-11)
+	);
+	t.ok(
+		Matrix.new("translate(12, 10)")
+			.inverse()
+			.equals(Matrix.parse("translate(-12, -10)"))
+	);
+	t.end();
+});
+
+test.test(`test_new_from_rotate`, { bail: !CI }, function (t) {
+	t.ok(
+		Matrix.parse("rotate(90 10 12)").equals(
+			Matrix.parse("matrix(6.12323e-17 1 -1 6.12323e-17 22 2)"),
+			1e-4
+		)
+	);
 	t.end();
 });

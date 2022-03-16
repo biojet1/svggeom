@@ -12,9 +12,9 @@ export class Quadratic extends Cubic {
 		control: Point | number[],
 		end: Point | number[]
 	) {
-		const p1 = Point.from(start);
-		const c = Point.from(control);
-		const p2 = Point.from(end);
+		const p1 = Point.new(start);
+		const c = Point.new(control);
+		const p2 = Point.new(end);
 
 		const c1 = p1.equals(c) ? p1 : p1.mul(1 / 3).add(c.mul(2 / 3));
 		const c2 = p2.equals(c) ? p2 : c.mul(2 / 3).add(p2.mul(1 / 3));
@@ -84,7 +84,7 @@ export class Quadratic extends Cubic {
 		const [y1, y2, y3] = [p1.y, c.y, p2.y];
 		const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
 		const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
-		return new Box([xmin, ymin, xmax - xmin, ymax - ymin]);
+		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 
 	toPathFragment() {

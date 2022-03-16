@@ -9,7 +9,7 @@ const CI = !!process.env.CI;
 
 function dbgwrite(name, pC, pX) {
 	function* gen() {
-		const b = Path.fromPath(pC).bbox().merge(Path.fromPath(pX).bbox());
+		const b = Path.parse(pC).bbox().merge(Path.parse(pX).bbox());
 
 		let style;
 		yield `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${b.left} ${b.top} ${b.width} ${b.height}" width="${b.width}" height="${b.height}">`;
@@ -58,7 +58,7 @@ for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
 			case 'M 172.55 152.45 A 30.08739353948759 50.14565589914598 -45 0 1 215.1 109.9':
 				break;
 			default:
-				// const arc_seg = Path.fromPath(seg.toPath());
+				// const arc_seg = Path.parse(seg.toPath());
 				// console.dir(arc_seg);
 				// console.dir(cubic_segs, {depth:null});
 				const box = seg.bbox();
@@ -69,6 +69,7 @@ for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
 					len_epsilon: 0.082,
 					slope_epsilon: 5e-5,
 					point_epsilon: 0.8,
+					// point_epsilon: 1.5,
 					on_fail: function () {
 						console.error(`[${sp}]`);
 

@@ -30,12 +30,12 @@ export function test_segment(t, seg, item, opt = {}) {
 	const tan_opt = {delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon};
 
 	t.sameBox(seg, item.bbox, epsilon, 'BOX', [item, seg]);
-	t.almostEqual(seg.length(), item.length, len_epsilon, 'LEN', [item, seg]);
+	t.almostEqual(seg.length, item.length, len_epsilon, 'LEN', [item, seg]);
 
 	let pv, px, a, b;
 	for (const [T, {x, y, tx, ty, pathA, pathB}] of Object.entries(item.at)) {
 		pv = seg.pointAt(T).toArray();
-		px = [x, y];
+		px = [x, y, 0];
 		// console.error(pv, px);
 		t.almostEqual(pv, px, {epsilon:point_epsilon, on_fail:opt?.on_fail}, `pointAt(${T})`, [item, seg, pv, px]);
 
@@ -95,8 +95,8 @@ export function test_segment(t, seg, item, opt = {}) {
 		let rev = seg.reversed();
 		let bak = rev.reversed();
 		if (seg instanceof Path) {
-			t.notSame(seg.segs, rev.segs);
-			t.same(bak.segs, seg.segs);
+			t.notSame(seg._segs, rev._segs);
+			t.same(bak._segs, seg._segs);
 		} else {
 			t.notSame(seg, rev);
 			t.same(bak, seg);

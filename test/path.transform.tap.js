@@ -20,9 +20,9 @@ for await (const item of enum_path_data({DATA: 'transforms', ARCS: 'no'})) {
 	}
 
 	test.test(`<${d}>`, {bail: !CI, timeout: 30000}, function (t) {
-		const p = Path.fromPath(item.d);
+		const p = Path.parse(item.d);
 		for (const [i, [T, A]] of item.transforms.entries()) {
-			const m = Matrix.fromTransform(T);
+			const m = Matrix.parse(T);
 			let p2;
 			try {
 				p2 = p.transform(m);

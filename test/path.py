@@ -163,6 +163,7 @@ if 1:
 
     def _tokenize_path(pathdef):
         for x in COMMAND_RE.split(pathdef):
+            # assert(x in  COMMANDS)
             if x in COMMANDS:
                 yield x
             for token in FLOAT_RE.findall(x):
