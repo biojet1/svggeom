@@ -9,7 +9,7 @@
         "c8report": "c8 report -r text-lcov > coverage/lcov.info",
         "clean": "gts clean",
         "prepare": "tsc -d",
-        "up:devel": "python -B -m ghdevapi up -A biojet1/svggeom . -m . -r devel -a",
+        "up:devel": "python -B -m ghdevapi.up -A biojet1/svggeom . -m . -r devel -a",
         "test": "c8 npx tap -t600 --no-coverage --reporter=terse 'test/*.tap.*js'",
         "lint": "gts lint"
     },

@@ -141,9 +141,20 @@ export class VecRay {
 		const dx = [x1 - x2, x3 - x4];
 		const dy = [y1 - y2, y3 - y4];
 		const d = dx[0] * dy[1] - dy[0] * dx[1];
+		if (d === 0) {
+			if (dx[0] === 0) {
+				if (dy[0] === 0) {
+				}
+			} else if (dy[0] === 0) {
+			}
+		}
 		return Point.at((e1 * dx[1] - dx[0] * e2) / d, (e1 * dy[1] - dy[0] * e2) / d);
 	}
 
+	intersectOfRay(r: Iterable<number>): Point {
+		const {pos, head} = this;
+		return this.intersectOfLine(pos, pos.add(head));
+	}
 	// changed
 	// withH(a) {
 	// 	const {h, pos} = this;
@@ -164,43 +175,36 @@ export class Ray extends VecRay {
 	}
 
 	private _goto(v: Point) {
-		// this._pos = v;
-		// return this;
 		return new Ray(v, this._aim);
 	}
 
 	private _aimto(v: Point) {
-		// this._aim = v;
-		// return this;
 		return new Ray(this._pos, v);
 	}
 
 	private _set(p: Point, a: Point) {
-		// this._pos = p;
-		// this._aim = a;
-		// return this;
 		return new Ray(p, a);
 	}
 
-	private _withPos(p: Point) {
-		return new Ray(p, this._aim);
-	}
+	// private _withPos(p: Point) {
+	// 	return new Ray(p, this._aim);
+	// }
 
-	private _withAim(a: Point) {
-		return new Ray(this._pos, a);
-	}
+	// private _withAim(a: Point) {
+	// 	return new Ray(this._pos, a);
+	// }
 
-	private _with(p: Point, a: Point) {
-		return new Ray(p, a);
-	}
-	// copy
+	// private _with(p: Point, a: Point) {
+	// 	return new Ray(p, a);
+	// }
 
-	turned(rad: NumOrVec) {
-		return Ray.at(this._pos).turn(rad);
-	}
-
-	moved(x: NumOrVec, y?: number) {
-		return Ray.at(x, y).turn(this._aim);
+	withHead(rad: NumOrVec) {
+		// turned
+		if (typeof rad === 'object') {
+			return this._aimto(Point.at(...rad));
+		} else {
+			return this._aimto(Point.radians(rad));
+		}
 	}
 
 	withH(h = 0) {
@@ -224,7 +228,7 @@ export class Ray extends VecRay {
 	forward(d: number) {
 		// forwarded
 		const {pos, head} = this;
-		return this._goto(head.mul(d).postAdd(pos));
+		return this._goto(head.normalize().mul(d).postAdd(pos));
 	}
 
 	back(d?: number) {
@@ -331,6 +335,12 @@ export class Ray extends VecRay {
 		return Point.new(p).nearestPointOfLine(pos, pos.add(head));
 	}
 
+	// pointIntersect(r: Ray): Point {
+	// 	head.mul(d).postAdd(pos)
+	// 	const {pos, head} = this;
+	// 	// return pos.nearestPointOfLine(pos, pos.add(head));
+	// 	return Point.new(p).nearestPointOfLine(pos, pos.add(head));
+	// }
 	// Calc Aim
 
 	normalToSide(a: Iterable<number>) {
@@ -377,7 +387,9 @@ export class Ray extends VecRay {
 	static at(x: NumOrVec, y?: number) {
 		return new this(Pt(x, y), Point.at(1, 0));
 	}
-
+	static head(x: NumOrVec, y?: number) {
+		return new this(Point.at(1, 0), Pt(x, y));
+	}
 	static towards(x: NumOrVec, y?: number) {
 		return Ray.new().towards(Pt(x, y));
 	}

@@ -10,10 +10,11 @@ export class Point {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		if (!(isFinite(this.x) && isFinite(this.y))) throw TypeError(`Not finite ${JSON.stringify(arguments)}`);
+		if (!(isFinite(this.x) && isFinite(this.y) && isFinite(this.z)))
+			throw TypeError(`Not finite ${JSON.stringify(arguments)}`);
 	}
 
-	// Query methods
+	// **** Query methods ****
 
 	get angle() {
 		return this.radians;
@@ -53,13 +54,13 @@ export class Point {
 	dot(p: Iterable<number>) {
 		const [x1, y1, z1] = this;
 		const [x2, y2 = 0, z2 = 0] = p;
-		return x1 * x2 + y1 * y2;
+		return x1 * x2 + y1 * y2 + z1 * z2;
 	}
 
 	cross(p: Iterable<number>) {
-		const [x1, y1, z1] = this;
-		const [x2, y2 = 0, z2 = 0] = p;
-		return x1 * y2 - y1 * x2;
+		const [a, b, c] = this;
+		const [x, y = 0, z = 0] = p;
+		return new Point(b * z - c * y, c * x - a * z, a * y - b * x);
 	}
 
 	equals(p: Iterable<number>) {
@@ -148,6 +149,11 @@ export class Point {
 		const abs = this.abs();
 		if (!abs) throw new TypeError("Can't normalize vector of zero length");
 		return this.div(abs);
+		// const {x, y, z} = this;
+		// if(x){
+		// 	if(y==0,)
+		// }
+		// return x * x + y * y + z * z;
 	}
 
 	reflectAt(p: Iterable<number>) {
@@ -211,21 +217,13 @@ export class Point {
 	mut() {
 		return Object.isFrozen(this) ? this.clone() : this;
 	}
-	// static methods
+	//***** static methods ****
 
 	static new(x?: number[] | Iterable<number> | number, y?: number, z?: number) {
 		if (typeof x == 'number') {
-			return new Point(x, y as number);
-			// } else if (Array.isArray(x)) {
-			// 	return new Point(...x);
+			return new Point(x, y as number, z as number);
 		} else if (x) {
 			return new Point(...x);
-			// } else if (x) {
-			// 	const { x, y, z } = x;
-			// 	return new Point(x, y, z);
-			// } else if (x) {
-			// 	const [ x, y, z ] = x;
-			// 	return new Point(x, y ?? 0, z ?? 0);
 		} else {
 			return new Point();
 		}
@@ -234,14 +232,6 @@ export class Point {
 	static at(x: number = 0, y: number = 0, z: number = 0) {
 		return new Point(x, y, z);
 	}
-
-	// static fromArray(v: number[]) {
-	// 	return new Point(...v);
-	// }
-
-	// static fromPolar(radius: number = 1, theta: number = 0) {
-	// 	return Point.polar(radius, theta);
-	// }
 
 	static polar(radius: number = 1, theta: number = 0, phi: number = 0) {
 		return radius ? new Point(radius * cos(theta), radius * sin(theta)) : new Point();
@@ -270,8 +260,6 @@ export class Point {
 		const [x2, y2 = 0, z2 = 0] = b;
 		return new Point(x1 - x2, y1 - y2, z1 - z2);
 	}
-
-
 }
 
 export const Vector = Point;

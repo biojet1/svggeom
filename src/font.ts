@@ -12,7 +12,7 @@ export interface IFontCache {
 export interface IFontMap {
 	[key: string]: string;
 }
-
+export {Font};
 export class FontCache {
 	private _cacheDir?: string;
 	private _cacheFonts?: IFontCache;
@@ -47,6 +47,7 @@ export class FontCache {
 				'roboto-regular':
 					'https://raw.githubusercontent.com/google/fonts/blob/main/apache/roboto/static/Roboto-Regular.ttf',
 				'ubuntu-regular': 'https://raw.githubusercontent.com/google/fonts/main/ufl/ubuntu/Ubuntu-Regular.ttf',
+				'latin-modern-math': 'https://mirrors.rit.edu/CTAN/fonts/lm-math/opentype/latinmodern-math.otf',
 			})
 		);
 	}
