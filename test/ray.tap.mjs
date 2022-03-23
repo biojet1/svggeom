@@ -5,7 +5,7 @@ import test from 'tap';
 const CI = !!process.env.CI;
 
 test.test(`constructor`, {bail: !CI}, function (t) {
-	let ray = new Ray();
+	let ray = Ray.new();
 	const {x, y, h, v} = ray;
 	t.match([x, y, h, v], [0, 0, 1, 0]);
 	const {
@@ -18,7 +18,7 @@ test.test(`constructor`, {bail: !CI}, function (t) {
 });
 
 test.test(`clone`, {bail: !CI}, function (t) {
-	let ray = new Ray();
+	let ray = Ray.new();
 	let ray2 = ray.clone();
 	t.ok(ray2);
 	t.ok(ray2 instanceof Ray);
@@ -27,22 +27,19 @@ test.test(`clone`, {bail: !CI}, function (t) {
 });
 
 test.test(`forward, back`, {bail: !CI}, function (t) {
-	let ray = new Ray();
-
 	{
-		let {x, y, h, v} = ray.forward(3);
+		let {x, y, h, v} = Ray.new().forward(3);
 		t.match([x, y, h, v], [3, 0, 1, 0]);
 	}
-	// console.log(ray, ray.back)
 	{
-		let {x, y, h, v} = ray.back(4);
+		let {x, y, h, v} = Ray.new().forward(3).back(4);
 		t.match([x, y, h, v], [-1, 0, 1, 0]);
 	}
 	t.end();
 });
 
 test.test(`left`, {bail: !CI}, function (t) {
-	let ray = new Ray();
+	let ray = Ray.new();
 
 	// 30°–60°–90° triangle
 	let {x, y, h, v, heading, headingd} = ray
@@ -62,7 +59,7 @@ test.test(`left`, {bail: !CI}, function (t) {
 });
 
 test.test(`right`, {bail: !CI}, function (t) {
-	let ray = new Ray();
+	let ray = Ray.new();
 
 	// 45°–45°–90° triangle
 	let {x, y, h, v, heading, headingd} = ray
@@ -84,26 +81,26 @@ test.test(`right`, {bail: !CI}, function (t) {
 });
 
 test.test(`leftd`, {bail: !CI}, function (t) {
-	let ray = new Ray();
+	let ray = Ray.new();
 
 	// 30°–60°–90° triangle
-	ray.leftd(60).forward(2);
+	ray = ray.leftd(60).forward(2);
 
 	t.almostEqual(ray.x, 1, 1e-11);
 	t.almostEqual(ray.y, Math.sqrt(3), 1e-11);
 	t.almostEqual(ray.heading, Math.PI / 3, 1e-11);
 
-	ray.leftd(30).back(Math.sqrt(3));
+	ray = ray.leftd(30).back(Math.sqrt(3));
 	t.almostEqual(ray.x, 1, 1e-11);
 	t.almostEqual(ray.y, 0, 1e-11);
 	t.almostEqual(ray.headingd, 90, 1e-11);
 
-	ray.leftd(90).forward(1);
+	ray = ray.leftd(90).forward(1);
 	t.almostEqual(ray.x, 0, 1e-11);
 	t.almostEqual(ray.y, 0, 1e-11);
 	t.almostEqual(ray.headingd, 180, 1e-11);
 
-	ray.leftd(180);
+	ray = ray.leftd(180);
 	t.almostEqual(ray.x, 0, 1e-11);
 	t.almostEqual(ray.y, 0, 1e-11);
 	t.almostEqual(ray.headingd % 360, 0, 1e-11);
@@ -111,28 +108,28 @@ test.test(`leftd`, {bail: !CI}, function (t) {
 });
 
 test.test(`rightd`, {bail: !CI}, function (t) {
-	let ray = new Ray();
+	let ray = Ray.new();
 
 	// 45°–45°–90° triangle
-	ray.rightd(45).forward(Math.sqrt(2));
+	ray = ray.rightd(45).forward(Math.sqrt(2));
 
 	t.almostEqual(ray.x, 1, 1e-11);
 	t.almostEqual(ray.y, -1, 1e-11);
 	t.almostEqual(ray.heading, Math.PI * 2 - Math.PI / 4, 1e-11);
 
-	ray.rightd(180).back(Math.sqrt(2));
+	ray = ray.rightd(180).back(Math.sqrt(2));
 	t.almostEqual(ray.x, 2, 1e-11);
 	t.almostEqual(ray.y, -2, 1e-11);
 
-	ray.rightd(90).forward(Math.sqrt(2) * 2);
+	ray = ray.rightd(90).forward(Math.sqrt(2) * 2);
 	t.almostEqual(ray.x, 4, 1e-11);
 	t.almostEqual(ray.y, 0, 1e-11);
 	t.end();
 });
 
 test.test(`delta`, {bail: !CI}, function (t) {
-	let A = new Ray();
-	let B = new Ray();
+	let A = Ray.new();
+	let B = Ray.new();
 
 	t.same(A.delta(-3, 4).toArray(), [-3, 4, 0]);
 	// t.almostEqual(ray.distance(Point.at(-3, -4)), 5, 1e-11);
@@ -142,8 +139,8 @@ test.test(`delta`, {bail: !CI}, function (t) {
 });
 
 test.test(`distance`, {bail: !CI}, function (t) {
-	let ray = new Ray();
-	let B = new Ray();
+	let ray = Ray.new();
+	let B = Ray.new();
 
 	t.almostEqual(ray.distance(8, 15), 17, 1e-11);
 	t.almostEqual(ray.distance(Point.at(-3, -4)), 5, 1e-11);
@@ -153,19 +150,15 @@ test.test(`distance`, {bail: !CI}, function (t) {
 });
 
 test.test(`goto`, {bail: !CI}, function (t) {
-	let A = new Ray();
-	A.goto(1, Math.sqrt(3)).towards(0, 0);
+	let A = Ray.at(9, 8).goto(1, Math.sqrt(3)).towards(0, 0);
 
 	t.almostEqual(A.headingd, 180 + 60, 1e-11);
-
-	// A.goto(10, 10).translate(-3, -4)
 
 	t.end();
 });
 
 test.test(`towards`, {bail: !CI}, function (t) {
-	let A = new Ray();
-	A.towards(1, Math.sqrt(3));
+	let A = Ray.new().towards(1, Math.sqrt(3));
 
 	t.almostEqual(A.headingd, 60, 1e-11);
 
@@ -173,8 +166,7 @@ test.test(`towards`, {bail: !CI}, function (t) {
 });
 
 test.test(`away`, {bail: !CI}, function (t) {
-	let A = new Ray();
-	A.away(1, Math.sqrt(3));
+	let A = Ray.new().away(1, Math.sqrt(3));
 
 	t.almostEqual(A.headingd, 180 + 60, 1e-11);
 
@@ -226,20 +218,20 @@ function* spiralOfTheodorus(opt) {
 
 test.test(`Spiral of Theodorus`, {bail: !CI}, function (t) {
 	const {PI} = Math;
-	let A = new Ray();
-	let B = new Ray();
+	let A = Ray.new();
+	let B = Ray.new();
 	let O = Point.at(4, 4);
 	for (const [n, r, x, y, φ, φsum] of spiralOfTheodorus({
 		n: CI ? 444 : 13,
 		scale: Math.E,
 	})) {
 		if (n === 1) {
-			B.translate(x, y).left();
+			B = B.translate(x, y).left();
 			O = Ray.new(x, y).left(φ).back(r).pos.clone();
 		}
 		const P = Point.at(x, y);
 		// console.log(n, r, x, y, (φ / PI) * 180, (φsum / PI) * 180);
-		A.reset().left(φsum).forward(r);
+		A = Ray.home.left(φsum).forward(r);
 
 		t.almostEqual(A.x, x, 1e-11);
 		t.almostEqual(A.y, y, 1e-11);
@@ -247,7 +239,7 @@ test.test(`Spiral of Theodorus`, {bail: !CI}, function (t) {
 		t.almostEqual(B.y, y, 1e-11);
 		t.almostEqual(B.distance(O), r, 1e-11);
 
-		B.left(φ).forward(1);
+		B = B.left(φ).forward(1);
 
 		t.ok(B.clone().back(1).pos.closeTo(P));
 		t.almostEqual(B.distanceFromLine(O, P), 1, 1e-11);
@@ -295,10 +287,10 @@ test.test(`RegularPentagon`, {bail: !CI}, function (t) {
 
 	[x, y] = A.clone().toNearestPointOfLine(Point.at(-c2, -s2), Point.at(c1, -s1)).pos.toArray();
 
-	A.toMidPoint(Point.at(-c2, -s2), Point.at(c1, -s1));
+	A = A.toMidPoint(Point.at(-c2, -s2), Point.at(c1, -s1));
 	t.almostEqual(A.x, x, 1e-11);
 	t.almostEqual(A.y, y, 1e-11);
-	A.toNearestPointFromPoint(Point.at(c1, -s1));
+	A = A.toNearestPointFromPoint(Point.at(c1, -s1));
 	t.almostEqual(A.x, x, 1e-11);
 	t.almostEqual(A.y, y, 1e-11);
 
@@ -306,9 +298,9 @@ test.test(`RegularPentagon`, {bail: !CI}, function (t) {
 	t.almostEqual(x, 0, 1e-11);
 	t.almostEqual(y, 0, 1e-11);
 
-	t.almostEqual(Ray.goto(1, 0).distanceFromLine(Point.at(-c2, s2), Point.at(-c2, -s2)), r + R, 1e-11);
-	t.almostEqual(Ray.goto(0, 1).distanceFromLine(Point.at(-s2, -c2), Point.at(s2, -c2)), r + R, 1e-11);
-	t.ok(isNaN(Ray.goto(1, 0).distanceFromLine(Point.at(-s2, -c2), Point.at(-s2, -c2))));
+	t.almostEqual(Ray.at(1, 0).distanceFromLine(Point.at(-c2, s2), Point.at(-c2, -s2)), r + R, 1e-11);
+	t.almostEqual(Ray.at(0, 1).distanceFromLine(Point.at(-s2, -c2), Point.at(s2, -c2)), r + R, 1e-11);
+	t.ok(isNaN(Ray.at(1, 0).distanceFromLine(Point.at(-s2, -c2), Point.at(-s2, -c2))));
 	// console.log(Array.from(Ray.away(Point.at(c1, s1)).leftd(72 / 2)))
 	t.almostEqual(
 		Array.from(
@@ -329,18 +321,18 @@ test.test(`RegularPentagon`, {bail: !CI}, function (t) {
 	A = Ray.towards(s1, c1);
 	t.almostEqual(
 		Array.from(A.intersectOfLine(Point.at(-s1, c1), Point.at(-s2, -c2))),
-		Array.from(Ray.goto(4, 4).toMidPoint(Point.at(-s1, c1), Point.at(-s2, -c2)))
+		Array.from(Ray.at(4, 4).toMidPoint(Point.at(-s1, c1), Point.at(-s2, -c2)))
 	);
 	t.almostEqual(
 		Array.from(A.nearestPointFromPoint(Point.at(-s2, -c2))),
-		Array.from(Ray.goto(4, 4).toMidPoint(Point.at(-s1, c1), Point.at(-s2, -c2)))
+		Array.from(Ray.at(4, 4).toMidPoint(Point.at(-s1, c1), Point.at(-s2, -c2)))
 	);
 
-	A = Ray.goto(-s1, c1)
+	A = Ray.at(-s1, c1)
 		.turnd(-18)
 		.back()
 		.back(r + R);
-	t.almostEqual(Array.from(A), Array.from(Ray.goto(4, 4).toMidPoint(Point.at(s1, c1), Point.at(s2, -c2))));
+	t.almostEqual(Array.from(A), Array.from(Ray.at(4, 4).toMidPoint(Point.at(s1, c1), Point.at(s2, -c2))));
 	t.almostEqual(Array.from(A.along(-1, s1, c1)), Array.from(Point.at(s2, -c2)));
 
 	t.end();
@@ -388,6 +380,33 @@ test.test(`draw`, {bail: !CI}, function (t) {
 	t.equal(Draw.moveTo(Point.at(1, 2)).quadraticCurveTo(3, 4, 5, 6) + '', s);
 	t.equal(Draw.moveTo(Point.at(1, 2)).quadraticCurveTo(3, 4, Point.at(5, 6)) + '', s);
 	t.equal(Draw.moveTo(Point.at(1, 2)).quadraticCurveTo(Point.at(3, 4), Point.at(5, 6)) + '', s);
+
+	t.end();
+});
+
+test.test(`pointAlong`, {bail: !CI}, function (t) {
+	const {PI, E, LN10, LOG2E, sqrt} = Math;
+	let r = Ray.new().turnd(53.13010235415598);
+
+	t.almostEqual(Array.from(r.pointAlong(+5)), [+3, +4, 0]);
+	t.almostEqual(Array.from(r.pointAlong(-5)), [-3, -4, 0]);
+
+	t.end();
+});
+
+test.test(`with*`, {bail: !CI}, function (t) {
+	const {PI, E, LN10, LOG2E, sqrt} = Math;
+	let r = Ray.new([1, 2], [3, 4]);
+
+	{
+		const {x, y, z, h, v} = r.withH(5);
+		t.match([x, y, z, h, v], [1, 2, 0, 5, 4]);
+	}
+
+	{
+		const {x, y, z, h, v} = r.withV(5);
+		t.match([x, y, z, h, v], [1, 2, 0, 3, 5]);
+	}
 
 	t.end();
 });

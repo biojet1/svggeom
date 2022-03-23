@@ -13,7 +13,10 @@ test.test(`point properties`, {bail: !CI}, function (t) {
 	t.notOk(p.equals());
 	t.notOk(p.equals(null));
 	t.notOk(p.equals(undefined));
+	t.notOk(p.equals(Point.at(3, 4, -5)));
+	t.notOk(p.equals([3, 4, 5.00001]));
 	t.ok(p.equals(p));
+	t.ok(p.equals([3, 4, 5]));
 	t.ok(p.clone().equals(p));
 	t.not(p.clone(), p);
 	t.same(p.reflectAt(Point.at()).toArray(), [-3, -4, -5], 'reflectAt');
@@ -22,10 +25,12 @@ test.test(`point properties`, {bail: !CI}, function (t) {
 
 test.test(`point construct`, {bail: !CI}, function (t) {
 	t.throws(() => Point.at(5, NaN), TypeError, 'must be finite');
-	t.same(Array.from(Point.fromArray([42, 72])), [42, 72, 0], 'fromArray');
+	t.same(Array.from(Point.new([42, 72])), [42, 72, 0], 'fromArray');
 	t.strictSame(Point.new().toString(), '0, 0', 'Point.new()');
 	t.strictSame(Point.new(-1).toString(), '-1, 0', 'Point.new(number)');
+	t.strictSame(Point.new(-2, -3, -5).toString(), '-2, -3, -5', 'Point.new(...)');
 	t.strictSame(Point.new([42, 72]).toString(), '42, 72', 'Point.new(array)');
+	t.strictSame(Point.add([2, 4, 6], [-2, -4, 1]).toString(), '0, 0, 7', 'Point.add(...)');
 
 	t.throws(() => Point.new(NaN), TypeError, 'must be finite');
 	t.end();
@@ -34,12 +39,14 @@ test.test(`point construct`, {bail: !CI}, function (t) {
 test.test(`point extra`, {bail: !CI}, function (t) {
 	t.throws(() => Point.at(0, 0).normalize(), TypeError, 'normalize vector of zero length');
 	t.same(Point.at(5, 7).normalize(), Point.at(0.5812381937190965, 0.813733471206735));
+	t.same(Point.at(0, 7).normalize(), Point.at(0, 1));
+	t.same([...Point.at(8, 0).normalize()], [1, 0, 0]);
 	if (Point.at(8, 6).normal().x < 0) {
 		t.same(Point.at(8, 6).normal(), Point.at(-6, 8));
 	} else {
 		t.same(Point.at(8, 6).normal(), Point.at(6, -8));
 	}
-	let A = Point.fromPolar(4, (337.11417665550067 / 180) * Math.PI);
+	let A = Point.polar(4, (337.11417665550067 / 180) * Math.PI);
 	let [X, Y, Z] = A;
 
 	t.almostEqual(X, 3.6851266321570497, 1e-11);
@@ -73,5 +80,13 @@ test.test(`pentagon extra`, {bail: !CI}, function (t) {
 	t.almostEqual(degrees(Point.at(s1, c1).angleTo(Point.at(s2, -c2))), 72 + 180, 1e-11);
 	t.almostEqual(degrees(Point.at(-s2, -c2).angleTo(Point.at(0, 1))), 72, 1e-11);
 	t.almostEqual(degrees(Point.at(-s2, -c2).angleTo(Point.at(s2, -c2))), 0, 1e-11);
+	t.end();
+});
+
+test.test(`cross`, {bail: !CI}, function (t) {
+	const a = Point.at(1, 3, 4);
+	const b = Point.at(2, 7, -5);
+	t.same(Array.from(a.cross(b)), [-43, 13, 1]);
+	t.same(Array.from(b.cross(a)), [43, -13, -1]);
 	t.end();
 });

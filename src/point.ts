@@ -1,4 +1,4 @@
-const { sqrt, abs, acos, sign, cos, sin, hypot, atan2, PI } = Math;
+const {sqrt, abs, acos, sign, cos, sin, hypot, atan2, PI} = Math;
 const TAU = PI * 2;
 
 export class Point {
@@ -10,18 +10,18 @@ export class Point {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		if (!(isFinite(this.x) && isFinite(this.y)))
+		if (!(isFinite(this.x) && isFinite(this.y) && isFinite(this.z)))
 			throw TypeError(`Not finite ${JSON.stringify(arguments)}`);
 	}
 
-	// Query methods
+	// **** Query methods ****
 
 	get angle() {
 		return this.radians;
 	}
 
 	get radians() {
-		const { x, y } = this;
+		const {x, y} = this;
 		let r = atan2(y, x);
 		return r < 0 ? r + TAU : r;
 	}
@@ -41,72 +41,107 @@ export class Point {
 	}
 
 	absQuad() {
-		const { x, y, z } = this;
+		const {x, y, z} = this;
 		return x * x + y * y + z * z;
 	}
 
-	closeTo(p: Point, epsilon = 1e-12) {
-		const { x: x1, y: y1 } = this;
-		const { x: x2, y: y2 } = p;
-		return abs(x1 - x2) < epsilon && abs(y1 - y2) < epsilon;
+	closeTo(p: Iterable<number>, epsilon = 1e-12) {
+		const [x1, y1, z1] = this;
+		const [x2, y2 = 0, z2 = 0] = p;
+		return abs(x1 - x2) < epsilon && abs(y1 - y2) < epsilon && abs(z1 - z2) < epsilon;
 	}
 
-	dot(p: Point) {
-		const { x: x1, y: y1 } = this;
-		const { x: x2, y: y2 } = p;
-		return x1 * x2 + y1 * y2;
+	dot(p: Iterable<number>) {
+		const [x1, y1, z1] = this;
+		const [x2, y2 = 0, z2 = 0] = p;
+		return x1 * x2 + y1 * y2 + z1 * z2;
 	}
 
-	cross(p: Point) {
-		const { x: x1, y: y1 } = this;
-		const { x: x2, y: y2 } = p;
-		return x1 * y2 - y1 * x2;
+	cross(p: Iterable<number>) {
+		const [a, b, c] = this;
+		const [x, y = 0, z = 0] = p;
+		return new Point(b * z - c * y, c * x - a * z, a * y - b * x);
 	}
 
-	equals(p: Point) {
-		return p && (p === this || (this.x === p.x && this.y === p.y));
+	equals(p: Iterable<number>) {
+		if (!p) {
+			return false;
+		} else if (p === this) {
+			return true;
+		}
+		const [x1, y1, z1] = this;
+		const [x2, y2 = 0, z2 = 0] = p;
+		return x1 === x2 && y1 === y2 && z1 === z2;
 	}
 
-	angleTo(p: Point) {
-		return p.sub(this).angle;
+	angleTo(p: Iterable<number>) {
+		// return p.sub(this).angle;
+		return this.postSubtract(p).angle;
 	}
 
 	toString() {
-		const { x, y, z } = this;
+		const {x, y, z} = this;
 		return z ? `${x}, ${y}, ${z}` : `${x}, ${y}`;
 	}
 
 	toArray() {
-		const { x, y, z } = this;
+		const {x, y, z} = this;
 		return [x, y, z];
 	}
 
 	// Methods returning new Point
 
 	normal() {
-		const { x, y, z } = this;
+		const {x, y, z} = this;
 		return new Point(y, -x, z);
 	}
 
+	xpart() {
+		const {x} = this;
+		return new Point(x, 0, 0);
+	}
+
+	ypart() {
+		const {y} = this;
+		return new Point(0, y, 0);
+	}
+
+	zpart() {
+		const {z} = this;
+		return new Point(0, 0, z);
+	}
+
 	div(factor: number) {
-		const { x, y, z } = this;
+		const {x, y, z} = this;
 		return new Point(x / factor, y / factor, z / factor);
 	}
 
-	add(p: Point) {
-		const { x: x1, y: y1, z: z1 } = this;
-		const { x: x2, y: y2, z: z2 } = p;
+	add(p: Iterable<number>) {
+		const [x1, y1, z1] = this;
+		const [x2, y2 = 0, z2 = 0] = p;
 		return new Point(x1 + x2, y1 + y2, z1 + z2);
 	}
 
-	sub(p: Point) {
-		const { x: x1, y: y1, z: z1 } = this;
-		const { x: x2, y: y2, z: z2 } = p;
+	sub(p: Iterable<number>) {
+		const [x1, y1, z1] = this;
+		const [x2, y2 = 0, z2 = 0] = p;
 		return new Point(x1 - x2, y1 - y2, z1 - z2);
 	}
 
+	postSubtract(p: Iterable<number>) {
+		const [x1, y1 = 0, z1 = 0] = p;
+		const [x2, y2, z2] = this;
+		return new Point(x1 - x2, y1 - y2, z1 - z2);
+	}
+
+	postAdd(p: Iterable<number>) {
+		const [x1, y1 = 0, z1 = 0] = p;
+		const [x2, y2, z2] = this;
+		return new Point(x1 + x2, y1 + y2, z1 + z2);
+	}
+
 	mul(factor: number) {
-		const { x, y, z } = this;
+		const {x, y, z} = this;
 		return new Point(x * factor, y * factor, z * factor);
 	}
 
@@ -114,15 +149,21 @@ export class Point {
 		const abs = this.abs();
 		if (!abs) throw new TypeError("Can't normalize vector of zero length");
 		return this.div(abs);
+		// const {x, y, z} = this;
+		// if(x){
+		// 	if(y==0,)
+		// }
+		// return x * x + y * y + z * z;
 	}
 
-	reflectAt(p: Point) {
-		return p.add(p.sub(this));
+	reflectAt(p: Iterable<number>) {
+		// return p.add(p.sub(this));
+		return this.postSubtract(p).postAdd(p);
 	}
 
 	transform(matrix: any) {
-		const { x, y } = this;
-		const { a, b, c, d, e, f } = matrix;
+		const {x, y} = this;
+		const {a, b, c, d, e, f} = matrix;
 
 		return new Point(a * x + c * y + e, b * x + d * y + f);
 	}
@@ -134,15 +175,21 @@ export class Point {
 	//     return self.__class__(x * cs - y * sn, x * sn + y * cs)
 
 	rotated(rad: number) {
-		const { x, y } = this;
+		const {x, y, z} = this;
 		const [cs, sn] = [cos(rad), sin(rad)];
-		return new Point(x * cs - y * sn, x * sn + y * cs);
+		return new Point(x * cs - y * sn, x * sn + y * cs, z);
 	}
 
 	clone() {
 		return new Point(...this);
 	}
 
+	nearestPointOfLine(a: Iterable<number>, b: Iterable<number>): Point {
+		const a_to_p = this.sub(a); // a → p
+		const a_to_b = Point.subtract(b, a); // a → b
+		const t = a_to_p.dot(a_to_b) / a_to_b.absQuad();
+		return a_to_b.mul(t).postAdd(a);
+	}
 	// Modify self methods
 
 	// divideSelf(factor: number) {
@@ -152,11 +199,12 @@ export class Point {
 	// 	this.z = z / factor;
 	// 	return this;
 	// }
+	// isolateX
 
 	// Misc methods
 
 	*[Symbol.iterator](): Iterator<number> {
-		const { x, y, z } = this;
+		const {x, y, z} = this;
 		yield x;
 		yield y;
 		yield z;
@@ -169,21 +217,13 @@ export class Point {
 	mut() {
 		return Object.isFrozen(this) ? this.clone() : this;
 	}
-	// static methods
+	//***** static methods ****
 
-	static new(x?: number[] | Point | number, y?: number, z?: number) {
-		if (typeof x == "number") {
-			return new Point(x, y as number);
-		// } else if (Array.isArray(x)) {
-		// 	return new Point(...x);
+	static new(x?: number[] | Iterable<number> | number, y?: number, z?: number) {
+		if (typeof x == 'number') {
+			return new Point(x, y as number, z as number);
 		} else if (x) {
 			return new Point(...x);
-		// } else if (x) {
-		// 	const { x, y, z } = x;
-		// 	return new Point(x, y, z);
-		// } else if (x) {
-		// 	const [ x, y, z ] = x;
-		// 	return new Point(x, y ?? 0, z ?? 0);
 		} else {
 			return new Point();
 		}
@@ -193,18 +233,8 @@ export class Point {
 		return new Point(x, y, z);
 	}
 
-	static fromArray(v: number[]) {
-		return new Point(...v);
-	}
-
-	static fromPolar(radius: number = 1, theta: number = 0) {
-		return Point.polar(radius, theta);
-	}
-
 	static polar(radius: number = 1, theta: number = 0, phi: number = 0) {
-		return radius
-			? new Point(radius * cos(theta), radius * sin(theta))
-			: new Point();
+		return radius ? new Point(radius * cos(theta), radius * sin(theta)) : new Point();
 	}
 
 	static radians(n: number) {
@@ -217,6 +247,18 @@ export class Point {
 
 	static grade(n: number) {
 		return Point.degrees((n * 9) / 10);
+	}
+
+	static add(a: Iterable<number>, b: Iterable<number>) {
+		const [x1, y1 = 0, z1 = 0] = a;
+		const [x2, y2 = 0, z2 = 0] = b;
+		return new Point(x1 + x2, y1 + y2, z1 + z2);
+	}
+
+	static subtract(a: Iterable<number>, b: Iterable<number>) {
+		const [x1, y1 = 0, z1 = 0] = a;
+		const [x2, y2 = 0, z2 = 0] = b;
+		return new Point(x1 - x2, y1 - y2, z1 - z2);
 	}
 }
 
