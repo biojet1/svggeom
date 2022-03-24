@@ -8,12 +8,12 @@ test.test(`constructor`, {bail: !CI}, function (t) {
 	let ray = Ray.new();
 	const {x, y, h, v} = ray;
 	t.match([x, y, h, v], [0, 0, 1, 0]);
+
 	const {
-		heading,
-		headingd,
-		head: {x: vx, y: vy},
+		dir: {x: vx, y: vy, z: vz},
 	} = ray;
-	t.match([heading, headingd, vx, vy], [0, 0, 1, 0]);
+
+	t.match([vx, vy, vz], [1, 0, 0]);
 	t.end();
 });
 
@@ -42,7 +42,7 @@ test.test(`left`, {bail: !CI}, function (t) {
 	let ray = Ray.new();
 
 	// 30°–60°–90° triangle
-	let {x, y, h, v, heading, headingd} = ray
+	let {x, y, h, v, dir} = ray
 		.forward(1)
 		.left((Math.PI * 2) / 3) // 120deg
 		.forward(2)
@@ -50,8 +50,8 @@ test.test(`left`, {bail: !CI}, function (t) {
 
 	t.almostEqual(x, 0, 1e-11);
 	t.almostEqual(y, Math.sqrt(3), 1e-11);
-	t.almostEqual(headingd, 270, 1e-11);
-	t.almostEqual(heading, (Math.PI * 3) / 2, 1e-11);
+	t.almostEqual(dir.degrees, 270, 1e-11);
+	t.almostEqual(dir.radians, (Math.PI * 3) / 2, 1e-11);
 	t.almostEqual(h, 0, 1e-11);
 	t.almostEqual(v, -1, 1e-11);
 
@@ -62,7 +62,7 @@ test.test(`right`, {bail: !CI}, function (t) {
 	let ray = Ray.new();
 
 	// 45°–45°–90° triangle
-	let {x, y, h, v, heading, headingd} = ray
+	let {x, y, h, v, dir} = ray
 		.right()
 		.forward(1)
 		.right()
@@ -72,8 +72,8 @@ test.test(`right`, {bail: !CI}, function (t) {
 
 	t.almostEqual(x, 0, 1e-11);
 	t.almostEqual(y, 0, 1e-11);
-	t.almostEqual(headingd, 45, 1e-11);
-	t.almostEqual(heading, Math.PI * (1 / 4), 1e-11);
+	t.almostEqual(dir.degrees, 45, 1e-11);
+	t.almostEqual(dir.radians, Math.PI * (1 / 4), 1e-11);
 	// t.almostEqual(h, 0, 1e-11);
 	// t.almostEqual(v, -1, 1e-11);
 
@@ -88,22 +88,22 @@ test.test(`leftd`, {bail: !CI}, function (t) {
 
 	t.almostEqual(ray.x, 1, 1e-11);
 	t.almostEqual(ray.y, Math.sqrt(3), 1e-11);
-	t.almostEqual(ray.heading, Math.PI / 3, 1e-11);
+	t.almostEqual(ray.dir.radians, Math.PI / 3, 1e-11);
 
 	ray = ray.leftd(30).back(Math.sqrt(3));
 	t.almostEqual(ray.x, 1, 1e-11);
 	t.almostEqual(ray.y, 0, 1e-11);
-	t.almostEqual(ray.headingd, 90, 1e-11);
+	t.almostEqual(ray.dir.degrees, 90, 1e-11);
 
 	ray = ray.leftd(90).forward(1);
 	t.almostEqual(ray.x, 0, 1e-11);
 	t.almostEqual(ray.y, 0, 1e-11);
-	t.almostEqual(ray.headingd, 180, 1e-11);
+	t.almostEqual(ray.dir.degrees, 180, 1e-11);
 
 	ray = ray.leftd(180);
 	t.almostEqual(ray.x, 0, 1e-11);
 	t.almostEqual(ray.y, 0, 1e-11);
-	t.almostEqual(ray.headingd % 360, 0, 1e-11);
+	t.almostEqual(ray.dir.degrees % 360, 0, 1e-11);
 	t.end();
 });
 
@@ -115,7 +115,7 @@ test.test(`rightd`, {bail: !CI}, function (t) {
 
 	t.almostEqual(ray.x, 1, 1e-11);
 	t.almostEqual(ray.y, -1, 1e-11);
-	t.almostEqual(ray.heading, Math.PI * 2 - Math.PI / 4, 1e-11);
+	t.almostEqual(ray.dir.radians, Math.PI * 2 - Math.PI / 4, 1e-11);
 
 	ray = ray.rightd(180).back(Math.sqrt(2));
 	t.almostEqual(ray.x, 2, 1e-11);
@@ -152,7 +152,7 @@ test.test(`distance`, {bail: !CI}, function (t) {
 test.test(`goto`, {bail: !CI}, function (t) {
 	let A = Ray.at(9, 8).goto(1, Math.sqrt(3)).towards(0, 0);
 
-	t.almostEqual(A.headingd, 180 + 60, 1e-11);
+	t.almostEqual(A.dir.degrees, 180 + 60, 1e-11);
 
 	t.end();
 });
@@ -160,7 +160,7 @@ test.test(`goto`, {bail: !CI}, function (t) {
 test.test(`towards`, {bail: !CI}, function (t) {
 	let A = Ray.new().towards(1, Math.sqrt(3));
 
-	t.almostEqual(A.headingd, 60, 1e-11);
+	t.almostEqual(A.dir.degrees, 60, 1e-11);
 
 	t.end();
 });
@@ -168,7 +168,7 @@ test.test(`towards`, {bail: !CI}, function (t) {
 test.test(`away`, {bail: !CI}, function (t) {
 	let A = Ray.new().away(1, Math.sqrt(3));
 
-	t.almostEqual(A.headingd, 180 + 60, 1e-11);
+	t.almostEqual(A.dir.degrees, 180 + 60, 1e-11);
 
 	t.end();
 });

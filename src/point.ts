@@ -1,7 +1,7 @@
 const {sqrt, abs, acos, sign, cos, sin, hypot, atan2, PI} = Math;
 const TAU = PI * 2;
 
-export class Point {
+export class Vec {
 	readonly x: number;
 	readonly y: number;
 	readonly z: number;
@@ -60,7 +60,7 @@ export class Point {
 	cross(p: Iterable<number>) {
 		const [a, b, c] = this;
 		const [x, y = 0, z = 0] = p;
-		return new Point(b * z - c * y, c * x - a * z, a * y - b * x);
+		return new Vec(b * z - c * y, c * x - a * z, a * y - b * x);
 	}
 
 	equals(p: Iterable<number>) {
@@ -89,60 +89,60 @@ export class Point {
 		return [x, y, z];
 	}
 
-	// Methods returning new Point
+	// Methods returning new Vec
 
 	normal() {
 		const {x, y, z} = this;
-		return new Point(y, -x, z);
+		return new Vec(y, -x, z);
 	}
 
 	xpart() {
 		const {x} = this;
-		return new Point(x, 0, 0);
+		return new Vec(x, 0, 0);
 	}
 
 	ypart() {
 		const {y} = this;
-		return new Point(0, y, 0);
+		return new Vec(0, y, 0);
 	}
 
 	zpart() {
 		const {z} = this;
-		return new Point(0, 0, z);
+		return new Vec(0, 0, z);
 	}
 
 	div(factor: number) {
 		const {x, y, z} = this;
-		return new Point(x / factor, y / factor, z / factor);
+		return new Vec(x / factor, y / factor, z / factor);
 	}
 
 	add(p: Iterable<number>) {
 		const [x1, y1, z1] = this;
 		const [x2, y2 = 0, z2 = 0] = p;
-		return new Point(x1 + x2, y1 + y2, z1 + z2);
+		return new Vec(x1 + x2, y1 + y2, z1 + z2);
 	}
 
 	sub(p: Iterable<number>) {
 		const [x1, y1, z1] = this;
 		const [x2, y2 = 0, z2 = 0] = p;
-		return new Point(x1 - x2, y1 - y2, z1 - z2);
+		return new Vec(x1 - x2, y1 - y2, z1 - z2);
 	}
 
 	postSubtract(p: Iterable<number>) {
 		const [x1, y1 = 0, z1 = 0] = p;
 		const [x2, y2, z2] = this;
-		return new Point(x1 - x2, y1 - y2, z1 - z2);
+		return new Vec(x1 - x2, y1 - y2, z1 - z2);
 	}
 
 	postAdd(p: Iterable<number>) {
 		const [x1, y1 = 0, z1 = 0] = p;
 		const [x2, y2, z2] = this;
-		return new Point(x1 + x2, y1 + y2, z1 + z2);
+		return new Vec(x1 + x2, y1 + y2, z1 + z2);
 	}
 
 	mul(factor: number) {
 		const {x, y, z} = this;
-		return new Point(x * factor, y * factor, z * factor);
+		return new Vec(x * factor, y * factor, z * factor);
 	}
 
 	normalize() {
@@ -165,7 +165,7 @@ export class Point {
 		const {x, y} = this;
 		const {a, b, c, d, e, f} = matrix;
 
-		return new Point(a * x + c * y + e, b * x + d * y + f);
+		return new Vec(a * x + c * y + e, b * x + d * y + f);
 	}
 	// def rotate(self, angle):
 	//     """rotate self counterclockwise by angle"""
@@ -177,16 +177,16 @@ export class Point {
 	rotated(rad: number) {
 		const {x, y, z} = this;
 		const [cs, sn] = [cos(rad), sin(rad)];
-		return new Point(x * cs - y * sn, x * sn + y * cs, z);
+		return new Vec(x * cs - y * sn, x * sn + y * cs, z);
 	}
 
 	clone() {
-		return new Point(...this);
+		return new Vec(...this);
 	}
 
-	nearestPointOfLine(a: Iterable<number>, b: Iterable<number>): Point {
+	nearestPointOfLine(a: Iterable<number>, b: Iterable<number>): Vec {
 		const a_to_p = this.sub(a); // a → p
-		const a_to_b = Point.subtract(b, a); // a → b
+		const a_to_b = Vec.subtract(b, a); // a → b
 		const t = a_to_p.dot(a_to_b) / a_to_b.absQuad();
 		return a_to_b.mul(t).postAdd(a);
 	}
@@ -221,46 +221,46 @@ export class Point {
 
 	static new(x?: number[] | Iterable<number> | number, y?: number, z?: number) {
 		if (typeof x == 'number') {
-			return new Point(x, y as number, z as number);
+			return new Vec(x, y as number, z as number);
 		} else if (x) {
-			return new Point(...x);
+			return new Vec(...x);
 		} else {
-			return new Point();
+			return new Vec();
 		}
 	}
 
 	static at(x: number = 0, y: number = 0, z: number = 0) {
-		return new Point(x, y, z);
+		return new Vec(x, y, z);
 	}
-
+	static pos(x: number = 0, y: number = 0, z: number = 0) {
+		return new Vec(x, y, z);
+	}
 	static polar(radius: number = 1, theta: number = 0, phi: number = 0) {
-		return radius ? new Point(radius * cos(theta), radius * sin(theta)) : new Point();
+		return radius ? new Vec(radius * cos(theta), radius * sin(theta)) : new Vec();
 	}
 
 	static radians(n: number) {
-		return Point.polar(1, n);
+		return Vec.polar(1, n);
 	}
 
 	static degrees(n: number) {
-		return Point.radians((n * PI) / 180);
+		return Vec.radians((n * PI) / 180);
 	}
 
 	static grade(n: number) {
-		return Point.degrees((n * 9) / 10);
+		return Vec.degrees((n * 9) / 10);
 	}
 
 	static add(a: Iterable<number>, b: Iterable<number>) {
 		const [x1, y1 = 0, z1 = 0] = a;
 		const [x2, y2 = 0, z2 = 0] = b;
-		return new Point(x1 + x2, y1 + y2, z1 + z2);
+		return new Vec(x1 + x2, y1 + y2, z1 + z2);
 	}
 
 	static subtract(a: Iterable<number>, b: Iterable<number>) {
 		const [x1, y1 = 0, z1 = 0] = a;
 		const [x2, y2 = 0, z2 = 0] = b;
-		return new Point(x1 - x2, y1 - y2, z1 - z2);
+		return new Vec(x1 - x2, y1 - y2, z1 - z2);
 	}
 }
-
-export const Vector = Point;
-export const Vec = Point;
+export {Vec as Point};
