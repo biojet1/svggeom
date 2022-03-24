@@ -1,6 +1,6 @@
 'uses strict';
 import {spawn} from 'child_process';
-import {Point, Vector} from '../dist/index.js';
+import {Point, Vec} from '../dist/index.js';
 import './utils.js';
 
 import test from 'tap';
@@ -56,11 +56,11 @@ test.test(`point extra`, {bail: !CI}, function (t) {
 	const {PI, E, LN10, LOG2E} = Math;
 	t.almostEqual((Point.at(0, 0).angleTo(Point.at(3, 4)) * 180) / PI, 53.13010235415598, 1e-11);
 	t.almostEqual((Point.at(42, 42).angle * 180) / PI, 45, 1e-11);
-	const r = Point.at(-2.1830320757712625, -2.057758721559409).angleTo(Vector.at(0, 0));
+	const r = Point.at(-2.1830320757712625, -2.057758721559409).angleTo(Vec.at(0, 0));
 	console.log(r);
 	t.almostEqual((r / PI) * 180, 90 - (270 - 223.30796939966595), 1e-11);
-	t.almostEqual(Vector.grade(33.33333333333333333).angle, (30 / 180) * PI, 1e-11);
-	t.almostEqual(Vector.polar(0, PI / 2 / 3).angle, 0, 1e-11);
+	t.almostEqual(Vec.grade(33.33333333333333333).angle, (30 / 180) * PI, 1e-11);
+	t.almostEqual(Vec.polar(0, PI / 2 / 3).angle, 0, 1e-11);
 	t.almostEqual(Point.polar(2, PI / 2 / 3).grade, 33.33333333333333333, 1e-11);
 
 	t.end();
