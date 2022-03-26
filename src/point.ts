@@ -34,15 +34,14 @@ export class Vec {
 		return (this.degrees * 10) / 9;
 	}
 
+	absQuad() {
+		const {x, y, z} = this;
+		return x * x + y * y + z * z;
+	}
 	abs() {
 		return sqrt(this.absQuad());
 		// const { x, y } = this;
 		// return hypot(x, y);
-	}
-
-	absQuad() {
-		const {x, y, z} = this;
-		return x * x + y * y + z * z;
 	}
 
 	closeTo(p: Iterable<number>, epsilon = 1e-12) {
@@ -111,6 +110,19 @@ export class Vec {
 		return new Vec(0, 0, z);
 	}
 
+	withX(x: number) {
+		const {y, z} = this;
+		return new Vec(x, y, z);
+	}
+
+	withY(y: number) {
+		const {x, z} = this;
+		return new Vec(x, y, z);
+	}
+	withZ(z: number) {
+		const {y, x} = this;
+		return new Vec(x, y, z);
+	}
 	div(factor: number) {
 		const {x, y, z} = this;
 		return new Vec(x / factor, y / factor, z / factor);
@@ -221,46 +233,59 @@ export class Vec {
 
 	static new(x?: number[] | Iterable<number> | number, y?: number, z?: number) {
 		if (typeof x == 'number') {
-			return new Vec(x, y as number, z as number);
+			return new this(x, y as number, z as number);
 		} else if (x) {
-			return new Vec(...x);
+			return new this(...x);
 		} else {
-			return new Vec();
+			return new this();
 		}
 	}
 
 	static at(x: number = 0, y: number = 0, z: number = 0) {
-		return new Vec(x, y, z);
+		return new this(x, y, z);
 	}
 	static pos(x: number = 0, y: number = 0, z: number = 0) {
-		return new Vec(x, y, z);
+		return new this(x, y, z);
 	}
 	static polar(radius: number = 1, theta: number = 0, phi: number = 0) {
-		return radius ? new Vec(radius * cos(theta), radius * sin(theta)) : new Vec();
+		return radius ? new this(radius * cos(theta), radius * sin(theta)) : new this();
 	}
 
 	static radians(n: number) {
-		return Vec.polar(1, n);
+		return this.polar(1, n);
 	}
 
 	static degrees(n: number) {
-		return Vec.radians((n * PI) / 180);
+		switch (n) {
+			// case 0:
+			// 	return new this(1, 0, 0);
+			case 90:
+			case -270:
+				return new this(0, 1, 0);
+			case -90:
+			case 270:
+				return new this(0, -1, 0);
+			case 180:
+			case -180:
+				return new this(-1, 0, 0);
+		}
+		return this.radians((n * PI) / 180);
 	}
 
 	static grade(n: number) {
-		return Vec.degrees((n * 9) / 10);
+		return this.degrees((n * 9) / 10);
 	}
 
 	static add(a: Iterable<number>, b: Iterable<number>) {
 		const [x1, y1 = 0, z1 = 0] = a;
 		const [x2, y2 = 0, z2 = 0] = b;
-		return new Vec(x1 + x2, y1 + y2, z1 + z2);
+		return new this(x1 + x2, y1 + y2, z1 + z2);
 	}
 
 	static subtract(a: Iterable<number>, b: Iterable<number>) {
 		const [x1, y1 = 0, z1 = 0] = a;
 		const [x2, y2 = 0, z2 = 0] = b;
-		return new Vec(x1 - x2, y1 - y2, z1 - z2);
+		return new this(x1 - x2, y1 - y2, z1 - z2);
 	}
 }
 export {Vec as Point};
