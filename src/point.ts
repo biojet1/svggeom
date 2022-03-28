@@ -10,8 +10,8 @@ export class Vec {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		if (!(isFinite(this.x) && isFinite(this.y) && isFinite(this.z)))
-			throw TypeError(`Not finite ${JSON.stringify(arguments)}`);
+		if (isNaN(x) || isNaN(y) || isNaN(z)) throw TypeError(`Must be a number x=${x} y=${y} z=${z}`);
+		// if (!(isFinite(x) && isFinite(y) && isFinite(z))) throw TypeError(`Not finite x=${x} y=${y} z=${z}`);
 	}
 
 	// **** Query methods ****
@@ -38,6 +38,7 @@ export class Vec {
 		const {x, y, z} = this;
 		return x * x + y * y + z * z;
 	}
+
 	abs() {
 		return sqrt(this.absQuad());
 		// const { x, y } = this;
@@ -95,17 +96,17 @@ export class Vec {
 		return new Vec(y, -x, z);
 	}
 
-	xpart() {
+	onlyX() {
 		const {x} = this;
 		return new Vec(x, 0, 0);
 	}
 
-	ypart() {
+	onlyY() {
 		const {y} = this;
 		return new Vec(0, y, 0);
 	}
 
-	zpart() {
+	onlyZ() {
 		const {z} = this;
 		return new Vec(0, 0, z);
 	}
@@ -119,10 +120,12 @@ export class Vec {
 		const {x, z} = this;
 		return new Vec(x, y, z);
 	}
+
 	withZ(z: number) {
 		const {y, x} = this;
 		return new Vec(x, y, z);
 	}
+
 	div(factor: number) {
 		const {x, y, z} = this;
 		return new Vec(x / factor, y / factor, z / factor);
@@ -159,7 +162,7 @@ export class Vec {
 
 	normalize() {
 		const abs = this.abs();
-		if (!abs) throw new TypeError("Can't normalize vector of zero length");
+		if (!abs) throw new TypeError(`Can't normalize vector of zero length [${this}]`);
 		return this.div(abs);
 		// const {x, y, z} = this;
 		// if(x){
@@ -179,12 +182,36 @@ export class Vec {
 
 		return new Vec(a * x + c * y + e, b * x + d * y + f);
 	}
-	// def rotate(self, angle):
-	//     """rotate self counterclockwise by angle"""
-	//     # https://stackoverflow.com/questions/4780119/2d-euclidean-vector-rotations
-	//     x, y = self[0], self[1]
-	//     cs, sn = cos(angle), sin(angle)
-	//     return self.__class__(x * cs - y * sn, x * sn + y * cs)
+
+	flipX(d: number) {
+		const {x, y, z} = this;
+		return new Vec(-x, y, z);
+	}
+
+	flipY(d: number) {
+		const {x, y, z} = this;
+		return new Vec(x, -y, z);
+	}
+
+	flipZ(d: number) {
+		const {x, y, z} = this;
+		return new Vec(x, y, -z);
+	}
+
+	shiftX(d: number) {
+		const {x, y, z} = this;
+		return new Vec(x + d, y, z);
+	}
+
+	shiftY(d: number) {
+		const {x, y, z} = this;
+		return new Vec(x, y + d, z);
+	}
+
+	shiftZ(d: number) {
+		const {x, y, z} = this;
+		return new Vec(x, y, z + d);
+	}
 
 	rotated(rad: number) {
 		const {x, y, z} = this;
@@ -244,9 +271,11 @@ export class Vec {
 	static at(x: number = 0, y: number = 0, z: number = 0) {
 		return new this(x, y, z);
 	}
+
 	static pos(x: number = 0, y: number = 0, z: number = 0) {
 		return new this(x, y, z);
 	}
+
 	static polar(radius: number = 1, theta: number = 0, phi: number = 0) {
 		return radius ? new this(radius * cos(theta), radius * sin(theta)) : new this();
 	}
@@ -288,4 +317,5 @@ export class Vec {
 		return new this(x1 - x2, y1 - y2, z1 - z2);
 	}
 }
+
 export {Vec as Point};

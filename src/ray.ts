@@ -235,6 +235,21 @@ export class Ray extends VecRay {
 		return this._Pos(Pt(x, y).postAdd(pos));
 	}
 
+	shiftX(d: number) {
+		const {pos} = this;
+		return this._Pos(pos.shiftX(d));
+	}
+
+	shiftY(d: number) {
+		const {pos} = this;
+		return this._Pos(pos.shiftY(d));
+	}
+
+	shiftZ(d: number) {
+		const {pos} = this;
+		return this._Pos(pos.shiftZ(d));
+	}
+
 	along(t: number, x: NumOrVec, y?: number) {
 		const {pos} = this;
 		return this._Pos(Pt(x, y).sub(pos).mul(t).postAdd(pos));

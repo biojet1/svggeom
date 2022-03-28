@@ -112,3 +112,24 @@ test.test(`Vec.degrees`, {bail: !CI}, function (t) {
 
 	t.end();
 });
+
+test.test(`with/only/shift/flip`, {bail: !CI}, function (t) {
+	const v = Vec.pos(3, -4, 5);
+	t.same(Array.from(v.withX(-6)), [-6, -4, 5]);
+	t.same(Array.from(v.withY(7)), [3, 7, 5]);
+	t.same(Array.from(v.withZ(8)), [3, -4, 8]);
+
+	t.same(Array.from(v.onlyX()), [3, 0, 0]);
+	t.same(Array.from(v.onlyY()), [0, -4, 0]);
+	t.same(Array.from(v.onlyZ()), [0, 0, 5]);
+
+	t.same(Array.from(v.shiftZ(-5)), [3, -4, 0]);
+	t.same(Array.from(v.shiftY(4)), [3, 0, 5]);
+	t.same(Array.from(v.shiftX(-3)), [0, -4, 5]);
+
+	t.same(Array.from(v.flipZ()), [3, -4, -5]);
+	t.same(Array.from(v.flipY()), [3, 4, 5]);
+	t.same(Array.from(v.flipX()), [-3, -4, 5]);
+
+	t.end();
+});
