@@ -211,6 +211,29 @@ export class Ray extends VecRay {
 		const {pos, dir} = this;
 		return new Ray(pos.withY(z), dir);
 	}
+	shiftX(d: number) {
+		return this._Pos(this.pos.shiftX(d));
+	}
+
+	shiftY(d: number) {
+		return this._Pos(this.pos.shiftY(d));
+	}
+
+	shiftZ(d: number) {
+		return this._Pos(this.pos.shiftZ(d));
+	}
+
+	flipX(d: number) {
+		return this._Pos(this.pos.flipX(d));
+	}
+
+	flipY(d: number) {
+		return this._Pos(this.pos.flipY(d));
+	}
+
+	flipZ(d: number) {
+		return this._Pos(this.pos.flipZ(d));
+	}
 
 	// Move
 	goto(x: NumOrVec, y?: number) {
@@ -233,21 +256,6 @@ export class Ray extends VecRay {
 	translate(x: NumOrVec, y?: number) {
 		const {pos} = this;
 		return this._Pos(Pt(x, y).postAdd(pos));
-	}
-
-	shiftX(d: number) {
-		const {pos} = this;
-		return this._Pos(pos.shiftX(d));
-	}
-
-	shiftY(d: number) {
-		const {pos} = this;
-		return this._Pos(pos.shiftY(d));
-	}
-
-	shiftZ(d: number) {
-		const {pos} = this;
-		return this._Pos(pos.shiftZ(d));
 	}
 
 	along(t: number, x: NumOrVec, y?: number) {

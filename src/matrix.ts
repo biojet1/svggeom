@@ -12,44 +12,65 @@ export class Matrix {
 	d: number;
 	e: number;
 	f: number;
-	constructor(m: undefined | number[] = undefined) {
-		// if (arguments.length === 6) {
-		// 	m = arguments;
-		// }
-		if (m) {
-			this.a = m[0];
-			this.b = m[1];
-			this.c = m[2];
-			this.d = m[3];
-			this.e = m[4];
-			this.f = m[5];
-		} else {
-			this.a = this.d = 1;
-			this.b = this.c = this.e = this.f = 0;
-		}
+	// constructor(m: undefined | number[] = undefined) {
+	// 	// if (arguments.length === 6) {
+	// 	// 	m = arguments;
+	// 	// }
+	// 	if (m) {
+	// 		this.a = m[0];
+	// 		this.b = m[1];
+	// 		this.c = m[2];
+	// 		this.d = m[3];
+	// 		this.e = m[4];
+	// 		this.f = m[5];
+	// 	} else {
+	// 		this.a = this.d = 1;
+	// 		this.b = this.c = this.e = this.f = 0;
+	// 	}
+	// 	if (
+	// 		!(
+	// 			Number.isFinite(this.a) &&
+	// 			Number.isFinite(this.b) &&
+	// 			Number.isFinite(this.c) &&
+	// 			Number.isFinite(this.d) &&
+	// 			Number.isFinite(this.e) &&
+	// 			Number.isFinite(this.f)
+	// 		)
+	// 	)
+	// 		throw TypeError(`${JSON.stringify(arguments)}`);
+	// }
+	constructor(M: Iterable<number> = []) {
+		const [a = 1, b = 0, c = 0, d = 1, e = 0, f = 0] = M;
+		this.a = a;
+		this.b = b;
+		this.c = c;
+		this.d = d;
+		this.e = e;
+		this.f = f;
 		if (
 			!(
-				Number.isFinite(this.a) &&
-				Number.isFinite(this.b) &&
-				Number.isFinite(this.c) &&
-				Number.isFinite(this.d) &&
-				Number.isFinite(this.e) &&
-				Number.isFinite(this.f)
+				Number.isFinite(a) &&
+				Number.isFinite(b) &&
+				Number.isFinite(c) &&
+				Number.isFinite(d) &&
+				Number.isFinite(e) &&
+				Number.isFinite(f)
 			)
 		)
 			throw TypeError(`${JSON.stringify(arguments)}`);
 	}
+
 	clone() {
-		const { a, d, b, c, e, f } = this;
+		const {a, b, c, d, e, f} = this;
 		return new Matrix([a, b, c, d, e, f]);
 	}
 	inverse() {
 		// Get the current parameters out of the matrix
-		const { a, d, b, c, e, f } = this;
+		const {a, b, c, d, e, f} = this;
 
 		// Invert the 2x2 matrix in the top left
 		const det = a * d - b * c;
-		if (!det) throw new Error("Cannot invert " + this);
+		if (!det) throw new Error('Cannot invert ' + this);
 
 		// Calculate the top 2x2 matrix
 		const na = d / det;
@@ -67,8 +88,8 @@ export class Matrix {
 	}
 
 	multiply(m: Matrix): Matrix {
-		const { a, d, b, c, e, f } = this;
-		const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
+		const {a, b, c, d, e, f} = this;
+		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
 
 		return Matrix.hexad(
 			a * A + c * B + e * 0,
@@ -78,12 +99,25 @@ export class Matrix {
 			a * E + c * F + e * 1,
 			b * E + d * F + f * 1
 		);
-		// return this.clone().multiplySelf();
+	}
+
+	preMultiply(m: Matrix): Matrix {
+		const {a, b, c, d, e, f} = m;
+		const {a: A, b: B, c: C, d: D, e: E, f: F} = this;
+
+		return Matrix.hexad(
+			a * A + c * B + e * 0,
+			b * A + d * B + f * 0,
+			a * C + c * D + e * 0,
+			b * C + d * D + f * 0,
+			a * E + c * F + e * 1,
+			b * E + d * F + f * 1
+		);
 	}
 
 	multiplySelf(m: Matrix): Matrix {
-		const { a, d, b, c, e, f } = this;
-		const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
+		const {a, b, c, d, e, f} = this;
+		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
 		this.a = a * A + c * B + e * 0;
 		this.b = b * A + d * B + f * 0;
 		this.c = a * C + c * D + e * 0;
@@ -94,8 +128,8 @@ export class Matrix {
 	}
 
 	preMultiplySelf(m: Matrix): Matrix {
-		const { a, d, b, c, e, f } = m;
-		const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
+		const {a, b, c, d, e, f} = m;
+		const {a: A, b: B, c: C, d: D, e: E, f: F} = this;
 		this.a = a * A + c * B + e * 0;
 		this.b = b * A + d * B + f * 0;
 		this.c = a * C + c * D + e * 0;
@@ -110,14 +144,7 @@ export class Matrix {
 		const cosθ = Math.cos(θ);
 		const sinθ = Math.sin(θ);
 		return this.multiply(
-			Matrix.hexad(
-				cosθ,
-				sinθ,
-				-sinθ,
-				cosθ,
-				x ? -cosθ * x + sinθ * y + x : 0,
-				y ? -sinθ * x - cosθ * y + y : 0
-			)
+			Matrix.hexad(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0)
 		);
 	}
 
@@ -126,9 +153,7 @@ export class Matrix {
 	}
 
 	skew(x: number, y: number) {
-		return this.multiply(
-			Matrix.hexad(1, Math.tan(radians(y)), Math.tan(radians(x)), 1, 0, 0)
-		);
+		return this.multiply(Matrix.hexad(1, Math.tan(radians(y)), Math.tan(radians(x)), 1, 0, 0));
 	}
 
 	skewX(x: number) {
@@ -140,7 +165,7 @@ export class Matrix {
 	}
 
 	toString() {
-		const { a, d, b, c, e, f } = this;
+		const {a, b, c, d, e, f} = this;
 		return `matrix(${a},${b},${c},${d},${e},${f})`;
 	}
 
@@ -166,8 +191,8 @@ export class Matrix {
 	}
 
 	equals(other: Matrix, epsilon = 0) {
-		const { a, d, b, c, e, f } = this;
-		const { a: A, b: B, c: C, d: D, e: E, f: F } = other;
+		const {a, b, c, d, e, f} = this;
+		const {a: A, b: B, c: C, d: D, e: E, f: F} = other;
 		return (
 			other === this ||
 			(closeEnough(a, A, epsilon) &&
@@ -181,28 +206,18 @@ export class Matrix {
 
 	isURT(epsilon = 1e-15) {
 		// decomposition as U*R*T is possible
-		const { a, d, b, c } = this;
+		const {a, d, b, c} = this;
 		return a - d <= epsilon && b + c <= epsilon;
 	}
-	// public static from(node: any) {
-	// 	 if (Array.isArray(x)) {
-	// 		return new Matrix(...x);
-	// 	} else if (x) {
-	// 		return new Point(x.x, x.y);
-	// 	} else {
-	// 		return new Point();
-	// 	}
-	// }
+
 	decompose() {
-		let { a, d, b, c } = this;
-		const { e, f } = this;
+		let {a, d, b, c} = this;
+		const {e, f} = this;
 		var scaleX, scaleY, skewX;
 		if ((scaleX = Math.sqrt(a * a + b * b))) (a /= scaleX), (b /= scaleX);
 		if ((skewX = a * c + b * d)) (c -= a * skewX), (d -= b * skewX);
-		if ((scaleY = Math.sqrt(c * c + d * d)))
-			(c /= scaleY), (d /= scaleY), (skewX /= scaleY);
-		if (a * d < b * c)
-			(a = -a), (b = -b), (skewX = -skewX), (scaleX = -scaleX);
+		if ((scaleY = Math.sqrt(c * c + d * d))) (c /= scaleY), (d /= scaleY), (skewX /= scaleY);
+		if (a * d < b * c) (a = -a), (b = -b), (skewX = -skewX), (scaleX = -scaleX);
 		return {
 			translateX: e,
 			translateY: f,
@@ -213,125 +228,83 @@ export class Matrix {
 		};
 	}
 	public toArray() {
-		const { a, d, b, c, e, f } = this;
+		const {a, b, c, d, e, f} = this;
 
 		return [a, b, c, d, e, f];
 	}
+
 	public describe() {
 		return Matrix.compose(this.decompose());
 	}
 
 	public static compose(dec: any) {
-		const { translateX, translateY, rotate, skewX, scaleX, scaleY } = dec;
-		return `${
-			translateX || translateY
-				? `translate(${translateX},${translateY})`
-				: ""
-		}${rotate ? `rotate(${rotate})` : ""}${skewX ? `skewX(${skewX})` : ""}${
-			scaleX == 1 && scaleY == 1 ? "" : `scale(${scaleX},${scaleY})`
-		}`;
+		const {translateX, translateY, rotate, skewX, scaleX, scaleY} = dec;
+		return `${translateX || translateY ? `translate(${translateX},${translateY})` : ''}${
+			rotate ? `rotate(${rotate})` : ''
+		}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX},${scaleY})`}`;
 
 		// return `translate(${dec.translateX}, ${dec.translateY}) rotate(${dec.rotate}) skewX(${dec.skewX}) scale(${dec.scaleX}, ${dec.scaleY})`;
 	}
-	public static hexad(
-		a: number = 1,
-		b: number = 0,
-		c: number = 0,
-		d: number = 1,
-		e: number = 0,
-		f: number = 0
-	): Matrix {
+
+	public static hexad(a: number = 1, b: number = 0, c: number = 0, d: number = 1, e: number = 0, f: number = 0): Matrix {
 		return new Matrix([a, b, c, d, e, f]);
 	}
 
 	public static fromArray(m: number[]): Matrix {
 		return new Matrix(m);
 	}
+
 	public static parse(d: string): Matrix {
 		d = d.trim();
 		let m = new Matrix();
 		if (d)
 			for (const str of d.split(/\)\s*,?\s*/).slice(0, -1)) {
-				const kv = str.trim().split("(");
+				const kv = str.trim().split('(');
 				const name = kv[0].trim();
 				const args = kv[1].split(/[\s,]+/).map(function (str) {
 					return parseFloat(str.trim());
 				});
-				m =
-					name === "matrix"
-						? m.multiply(Matrix.fromArray(args))
-						: m[name].apply(m, args);
+				m = name === 'matrix' ? m.multiply(Matrix.fromArray(args)) : m[name].apply(m, args);
 			}
 		return m;
 	}
 
 	[shot: string]: any;
 	static fromElement(node: ElementLike): Matrix {
-		return Matrix.parse(node.getAttribute("transform") || "");
+		return Matrix.parse(node.getAttribute('transform') || '');
 	}
-	// public static from(node: any) {
-	// 	return Matrix.parse(node.getAttribute('transform') || '').trim();
-	// }
-	// getAttribute
-	// static from(v: string | ElementLike | number[]): Matrix {
-	// 	if (Array.isArray(v)) {
-	// 		return Matrix.fromArray(v);
-	// 	} else if (!v) {
-	// 		return new Matrix();
-	// 	} else if (typeof v === "string") {
-	// 		return Matrix.parse(v);
-	// 	} else if (v instanceof Matrix) {
-	// 		return v;
-	// 	} else {
-	// 		return Matrix.fromElement(v);
-	// 	}
-	// }
-	public static new(
-		first: number | number[] | string | Matrix | ElementLike
-	) {
+
+	public static new(first: number | number[] | string | Matrix | ElementLike) {
 		switch (typeof first) {
-			case "string":
+			case 'string':
 				return Matrix.parse(first);
-			case "number":
-				return Matrix.hexad(
-					first,
-					arguments[1],
-					arguments[2],
-					arguments[3],
-					arguments[4],
-					arguments[5]
-				);
-			case "undefined":
+			case 'number':
+				return Matrix.hexad(first, arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+			case 'undefined':
 				return new Matrix();
-			case "object":
+			case 'object':
 				if (Array.isArray(first)) {
 					return Matrix.fromArray(first);
 				} else if ((first as any).nodeType === 1) {
 					return Matrix.fromElement(first as any as ElementLike);
 				} else {
-					const { a, d, b, c, e, f } = first as any;
+					const {a, b, c, d, e, f} = first as any;
 
 					return Matrix.hexad(a, b, c, d, e, f);
 				}
 			default:
-				throw new TypeError(
-					`Invalid matrix argument ${Array.from(arguments)}`
-				);
+				throw new TypeError(`Invalid matrix argument ${Array.from(arguments)}`);
 		}
 	}
 
-	static interpolate(
-		A: number[] | string | Matrix | ElementLike,
-		B: number[] | string | Matrix | ElementLike
-	) {
+	static interpolate(A: number[] | string | Matrix | ElementLike, B: number[] | string | Matrix | ElementLike) {
 		const a = Matrix.new(A).toArray();
 		const b = Matrix.new(B).toArray();
 		const n = a.length;
 		// console.log("interpolate T", A, B, a, b);
 		return function (t: number) {
 			let c = [0, 0, 0, 0, 0, 0];
-			for (let i = 0; i < n; ++i)
-				c[i] = a[i] === b[i] ? b[i] : a[i] * (1 - t) + b[i] * t;
+			for (let i = 0; i < n; ++i) c[i] = a[i] === b[i] ? b[i] : a[i] * (1 - t) + b[i] * t;
 			// console.log("compose", c);
 			// return Matrix.compose(Matrix.fromArray(c).decompose());
 			return Matrix.fromArray(c);

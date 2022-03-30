@@ -160,6 +160,10 @@ export class Vec {
 		return new Vec(x * factor, y * factor, z * factor);
 	}
 
+	distance(p: Iterable<number>): number {
+		return this.sub(p).abs();
+	}
+
 	normalize() {
 		const abs = this.abs();
 		if (!abs) throw new TypeError(`Can't normalize vector of zero length [${this}]`);
