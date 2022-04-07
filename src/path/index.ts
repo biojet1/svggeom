@@ -121,7 +121,7 @@ export class Close extends Line {
 		return new Close(p1.transform(M), p2.transform(M));
 	}
 
-	splitAt(t: number) : Segment[] {
+	splitAt(t: number): Segment[] {
 		const {p1, p2} = this;
 		const c = this.pointAt(t);
 		return [new Line(p1, c), new Close(c, p2)];

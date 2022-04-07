@@ -133,13 +133,13 @@ export class Vec {
 
 	add(p: Iterable<number>) {
 		const [x1, y1, z1] = this;
-		const [x2, y2 = 0, z2 = 0] = p;
+		const [x2, y2, z2 = 0] = p;
 		return new Vec(x1 + x2, y1 + y2, z1 + z2);
 	}
 
 	sub(p: Iterable<number>) {
 		const [x1, y1, z1] = this;
-		const [x2, y2 = 0, z2 = 0] = p;
+		const [x2, y2, z2 = 0] = p;
 		return new Vec(x1 - x2, y1 - y2, z1 - z2);
 	}
 

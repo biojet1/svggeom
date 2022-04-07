@@ -10,9 +10,9 @@ exists(d) and path.append(d)
 from inkex import BoundingBox
 
 
-DATA = environ.get("DATA") or environ.get("SEGMENTS")
-if not DATA:
-    r = [a * 10 for a in range(-2, 3, 1)]
+BOX_RANGE = map(int, environ.get("BOX_RANGE", "-2,3,1").split(","))
+if BOX_RANGE:
+    r = [a * 10 for a in range(*BOX_RANGE)]
 
     def extrema():
         for a in r:
@@ -27,10 +27,10 @@ if not DATA:
         D = {}
         D["x"] = B.x.minimum
         D["y"] = B.y.minimum
-        D["xMin"] = B.x.minimum
-        D["yMin"] = B.y.minimum
-        D["xMax"] = B.x.maximum
-        D["yMax"] = B.y.maximum
+        D["minX"] = B.x.minimum
+        D["minY"] = B.y.minimum
+        D["maxX"] = B.x.maximum
+        D["maxY"] = B.y.maximum
 
         for n in [
             "width",
@@ -48,5 +48,3 @@ if not DATA:
                 D[n] = getattr(B, n)
 
         print(dumps(D))
-elif DATA == "":
-    pass
