@@ -8,12 +8,13 @@ interface IDescOpt {
 	smooth?: boolean;
 	short?: boolean;
 }
-const iterator = Symbol.iterator;
+
 // const parseDesc = pathParser;
 export class Path {
 	private _segs: Segment[];
 	private _length?: number;
 	private _lengths?: Array<number>;
+
 	private constructor(segs: Segment[]) {
 		this._segs = segs;
 	}
@@ -21,22 +22,26 @@ export class Path {
 	getTotalLength() {
 		return this.calcLength();
 	}
+
 	getBBox() {
 		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
 	}
+
 	get length() {
 		return this.calcLength();
 	}
+
 	get totalLength() {
 		return this.calcLength();
 	}
+
 	bbox() {
 		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
 	}
 	// segments() {
 	// 	return this._segs;
 	// }
-	[iterator]() {
+	[Symbol.iterator]() {
 		return this._segs.values();
 	}
 
@@ -49,26 +54,42 @@ export class Path {
 		this._lengths = lens.map(v => v / len);
 		return len;
 	}
+
 	private get lengths() {
 		return this._lengths || [];
 	}
-	get firstPoint() {
-		const segs = this._segs;
 
+	get firstPoint() {
+		const {_segs: segs} = this;
 		for (const seg of segs) {
 			return seg.p1;
 		}
 	}
+	get firstSegment() {
+		const {_segs: segs} = this;
+		for (const seg of segs) {
+			return seg;
+		}
+	}
+
 	get lastPoint() {
-		const segs = this._segs;
+		const {_segs: segs} = this;
 		const {length} = segs;
 		if (length > 0) {
 			return segs[length - 1].p2;
 		}
 	}
 
+	get lastSegment() {
+		const {_segs: segs} = this;
+		const {length} = segs;
+		if (length > 0) {
+			return segs[length - 1];
+		}
+	}
+
 	segmentAt(T: number): [Segment | undefined, number, number] {
-		const segs = this._segs;
+		const {_segs: segs} = this;
 		if (segs.length > 0) {
 			this.calcLength();
 			const {lengths} = this;
@@ -101,10 +122,11 @@ export class Path {
 		return [undefined, NaN, NaN];
 		// throw new Error('No segments');
 	}
+
 	isContinuous() {
 		// Checks if a path is continuous with respect to its
 		// parameterization.
-		const segs = this._segs;
+		const {_segs: segs} = this;
 		const f = segs.length - 1;
 		let i = 0;
 		while (i < f) {
@@ -126,14 +148,17 @@ export class Path {
 		}
 		return false;
 	}
+
 	tangentAt(T: number) {
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.tangentAt(t);
 	}
+
 	slopeAt(T: number) {
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.slopeAt(t);
 	}
+
 	pointAt(T: number) {
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.pointAt(t);
@@ -156,6 +181,7 @@ export class Path {
 			return [new Path(a), new Path(b)];
 		}
 	}
+
 	cutAt(T: number): Path {
 		const [seg, t, i] = this.segmentAt(T < 0 ? -T : T);
 		if (seg) {
@@ -174,6 +200,7 @@ export class Path {
 		}
 		return new Path([]);
 	}
+
 	cropAt(T0: number, T1: number = 1): Path {
 		if (T0 <= 0) {
 			if (T1 >= 1) {
@@ -195,6 +222,7 @@ export class Path {
 		}
 		return new Path([]);
 	}
+
 	transform(M: any) {
 		return new Path(this._segs.map(seg => seg.transform(M)));
 	}
@@ -348,11 +376,17 @@ export class Path {
 			previous_segment = seg;
 		}
 	}
+
 	descArray(params: IDescOpt = {}) {
 		return Array.from(this.enumDesc(params));
 	}
+
 	describe(params: IDescOpt = {}) {
 		return this.descArray(params).join(' ');
+	}
+
+	toString() {
+		return this.descArray().join(' ');
 	}
 
 	*enumSubPaths() {
@@ -371,29 +405,6 @@ export class Path {
 	static parse(d: string): Path {
 		return new Path(parseDesc(d));
 	}
-	// static tryParse(d: string): Path {
-	// 	try {
-	// 		return new Path(parseDesc(d));
-	// 	} catch (err) {
-	// 		return new Path([]);
-	// 	}
-	// }
-	// static parse1(d: string): Path {
-	// 	try {
-	// 		return new Path(parseDesc(d));
-	// 	} catch (err) {
-	// 		console.error("Failed to parse ", d);
-	// 		throw err;
-	// 	}
-	// }
-	// static parse2(d: string): Path {
-	// 	try {
-	// 		return new Path(pathParser(d));
-	// 	} catch (err) {
-	// 		console.error("Failed to parse ", d);
-	// 		throw err;
-	// 	}
-	// }
 	// static fromPath(d: string): Path {
 	// 	return new Path(parseDesc(d));
 	// 	// return new Path(pathParser(d, new Array<Segment>()));

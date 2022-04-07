@@ -1,3 +1,5 @@
+import {Vec} from '../point.js';
+
 const pi = Math.PI,
 	tau = 2 * pi,
 	epsilon = 1e-6,
@@ -24,6 +26,66 @@ function Pt(x: NumOrVec, y?: number) {
 	}
 }
 
+class Data {
+	_prev?: Data;
+	_p2: Vec;
+
+	constructor(p: Vec, prev?: Data) {
+		this._p2 = p;
+		prev ?? (this._prev = prev);
+	}
+
+	get p2() {
+		return this._p2;
+	}
+
+	get p1() {
+		return this._prev?._p2;
+	}
+
+	anchor(): Data | undefined {
+		let {_prev} = this;
+		for (; _prev; _prev = _prev._prev) {
+			if (_prev instanceof MoveData) {
+				return _prev;
+			}
+		}
+		return _prev;
+	}
+
+	// compose() {
+	// 	return [...this.iter()]
+	// 		.reverse()
+	// 		.map(s => s.format())
+	// 		.join(' ');
+	// }
+
+	// *iter(): Iterator<Data> {
+	// 	let _prev = this;
+	// 	do {
+	// 		yield _prev;
+	// 	} while ((_prev = _prev._prev));
+	// }
+
+	// moveTo(a: NumOrVec, b?: number) {
+	// 	return new MoveData(Vec.pos(Pt(a, b)), this);
+	// }
+}
+
+class LineData extends Data {
+	format() {
+		const [x, y] = this.p2;
+		return `L${x},${y}`;
+	}
+}
+
+class MoveData extends Data {
+	format() {
+		const [x, y] = this.p2;
+		return `M${x},${y}`;
+	}
+}
+
 export class PathData {
 	_x0?: number;
 	_y0?: number;
@@ -36,6 +98,7 @@ export class PathData {
 	}
 
 	moveTo(a: NumOrVec, b?: number) {
+		// this.cur = new MoveData(Vec.pos(x, y), this.cur);
 		const [x = 0, y = 0] = Pt(a, b);
 		this._ += 'M' + (this._x0 = this._x1 = +x) + ',' + (this._y0 = this._y1 = +y);
 		return this;
@@ -151,7 +214,8 @@ export class PathData {
 		if (r < 0) throw new Error('negative radius: ' + r);
 
 		// Is this path empty? Move to (x0,y0).
-		if (this._x1 === null) {
+		if (this._x1 === undefined) {
+			console.log(dx);
 			this._ += 'M' + x0 + ',' + y0;
 		}
 
@@ -161,7 +225,7 @@ export class PathData {
 		}
 
 		// Is this arc empty? We’re done.
-		if (!r) return;
+		if (!r) return this;
 
 		// Does the angle go the wrong way? Flip the direction.
 		if (da < 0) da = (da % tau) + tau;

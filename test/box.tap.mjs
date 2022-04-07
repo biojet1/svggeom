@@ -35,10 +35,10 @@ for await (const [i, item] of enum_box_data({})) {
 		rigth,
 		centerX,
 		centerY,
-		xMax,
-		yMax,
-		xMin,
-		yMin,
+		maxX,
+		maxY,
+		minX,
+		minY,
 	} = item;
 
 	test.test(`Box(${x},${y},${width},${height})`, { bail: !CI }, function (t) {
@@ -46,16 +46,16 @@ for await (const [i, item] of enum_box_data({})) {
 		switch (i % 3) {
 			case 1:
 				box = Box.fromRect(x, y, width, height);
-				box2 = Box.fromExtrema(xMin, xMax, yMax, yMin);
+				box2 = Box.fromExtrema(minX, maxX, maxY, minY);
 				break;
 			case 2:
 				box = Box.new(`${x}, ${y}, ${width}, ${height}`);
 				box2 = Box.new(`${left} ${top} ${width} ${height}`);
-				// box2 = Box.fromExtrema(xMax, xMin, yMin, yMax);
+				// box2 = Box.fromExtrema(maxX, minX, minY, maxY);
 				break;
 			default:
 				box = Box.new(x, y, width, height);
-				box2 = Box.fromExtrema(xMin, xMax, yMin, yMax);
+				box2 = Box.fromExtrema(minX, maxX, minY, maxY);
 		}
 		const ex = [item, box];
 
@@ -70,10 +70,10 @@ for await (const [i, item] of enum_box_data({})) {
 		t.equal(box.bottom, bottom, "bottom", ex);
 		t.equal(box.centerX, centerX, "centerX", ex);
 		t.equal(box.centerY, centerY, "centerY", ex);
-		t.equal(box.xMin, xMin, "xMin", ex);
-		t.equal(box.yMin, yMin, "yMin", ex);
-		t.equal(box.xMax, xMax, "xMax", ex);
-		t.equal(box.yMax, yMax, "yMax", ex);
+		t.equal(box.minX, minX, "minX", ex);
+		t.equal(box.minY, minY, "minY", ex);
+		t.equal(box.maxX, maxX, "maxX", ex);
+		t.equal(box.maxY, maxY, "maxY", ex);
 
 		t.equal(box2.x, x, "x", ex);
 		t.equal(box2.y, y, "y", ex);
@@ -113,7 +113,7 @@ test.test(`Box extra`, { bail: !CI }, function (t) {
 
 const B = Box.new("-130,-90,130,90");
 const D = Box.new("-60,-50,150,90");
-const C = Box.new("-60,-50,60,50");
+const C = Box.new("-60 -50 60 50");
 const A = Box.new("-210,-150,80,60");
 const E = Box.new("-130,-90,0,0");
 const F = Box.new("-130,-90,70,90");
@@ -166,15 +166,15 @@ test.test(`Box merge`, { bail: !CI }, function (t) {
 	t.end();
 });
 
-test.test(`Box mutable`, { bail: !CI }, function (t) {
-	const a = new Box([0, 0, 100, 100]);
-	// const b = new BoxRO(0, 0, 100, 100);
+// test.test(`Box mutable`, { bail: !CI }, function (t) {
+// 	const a = new Box([0, 0, 100, 100]);
+// 	// const b = new BoxRO(0, 0, 100, 100);
 
-	a.x = 80;
-	t.strictSame(a.x, 80);
-	t.throws(() => {
-		a.freeze().x = 60;
-	}, TypeError);
-	t.strictSame(a.x, 80);
-	t.end();
-});
+// 	a.x = 80;
+// 	t.strictSame(a.x, 80);
+// 	t.throws(() => {
+// 		a.freeze().x = 60;
+// 	}, TypeError);
+// 	t.strictSame(a.x, 80);
+// 	t.end();
+// });

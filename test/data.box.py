@@ -27,10 +27,10 @@ if not DATA:
         D = {}
         D["x"] = B.x.minimum
         D["y"] = B.y.minimum
-        D["xMin"] = B.x.minimum
-        D["yMin"] = B.y.minimum
-        D["xMax"] = B.x.maximum
-        D["yMax"] = B.y.maximum
+        D["minX"] = B.x.minimum
+        D["minY"] = B.y.minimum
+        D["maxX"] = B.x.maximum
+        D["maxY"] = B.y.maximum
 
         for n in [
             "width",
