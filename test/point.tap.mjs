@@ -63,6 +63,8 @@ test.test(`point extra`, {bail: !CI}, function (t) {
 	t.almostEqual(Vec.polar(0, PI / 2 / 3).angle, 0, 1e-11);
 	t.almostEqual(Vec.polar(2, PI / 2 / 3).grade, 33.33333333333333333, 1e-11);
 
+	t.almostEqual(Vec.pos(3, 4).distance([0, 0]), 5, 1e-11);
+
 	t.end();
 });
 

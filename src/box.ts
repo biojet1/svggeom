@@ -213,13 +213,16 @@ export class Box {
 		return this.forRect(x, y, width, height);
 	}
 	public static forRect(x: number, y: number, width: number, height: number) {
-		return new Box(x, y, width, height);
+		return new this(x, y, width, height);
+	}
+	public static parse(s: string) {
+		const v = s.split(/[\s,]+/).map(parseFloat);
+		return this.forRect(v[0], v[1], v[2], v[3]);
 	}
 	public static new(first?: number | number[] | [number[], number[]] | string | Box) {
 		switch (typeof first) {
 			case 'string': {
-				const v = first.split(/[\s,]+/).map(parseFloat);
-				return this.forRect(v[0], v[1], v[2], v[3]);
+				return this.parse(first);
 			}
 			case 'number':
 				return this.forRect(first, arguments[1], arguments[2], arguments[3]);
@@ -290,6 +293,14 @@ export class BoxMut extends Box {
 		this._h = value;
 	}
 
+	private reset(x: number, y: number, width: number, height: number) {
+		this._x = x;
+		this._y = y;
+		this._w = width;
+		this._h = height;
+		return this;
+	}
+
 	mergeSelf(box: Box): Box {
 		if (!this.isValid()) {
 			return box;
@@ -300,12 +311,14 @@ export class BoxMut extends Box {
 			const {x: x2, y: y2, width: width2, height: height2} = box;
 			const x = min(x1, x2);
 			const y = min(y1, y2);
-			this._x = x;
-			this._y = y;
-			this._w = max(x1 + width1, x2 + width2) - x;
-			this._h = max(y1 + height1, y2 + height2) - y;
-			return this;
+			return this.reset(x, y, max(x1 + width1, x2 + width2) - x, max(y1 + height1, y2 + height2) - y);
 		}
+	}
+
+	inflateSelf(h: number, v?: number): Box {
+		v = v ?? h;
+		const {x, y, width, height} = this;
+		return this.reset(x - h, y - v, h + width + h, v + height + v);
 	}
 }
 

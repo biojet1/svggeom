@@ -153,7 +153,11 @@ test.test(`Box merge`, {bail: !CI}, function (t) {
 
 test.test(`Box mutable`, {bail: !CI}, function (t) {
 	const a = BoxMut.new([0, 0, 100, 100]);
+	const b = BoxMut.parse('-60 -50 60 50');
+
 	t.same(a.constructor.name, 'BoxMut');
+	t.same(b.constructor.name, 'BoxMut');
+
 	// // const b = new BoxRO(0, 0, 100, 100);
 
 	a.x = 80;
