@@ -2,10 +2,10 @@ import {Vec} from './point.js';
 const {max, min, abs} = Math;
 
 export class Box {
-	private readonly _x: number;
-	private readonly _y: number;
-	private readonly _h: number;
-	private readonly _w: number;
+	protected _x: number;
+	protected _y: number;
+	protected _h: number;
+	protected _w: number;
 	private static _not: Box = new (class extends Box {
 		// NoBox has no valid values so it cant be merged
 		constructor() {
@@ -125,25 +125,6 @@ export class Box {
 		return Box.forRect(n, y, width, height);
 	}
 
-	// mergeSelf(box: Box): Box {
-	// 	if (!this.isValid()) {
-	// 		return box;
-	// 	} else if (!box.isValid()) {
-	// 		return this;
-	// 	}
-
-	// 	const {x: x1, y: y1, width: width1, height: height1} = this;
-	// 	const {x: x2, y: y2, width: width2, height: height2} = box;
-
-	// 	const x = min(x1, x2);
-	// 	const y = min(y1, y2);
-	// 	this._x = x;
-	// 	this._y = y;
-	// 	this._w = max(x1 + width1, x2 + width2) - x;
-	// 	this._h = max(y1 + height1, y2 + height2) - y;
-	// 	return this;
-	// }
-
 	// Merge rect box with another, return a new instance
 	merge(box: Box): Box {
 		if (!this.isValid()) {
@@ -176,9 +157,6 @@ export class Box {
 		// const {a, b, c, d, e, f} = matrix;
 		const {x, y, bottom, right} = this;
 		[Vec.pos(x, y), Vec.pos(right, y), Vec.pos(x, bottom), Vec.pos(right, bottom)].forEach(function (p) {
-			// const [x0, y0] = p;
-			// const x = a * x0 + c * y0 + e;
-			// const y = b * x0 + d * y0 + f;
 			const {x, y} = p.transform(m);
 			xMin = min(xMin, x);
 			xMax = max(xMax, x);
@@ -229,22 +207,25 @@ export class Box {
 	public static fromExtrema(x1: number, x2: number, y1: number, y2: number) {
 		if (x1 > x2) [x1, x2] = [x2, x1];
 		if (y1 > y2) [y1, y2] = [y2, y1];
-		return Box.forRect(x1, y1, abs(x2 - x1), abs(y2 - y1));
+		return this.forRect(x1, y1, abs(x2 - x1), abs(y2 - y1));
 	}
 	public static fromRect(x: number, y: number, width: number, height: number) {
-		return Box.forRect(x, y, width, height);
+		return this.forRect(x, y, width, height);
 	}
 	public static forRect(x: number, y: number, width: number, height: number) {
-		return new Box(x, y, width, height);
+		return new this(x, y, width, height);
+	}
+	public static parse(s: string) {
+		const v = s.split(/[\s,]+/).map(parseFloat);
+		return this.forRect(v[0], v[1], v[2], v[3]);
 	}
 	public static new(first?: number | number[] | [number[], number[]] | string | Box) {
 		switch (typeof first) {
 			case 'string': {
-				const v = first.split(/[\s,]+/).map(parseFloat);
-				return Box.forRect(v[0], v[1], v[2], v[3]);
+				return this.parse(first);
 			}
 			case 'number':
-				return Box.forRect(first, arguments[1], arguments[2], arguments[3]);
+				return this.forRect(first, arguments[1], arguments[2], arguments[3]);
 			case 'undefined':
 				return Box._not;
 			case 'object':
@@ -253,13 +234,13 @@ export class Box {
 					if (Array.isArray(x)) {
 						const [x1, x2] = first[0] as number[];
 						const [y1, y2] = first[1] as number[];
-						return Box.fromExtrema(x1 as number, x2 as number, y1 as number, y2 as number);
+						return this.fromExtrema(x1 as number, x2 as number, y1 as number, y2 as number);
 					} else {
-						return Box.forRect(first[0] as number, first[1] as number, first[2] as number, first[3] as number);
+						return this.forRect(first[0] as number, first[1] as number, first[2] as number, first[3] as number);
 					}
 				} else {
 					const {left, x, top, y, width, height} = first;
-					return Box.forRect(left || x || 0, top || y || 0, width, height);
+					return this.forRect(left || x || 0, top || y || 0, width, height);
 				}
 			default:
 				throw new TypeError(`Invalid box argument ${arguments}`);
@@ -276,19 +257,70 @@ export class Box {
 	}
 }
 
-// export class BoxMut {
-// 	x: number;
-// 	y: number;
-// 	height: number;
-// 	width: number;
+export class BoxMut extends Box {
+	public static forRect(x: number, y: number, width: number, height: number) {
+		return new BoxMut(x, y, width, height);
+	}
+	get x() {
+		return this._x;
+	}
 
-// 	constructor(x: number, y: number, width: number, height: number) {
-// 		this.x = x;
-// 		this.y = y;
-// 		this.width = width;
-// 		this.height = height;
-// 	}
-// }
+	set x(value: number) {
+		this._x = value;
+	}
+
+	get y() {
+		return this._y;
+	}
+
+	set y(value: number) {
+		this._y = value;
+	}
+
+	get width() {
+		return this._w;
+	}
+
+	set width(value: number) {
+		this._w = value;
+	}
+
+	get height() {
+		return this._h;
+	}
+
+	set height(value: number) {
+		this._h = value;
+	}
+
+	private reset(x: number, y: number, width: number, height: number) {
+		this._x = x;
+		this._y = y;
+		this._w = width;
+		this._h = height;
+		return this;
+	}
+
+	mergeSelf(box: Box): Box {
+		if (!this.isValid()) {
+			return box;
+		} else if (!box.isValid()) {
+			return this;
+		} else {
+			const {x: x1, y: y1, width: width1, height: height1} = this;
+			const {x: x2, y: y2, width: width2, height: height2} = box;
+			const x = min(x1, x2);
+			const y = min(y1, y2);
+			return this.reset(x, y, max(x1 + width1, x2 + width2) - x, max(y1 + height1, y2 + height2) - y);
+		}
+	}
+
+	inflateSelf(h: number, v?: number): Box {
+		v = v ?? h;
+		const {x, y, width, height} = this;
+		return this.reset(x - h, y - v, h + width + h, v + height + v);
+	}
+}
 
 // type BoxRO = Readonly<BoxMut>;
 
