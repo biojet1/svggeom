@@ -1,5 +1,8 @@
+const {sqrt, abs, tan, sign, cos, sin, atan, atan2, PI} = Math;
+const {isFinite} = Number;
+
 const radians = function (d: number) {
-	return ((d % 360) * Math.PI) / 180;
+	return ((d % 360) * PI) / 180;
 };
 
 export class Matrix {
@@ -12,33 +15,7 @@ export class Matrix {
 	d: number;
 	e: number;
 	f: number;
-	// constructor(m: undefined | number[] = undefined) {
-	// 	// if (arguments.length === 6) {
-	// 	// 	m = arguments;
-	// 	// }
-	// 	if (m) {
-	// 		this.a = m[0];
-	// 		this.b = m[1];
-	// 		this.c = m[2];
-	// 		this.d = m[3];
-	// 		this.e = m[4];
-	// 		this.f = m[5];
-	// 	} else {
-	// 		this.a = this.d = 1;
-	// 		this.b = this.c = this.e = this.f = 0;
-	// 	}
-	// 	if (
-	// 		!(
-	// 			Number.isFinite(this.a) &&
-	// 			Number.isFinite(this.b) &&
-	// 			Number.isFinite(this.c) &&
-	// 			Number.isFinite(this.d) &&
-	// 			Number.isFinite(this.e) &&
-	// 			Number.isFinite(this.f)
-	// 		)
-	// 	)
-	// 		throw TypeError(`${JSON.stringify(arguments)}`);
-	// }
+
 	constructor(M: Iterable<number> = []) {
 		const [a = 1, b = 0, c = 0, d = 1, e = 0, f = 0] = M;
 		this.a = a;
@@ -47,16 +24,7 @@ export class Matrix {
 		this.d = d;
 		this.e = e;
 		this.f = f;
-		if (
-			!(
-				Number.isFinite(a) &&
-				Number.isFinite(b) &&
-				Number.isFinite(c) &&
-				Number.isFinite(d) &&
-				Number.isFinite(e) &&
-				Number.isFinite(f)
-			)
-		)
+		if (!(isFinite(a) && isFinite(b) && isFinite(c) && isFinite(d) && isFinite(e) && isFinite(f)))
 			throw TypeError(`${JSON.stringify(arguments)}`);
 	}
 
@@ -154,16 +122,16 @@ export class Matrix {
 	}
 
 	rotate(ang: number, x: number = 0, y: number = 0): Matrix {
-		const θ = ((ang % 360) * Math.PI) / 180;
-		const cosθ = Math.cos(θ);
-		const sinθ = Math.sin(θ);
+		const θ = ((ang % 360) * PI) / 180;
+		const cosθ = cos(θ);
+		const sinθ = sin(θ);
 		return this._mul(
 			Matrix.hexad(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0)
 		);
 	}
 
 	skew(x: number, y: number) {
-		return this._mul(Matrix.hexad(1, Math.tan(radians(y)), Math.tan(radians(x)), 1, 0, 0));
+		return this._mul(Matrix.hexad(1, tan(radians(y)), tan(radians(x)), 1, 0, 0));
 	}
 
 	skewX(x: number) {
@@ -210,15 +178,15 @@ export class Matrix {
 		let {a, d, b, c} = this;
 		const {e, f} = this;
 		var scaleX, scaleY, skewX;
-		if ((scaleX = Math.sqrt(a * a + b * b))) (a /= scaleX), (b /= scaleX);
+		if ((scaleX = sqrt(a * a + b * b))) (a /= scaleX), (b /= scaleX);
 		if ((skewX = a * c + b * d)) (c -= a * skewX), (d -= b * skewX);
-		if ((scaleY = Math.sqrt(c * c + d * d))) (c /= scaleY), (d /= scaleY), (skewX /= scaleY);
+		if ((scaleY = sqrt(c * c + d * d))) (c /= scaleY), (d /= scaleY), (skewX /= scaleY);
 		if (a * d < b * c) (a = -a), (b = -b), (skewX = -skewX), (scaleX = -scaleX);
 		return {
 			translateX: e,
 			translateY: f,
-			rotate: (Math.atan2(b, a) * 180) / Math.PI,
-			skewX: (Math.atan(skewX) * 180) / Math.PI,
+			rotate: (atan2(b, a) * 180) / PI,
+			skewX: (atan(skewX) * 180) / PI,
 			scaleX: scaleX,
 			scaleY: scaleY,
 		};
@@ -317,7 +285,7 @@ export class Matrix {
 		return this.hexad(1, 0, 0, 1, v, 0);
 	}
 	static skew(x: number, y: number) {
-		return this.hexad(1, Math.tan(radians(y)), Math.tan(radians(x)), 1, 0, 0);
+		return this.hexad(1, tan(radians(y)), tan(radians(x)), 1, 0, 0);
 	}
 	static skewX(x: number) {
 		return this.skew(x, 0);
@@ -326,9 +294,9 @@ export class Matrix {
 		return this.skew(0, y);
 	}
 	static rotate(ang: number, x: number = 0, y: number = 0) {
-		const θ = ((ang % 360) * Math.PI) / 180;
-		const cosθ = Math.cos(θ);
-		const sinθ = Math.sin(θ);
+		const θ = ((ang % 360) * PI) / 180;
+		const cosθ = cos(θ);
+		const sinθ = sin(θ);
 		return this.hexad(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0);
 	}
 
@@ -353,5 +321,5 @@ interface ElementLike {
 }
 
 function closeEnough(a: number, b: number, threshold = 1e-6) {
-	return Math.abs(b - a) <= threshold;
+	return abs(b - a) <= threshold;
 }
