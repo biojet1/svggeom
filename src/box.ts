@@ -219,7 +219,12 @@ export class Box {
 		const v = s.split(/[\s,]+/).map(parseFloat);
 		return this.forRect(v[0], v[1], v[2], v[3]);
 	}
-	public static new(first?: number | number[] | [number[], number[]] | string | Box) {
+	public static new(
+		first?: number | number[] | [number[], number[]] | string | Box,
+		y?: number,
+		width?: number,
+		height?: number
+	) {
 		switch (typeof first) {
 			case 'string': {
 				return this.parse(first);
@@ -320,8 +325,9 @@ export class BoxMut extends Box {
 		const {x, y, width, height} = this;
 		return this.reset(x - h, y - v, h + width + h, v + height + v);
 	}
+
+	sizeSelf(w: number, h?: number): Box {
+		const {x, y, width, height} = this;
+		return this.reset(x, y, w ?? width, h ?? height);
+	}
 }
-
-// type BoxRO = Readonly<BoxMut>;
-
-// export class BoxFin extends BoxRO {}

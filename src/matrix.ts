@@ -1,5 +1,8 @@
+const {sqrt, abs, tan, sign, cos, sin, atan, atan2, PI} = Math;
+const {isFinite} = Number;
+
 const radians = function (d: number) {
-	return ((d % 360) * Math.PI) / 180;
+	return ((d % 360) * PI) / 180;
 };
 
 export class Matrix {
@@ -12,33 +15,7 @@ export class Matrix {
 	d: number;
 	e: number;
 	f: number;
-	// constructor(m: undefined | number[] = undefined) {
-	// 	// if (arguments.length === 6) {
-	// 	// 	m = arguments;
-	// 	// }
-	// 	if (m) {
-	// 		this.a = m[0];
-	// 		this.b = m[1];
-	// 		this.c = m[2];
-	// 		this.d = m[3];
-	// 		this.e = m[4];
-	// 		this.f = m[5];
-	// 	} else {
-	// 		this.a = this.d = 1;
-	// 		this.b = this.c = this.e = this.f = 0;
-	// 	}
-	// 	if (
-	// 		!(
-	// 			Number.isFinite(this.a) &&
-	// 			Number.isFinite(this.b) &&
-	// 			Number.isFinite(this.c) &&
-	// 			Number.isFinite(this.d) &&
-	// 			Number.isFinite(this.e) &&
-	// 			Number.isFinite(this.f)
-	// 		)
-	// 	)
-	// 		throw TypeError(`${JSON.stringify(arguments)}`);
-	// }
+
 	constructor(M: Iterable<number> = []) {
 		const [a = 1, b = 0, c = 0, d = 1, e = 0, f = 0] = M;
 		this.a = a;
@@ -47,17 +24,17 @@ export class Matrix {
 		this.d = d;
 		this.e = e;
 		this.f = f;
-		if (
-			!(
-				Number.isFinite(a) &&
-				Number.isFinite(b) &&
-				Number.isFinite(c) &&
-				Number.isFinite(d) &&
-				Number.isFinite(e) &&
-				Number.isFinite(f)
-			)
-		)
+		if (!(isFinite(a) && isFinite(b) && isFinite(c) && isFinite(d) && isFinite(e) && isFinite(f)))
 			throw TypeError(`${JSON.stringify(arguments)}`);
+	}
+
+	isIdentity() {
+		const {a, b, c, d, e, f} = this;
+		return a === 1 && b === 0 && c === 0 && d === 1 && e === 0 && f === 0;
+	}
+	toString() {
+		const {a, b, c, d, e, f} = this;
+		return `matrix(${a} ${b} ${c} ${d} ${e} ${f})`;
 	}
 
 	clone() {
@@ -86,8 +63,7 @@ export class Matrix {
 
 		return Matrix.hexad(na, nb, nc, nd, ne, nf);
 	}
-
-	multiply(m: Matrix): Matrix {
+	_cat(m: Matrix): Matrix {
 		const {a, b, c, d, e, f} = this;
 		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
 
@@ -101,18 +77,8 @@ export class Matrix {
 		);
 	}
 
-	preMultiply(m: Matrix): Matrix {
-		const {a, b, c, d, e, f} = m;
-		const {a: A, b: B, c: C, d: D, e: E, f: F} = this;
-
-		return Matrix.hexad(
-			a * A + c * B + e * 0,
-			b * A + d * B + f * 0,
-			a * C + c * D + e * 0,
-			b * C + d * D + f * 0,
-			a * E + c * F + e * 1,
-			b * E + d * F + f * 1
-		);
+	multiply(m: Matrix): Matrix {
+		return this._cat(m);
 	}
 
 	multiplySelf(m: Matrix): Matrix {
@@ -127,33 +93,45 @@ export class Matrix {
 		return this;
 	}
 
-	preMultiplySelf(m: Matrix): Matrix {
+	postMultiply(m: Matrix): Matrix {
 		const {a, b, c, d, e, f} = m;
 		const {a: A, b: B, c: C, d: D, e: E, f: F} = this;
-		this.a = a * A + c * B + e * 0;
-		this.b = b * A + d * B + f * 0;
-		this.c = a * C + c * D + e * 0;
-		this.d = b * C + d * D + f * 0;
-		this.e = a * E + c * F + e * 1;
-		this.f = b * E + d * F + f * 1;
-		return this;
+
+		return Matrix.hexad(
+			a * A + c * B + e * 0,
+			b * A + d * B + f * 0,
+			a * C + c * D + e * 0,
+			b * C + d * D + f * 0,
+			a * E + c * F + e * 1,
+			b * E + d * F + f * 1
+		);
+	}
+
+	translate(x = 0, y = 0) {
+		return this._cat(Matrix.hexad(1, 0, 0, 1, x, y));
+	}
+	translateY(v: number) {
+		return this.translate(0, v);
+	}
+	translateX(v: number) {
+		return this.translate(v, 0);
+	}
+
+	scale(scaleX: number, scaleY = scaleX) {
+		return this._cat(Matrix.hexad(scaleX, 0, 0, scaleY, 0, 0));
 	}
 
 	rotate(ang: number, x: number = 0, y: number = 0): Matrix {
-		const θ = ((ang % 360) * Math.PI) / 180;
-		const cosθ = Math.cos(θ);
-		const sinθ = Math.sin(θ);
-		return this.multiply(
+		const θ = ((ang % 360) * PI) / 180;
+		const cosθ = cos(θ);
+		const sinθ = sin(θ);
+		return this._cat(
 			Matrix.hexad(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0)
 		);
 	}
 
-	scale(scaleX: number, scaleY = scaleX) {
-		return this.multiply(Matrix.hexad(scaleX, 0, 0, scaleY, 0, 0));
-	}
-
 	skew(x: number, y: number) {
-		return this.multiply(Matrix.hexad(1, Math.tan(radians(y)), Math.tan(radians(x)), 1, 0, 0));
+		return this._cat(Matrix.hexad(1, tan(radians(y)), tan(radians(x)), 1, 0, 0));
 	}
 
 	skewX(x: number) {
@@ -164,20 +142,6 @@ export class Matrix {
 		return this.skew(0, y);
 	}
 
-	toString() {
-		const {a, b, c, d, e, f} = this;
-		return `matrix(${a},${b},${c},${d},${e},${f})`;
-	}
-
-	translate(x = 0, y = 0) {
-		return this.multiply(Matrix.hexad(1, 0, 0, 1, x, y));
-	}
-	translateY(v: number) {
-		return this.translate(0, v);
-	}
-	translateX(v: number) {
-		return this.translate(v, 0);
-	}
 	// toHexad() {
 	// 	return [this.a, this.b, this.c, this.d, this.e, this.f];
 	// }
@@ -214,26 +178,26 @@ export class Matrix {
 		let {a, d, b, c} = this;
 		const {e, f} = this;
 		var scaleX, scaleY, skewX;
-		if ((scaleX = Math.sqrt(a * a + b * b))) (a /= scaleX), (b /= scaleX);
+		if ((scaleX = sqrt(a * a + b * b))) (a /= scaleX), (b /= scaleX);
 		if ((skewX = a * c + b * d)) (c -= a * skewX), (d -= b * skewX);
-		if ((scaleY = Math.sqrt(c * c + d * d))) (c /= scaleY), (d /= scaleY), (skewX /= scaleY);
+		if ((scaleY = sqrt(c * c + d * d))) (c /= scaleY), (d /= scaleY), (skewX /= scaleY);
 		if (a * d < b * c) (a = -a), (b = -b), (skewX = -skewX), (scaleX = -scaleX);
 		return {
 			translateX: e,
 			translateY: f,
-			rotate: (Math.atan2(b, a) * 180) / Math.PI,
-			skewX: (Math.atan(skewX) * 180) / Math.PI,
+			rotate: (atan2(b, a) * 180) / PI,
+			skewX: (atan(skewX) * 180) / PI,
 			scaleX: scaleX,
 			scaleY: scaleY,
 		};
 	}
-	public toArray() {
+	toArray() {
 		const {a, b, c, d, e, f} = this;
 
 		return [a, b, c, d, e, f];
 	}
 
-	public describe() {
+	describe() {
 		return Matrix.compose(this.decompose());
 	}
 
@@ -247,16 +211,16 @@ export class Matrix {
 	}
 
 	public static hexad(a: number = 1, b: number = 0, c: number = 0, d: number = 1, e: number = 0, f: number = 0): Matrix {
-		return new Matrix([a, b, c, d, e, f]);
+		return new this([a, b, c, d, e, f]);
 	}
 
-	public static fromArray(m: number[]): Matrix {
-		return new Matrix(m);
+	public static fromArray(m: number[]) {
+		return new this(m);
 	}
 
-	public static parse(d: string): Matrix {
+	public static parse(d: string) {
 		d = d.trim();
-		let m = new Matrix();
+		let m = new this();
 		if (d)
 			for (const str of d.split(/\)\s*,?\s*/).slice(0, -1)) {
 				const kv = str.trim().split('(');
@@ -271,7 +235,7 @@ export class Matrix {
 
 	[shot: string]: any;
 	static fromElement(node: ElementLike): Matrix {
-		return Matrix.parse(node.getAttribute('transform') || '');
+		return this.parse(node.getAttribute('transform') || '');
 	}
 
 	public static new(first: number | number[] | string | Matrix | ElementLike) {
@@ -301,23 +265,46 @@ export class Matrix {
 		const a = Matrix.new(A).toArray();
 		const b = Matrix.new(B).toArray();
 		const n = a.length;
+		const klass = this;
 		// console.log("interpolate T", A, B, a, b);
 		return function (t: number) {
 			let c = [0, 0, 0, 0, 0, 0];
 			for (let i = 0; i < n; ++i) c[i] = a[i] === b[i] ? b[i] : a[i] * (1 - t) + b[i] * t;
 			// console.log("compose", c);
 			// return Matrix.compose(Matrix.fromArray(c).decompose());
-			return Matrix.fromArray(c);
+			return klass.fromArray(c);
 		};
 	}
 	static translate(x = 0, y = 0) {
-		return Matrix.hexad(1, 0, 0, 1, x, y);
+		return this.hexad(1, 0, 0, 1, x, y);
 	}
 	static translateY(v: number) {
-		return Matrix.hexad(1, 0, 0, 1, 0, v);
+		return this.hexad(1, 0, 0, 1, 0, v);
 	}
 	static translateX(v: number) {
-		return Matrix.hexad(1, 0, 0, 1, v, 0);
+		return this.hexad(1, 0, 0, 1, v, 0);
+	}
+	static skew(x: number, y: number) {
+		return this.hexad(1, tan(radians(y)), tan(radians(x)), 1, 0, 0);
+	}
+	static skewX(x: number) {
+		return this.skew(x, 0);
+	}
+	static skewY(y: number) {
+		return this.skew(0, y);
+	}
+	static rotate(ang: number, x: number = 0, y: number = 0) {
+		const θ = ((ang % 360) * PI) / 180;
+		const cosθ = cos(θ);
+		const sinθ = sin(θ);
+		return this.hexad(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0);
+	}
+
+	static scale(scaleX: number, scaleY = scaleX) {
+		return this.hexad(scaleX, 0, 0, scaleY, 0, 0);
+	}
+	static identity() {
+		return new this();
 	}
 
 	final() {
@@ -334,5 +321,5 @@ interface ElementLike {
 }
 
 function closeEnough(a: number, b: number, threshold = 1e-6) {
-	return Math.abs(b - a) <= threshold;
+	return abs(b - a) <= threshold;
 }

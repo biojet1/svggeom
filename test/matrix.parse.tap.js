@@ -113,7 +113,7 @@ test.test(`matrixes etc`, { bail: !CI }, function (t) {
 		Matrix.new("matrix(1,0,0,1,0,0)"),
 		Matrix.new([1, 0, 0, 1, 0, 0])
 	);
-	t.same(Matrix.new().toString(), "matrix(1,0,0,1,0,0)");
+	t.match(Matrix.new().toString(), /^matrix\(1[, ]0[, ]0[, ]1[, ]0[, ]0\)$/);
 	t.same(
 		Matrix.translateY(4.1).translateX(1.4).describe().replace(/\s+/g, ""),
 		"translate(1.4,4.1)"
