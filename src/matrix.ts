@@ -63,7 +63,7 @@ export class Matrix {
 
 		return Matrix.hexad(na, nb, nc, nd, ne, nf);
 	}
-	_mul(m: Matrix): Matrix {
+	_cat(m: Matrix): Matrix {
 		const {a, b, c, d, e, f} = this;
 		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
 
@@ -78,7 +78,7 @@ export class Matrix {
 	}
 
 	multiply(m: Matrix): Matrix {
-		return this._mul(m);
+		return this._cat(m);
 	}
 
 	multiplySelf(m: Matrix): Matrix {
@@ -108,7 +108,7 @@ export class Matrix {
 	}
 
 	translate(x = 0, y = 0) {
-		return this._mul(Matrix.hexad(1, 0, 0, 1, x, y));
+		return this._cat(Matrix.hexad(1, 0, 0, 1, x, y));
 	}
 	translateY(v: number) {
 		return this.translate(0, v);
@@ -118,20 +118,20 @@ export class Matrix {
 	}
 
 	scale(scaleX: number, scaleY = scaleX) {
-		return this._mul(Matrix.hexad(scaleX, 0, 0, scaleY, 0, 0));
+		return this._cat(Matrix.hexad(scaleX, 0, 0, scaleY, 0, 0));
 	}
 
 	rotate(ang: number, x: number = 0, y: number = 0): Matrix {
 		const θ = ((ang % 360) * PI) / 180;
 		const cosθ = cos(θ);
 		const sinθ = sin(θ);
-		return this._mul(
+		return this._cat(
 			Matrix.hexad(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0)
 		);
 	}
 
 	skew(x: number, y: number) {
-		return this._mul(Matrix.hexad(1, tan(radians(y)), tan(radians(x)), 1, 0, 0));
+		return this._cat(Matrix.hexad(1, tan(radians(y)), tan(radians(x)), 1, 0, 0));
 	}
 
 	skewX(x: number) {
