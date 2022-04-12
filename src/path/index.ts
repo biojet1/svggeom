@@ -30,6 +30,14 @@ export abstract class Segment {
 		return vec.div(vec.abs());
 	}
 
+	get firstPoint() {
+		return this.p1;
+	}
+
+	get lastPoint() {
+		return this.p2;
+	}
+
 	cropAt(t0: number, t1: number): Segment | undefined {
 		if (t0 <= 0) {
 			if (t1 >= 1) {
