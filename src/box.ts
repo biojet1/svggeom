@@ -197,7 +197,7 @@ export class Box {
 		return Box._not;
 	}
 	public static not() {
-		return Box._not;
+		return this._not;
 	}
 	private static _empty?: Box;
 	public static empty() {
@@ -232,7 +232,7 @@ export class Box {
 			case 'number':
 				return this.forRect(first, arguments[1], arguments[2], arguments[3]);
 			case 'undefined':
-				return Box._not;
+				return this.not();
 			case 'object':
 				if (Array.isArray(first)) {
 					const x = first[0];
@@ -306,9 +306,9 @@ export class BoxMut extends Box {
 		return this;
 	}
 
-	mergeSelf(box: Box): Box {
+	mergeSelf(box: Box): this {
 		if (!this.isValid()) {
-			return box;
+			return this.copy(box);
 		} else if (!box.isValid()) {
 			return this;
 		} else {
@@ -329,5 +329,20 @@ export class BoxMut extends Box {
 	sizeSelf(w: number, h?: number): Box {
 		const {x, y, width, height} = this;
 		return this.reset(x, y, w ?? width, h ?? height);
+	}
+	public static not() {
+		return new BoxMut(NaN, NaN, NaN, NaN);
+	}
+	isValid() {
+		const {x, y, width, height} = this;
+		return !(isNaN(x) || isNaN(y) || isNaN(width) || isNaN(height));
+	}
+	copy(that: Box) {
+		const {x, y, width, height} = that;
+		this._x = x;
+		this._y = y;
+		this._w = width;
+		this._h = height;
+		return this;
 	}
 }

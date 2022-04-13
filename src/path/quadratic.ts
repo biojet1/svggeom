@@ -1,60 +1,60 @@
-import { Point } from "../point.js";
+import { Vec } from "../point.js";
 import { Box } from "../box.js";
 import { Segment } from "./index.js";
 import { Matrix } from "../matrix.js";
 import { Cubic } from "./cubic.js";
 
 export class Quadratic extends Cubic {
-	readonly c: Point;
+	readonly c: Vec;
 
 	constructor(
-		start: Point | number[],
-		control: Point | number[],
-		end: Point | number[]
+		p1: Iterable<number>,
+		control: Iterable<number>,
+		p2: Iterable<number>
 	) {
-		const p1 = Point.new(start);
-		const c = Point.new(control);
-		const p2 = Point.new(end);
+		const start = Vec.new(p1);
+		const c = Vec.new(control);
+		const end = Vec.new(p2);
 
-		const c1 = p1.equals(c) ? p1 : p1.mul(1 / 3).add(c.mul(2 / 3));
-		const c2 = p2.equals(c) ? p2 : c.mul(2 / 3).add(p2.mul(1 / 3));
-		super(p1, c1, c2, p2);
+		const c1 = start.equals(c) ? start : start.mul(1 / 3).add(c.mul(2 / 3));
+		const c2 = end.equals(c) ? end : c.mul(2 / 3).add(end.mul(1 / 3));
+		super(start, c1, c2, end);
 		this.c = c;
 	}
 
-	slopeAt(t: number): Point {
-		const { p1, c, p2 } = this;
+	slopeAt(t: number): Vec {
+		const { start, c, end } = this;
 
 		if (t >= 1) {
-			return p2.sub(c);
+			return end.sub(c);
 		} else if (t <= 0) {
-			return c.sub(p1);
+			return c.sub(start);
 		}
 
-		if (c.equals(p1) || c.equals(p2)) {
-			const vec = p2.sub(p1);
+		if (c.equals(start) || c.equals(end)) {
+			const vec = end.sub(start);
 			return vec.div(vec.abs());
 		}
-		const a = c.sub(p1).mul(1 - t);
-		const b = p2.sub(c).mul(t);
+		const a = c.sub(start).mul(1 - t);
+		const b = end.sub(c).mul(t);
 		return a.add(b).mul(2); // 1st derivative;
 	}
 
 	pointAt(t: number) {
-		const { p1, c, p2 } = this;
+		const { start, c, end } = this;
 		const v = 1 - t;
-		return Point.at(
-			v * v * p1.x + 2 * v * t * c.x + t * t * p2.x,
-			v * v * p1.y + 2 * v * t * c.y + t * t * p2.y
+		return Vec.at(
+			v * v * start.x + 2 * v * t * c.x + t * t * end.x,
+			v * v * start.y + 2 * v * t * c.y + t * t * end.y
 		);
 		//  return (1 - t)**2*self.start + 2*(1 - t)*t*self.control + t**2*self.end
 	}
 
 	splitAt(t: number) {
 		const {
-			p1: { x: x1, y: y1 },
+			start: { x: x1, y: y1 },
 			c: { x: cx, y: cy },
-			p2: { x: x2, y: y2 },
+			end: { x: x2, y: y2 },
 		} = this;
 		const mx1 = (1 - t) * x1 + t * cx;
 		const mx2 = (1 - t) * cx + t * x2;
@@ -66,38 +66,38 @@ export class Quadratic extends Cubic {
 
 		return [
 			new Quadratic(
-				Point.at(x1, y1),
-				Point.at(mx1, my1),
-				Point.at(mxt, myt)
+				Vec.at(x1, y1),
+				Vec.at(mx1, my1),
+				Vec.at(mxt, myt)
 			),
 			new Quadratic(
-				Point.at(mxt, myt),
-				Point.at(mx2, my2),
-				Point.at(x2, y2)
+				Vec.at(mxt, myt),
+				Vec.at(mx2, my2),
+				Vec.at(x2, y2)
 			),
 		];
 	}
 
 	bbox() {
-		const { p1, c, p2 } = this;
-		const [x1, x2, x3] = [p1.x, c.x, p2.x];
-		const [y1, y2, y3] = [p1.y, c.y, p2.y];
+		const { start, c, end } = this;
+		const [x1, x2, x3] = [start.x, c.x, end.x];
+		const [y1, y2, y3] = [start.y, c.y, end.y];
 		const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
 		const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
 		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 
 	toPathFragment() {
-		const { c, p2 } = this;
-		return ["Q", c.x, c.y, p2.x, p2.y];
+		const { c, end } = this;
+		return ["Q", c.x, c.y, end.x, end.y];
 	}
 	// length() {
-	// 	const {p1, c, p2} = this;
+	// 	const {start, c, end} = this;
 	// 	//     """Calculate the length of the path up to a certain position"""
 	// 	//     a = self.start - 2 * self.control + self.end
-	// 	const a = p1.sub(c.mul(2).add(p2));
+	// 	const a = start.sub(c.mul(2).add(end));
 	// 	//     b = 2 * (self.control - self.start)
-	// 	const b = c.sub(p1).mul(2);
+	// 	const b = c.sub(start).mul(2);
 	// 	//     try:
 	// 	//         # For an explanation of this case, see
 	// 	//         # http://www.malczak.info/blog/quadratic-bezier-curve-length/
@@ -144,13 +144,13 @@ export class Quadratic extends Cubic {
 	// 	return s;
 	// }
 	transform(M: any) {
-		const { p1, c, p2 } = this;
-		return new Quadratic(p1.transform(M), c.transform(M), p2.transform(M));
+		const { start, c, end } = this;
+		return new Quadratic(start.transform(M), c.transform(M), end.transform(M));
 	}
 
 	reversed() {
-		const { p1, c, p2 } = this;
-		return new Quadratic(p2, c, p1);
+		const { start, c, end } = this;
+		return new Quadratic(end, c, start);
 	}
 }
 

@@ -177,7 +177,7 @@ export class Matrix {
 	decompose() {
 		let {a, d, b, c} = this;
 		const {e, f} = this;
-		var scaleX, scaleY, skewX;
+		let scaleX, scaleY, skewX;
 		if ((scaleX = sqrt(a * a + b * b))) (a /= scaleX), (b /= scaleX);
 		if ((skewX = a * c + b * d)) (c -= a * skewX), (d -= b * skewX);
 		if ((scaleY = sqrt(c * c + d * d))) (c /= scaleY), (d /= scaleY), (skewX /= scaleY);
@@ -189,6 +189,12 @@ export class Matrix {
 			skewX: (atan(skewX) * 180) / PI,
 			scaleX: scaleX,
 			scaleY: scaleY,
+			toString: function () {
+				const {translateX, translateY, rotate, skewX, scaleX, scaleY} = this;
+				return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${
+					rotate ? `rotate(${rotate})` : ''
+				}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`}`;
+			},
 		};
 	}
 	toArray() {
@@ -203,9 +209,9 @@ export class Matrix {
 
 	public static compose(dec: any) {
 		const {translateX, translateY, rotate, skewX, scaleX, scaleY} = dec;
-		return `${translateX || translateY ? `translate(${translateX},${translateY})` : ''}${
+		return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${
 			rotate ? `rotate(${rotate})` : ''
-		}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX},${scaleY})`}`;
+		}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`}`;
 
 		// return `translate(${dec.translateX}, ${dec.translateY}) rotate(${dec.rotate}) skewX(${dec.skewX}) scale(${dec.scaleX}, ${dec.scaleY})`;
 	}

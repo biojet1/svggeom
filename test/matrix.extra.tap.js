@@ -31,6 +31,7 @@ test.test(`Matrix.identity`, {bail: !CI}, function (t) {
 	t.notOk(Matrix.hexad(1, 0, 0, 2, 0, 0).isIdentity());
 	t.ok(Matrix.identity().equals(Matrix.parse('matrix(1 0 0 1 0 0)')), 'identity');
 	t.ok(Matrix.parse('scale(1 1)').isIdentity());
+	t.ok(Matrix.identity().multiply(Matrix.hexad(1, 2, 3, 4, 5, 6)).equals(Matrix.parse('matrix(1 2 3 4 5 6)')));
 	t.end();
 });
 

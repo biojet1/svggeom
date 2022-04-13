@@ -2,8 +2,8 @@ import {Vec} from '../point.js';
 import {Box} from '../box.js';
 
 export abstract class Segment {
-	readonly p1: Vec;
-	readonly p2: Vec;
+	abstract get start(): Vec;
+	abstract get end(): Vec;
 	abstract get length(): number;
 	abstract toPathFragment(): (string | number)[];
 	abstract bbox(): Box;
@@ -12,13 +12,18 @@ export abstract class Segment {
 	abstract transform(M: any): Segment;
 	abstract reversed(): Segment;
 	abstract splitAt(t: number): Segment[];
-	constructor(p1: Vec, p2: Vec) {
-		this.p1 = p1;
-		this.p2 = p2;
+
+	get firstPoint() {
+		return this.start;
+	}
+
+	get lastPoint() {
+		return this.end;
 	}
 
 	toPath(): string {
-		return ['M', this.p1.x, this.p1.y].concat(this.toPathFragment()).join(' ');
+		const {x, y} = this.start;
+		return ['M', x, y].concat(this.toPathFragment()).join(' ');
 	}
 
 	cutAt(t: number): Segment {
@@ -51,83 +56,21 @@ export abstract class Segment {
 	}
 }
 
-export class Line extends Segment {
-	constructor(p1: Iterable<number>, p2: Iterable<number>) {
-		super(Vec.new(p1), Vec.new(p2));
+export abstract class SegmentSE extends Segment {
+	private readonly _start: Vec;
+	private readonly _end: Vec;
+
+	constructor(start: Iterable<number>, end: Iterable<number>) {
+		super();
+		this._start = Vec.new(start);
+		this._end = Vec.new(end);
 	}
 
-	bbox() {
-		const {
-			p1: {x: p1x, y: p1y},
-			p2: {x: p2x, y: p2y},
-		} = this;
-		const [xmin, xmax] = [Math.min(p1x, p2x), Math.max(p1x, p2x)];
-		const [ymin, ymax] = [Math.min(p1y, p2y), Math.max(p1y, p2y)];
-		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+	get start() {
+		return this._start;
 	}
 
-	get length() {
-		const {p1, p2} = this;
-		return p2.sub(p1).abs();
-	}
-
-	pointAt(t: number) {
-		const {p1, p2} = this;
-		return p2.sub(p1).mul(t).postAdd(p1);
-	}
-
-	slopeAt(t: number) {
-		const {p1, p2} = this;
-		const vec = p2.sub(p1);
-		return vec.div(vec.abs());
-	}
-
-	splitAt(t: number) {
-		const {p1, p2} = this;
-		const c = this.pointAt(t);
-		return [new Line(p1, c), new Line(c, p2)];
-	}
-
-	transform(M: any) {
-		const {p1, p2} = this;
-		return new Line(p1.transform(M), p2.transform(M));
-	}
-
-	reversed() {
-		const {p1, p2} = this;
-		return new Line(p2, p1);
-	}
-
-	toPathFragment() {
-		const {
-			p2: {x, y},
-		} = this;
-
-		return ['L', x, y];
+	get end() {
+		return this._end;
 	}
 }
-
-export class Close extends Line {
-	toPathFragment() {
-		return ['Z'];
-	}
-
-	toPath() {
-		return 'Z';
-	}
-
-	transform(M: any) {
-		const {p1, p2} = this;
-		return new Close(p1.transform(M), p2.transform(M));
-	}
-
-	splitAt(t: number): Segment[] {
-		const {p1, p2} = this;
-		const c = this.pointAt(t);
-		return [new Line(p1, c), new Close(c, p2)];
-	}
-}
-
-export class Horizontal extends Line {}
-export class Vertical extends Line {}
-export {Line as LineSegment};

@@ -169,6 +169,15 @@ test.test(`Box mutable`, {bail: !CI}, function (t) {
 	a.height = 30;
 	t.match(a.toString().split(/[,s]+/), ['80', '-44', '20', '30']);
 
+	t.match(`${a.copy(b)}`.split(/[,s]+/), [-60, -50, 60, 50]);
+	t.notOk(BoxMut.new().isValid());
+	// t.ok(BoxMut.new().equal(BoxMut.not()));
+	t.match(`${BoxMut.not().copy(b)}`.split(/[,s]+/), [-60, -50, 60, 50]);
+	t.match(`${BoxMut.not().mergeSelf(b)}`.split(/[,s]+/), [-60, -50, 60, 50]);
+
+
+	// const a = BoxMut.new([0, 0, 100, 100]);
+
 	// t.throws(() => {
 	// 	a.freeze().x = 60;
 	// }, TypeError);
