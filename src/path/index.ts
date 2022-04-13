@@ -2,8 +2,8 @@ import {Vec} from '../point.js';
 import {Box} from '../box.js';
 
 export abstract class Segment {
-	readonly p1: Vec;
-	readonly p2: Vec;
+	abstract get start(): Vec;
+	abstract get end(): Vec;
 	abstract get length(): number;
 	abstract toPathFragment(): (string | number)[];
 	abstract bbox(): Box;
@@ -12,21 +12,17 @@ export abstract class Segment {
 	abstract transform(M: any): Segment;
 	abstract reversed(): Segment;
 	abstract splitAt(t: number): Segment[];
-	constructor(p1: Vec, p2: Vec) {
-		this.p1 = p1;
-		this.p2 = p2;
-	}
 
 	get firstPoint() {
-		return this.p1;
+		return this.start;
 	}
 
 	get lastPoint() {
-		return this.p2;
+		return this.end;
 	}
 
 	toPath(): string {
-		return ['M', this.p1.x, this.p1.y].concat(this.toPathFragment()).join(' ');
+		return ['M', this.start.x, this.start.y].concat(this.toPathFragment()).join(' ');
 	}
 
 	cutAt(t: number): Segment {
@@ -59,3 +55,21 @@ export abstract class Segment {
 	}
 }
 
+export abstract class SegmentSE extends Segment {
+	private readonly _start: Vec;
+	private readonly _end: Vec;
+
+	constructor(start: Iterable<number>, end: Iterable<number>) {
+		super();
+		this._start = Vec.new(start);
+		this._end = Vec.new(end);
+	}
+
+	get start() {
+		return this._start;
+	}
+
+	get end() {
+		return this._end;
+	}
+}
