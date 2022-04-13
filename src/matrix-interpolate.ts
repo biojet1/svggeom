@@ -37,10 +37,62 @@ export class MatrixInterpolate {
 	static identity() {
 		return new Identity();
 	}
+	// static track(seg: Segment) {
+	// 	return new Select().weight(n);
+	// }
+	static parse(...args: any) {
+		const items = parse(args);
+		return items && items.length > 1 ? new Seq(items) : items[0];
+	}
 
 	at(t: number, M?: Matrix): Matrix {
 		throw new Error(`Not implemented`);
 	}
+}
+function parse(args: Array<any>) {
+	const items: Array<Transform> = [];
+
+	for (const item of args) {
+		let v, t;
+		if (Array.isArray(item)) {
+			t = new Par(parse(v));
+		} else {
+			if ((v = item.par)) {
+				t = new Par(parse(v));
+			} else if ((v = item.seq)) {
+				t = new Seq(parse(v));
+			} else if ((v = item.translate)) {
+				if (Array.isArray(v)) {
+					t = new Translate(v[0], v[1]);
+				} else {
+					t = new Translate(v);
+				}
+			} else if ((v = item.scale)) {
+				if (Array.isArray(v)) {
+					t = new Scale(v[0], v[1]);
+				} else {
+					t = new Scale(v);
+				}
+			} else if ((v = item.rotate)) {
+				t = new Rotate(v);
+			} else {
+				throw new Error(`Unxepectd argument`);
+			}
+			if ((v = item.anchor)) {
+				if (Array.isArray(v)) {
+					t._anchor = Vec.new(v[0], v[1]);
+				} else {
+					t._anchor = v;
+				}
+			}
+			if ((v = item.weight)) {
+				t._weight = v;
+			}
+		}
+		items.push(t);
+	}
+
+	return items;
 }
 
 class Transform {
@@ -72,24 +124,43 @@ class Select extends Transform {
 		return v;
 	}
 	translate(x: number | Iterable<number>, y: number = 0) {
-		return this.new(new Translate(x, y));
+		const t = new Translate(x, y);
+		return this.new(t);
 	}
 	scale(n: number) {
-		return this.new(new Scale(n));
+		const t = new Scale(n);
+		return this.new(t);
 	}
 	rotate(θ: number) {
-		return this.new(new Rotate(θ));
+		const t = new Rotate(θ);
+		return this.new(t);
 	}
 }
 
 class Translate extends Transform {
-	constructor(x: number | Iterable<number>, y: number = 0) {
+	_seg: Segment;
+
+	constructor(x: number | Iterable<number> | Segment, y: number = 0) {
+		// seg: Segment
 		super();
-		this.anchor(x, y);
+		if (x instanceof Segment) {
+			this._seg = x;
+		} else {
+			this._seg = new Line(Vec.pos(0, 0), Vec.new(x, y));
+			// this.anchor(x, y);
+		}
+	}
+	track(seg: Segment) {
+		this._seg = seg;
 	}
 	at(t: number) {
-		const {_anchor: {x = 100, y = 100} = {}} = this;
-		return Matrix.translate(fromTo(t, 0, x), fromTo(t, 0, y));
+		const {_seg} = this;
+		// if (_seg) {
+		const {x, y} = _seg.pointAt(t);
+		return Matrix.translate(x, y);
+		// }
+		// const {_anchor: {x = 100, y = 100} = {}} = this;
+		// return Matrix.translate(fromTo(t, 0, x), fromTo(t, 0, y));
 	}
 }
 
@@ -141,7 +212,7 @@ class Identity extends Transform {
 	}
 }
 
-abstract class Transforms extends MatrixInterpolate {
+abstract class Transforms extends Transform {
 	items: Array<Transform>;
 
 	constructor(items: Array<Transform>) {
@@ -189,19 +260,19 @@ class Par extends Transforms {
 }
 
 import {Cubic} from './path/cubic.js';
+import {Line} from './path/line.js';
+import {Segment} from './path/index.js';
 
-export function cubicTranslate(h1: Vec, h2: Vec, p1: Vec, p2?: Vec) {
+export function cubicTrack(h1: Vec, h2: Vec, p1: Vec, p2?: Vec) {
 	if (!p2) {
 		p2 = p1;
 		p1 = Vec.pos(0, 0);
 	}
 
 	const d = p2.distance(p1);
+
 	const c1 = p1.add(Vec.polar(h1.abs() * d, h1.angle));
 	const c2 = p2.add(Vec.polar(h2.abs() * d, h2.angle));
 	const q = new Cubic(p1, c1, c2, p2);
 	return q;
-	// return function (t: number) {
-	// 	return q.pointAt(t);
-	// };
 }

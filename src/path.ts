@@ -26,18 +26,107 @@ export class Path {
 	getBBox() {
 		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
 	}
+	tangentAt(T: number) {
+		// Segment method
+		const [seg, t] = this.segmentAt(T);
+		if (seg) return seg.tangentAt(t);
+	}
+
+	slopeAt(T: number) {
+		// Segment method
+		const [seg, t] = this.segmentAt(T);
+		if (seg) return seg.slopeAt(t);
+	}
+
+	pointAt(T: number) {
+		// Segment method
+		const [seg, t] = this.segmentAt(T);
+		if (seg) return seg.pointAt(t);
+	}
+	bbox() {
+		// Segment method
+		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
+	}
+	splitAt(T: number) {
+		// Segment method
+		const [seg, t, i] = this.segmentAt(T);
+		if (seg) {
+			const {_segs: segs} = this;
+			let s;
+			let a = segs.slice(0, i);
+			let b = segs.slice(i + 1);
+			(s = seg.cropAt(0, t)) && a.push(s);
+			(s = seg.cropAt(t, 1)) && b.unshift(s);
+			return [new Path(a), new Path(b)];
+		}
+	}
+
+	cutAt(T: number): Path {
+		// Segment method
+		const [seg, t, i] = this.segmentAt(T < 0 ? -T : T);
+		if (seg) {
+			const {_segs: segs} = this;
+			if (T < 0) {
+				const a = segs.slice(i + 1);
+				const s = seg.cropAt(t, 1);
+				s && a.unshift(s);
+				return new Path(a);
+			} else {
+				const a = segs.slice(0, i);
+				const s = seg.cropAt(0, t);
+				s && a.push(s);
+				return new Path(a);
+			}
+		}
+		return new Path([]);
+	}
+
+	cropAt(T0: number, T1: number = 1): Path {
+		// Segment method
+		if (T0 <= 0) {
+			if (T1 >= 1) {
+				return this; // TODO: use clone
+			} else if (T1 > 0) {
+				return this.cutAt(T1);
+			}
+		} else if (T0 < 1) {
+			if (T1 >= 1) {
+				return this.cutAt(-T0);
+			} else if (T0 < T1) {
+				return this.cutAt(-T0).cutAt((T1 - T0) / (1 - T0));
+			} else if (T0 > T1) {
+				return this.cropAt(T1, T0);
+			}
+		} else if (T1 < 1) {
+			// T0 >= 1
+			return this.cropAt(T1, T0);
+		}
+		return new Path([]);
+	}
+
+	transform(M: any) {
+		// Segment method
+		return new Path(this._segs.map(seg => seg.transform(M)));
+	}
+
+	reversed() {
+		// Segment method
+		return new Path(this._segs.map(seg => seg.reversed()).reverse());
+	}
 
 	get length() {
+		// Segment method
 		return this.calcLength();
 	}
 
 	get totalLength() {
 		return this.calcLength();
 	}
-
-	bbox() {
-		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
+	pointAtLength(L: number) {
+		const {totalLength} = this;
+		return totalLength && this.pointAt(L / totalLength);
 	}
+
 	// segments() {
 	// 	return this._segs;
 	// }
@@ -65,6 +154,7 @@ export class Path {
 			return seg.p1;
 		}
 	}
+
 	get firstSegment() {
 		const {_segs: segs} = this;
 		for (const seg of segs) {
@@ -147,88 +237,6 @@ export class Path {
 			return segs[0].p1.equals(segs[n - 1].p2);
 		}
 		return false;
-	}
-
-	tangentAt(T: number) {
-		const [seg, t] = this.segmentAt(T);
-		if (seg) return seg.tangentAt(t);
-	}
-
-	slopeAt(T: number) {
-		const [seg, t] = this.segmentAt(T);
-		if (seg) return seg.slopeAt(t);
-	}
-
-	pointAt(T: number) {
-		const [seg, t] = this.segmentAt(T);
-		if (seg) return seg.pointAt(t);
-	}
-
-	pointAtLength(L: number) {
-		const {totalLength} = this;
-		return totalLength && this.pointAt(L / totalLength);
-	}
-
-	splitAt(T: number) {
-		const [seg, t, i] = this.segmentAt(T);
-		if (seg) {
-			const {_segs: segs} = this;
-			let s;
-			let a = segs.slice(0, i);
-			let b = segs.slice(i + 1);
-			(s = seg.cropAt(0, t)) && a.push(s);
-			(s = seg.cropAt(t, 1)) && b.unshift(s);
-			return [new Path(a), new Path(b)];
-		}
-	}
-
-	cutAt(T: number): Path {
-		const [seg, t, i] = this.segmentAt(T < 0 ? -T : T);
-		if (seg) {
-			const {_segs: segs} = this;
-			if (T < 0) {
-				const a = segs.slice(i + 1);
-				const s = seg.cropAt(t, 1);
-				s && a.unshift(s);
-				return new Path(a);
-			} else {
-				const a = segs.slice(0, i);
-				const s = seg.cropAt(0, t);
-				s && a.push(s);
-				return new Path(a);
-			}
-		}
-		return new Path([]);
-	}
-
-	cropAt(T0: number, T1: number = 1): Path {
-		if (T0 <= 0) {
-			if (T1 >= 1) {
-				return this; // TODO: use clone
-			} else if (T1 > 0) {
-				return this.cutAt(T1);
-			}
-		} else if (T0 < 1) {
-			if (T1 >= 1) {
-				return this.cutAt(-T0);
-			} else if (T0 < T1) {
-				return this.cutAt(-T0).cutAt((T1 - T0) / (1 - T0));
-			} else if (T0 > T1) {
-				return this.cropAt(T1, T0);
-			}
-		} else if (T1 < 1) {
-			// T0 >= 1
-			return this.cropAt(T1, T0);
-		}
-		return new Path([]);
-	}
-
-	transform(M: any) {
-		return new Path(this._segs.map(seg => seg.transform(M)));
-	}
-
-	reversed() {
-		return new Path(this._segs.map(seg => seg.reversed()).reverse());
 	}
 
 	private *enumDesc(params: IDescOpt) {
@@ -438,7 +446,7 @@ export class Path {
 	}
 }
 
-import {Line, Close, Vertical, Horizontal} from './path/index.js';
+import {Line, Close, Vertical, Horizontal} from './path/line.js';
 import {Arc} from './path/arc.js';
 import {Cubic} from './path/cubic.js';
 import {Quadratic} from './path/quadratic.js';

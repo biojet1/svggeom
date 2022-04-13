@@ -1,27 +1,51 @@
-import * as regex from '../regex.js';
-import {Point} from '../point.js';
+// import * as regex from '../regex.js';
+import {Vec} from '../point.js';
 import {Box} from '../box.js';
-import {Segment, Line, Close, Vertical, Horizontal} from './index.js';
+import {Segment} from './index.js';
 import {Arc} from './arc.js';
 import {Cubic} from './cubic.js';
+import {Line, Close, Vertical, Horizontal} from './line.js';
 import {Quadratic} from './quadratic.js';
 
+// splits a transformation chain
+export const transforms = /\)\s*,?\s*/;
+
+// split at whitespace and comma
+export const delimiter = /[\s,]+/;
+
+// The following regex are used to parse the d attribute of a path
+
+// Matches all hyphens which are not after an exponent
+export const hyphen = /([^e])-/gi;
+
+// Replaces and tests for all path letters
+export const pathLetters = /[MLHVCSQTAZ]/gi;
+
+// yes we need this one, too
+export const isPathLetter = /[MLHVCSQTAZ]/i;
+
+// matches 0.154.23.45
+export const numbersWithDots = /((\d?\.\d+(?:e[+-]?\d+)?)((?:\.\d+(?:e[+-]?\d+)?)+))+/gi;
+
+// matches .
+export const dots = /\./g;
+
 function pathRegReplace(a: any, b: any, c: any, d: any) {
-	return c + d.replace(regex.dots, ' .');
+	return c + d.replace(dots, ' .');
 }
 
 export function parseDesc(d: string) {
 	// prepare for parsing
 	const segments = new Array<Segment>();
 	const array = d
-		.replace(regex.numbersWithDots, pathRegReplace) // convert 45.123.123 to 45.123 .123
-		.replace(regex.pathLetters, ' $& ') // put some room between letters and numbers
-		.replace(regex.hyphen, '$1 -') // add space before hyphen
+		.replace(numbersWithDots, pathRegReplace) // convert 45.123.123 to 45.123 .123
+		.replace(pathLetters, ' $& ') // put some room between letters and numbers
+		.replace(hyphen, '$1 -') // add space before hyphen
 		.trim() // trim
-		.split(regex.delimiter)
+		.split(delimiter)
 		.reverse(); // split into array
-	let pos = Point.at();
-	let moved = Point.at();
+	let pos = Vec.at(0, 0);
+	let moved = Vec.at(0, 0);
 	let last_command;
 
 	const num = function () {
@@ -44,9 +68,9 @@ export function parseDesc(d: string) {
 					const x = num();
 					const y = num();
 					if (absolute) {
-						pos = moved = Point.at(x, y);
+						pos = moved = Vec.at(x, y);
 					} else {
-						pos = moved = start.add(Point.at(x, y));
+						pos = moved = start.add(Vec.at(x, y));
 					}
 				}
 				break;
@@ -64,9 +88,9 @@ export function parseDesc(d: string) {
 					const x = num();
 					const y = num();
 					if (absolute) {
-						pos = Point.at(x, y);
+						pos = Vec.at(x, y);
 					} else {
-						pos = pos.add(Point.at(x, y));
+						pos = pos.add(Vec.at(x, y));
 					}
 					segments.push(new Line(start, pos));
 				}
@@ -77,9 +101,9 @@ export function parseDesc(d: string) {
 				{
 					const v = num();
 					if (absolute) {
-						pos = Point.at(v, pos.y);
+						pos = Vec.at(v, pos.y);
 					} else {
-						pos = Point.at(pos.x + v, pos.y);
+						pos = Vec.at(pos.x + v, pos.y);
 					}
 					segments.push(new Horizontal(start, pos));
 				}
@@ -90,9 +114,9 @@ export function parseDesc(d: string) {
 				{
 					const v = num();
 					if (absolute) {
-						pos = Point.at(pos.x, v);
+						pos = Vec.at(pos.x, v);
 					} else {
-						pos = Point.at(pos.x, pos.y + v);
+						pos = Vec.at(pos.x, pos.y + v);
 					}
 					segments.push(new Vertical(start, pos));
 				}
@@ -109,9 +133,9 @@ export function parseDesc(d: string) {
 					const x = num();
 					const y = num();
 					if (absolute) {
-						pos = Point.at(x, y);
+						pos = Vec.at(x, y);
 					} else {
-						pos = pos.add(Point.at(x, y));
+						pos = pos.add(Vec.at(x, y));
 					}
 					segments.push(Arc.fromEndPoint(start, rx, ry, rotation, arc, sweep, pos));
 				}
@@ -126,14 +150,14 @@ export function parseDesc(d: string) {
 					const c2y = num();
 					const x = num();
 					const y = num();
-					let c1 = Point.at(c1x, c1y);
-					let c2 = Point.at(c2x, c2y);
+					let c1 = Vec.at(c1x, c1y);
+					let c2 = Vec.at(c2x, c2y);
 					if (absolute) {
-						pos = Point.at(x, y);
+						pos = Vec.at(x, y);
 					} else {
 						c1 = c1.add(pos);
 						c2 = c2.add(pos);
-						pos = pos.add(Point.at(x, y));
+						pos = pos.add(Vec.at(x, y));
 					}
 					segments.push(new Cubic(start, c1, c2, pos));
 				}
@@ -146,12 +170,12 @@ export function parseDesc(d: string) {
 					const cy = num();
 					const x = num();
 					const y = num();
-					let con = Point.at(cx, cy);
+					let con = Vec.at(cx, cy);
 					if (absolute) {
-						pos = Point.at(x, y);
+						pos = Vec.at(x, y);
 					} else {
 						con = con.add(pos);
-						pos = pos.add(Point.at(x, y));
+						pos = pos.add(Vec.at(x, y));
 					}
 					segments.push(new Quadratic(start, con, pos));
 				}
@@ -182,14 +206,14 @@ export function parseDesc(d: string) {
 						c1 = start;
 					}
 
-					let c2 = Point.at(cx, cy);
+					let c2 = Vec.at(cx, cy);
 
 					if (absolute) {
-						pos = Point.at(x, y);
+						pos = Vec.at(x, y);
 					} else {
 						// c1 = c1.add(pos);
 						c2 = c2.add(pos);
-						pos = start.add(Point.at(x, y));
+						pos = start.add(Vec.at(x, y));
 					}
 
 					segments.push(new Cubic(start, c1, c2, pos));
@@ -209,10 +233,10 @@ export function parseDesc(d: string) {
 						c = start;
 					}
 					if (absolute) {
-						pos = Point.at(x, y);
+						pos = Vec.at(x, y);
 					} else {
 						// c = c.add(start);
-						pos = start.add(Point.at(x, y));
+						pos = start.add(Vec.at(x, y));
 					}
 					segments.push(new Quadratic(start, c, pos));
 				}

@@ -1,17 +1,11 @@
-import { Point } from "../point.js";
-import { Box } from "../box.js";
-import { Segment, Line } from "./index.js";
-import { Cubic } from "./cubic.js";
-import { Matrix } from "../matrix.js";
-import {
-	cossin,
-	unit_vector_angle,
-	segment_length,
-	arcParams,
-	arcToCurve,
-} from "../util.js";
-const { abs, atan, tan, cos, sin, sqrt, acos, atan2, pow, PI, min, max, ceil } =
-	Math;
+import {Vec} from '../point.js';
+import {Box} from '../box.js';
+import {Segment} from './index.js';
+import {Line} from './line.js';
+import {Cubic} from './cubic.js';
+import {Matrix} from '../matrix.js';
+import {cossin, unit_vector_angle, segment_length, arcParams, arcToCurve} from '../util.js';
+const {abs, atan, tan, cos, sin, sqrt, acos, atan2, pow, PI, min, max, ceil} = Math;
 
 export class Arc extends Segment {
 	readonly rx: number;
@@ -27,34 +21,23 @@ export class Arc extends Segment {
 	readonly cx: number;
 	readonly cy: number;
 	private constructor(
-		p1: Point | number[],
-		p2: Point | number[],
+		p1: Vec | number[],
+		p2: Vec | number[],
 		rx: number,
 		ry: number,
 		φ: number,
 		arc: boolean | number,
 		sweep: boolean | number
 	) {
-		if (!(Number.isFinite(φ) && Number.isFinite(rx) && Number.isFinite(ry)))
-			throw Error(`${JSON.stringify(arguments)}`);
-		p1 = Point.new(p1);
-		p2 = Point.new(p2);
+		if (!(isFinite(φ) && isFinite(rx) && isFinite(ry))) throw Error(`${JSON.stringify(arguments)}`);
+		p1 = Vec.new(p1);
+		p2 = Vec.new(p2);
 
-		const { x: x1, y: y1 } = p1;
-		const { x: x2, y: y2 } = p2;
+		const {x: x1, y: y1} = p1;
+		const {x: x2, y: y2} = p2;
 		super(p1, p2);
 
-		[
-			this.phi,
-			this.rx,
-			this.ry,
-			this.sinφ,
-			this.cosφ,
-			this.cx,
-			this.cy,
-			this.rtheta,
-			this.rdelta,
-		] = arcParams(
+		[this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] = arcParams(
 			x1,
 			y1,
 			rx,
@@ -78,28 +61,18 @@ export class Arc extends Segment {
 		if (!rx || !ry) {
 			return new Line(p1, p2);
 		}
-		p1 = Point.new(p1);
-		p2 = Point.new(p2);
+		p1 = Vec.new(p1);
+		p2 = Vec.new(p2);
 		return new Arc(p1, p2, rx, ry, φ, arc, sweep);
 	}
-	static fromCenterForm(
-		c: Point,
-		rx: number,
-		ry: number,
-		φ: number,
-		θ: number,
-		Δθ: number
-	) {
+	static fromCenterForm(c: Vec, rx: number, ry: number, φ: number, θ: number, Δθ: number) {
 		const cosφ = cos((φ / 180) * PI);
 		const sinφ = sin((φ / 180) * PI);
 		const m = Matrix.hexad(cosφ, sinφ, -sinφ, cosφ, 0, 0);
-		const p1 = Point.at(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
+		const p1 = Vec.at(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
 			.transform(m)
 			.add(c);
-		const p2 = Point.at(
-			rx * cos(((θ + Δθ) / 180) * PI),
-			ry * sin(((θ + Δθ) / 180) * PI)
-		)
+		const p2 = Vec.at(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
 			.transform(m)
 			.add(c);
 		const arc = abs(Δθ) > 180 ? 1 : 0;
@@ -107,7 +80,7 @@ export class Arc extends Segment {
 		return new Arc(p1, p2, rx, ry, φ, arc, sweep);
 	}
 	bbox() {
-		const { rx, ry, cosφ, sinφ, p1, p2, rdelta, rtheta, phi } = this;
+		const {rx, ry, cosφ, sinφ, p1, p2, rdelta, rtheta, phi} = this;
 		let atan_x, atan_y;
 		if (cosφ == 0) {
 			atan_x = PI / 2;
@@ -136,23 +109,15 @@ export class Arc extends Segment {
 		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 	clone() {
-		return new Arc(
-			this.p1,
-			this.p2,
-			this.rx,
-			this.ry,
-			this.phi,
-			this.arc,
-			this.sweep
-		);
+		return new Arc(this.p1, this.p2, this.rx, this.ry, this.phi, this.arc, this.sweep);
 	}
 	get length() {
-		const { p1, p2 } = this;
+		const {p1, p2} = this;
 		if (p1.equals(p2)) return 0;
 		return segment_length(this, 0, 1, p1, p2);
 	}
 	pointAt(t: number) {
-		const { p1, p2 } = this;
+		const {p1, p2} = this;
 		if (p1.equals(p2)) {
 			return p1.clone();
 		} else if (t <= 0) {
@@ -160,45 +125,30 @@ export class Arc extends Segment {
 		} else if (t >= 1) {
 			return p2;
 		}
-		const { rx, ry, cosφ, sinφ, rtheta, rdelta, cx, cy } = this;
+		const {rx, ry, cosφ, sinφ, rtheta, rdelta, cx, cy} = this;
 		const θ = rtheta + rdelta * t;
 		const sinθ = sin(θ);
 		const cosθ = cos(θ);
 		// const [cosθ, sinθ] = cossin((180 * rtheta + 180 * rdelta * t) / PI);
 		// (eq. 3.1) https://svgwg.org/svg2-draft/implnote.html#ArcParameterizationAlternatives
 		try {
-			return Point.at(
-				rx * cosφ * cosθ - ry * sinφ * sinθ + cx,
-				rx * sinφ * cosθ + ry * cosφ * sinθ + cy
-			);
+			return Vec.at(rx * cosφ * cosθ - ry * sinφ * sinθ + cx, rx * sinφ * cosθ + ry * cosφ * sinθ + cy);
 		} catch (err) {
 			console.log(rtheta, rdelta, rx, cosφ, cosθ, ry, sinφ, sinθ, cx, cy);
 			throw err;
 		}
 	}
 	splitAt(t: number) {
-		const { rx, ry, phi, sweep, rdelta, p1, p2 } = this;
+		const {rx, ry, phi, sweep, rdelta, p1, p2} = this;
 		const deltaA = abs(rdelta);
 		const delta1 = deltaA * t;
 		const delta2 = deltaA * (1 - t);
 		const pT = this.pointAt(t);
-		return [
-			new Arc(p1, pT, rx, ry, phi, delta1 > PI, sweep),
-			new Arc(pT, p2, rx, ry, phi, delta2 > PI, sweep),
-		];
+		return [new Arc(p1, pT, rx, ry, phi, delta1 > PI, sweep), new Arc(pT, p2, rx, ry, phi, delta2 > PI, sweep)];
 	}
 
 	toPathFragment() {
-		return [
-			"A",
-			this.rx,
-			this.ry,
-			this.phi,
-			this.arc ? 1 : 0,
-			this.sweep ? 1 : 0,
-			this.p2.x,
-			this.p2.y,
-		];
+		return ['A', this.rx, this.ry, this.phi, this.arc ? 1 : 0, this.sweep ? 1 : 0, this.p2.x, this.p2.y];
 	}
 	// toString() {
 	// 	return `p1: ${this.p1.x.toFixed(4)} ${this.p1.y.toFixed(
@@ -213,27 +163,24 @@ export class Arc extends Segment {
 	// 		this.sweep
 	// 	}`;
 	// }
-	slopeAt(t: number): Point {
+	slopeAt(t: number): Vec {
 		// throw new Error('Not implemented');
-		const { rx, ry, cosφ, sinφ, rdelta, rtheta } = this;
+		const {rx, ry, cosφ, sinφ, rdelta, rtheta} = this;
 		const θ = rtheta + t * rdelta;
 		const sinθ = sin(θ);
 		const cosθ = cos(θ);
 		const k = rdelta;
 
-		return Point.at(
-			-rx * cosφ * sinθ * k - ry * sinφ * cosθ * k,
-			-rx * sinφ * sinθ * k + ry * cosφ * cosθ * k
-		);
+		return Vec.at(-rx * cosφ * sinθ * k - ry * sinφ * cosθ * k, -rx * sinφ * sinθ * k + ry * cosφ * cosθ * k);
 	}
 
 	transform(matrix: any) {
 		// return arc_transform(this, matrix);
-		const { arc, p2, p1 } = this;
-		let { rx, ry, sweep, phi } = this;
+		const {arc, p2, p1} = this;
+		let {rx, ry, sweep, phi} = this;
 		const p1ˈ = p1.transform(matrix);
 		const p2_ = p2.transform(matrix);
-		const { rotate, scaleX, scaleY, skewX } = matrix.decompose();
+		const {rotate, scaleX, scaleY, skewX} = matrix.decompose();
 		if (scaleX == scaleY && scaleX != 1) {
 			rx = rx * scaleX;
 			ry = ry * scaleX;
@@ -245,7 +192,7 @@ export class Arc extends Segment {
 			// const M = phi ? matrix.rotate(phi) : matrix;
 			const M = matrix;
 
-			const { a, c, b, d } = M;
+			const {a, c, b, d} = M;
 			const detT = a * d - b * c;
 			const detT2 = detT * detT;
 			if (!rx || !ry || !detT2) break OUT;
@@ -324,15 +271,15 @@ export class Arc extends Segment {
 	}
 
 	reversed() {
-		const { arc, p2, p1, rx, ry, sweep, phi } = this;
+		const {arc, p2, p1, rx, ry, sweep, phi} = this;
 		return new Arc(p2, p1, rx, ry, phi, arc, sweep ? 0 : 1);
 	}
 
 	asCubic() {
 		const {
 			arc,
-			p2: { x: x2, y: y2 },
-			p1: { x: x1, y: y1 },
+			p2: {x: x2, y: y2},
+			p1: {x: x1, y: y1},
 			rx,
 			ry,
 			sweep,
@@ -351,12 +298,7 @@ export class Arc extends Segment {
 			return [new Line([x1, y1], [x2, y2])];
 		} else {
 			return segments.map(function (s) {
-				return new Cubic(
-					[s[0], s[1]],
-					[s[2], s[3]],
-					[s[4], s[5]],
-					[s[6], s[7]]
-				);
+				return new Cubic([s[0], s[1]], [s[2], s[3]], [s[4], s[5]], [s[6], s[7]]);
 			});
 		}
 	}
@@ -364,7 +306,7 @@ export class Arc extends Segment {
 
 // // const approximateArcLengthOfCurve = (
 // // 	resolution: number,
-// // 	pointOnCurveFunc: (t: number) => Point
+// // 	pointOnCurveFunc: (t: number) => Vec
 // // ) => {
 // // 	// Resolution is the number of segments we use
 // // 	resolution = resolution ? resolution : 500;

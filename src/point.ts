@@ -143,6 +143,8 @@ export class Vec {
 		return new Vec(x1 - x2, y1 - y2, z1 - z2);
 	}
 
+	// subtract, divide, multiply
+
 	postSubtract(p: Iterable<number>) {
 		const [x1, y1 = 0, z1 = 0] = p;
 		const [x2, y2, z2] = this;
