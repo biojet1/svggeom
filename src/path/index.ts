@@ -22,7 +22,8 @@ export abstract class Segment {
 	}
 
 	toPath(): string {
-		return ['M', this.start.x, this.start.y].concat(this.toPathFragment()).join(' ');
+		const {x, y} = this.start;
+		return ['M', x, y].concat(this.toPathFragment()).join(' ');
 	}
 
 	cutAt(t: number): Segment {

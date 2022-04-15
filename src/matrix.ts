@@ -16,7 +16,7 @@ export class Matrix {
 	e: number;
 	f: number;
 
-	constructor(M: Iterable<number> = []) {
+	protected constructor(M: Iterable<number> = []) {
 		const [a = 1, b = 0, c = 0, d = 1, e = 0, f = 0] = M;
 		this.a = a;
 		this.b = b;
@@ -27,11 +27,12 @@ export class Matrix {
 		if (!(isFinite(a) && isFinite(b) && isFinite(c) && isFinite(d) && isFinite(e) && isFinite(f)))
 			throw TypeError(`${JSON.stringify(arguments)}`);
 	}
-
+	// Query methods
 	isIdentity() {
 		const {a, b, c, d, e, f} = this;
 		return a === 1 && b === 0 && c === 0 && d === 1 && e === 0 && f === 0;
 	}
+
 	toString() {
 		const {a, b, c, d, e, f} = this;
 		return `matrix(${a} ${b} ${c} ${d} ${e} ${f})`;
@@ -40,118 +41,6 @@ export class Matrix {
 	clone() {
 		const {a, b, c, d, e, f} = this;
 		return new Matrix([a, b, c, d, e, f]);
-	}
-	inverse() {
-		// Get the current parameters out of the matrix
-		const {a, b, c, d, e, f} = this;
-
-		// Invert the 2x2 matrix in the top left
-		const det = a * d - b * c;
-		if (!det) throw new Error('Cannot invert ' + this);
-
-		// Calculate the top 2x2 matrix
-		const na = d / det;
-		const nb = -b / det;
-		const nc = -c / det;
-		const nd = a / det;
-
-		// Apply the inverted matrix to the top right
-		const ne = -(na * e + nc * f);
-		const nf = -(nb * e + nd * f);
-
-		// Construct the inverted matrix
-
-		return Matrix.hexad(na, nb, nc, nd, ne, nf);
-	}
-	_cat(m: Matrix): Matrix {
-		const {a, b, c, d, e, f} = this;
-		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
-
-		return Matrix.hexad(
-			a * A + c * B + e * 0,
-			b * A + d * B + f * 0,
-			a * C + c * D + e * 0,
-			b * C + d * D + f * 0,
-			a * E + c * F + e * 1,
-			b * E + d * F + f * 1
-		);
-	}
-
-	multiply(m: Matrix): Matrix {
-		return this._cat(m);
-	}
-
-	multiplySelf(m: Matrix): Matrix {
-		const {a, b, c, d, e, f} = this;
-		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
-		this.a = a * A + c * B + e * 0;
-		this.b = b * A + d * B + f * 0;
-		this.c = a * C + c * D + e * 0;
-		this.d = b * C + d * D + f * 0;
-		this.e = a * E + c * F + e * 1;
-		this.f = b * E + d * F + f * 1;
-		return this;
-	}
-
-	postMultiply(m: Matrix): Matrix {
-		const {a, b, c, d, e, f} = m;
-		const {a: A, b: B, c: C, d: D, e: E, f: F} = this;
-
-		return Matrix.hexad(
-			a * A + c * B + e * 0,
-			b * A + d * B + f * 0,
-			a * C + c * D + e * 0,
-			b * C + d * D + f * 0,
-			a * E + c * F + e * 1,
-			b * E + d * F + f * 1
-		);
-	}
-
-	translate(x = 0, y = 0) {
-		return this._cat(Matrix.hexad(1, 0, 0, 1, x, y));
-	}
-	translateY(v: number) {
-		return this.translate(0, v);
-	}
-	translateX(v: number) {
-		return this.translate(v, 0);
-	}
-
-	scale(scaleX: number, scaleY = scaleX) {
-		return this._cat(Matrix.hexad(scaleX, 0, 0, scaleY, 0, 0));
-	}
-
-	rotate(ang: number, x: number = 0, y: number = 0): Matrix {
-		const θ = ((ang % 360) * PI) / 180;
-		const cosθ = cos(θ);
-		const sinθ = sin(θ);
-		return this._cat(
-			Matrix.hexad(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0)
-		);
-	}
-
-	skew(x: number, y: number) {
-		return this._cat(Matrix.hexad(1, tan(radians(y)), tan(radians(x)), 1, 0, 0));
-	}
-
-	skewX(x: number) {
-		return this.skew(x, 0);
-	}
-
-	skewY(y: number) {
-		return this.skew(0, y);
-	}
-
-	// toHexad() {
-	// 	return [this.a, this.b, this.c, this.d, this.e, this.f];
-	// }
-	setHexad(a: number, b: number, c: number, d: number, e: number, f: number) {
-		this.a = a;
-		this.b = b;
-		this.c = c;
-		this.d = d;
-		this.e = e;
-		this.f = f;
 	}
 
 	equals(other: Matrix, epsilon = 0) {
@@ -197,6 +86,7 @@ export class Matrix {
 			},
 		};
 	}
+
 	toArray() {
 		const {a, b, c, d, e, f} = this;
 
@@ -204,8 +94,131 @@ export class Matrix {
 	}
 
 	describe() {
-		return Matrix.compose(this.decompose());
+		return this.decompose().toString();
 	}
+
+	// methods returning a Matrix
+	protected _hexad(a: number = 1, b: number = 0, c: number = 0, d: number = 1, e: number = 0, f: number = 0): Matrix {
+		return new Matrix([a, b, c, d, e, f]);
+	}
+
+	protected _cat(m: Matrix): Matrix {
+		const {a, b, c, d, e, f} = this;
+		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
+
+		return this._hexad(
+			a * A + c * B + e * 0,
+			b * A + d * B + f * 0,
+			a * C + c * D + e * 0,
+			b * C + d * D + f * 0,
+			a * E + c * F + e * 1,
+			b * E + d * F + f * 1
+		);
+	}
+
+	inverse() {
+		// Get the current parameters out of the matrix
+		const {a, b, c, d, e, f} = this;
+
+		// Invert the 2x2 matrix in the top left
+		const det = a * d - b * c;
+		if (!det) throw new Error('Cannot invert ' + this);
+
+		// Calculate the top 2x2 matrix
+		const na = d / det;
+		const nb = -b / det;
+		const nc = -c / det;
+		const nd = a / det;
+
+		// Apply the inverted matrix to the top right
+		const ne = -(na * e + nc * f);
+		const nf = -(nb * e + nd * f);
+
+		// Construct the inverted matrix
+
+		return this._hexad(na, nb, nc, nd, ne, nf);
+	}
+
+	multiply(m: Matrix): Matrix {
+		return this._cat(m);
+	}
+
+	multiplySelf(m: Matrix): Matrix {
+		const {a, b, c, d, e, f} = this;
+		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
+		this.a = a * A + c * B + e * 0;
+		this.b = b * A + d * B + f * 0;
+		this.c = a * C + c * D + e * 0;
+		this.d = b * C + d * D + f * 0;
+		this.e = a * E + c * F + e * 1;
+		this.f = b * E + d * F + f * 1;
+		return this;
+	}
+
+	postMultiply(m: Matrix): Matrix {
+		const {a, b, c, d, e, f} = m;
+		const {a: A, b: B, c: C, d: D, e: E, f: F} = this;
+
+		return this._hexad(
+			a * A + c * B + e * 0,
+			b * A + d * B + f * 0,
+			a * C + c * D + e * 0,
+			b * C + d * D + f * 0,
+			a * E + c * F + e * 1,
+			b * E + d * F + f * 1
+		);
+	}
+
+	translate(x = 0, y = 0) {
+		return this._cat(Matrix.hexad(1, 0, 0, 1, x, y));
+	}
+
+	translateY(v: number) {
+		return this.translate(0, v);
+	}
+
+	translateX(v: number) {
+		return this.translate(v, 0);
+	}
+
+	scale(scaleX: number, scaleY = scaleX) {
+		return this._cat(Matrix.hexad(scaleX, 0, 0, scaleY, 0, 0));
+	}
+
+	rotate(ang: number, x: number = 0, y: number = 0): Matrix {
+		const θ = ((ang % 360) * PI) / 180;
+		const cosθ = cos(θ);
+		const sinθ = sin(θ);
+		return this._cat(
+			Matrix.hexad(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0)
+		);
+	}
+
+	skew(x: number, y: number) {
+		return this._cat(Matrix.hexad(1, tan(radians(y)), tan(radians(x)), 1, 0, 0));
+	}
+
+	skewX(x: number) {
+		return this.skew(x, 0);
+	}
+
+	skewY(y: number) {
+		return this.skew(0, y);
+	}
+
+	// toHexad() {
+	// 	return [this.a, this.b, this.c, this.d, this.e, this.f];
+	// }
+	setHexad(a: number, b: number, c: number, d: number, e: number, f: number) {
+		this.a = a;
+		this.b = b;
+		this.c = c;
+		this.d = d;
+		this.e = e;
+		this.f = f;
+	}
+
+	// Static methods
 
 	public static compose(dec: any) {
 		const {translateX, translateY, rotate, skewX, scaleX, scaleY} = dec;
@@ -247,20 +260,20 @@ export class Matrix {
 	public static new(first: number | number[] | string | Matrix | ElementLike) {
 		switch (typeof first) {
 			case 'string':
-				return Matrix.parse(first);
+				return this.parse(first);
 			case 'number':
-				return Matrix.hexad(first, arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+				return this.hexad(first, arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
 			case 'undefined':
 				return new Matrix();
 			case 'object':
 				if (Array.isArray(first)) {
-					return Matrix.fromArray(first);
+					return this.fromArray(first);
 				} else if ((first as any).nodeType === 1) {
-					return Matrix.fromElement(first as any as ElementLike);
+					return this.fromElement(first as any as ElementLike);
 				} else {
 					const {a, b, c, d, e, f} = first as any;
 
-					return Matrix.hexad(a, b, c, d, e, f);
+					return this.hexad(a, b, c, d, e, f);
 				}
 			default:
 				throw new TypeError(`Invalid matrix argument ${Array.from(arguments)}`);
@@ -268,8 +281,8 @@ export class Matrix {
 	}
 
 	static interpolate(A: number[] | string | Matrix | ElementLike, B: number[] | string | Matrix | ElementLike) {
-		const a = Matrix.new(A).toArray();
-		const b = Matrix.new(B).toArray();
+		const a = this.new(A).toArray();
+		const b = this.new(B).toArray();
 		const n = a.length;
 		const klass = this;
 		// console.log("interpolate T", A, B, a, b);

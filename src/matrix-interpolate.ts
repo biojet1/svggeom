@@ -49,13 +49,11 @@ export class MatrixInterpolate {
 		throw new Error(`Not implemented`);
 	}
 }
-function parse(args: Array<any>) {
-	const items: Array<Transform> = [];
-
-	for (const item of args) {
+function parse(args: Array<any>) : Array<Transform>{
+	return args.map(item => {
 		let v, t;
 		if (Array.isArray(item)) {
-			t = new Par(parse(v));
+			t = new Par(parse(item));
 		} else {
 			if ((v = item.par)) {
 				t = new Par(parse(v));
@@ -89,10 +87,8 @@ function parse(args: Array<any>) {
 				t._weight = v;
 			}
 		}
-		items.push(t);
-	}
-
-	return items;
+		return t;
+	});
 }
 
 class Transform {
