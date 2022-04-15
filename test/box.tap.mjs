@@ -151,6 +151,12 @@ test.test(`Box merge`, {bail: !CI}, function (t) {
 	t.end();
 });
 
+test.test(`Box fromRect`, {bail: !CI}, function (t) {
+	t.same(Box.fromRect({x:-20, width:400}).toArray(), [-20,0,400,0]);
+	t.same(Box.fromRect({y:-20, height:400}).toArray(), [0,-20,0,400]);
+	t.end();
+});
+
 test.test(`Box mutable`, {bail: !CI}, function (t) {
 	const a = BoxMut.new([0, 0, 100, 100]);
 	const b = BoxMut.parse('-60 -50 60 50');
