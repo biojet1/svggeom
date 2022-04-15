@@ -16,7 +16,7 @@ export class Matrix {
 	e: number;
 	f: number;
 
-	protected constructor(M: Iterable<number> = []) {
+	constructor(M: Iterable<number> = []) {
 		const [a = 1, b = 0, c = 0, d = 1, e = 0, f = 0] = M;
 		this.a = a;
 		this.b = b;
@@ -209,14 +209,14 @@ export class Matrix {
 	// toHexad() {
 	// 	return [this.a, this.b, this.c, this.d, this.e, this.f];
 	// }
-	setHexad(a: number, b: number, c: number, d: number, e: number, f: number) {
-		this.a = a;
-		this.b = b;
-		this.c = c;
-		this.d = d;
-		this.e = e;
-		this.f = f;
-	}
+	// setHexad(a: number, b: number, c: number, d: number, e: number, f: number) {
+	// 	this.a = a;
+	// 	this.b = b;
+	// 	this.c = c;
+	// 	this.d = d;
+	// 	this.e = e;
+	// 	this.f = f;
+	// }
 
 	// Static methods
 
@@ -342,3 +342,30 @@ interface ElementLike {
 function closeEnough(a: number, b: number, threshold = 1e-6) {
 	return abs(b - a) <= threshold;
 }
+
+export class MatrixMut extends Matrix {
+	setHexad(a: number, b: number, c: number, d: number, e: number, f: number) {
+		this.a = a;
+		this.b = b;
+		this.c = c;
+		this.d = d;
+		this.e = e;
+		this.f = f;
+	}
+}
+
+// type CreateMutable<Type> = {
+//   -readonly [Property in keyof Type]: Type[Property];
+// };
+
+
+// export class MutMatrix extends CreateMutable<Matrix> {
+// 	setHexad(a: number, b: number, c: number, d: number, e: number, f: number) {
+// 		this.a = a;
+// 		this.b = b;
+// 		this.c = c;
+// 		this.d = d;
+// 		this.e = e;
+// 		this.f = f;
+// 	}
+// }
