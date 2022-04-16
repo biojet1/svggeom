@@ -209,7 +209,8 @@ export class Box {
 		if (y1 > y2) [y1, y2] = [y2, y1];
 		return this.forRect(x1, y1, abs(x2 - x1), abs(y2 - y1));
 	}
-	public static fromRect(x: number, y: number, width: number, height: number) {
+	public static fromRect({x = 0, y = 0, width = 0, height = 0}) {
+		// https://developer.mozilla.org/en-US/docs/Web/API/DOMRect/fromRect
 		return this.forRect(x, y, width, height);
 	}
 	public static forRect(x: number, y: number, width: number, height: number) {
@@ -263,9 +264,6 @@ export class Box {
 }
 
 export class BoxMut extends Box {
-	public static forRect(x: number, y: number, width: number, height: number) {
-		return new BoxMut(x, y, width, height);
-	}
 	get x() {
 		return this._x;
 	}
@@ -330,13 +328,12 @@ export class BoxMut extends Box {
 		const {x, y, width, height} = this;
 		return this.reset(x, y, w ?? width, h ?? height);
 	}
-	public static not() {
-		return new BoxMut(NaN, NaN, NaN, NaN);
-	}
+
 	isValid() {
 		const {x, y, width, height} = this;
 		return !(isNaN(x) || isNaN(y) || isNaN(width) || isNaN(height));
 	}
+
 	copy(that: Box) {
 		const {x, y, width, height} = that;
 		this._x = x;
@@ -344,5 +341,13 @@ export class BoxMut extends Box {
 		this._w = width;
 		this._h = height;
 		return this;
+	}
+
+	public static not() {
+		return new BoxMut(NaN, NaN, NaN, NaN);
+	}
+
+	public static forRect(x: number, y: number, width: number, height: number) {
+		return new BoxMut(x, y, width, height);
 	}
 }
