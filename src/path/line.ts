@@ -148,6 +148,10 @@ export class Close extends Line {
 	// 	const c = this.pointAt(t);
 	// 	return [new Line(start, c), new Line(c, end)];
 	// }
+
+	newFromTo(a: Vec, b: Vec) {
+		return new Close(a, b);
+	}
 }
 
 export class Horizontal extends Line {}

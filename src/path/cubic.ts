@@ -220,3 +220,29 @@ function cubic_extrema(s: number, a: number, b: number, e: number) {
 }
 
 export {Cubic as CubicSegment};
+
+// export class Cubic2 extends CubicSegment {
+// 	private readonly _start: Vec;
+// 	private readonly _end: Vec;
+// 	readonly c1: Vec;
+// 	readonly c2: Vec;
+// 	t_value?: number;
+// 	constructor(start: Iterable<number>, c1: Iterable<number>, c2: Iterable<number>, end: Iterable<number>) {
+// 		super(start, end);
+// 		this._start = Vec.new(start);
+// 		this._end = Vec.new(end);
+// 		this.c1 = Vec.new(c1);
+// 		this.c2 = Vec.new(c2);
+// 	}
+
+// 	get start() {
+// 		return this._start;
+// 	}
+
+// 	get end() {
+// 		return this._end;
+// 	}
+// 	newFromTo(a: Vec, b: Vec) {
+// 		return new Line(a, b);
+// 	}
+// }
