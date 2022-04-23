@@ -134,13 +134,17 @@ export class Box {
 		}
 
 		// if (!box.isValid()) return Box.new(this);
-		const { x: x1, y: y1, width: width1, height: height1 } = this;
-		const { x: x2, y: y2, width: width2, height: height2 } = box;
+		// const { x: x1, y: y1, width: width1, height: height1 } = this;
+		// const { x: x2, y: y2, width: width2, height: height2 } = box;
 
-		const x = min(x1, x2);
-		const y = min(y1, y2);
+		// const x = min(x1, x2);
+		// const y = min(y1, y2);
 
-		return Box.forRect(x, y, max(x1 + width1, x2 + width2) - x, max(y1 + height1, y2 + height2) - y);
+		// return Box.forRect(x, y, max(x1 + width1, x2 + width2) - x, max(y1 + height1, y2 + height2) - y);
+
+		const { minX: xMin1, minY: yMin1, maxX: xMax1, maxY: yMax1 } = this;
+		const { minX: xMin2, minY: yMin2, maxX: xMax2, maxY: yMax2 } = box;
+		return Box.fromExtrema(min(xMin1, xMin2), max(xMax1, xMax2), min(yMin1, yMin2), max(yMax1, yMax2));
 	}
 	// translated
 	// resized

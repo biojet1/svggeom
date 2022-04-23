@@ -28,10 +28,15 @@ export class Matrix {
 			throw TypeError(`${JSON.stringify(arguments)}`);
 	}
 	// Query methods
-	isIdentity() {
+	get isIdentity() {
 		const {a, b, c, d, e, f} = this;
 		return a === 1 && b === 0 && c === 0 && d === 1 && e === 0 && f === 0;
 	}
+
+	get is2D() {
+		return true;
+	}
+
 
 	toString() {
 		const {a, b, c, d, e, f} = this;
