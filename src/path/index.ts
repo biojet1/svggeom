@@ -87,3 +87,23 @@ export abstract class SegmentSE extends Segment {
 		return this._end;
 	}
 }
+
+export abstract class LinkedSegment extends Segment {
+	private readonly _prev: LinkedSegment;
+	private readonly _end: Vec;
+
+	constructor(prev: LinkedSegment, end: Iterable<number>) {
+		super();
+		this._prev = prev;
+		this._end = Vec.new(end);
+	}
+
+	get start() {
+		return this._prev._end;
+	}
+
+	get end() {
+		return this._end;
+	}
+}
+

@@ -1,13 +1,13 @@
 'uses strict';
-import {spawn} from 'child_process';
-import {Box, Matrix, BoxMut} from '../dist/index.js';
+import { spawn } from 'child_process';
+import { Box, Matrix, BoxMut } from '../dist/index.js';
 import test from 'tap';
 const CI = !!process.env.CI;
 
 export async function* enum_box_data(env) {
 	const pyproc = spawn('python', ['test/data.box.py'], {
 		stdio: ['ignore', 'pipe', 'inherit'],
-		env: {...process.env, ...env},
+		env: { ...process.env, ...env },
 	});
 	let last,
 		i = 0;
@@ -16,7 +16,7 @@ export async function* enum_box_data(env) {
 		const lines = ((last ?? '') + chunk.toString()).split(/\r?\n/);
 		last = lines.pop();
 
-		for (const item of lines.map(value => JSON.parse(value))) {
+		for (const item of lines.map((value) => JSON.parse(value))) {
 			// console.log(item.points);
 			yield [i++, item];
 		}
@@ -24,9 +24,9 @@ export async function* enum_box_data(env) {
 }
 
 for await (const [i, item] of enum_box_data({})) {
-	const {x, y, width, height, top, bottom, left, rigth, centerX, centerY, maxX, maxY, minX, minY} = item;
+	const { x, y, width, height, top, bottom, left, rigth, centerX, centerY, maxX, maxY, minX, minY } = item;
 
-	test.test(`Box(${x},${y},${width},${height})`, {bail: !CI}, function (t) {
+	test.test(`Box(${x},${y},${width},${height})`, { bail: !CI }, function (t) {
 		let box2, box;
 		switch (i % 3) {
 			case 1:
@@ -83,7 +83,7 @@ for await (const [i, item] of enum_box_data({})) {
 	});
 }
 
-test.test(`Box extra`, {bail: !CI}, function (t) {
+test.test(`Box extra`, { bail: !CI }, function (t) {
 	const not = Box.not();
 	t.notOk(not.isValid());
 	t.strictSame(Box.new(), not);
@@ -103,7 +103,7 @@ const A = Box.new('-210,-150,80,60');
 const E = Box.new('-130,-90,0,0');
 const F = Box.new('-130,-90,70,90');
 const G = Box.new('-60,-90,60,40');
-test.test(`Box overlap`, {bail: !CI}, function (t) {
+test.test(`Box overlap`, { bail: !CI }, function (t) {
 	const bbox2 = Box.new([
 		[2, 3],
 		[1, 2],
@@ -130,7 +130,26 @@ test.test(`Box overlap`, {bail: !CI}, function (t) {
 	t.end();
 });
 
-test.test(`Box merge`, {bail: !CI}, function (t) {
+test.test(`Box equals`, { bail: !CI }, function (t) {
+	function eq(a, b, epsilon = 0) {
+		t.ok(a.equals(b, epsilon), `${a}, ${b}`);
+	}
+	function ne(a, b, epsilon = 0) {
+		t.notOk(a.equals(b, epsilon), `${a}, ${b}`);
+	}
+	ne(C, D);
+	ne(D, C);
+	eq(C, C);
+	eq(D, D);
+	ne(Box.new('-130,-90,130,90'), Box.new('-130,-90,130,90.01'));
+	eq(Box.new('-130,-90,130,90'), Box.new('-130,-90,130,90.01'), 0.0109);
+	eq(Box.new('-130,-90,130,90'), Box.new('-130,-90,130.01,90'), 0.0109);
+	eq(Box.new('-130,-90,130,90'), Box.new('-130,-90.01,130,90'), 0.0109);
+	eq(Box.new('-130,-90,130,90'), Box.new('-130.01,-90,130,90'), 0.0109);
+	t.end();
+});
+
+test.test(`Box merge`, { bail: !CI }, function (t) {
 	t.same(C.merge(D).toArray(), D.toArray());
 	t.same(D.merge(C).toArray(), D.toArray());
 	t.same(B.overlap(C).merge(D).toArray(), D.toArray());
@@ -147,17 +166,18 @@ test.test(`Box merge`, {bail: !CI}, function (t) {
 		box = box.merge(b);
 	}
 	t.same(box.toArray(), B.toArray());
+	t.ok(box.equals(B));
 
 	t.end();
 });
 
-test.test(`Box fromRect`, {bail: !CI}, function (t) {
-	t.same(Box.fromRect({x:-20, width:400}).toArray(), [-20,0,400,0]);
-	t.same(Box.fromRect({y:-20, height:400}).toArray(), [0,-20,0,400]);
+test.test(`Box fromRect`, { bail: !CI }, function (t) {
+	t.same(Box.fromRect({ x: -20, width: 400 }).toArray(), [-20, 0, 400, 0]);
+	t.same(Box.fromRect({ y: -20, height: 400 }).toArray(), [0, -20, 0, 400]);
 	t.end();
 });
 
-test.test(`Box mutable`, {bail: !CI}, function (t) {
+test.test(`Box mutable`, { bail: !CI }, function (t) {
 	const a = BoxMut.new([0, 0, 100, 100]);
 	const b = BoxMut.parse('-60 -50 60 50');
 
@@ -180,7 +200,6 @@ test.test(`Box mutable`, {bail: !CI}, function (t) {
 	// t.ok(BoxMut.new().equal(BoxMut.not()));
 	t.match(`${BoxMut.not().copy(b)}`.split(/[,s]+/), [-60, -50, 60, 50]);
 	t.match(`${BoxMut.not().mergeSelf(b)}`.split(/[,s]+/), [-60, -50, 60, 50]);
-
 
 	// const a = BoxMut.new([0, 0, 100, 100]);
 

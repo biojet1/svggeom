@@ -1,6 +1,6 @@
 import {Vec} from '../point.js';
 import {Box} from '../box.js';
-import {SegmentSE} from './index.js';
+import {SegmentSE, Segment} from './index.js';
 import {Matrix} from '../matrix.js';
 // import assert from "assert";
 
@@ -8,37 +8,16 @@ export class Cubic extends SegmentSE {
 	readonly c1: Vec;
 	readonly c2: Vec;
 	t_value?: number;
+
 	constructor(start: Iterable<number>, c1: Iterable<number>, c2: Iterable<number>, end: Iterable<number>) {
 		super(start, end);
 		this.c1 = Vec.new(c1);
 		this.c2 = Vec.new(c2);
 	}
-	// static fromQuad(
-	// 	start: Iterable<number>,
-	// 	control: Iterable<number>,
-	// 	end: Iterable<number>
-	// ) {
-	// 	// const start = Vec.new(start);
-	// 	// const c = Vec.new(control);
-	// 	// const end = Vec.new(end);
 
-	// 	// const c1 = start.equals(c) ? start : start.mul(1 / 3).add(c.mul(2 / 3));
-	// 	// const c2 = end.equals(c) ? end : c.mul(2 / 3).add(end.mul(1 / 3));
-	// 	// return new Cubic(start, c1, c2, end);
-	// 	return new Quadratic(start, control, end);
-	// }
-
-	// static fromArc(
-	// 	start: Vec,
-	// 	end: Vec,
-	// 	rx: number,
-	// 	ry: number,
-	// 	φ: number,
-	// 	arc: number,
-	// 	sweep: number
-	// ) {
-	// 	const v = arcToCubic(start.x, start.y, rx, ry, φ, arc, sweep, end.x, end.y, 0);
-	// }
+	new(start: Iterable<number>, c1: Iterable<number>, c2: Iterable<number>, end: Iterable<number>) {
+		return new Cubic(start, c1, c2, end);
+	}
 
 	bbox() {
 		const {start, c1, c2, end} = this;
@@ -87,12 +66,6 @@ export class Cubic extends SegmentSE {
 	}
 	pointAt(t: number) {
 		const {start, c1, c2, end} = this;
-		// if (start.equals(c1)) {
-		// 	return new Vec(
-		// 		(1 - t) * (1 - t) * start.x + 2 * (1 - t) * t * c2.x + t * t * end.x,
-		// 		(1 - t) * (1 - t) * start.y + 2 * (1 - t) * t * c2.y + t * t * end.y
-		// 	);
-		// }
 		const F = 1 - t;
 		return Vec.at(
 			F * F * F * start.x + 3 * F * F * t * c1.x + 3 * F * t * t * c2.x + t * t * t * end.x,
@@ -104,15 +77,13 @@ export class Cubic extends SegmentSE {
 		const {start, c1, c2, end} = this;
 		const x = this.splitAtScalar(z, start.x, c1.x, c2.x, end.x);
 		const y = this.splitAtScalar(z, start.y, c1.y, c2.y, end.y);
-		// const x = this.splitAtScalar(z, "x");
-		// const y = this.splitAtScalar(z, "y");
-		const a = new Cubic(
+		const a = this.new(
 			Vec.at(x[0][0], y[0][0]),
 			Vec.at(x[0][1], y[0][1]),
 			Vec.at(x[0][2], y[0][2]),
 			Vec.at(x[0][3], y[0][3])
 		);
-		const b = new Cubic(
+		const b = this.new(
 			Vec.at(x[1][0], y[1][0]),
 			Vec.at(x[1][1], y[1][1]),
 			Vec.at(x[1][2], y[1][2]),
@@ -128,10 +99,6 @@ export class Cubic extends SegmentSE {
 		p3: number,
 		p4: number
 	): [[number, number, number, number], [number, number, number, number]] {
-		// const start = this.start[p];
-		// const end = this.c1[p];
-		// const p3 = this.c2[p];
-		// const p4 = this.end[p];
 		const t =
 			z * z * z * p4 - 3 * z * z * (z - 1) * p3 + 3 * z * (z - 1) * (z - 1) * end - (z - 1) * (z - 1) * (z - 1) * start;
 		return [
@@ -180,11 +147,11 @@ export class Cubic extends SegmentSE {
 	}
 	transform(M: any) {
 		const {start, c1, c2, end} = this;
-		return new Cubic(start.transform(M), c1.transform(M), c2.transform(M), end.transform(M));
+		return this.new(start.transform(M), c1.transform(M), c2.transform(M), end.transform(M));
 	}
 	reversed() {
 		const {start, c1, c2, end} = this;
-		return new Cubic(end, c2, c1, start);
+		return this.new(end, c2, c1, start);
 	}
 }
 
@@ -220,3 +187,36 @@ function cubic_extrema(s: number, a: number, b: number, e: number) {
 }
 
 export {Cubic as CubicSegment};
+
+// export class Cubic2 extends Segment {
+// 	private readonly _start: Vec;
+// 	private readonly _end: Vec;
+// 	private readonly _c1: Vec;
+// 	private readonly _c2: Vec;
+// 	t_value?: number;
+// 	constructor(start: Iterable<number>, c1: Iterable<number>, c2: Iterable<number>, end: Iterable<number>) {
+// 		this._start = Vec.new(start);
+// 		this._end = Vec.new(end);
+// 		this._c1 = Vec.new(c1);
+// 		this._c2 = Vec.new(c2);
+// 	}
+
+// 	get start() {
+// 		return this._start;
+// 	}
+
+// 	get end() {
+// 		return this._end;
+// 	}
+// 	get c1() {
+// 		return this._c1;
+// 	}
+
+// 	get c2() {
+// 		return this._c2;
+// 	}
+
+// 	new(start: Iterable<number>, c1: Iterable<number>, c2: Iterable<number>, end: Iterable<number>) {
+// 		return new Cubic2(start, c1, c2, end);
+// 	}
+// }
