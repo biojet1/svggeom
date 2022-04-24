@@ -28,10 +28,15 @@ export class Matrix {
 			throw TypeError(`${JSON.stringify(arguments)}`);
 	}
 	// Query methods
-	isIdentity() {
+	get isIdentity() {
 		const {a, b, c, d, e, f} = this;
 		return a === 1 && b === 0 && c === 0 && d === 1 && e === 0 && f === 0;
 	}
+
+	get is2D() {
+		return true;
+	}
+
 
 	toString() {
 		const {a, b, c, d, e, f} = this;
@@ -141,18 +146,6 @@ export class Matrix {
 
 	multiply(m: Matrix): Matrix {
 		return this._cat(m);
-	}
-
-	multiplySelf(m: Matrix): Matrix {
-		const {a, b, c, d, e, f} = this;
-		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
-		this.a = a * A + c * B + e * 0;
-		this.b = b * A + d * B + f * 0;
-		this.c = a * C + c * D + e * 0;
-		this.d = b * C + d * D + f * 0;
-		this.e = a * E + c * F + e * 1;
-		this.f = b * E + d * F + f * 1;
-		return this;
 	}
 
 	postMultiply(m: Matrix): Matrix {
@@ -352,6 +345,23 @@ export class MatrixMut extends Matrix {
 		this.e = e;
 		this.f = f;
 	}
+	protected _catSelf(m: Matrix): Matrix {
+		const {a, b, c, d, e, f} = this;
+		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
+		this.a = a * A + c * B + e * 0;
+		this.b = b * A + d * B + f * 0;
+		this.c = a * C + c * D + e * 0;
+		this.d = b * C + d * D + f * 0;
+		this.e = a * E + c * F + e * 1;
+		this.f = b * E + d * F + f * 1;
+		return this;
+	}
+	multiplySelf(m: Matrix): Matrix {
+		return this._catSelf(m);
+	}	
+	// invertSelf():this{
+
+	// }
 }
 
 // type CreateMutable<Type> = {
