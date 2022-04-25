@@ -59,11 +59,13 @@ test.test(`Matrix.inverse`, { bail: !CI }, function (t) {
 	const c = Matrix.parse('matrix(3 4 5 6 7 8)');
 	const d = a.multiply(b).multiply(c);
 	const e = c.multiply(b).multiply(a);
-	t.ok(d.is2d);
+	t.ok(d.is2D);
 	t.ok(d.inverse().inverse().equals(d, 1e-9), `.inverse().inverse() ${d} ${d.inverse().inverse()}`);
 	t.ok(e.equals(e.inverse().inverse(), 1e-9), `.inverse().inverse() ${e} ${e.inverse().inverse()}`);
 	t.ok(a.multiply(b.multiply(c)).equals(d), `assoc ${d} ${a.multiply(b.multiply(c))}`);
 	t.ok(a.postMultiply(b).postMultiply(c).equals(e), `assoc ${e} ${a.postMultiply(b).postMultiply(c)}`);
+	t.notOk(b.multiply(c).equals(c.multiply(b)), `assoc ${c.multiply(b)} ${b.multiply(c)}`);
+	t.ok(b.multiply(c).equals(c.postMultiply(b)), `assoc ${c.multiply(b)} ${b.multiply(c)}`);
 	t.end();
 });
 
