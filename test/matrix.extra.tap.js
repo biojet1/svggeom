@@ -9,7 +9,12 @@ test.test(`Matrix.scale`, { bail: !CI }, function (t) {
 	t.ok(Matrix.hexad(2, 0, 0, 2, 0, 0).equals(Matrix.scale(2)), 'x2 scale');
 	t.ok(Matrix.hexad(-1, 0, 0, 1, 0, 0).equals(Matrix.scale(-1, 1)), 'hflip');
 	t.ok(Matrix.hexad(1, 0, 0, -1, 0, 0).equals(Matrix.scale(1, -1)), 'vflip');
-	t.ok(Matrix.parse('scale(2)').inverse().equals(Matrix.scale(0.5)), 'reverse_scale');
+	t.same(Matrix.parse('scale(2,3)').toString(), Matrix.scale(2,3).toString(), 'scale x y');
+	t.same(Matrix.parse('scale(3)').toString(), Matrix.scale(3).toString(), 'scale x y');
+	t.same(Matrix.parse('scale(2)translate(0,60)').toString(), Matrix.scale(2).translate(0,60).toString(), 'scale x y');
+	t.match(Matrix.scale(2), {a:2, d:2} , 'scale x x');
+	t.match(Matrix.scale(2,3), {a:2, d:3} , 'scale x y');
+	t.same(Matrix.parse('scale(2)').inverse().toString(), Matrix.scale(0.5).toString(), 'reverse_scale');
 	t.end();
 });
 
@@ -22,7 +27,6 @@ test.test(`Matrix.skew`, { bail: !CI }, function (t) {
 test.test(`Matrix.rotate`, { bail: !CI }, function (t) {
 	t.ok(Matrix.parse('rotate(30)').inverse().equals(Matrix.rotate(-30)), 'reverse_rotate');
 	t.ok(Matrix.hexad(0, 1, -1, 0, 0, 0), Matrix.rotate(90));
-
 	t.end();
 });
 
@@ -60,14 +64,13 @@ test.test(`Matrix.inverse`, { bail: !CI }, function (t) {
 	const c = Matrix.parse('matrix(3 4 5 6 7 8)');
 	const d = a.multiply(b).multiply(c);
 	const e = c.multiply(b).multiply(a);
-
-	t.ok(d.inverse().inverse().equals(d, 1E-9), `.inverse().inverse() ${d} ${d.inverse().inverse()}`);
-	t.ok(e.equals(e.inverse().inverse(), 1E-9), `.inverse().inverse() ${e} ${e.inverse().inverse()}`);
+	t.ok(d.is2D);
+	t.ok(d.inverse().inverse().equals(d, 1e-9), `.inverse().inverse() ${d} ${d.inverse().inverse()}`);
+	t.ok(e.equals(e.inverse().inverse(), 1e-9), `.inverse().inverse() ${e} ${e.inverse().inverse()}`);
 	t.ok(a.multiply(b.multiply(c)).equals(d), `assoc ${d} ${a.multiply(b.multiply(c))}`);
 	t.ok(a.postMultiply(b).postMultiply(c).equals(e), `assoc ${e} ${a.postMultiply(b).postMultiply(c)}`);
-
-	// console.log(d, e);
-	// console.log(d.inverse(), e.inverse());
-	// console.log(d.inverse().inverse(), e.inverse().inverse());
+	t.notOk(b.multiply(c).equals(c.multiply(b)), `assoc ${c.multiply(b)} ${b.multiply(c)}`);
+	t.ok(b.multiply(c).equals(c.postMultiply(b)), `assoc ${c.multiply(b)} ${b.multiply(c)}`);
 	t.end();
 });
+

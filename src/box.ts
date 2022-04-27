@@ -171,6 +171,8 @@ export class Box {
 	}
 	isValid() {
 		return true;
+		// const { x, y, width, height } = this;
+		// return x == null || y == null || width == null || height == null;
 	}
 	toArray() {
 		const { x, y, width, height } = this;

@@ -1,5 +1,5 @@
-import {Matrix} from './matrix.js';
-import {Vec} from './point.js';
+import { Matrix } from './matrix.js';
+import { Vec } from './point.js';
 export class MatrixInterpolate {
 	static par(...arg: Array<Transform>) {
 		return new Par(arg);
@@ -49,11 +49,13 @@ export class MatrixInterpolate {
 		throw new Error(`Not implemented`);
 	}
 }
-function parse(args: Array<any>) : Array<Transform>{
-	return args.map(item => {
+function parse(args: Array<any>): Array<Transform> {
+	return args.map((item) => {
 		let v, t;
 		if (Array.isArray(item)) {
 			t = new Par(parse(item));
+		} else if (item instanceof Transform) {
+			t = item;
 		} else {
 			if ((v = item.par)) {
 				t = new Par(parse(v));
@@ -103,7 +105,7 @@ class Transform {
 		this._anchor = Vec.new(x, y);
 		return this;
 	}
-	at(t: number): Matrix {
+	at(t: number, m: Matrix): Matrix {
 		throw new Error(`Not implemented`);
 	}
 }
@@ -114,7 +116,7 @@ const fromTo = function (t: number, a = 0, b = 1) {
 
 class Select extends Transform {
 	private new(v: Transform) {
-		const {_weight, _anchor} = this;
+		const { _weight, _anchor } = this;
 		_weight && (v._weight = _weight);
 		_anchor && (v._anchor = _anchor);
 		return v;
@@ -149,14 +151,10 @@ class Translate extends Transform {
 	track(seg: Segment) {
 		this._seg = seg;
 	}
-	at(t: number) {
-		const {_seg} = this;
-		// if (_seg) {
-		const {x, y} = _seg.pointAt(t);
-		return Matrix.translate(x, y);
-		// }
-		// const {_anchor: {x = 100, y = 100} = {}} = this;
-		// return Matrix.translate(fromTo(t, 0, x), fromTo(t, 0, y));
+	at(t: number, m: Matrix) {
+		const { _seg } = this;
+		const { x, y } = _seg.pointAt(t);
+		return m.translate(x, y);
 	}
 }
 
@@ -166,20 +164,20 @@ class Scale extends Transform {
 		super();
 		this.n = [sx, sy ?? sx];
 	}
-	at(t: number) {
+	at(t: number, m: Matrix) {
 		let {
 			n: [sx, sy],
-			_anchor: {x, y} = {},
+			_anchor: { x, y } = {},
 		} = this;
 		sx = fromTo(t, 1, sx);
 		sy = fromTo(t, 1, sy);
 		if (x || y) {
 			x = x ?? 0;
 			y = y ?? 0;
-			return Matrix.translate(x, y).scale(sx, sy).translate(-x, -y);
+			return m.translate(x, y).scale(sx, sy).translate(-x, -y);
 		}
 
-		return Matrix.scale(sx, sy);
+		return m.scale(sx, sy);
 	}
 }
 
@@ -189,22 +187,21 @@ class Rotate extends Transform {
 		super();
 		this.θ = θ;
 	}
-	at(t: number) {
-		let {θ, _anchor: {x, y} = {}} = this;
+	at(t: number, m: Matrix) {
+		let { θ, _anchor: { x, y } = {} } = this;
 		θ = fromTo(t, 0, θ);
 		if (x || y) {
 			x = x ?? 0;
 			y = y ?? 0;
-			return Matrix.translate(x, y).rotate(θ).translate(-x, -y);
+			return m.translate(x, y).rotate(θ).translate(-x, -y);
 		}
-
-		return Matrix.rotate(θ);
+		return m.rotate(θ);
 	}
 }
 
 class Identity extends Transform {
-	at(t: number) {
-		return Matrix.identity();
+	at(t: number, m: Matrix) {
+		return m;
 	}
 }
 
@@ -215,49 +212,46 @@ abstract class Transforms extends Transform {
 		super();
 		this.items = items;
 	}
-	// abstract at(T: number, M?: Matrix): Matrix;
 }
 
 class Seq extends Transforms {
-	at(T: number, M?: Matrix) {
-		const {items} = this;
+	at(T: number, m: Matrix) {
+		const { items } = this;
 		let w_total = 0;
-		for (const {_weight = 1} of items) {
+		for (const { _weight = 1 } of items) {
 			w_total += _weight;
 		}
 		let w_walk = 0;
-		M = M ?? Matrix.identity();
 		for (const tr of items) {
-			const {_weight = 1} = tr;
+			const { _weight = 1 } = tr;
 			const start = w_walk / w_total;
 			const end = (w_walk + _weight) / w_total;
 			if (T < start) {
 				break; // pass
 			} else if (T >= end) {
-				M = M.multiply(tr.at(1));
+				m = tr.at(1, m);
 			} else {
 				// T >= start &&  T < end
-				M = M.multiply(tr.at((T - start) / (_weight / w_total)));
+				m = tr.at((T - start) / (_weight / w_total), m);
 			}
 			w_walk += _weight;
 		}
-		return M;
+		return m;
 	}
 }
 
 class Par extends Transforms {
-	at(T: number, M?: Matrix) {
-		M = M ?? Matrix.identity();
+	at(T: number, m: Matrix) {
 		for (const tr of this.items) {
-			M = M.multiply(tr.at(T));
+			m = tr.at(T, m);
 		}
-		return M;
+		return m;
 	}
 }
 
-import {Cubic} from './path/cubic.js';
-import {Line} from './path/line.js';
-import {Segment} from './path/index.js';
+import { Cubic } from './path/cubic.js';
+import { Line } from './path/line.js';
+import { Segment } from './path/index.js';
 
 export function cubicTrack(h1: Vec, h2: Vec, p1: Vec, p2?: Vec) {
 	if (!p2) {
