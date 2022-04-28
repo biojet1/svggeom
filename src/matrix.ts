@@ -1,5 +1,5 @@
-const {sqrt, abs, tan, sign, cos, sin, atan, atan2, PI} = Math;
-const {isFinite} = Number;
+const { sqrt, abs, tan, sign, cos, sin, atan, atan2, PI } = Math;
+const { isFinite } = Number;
 
 const radians = function (d: number) {
 	return ((d % 360) * PI) / 180;
@@ -29,7 +29,7 @@ export class Matrix {
 	}
 	// Query methods
 	get isIdentity() {
-		const {a, b, c, d, e, f} = this;
+		const { a, b, c, d, e, f } = this;
 		return a === 1 && b === 0 && c === 0 && d === 1 && e === 0 && f === 0;
 	}
 
@@ -37,20 +37,19 @@ export class Matrix {
 		return true;
 	}
 
-
 	toString() {
-		const {a, b, c, d, e, f} = this;
+		const { a, b, c, d, e, f } = this;
 		return `matrix(${a} ${b} ${c} ${d} ${e} ${f})`;
 	}
 
 	clone() {
-		const {a, b, c, d, e, f} = this;
+		const { a, b, c, d, e, f } = this;
 		return new Matrix([a, b, c, d, e, f]);
 	}
 
 	equals(other: Matrix, epsilon = 0) {
-		const {a, b, c, d, e, f} = this;
-		const {a: A, b: B, c: C, d: D, e: E, f: F} = other;
+		const { a, b, c, d, e, f } = this;
+		const { a: A, b: B, c: C, d: D, e: E, f: F } = other;
 		return (
 			other === this ||
 			(closeEnough(a, A, epsilon) &&
@@ -64,13 +63,13 @@ export class Matrix {
 
 	isURT(epsilon = 1e-15) {
 		// decomposition as U*R*T is possible
-		const {a, d, b, c} = this;
+		const { a, d, b, c } = this;
 		return a - d <= epsilon && b + c <= epsilon;
 	}
 
 	decompose() {
-		let {a, d, b, c} = this;
-		const {e, f} = this;
+		let { a, d, b, c } = this;
+		const { e, f } = this;
 		let scaleX, scaleY, skewX;
 		if ((scaleX = sqrt(a * a + b * b))) (a /= scaleX), (b /= scaleX);
 		if ((skewX = a * c + b * d)) (c -= a * skewX), (d -= b * skewX);
@@ -84,7 +83,7 @@ export class Matrix {
 			scaleX: scaleX,
 			scaleY: scaleY,
 			toString: function () {
-				const {translateX, translateY, rotate, skewX, scaleX, scaleY} = this;
+				const { translateX, translateY, rotate, skewX, scaleX, scaleY } = this;
 				return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${
 					rotate ? `rotate(${rotate})` : ''
 				}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`}`;
@@ -93,7 +92,7 @@ export class Matrix {
 	}
 
 	toArray() {
-		const {a, b, c, d, e, f} = this;
+		const { a, b, c, d, e, f } = this;
 
 		return [a, b, c, d, e, f];
 	}
@@ -108,8 +107,8 @@ export class Matrix {
 	}
 
 	protected _cat(m: Matrix): Matrix {
-		const {a, b, c, d, e, f} = this;
-		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
+		const { a, b, c, d, e, f } = this;
+		const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
 
 		return this._hexad(
 			a * A + c * B + e * 0,
@@ -123,7 +122,7 @@ export class Matrix {
 
 	inverse() {
 		// Get the current parameters out of the matrix
-		const {a, b, c, d, e, f} = this;
+		const { a, b, c, d, e, f } = this;
 
 		// Invert the 2x2 matrix in the top left
 		const det = a * d - b * c;
@@ -149,8 +148,8 @@ export class Matrix {
 	}
 
 	postMultiply(m: Matrix): Matrix {
-		const {a, b, c, d, e, f} = m;
-		const {a: A, b: B, c: C, d: D, e: E, f: F} = this;
+		const { a, b, c, d, e, f } = m;
+		const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
 
 		return this._hexad(
 			a * A + c * B + e * 0,
@@ -174,8 +173,8 @@ export class Matrix {
 		return this.translate(v, 0);
 	}
 
-	scale(scaleX: number, scaleY = scaleX) {
-		return this._cat(Matrix.hexad(scaleX, 0, 0, scaleY, 0, 0));
+	scale(scaleX: number, scaleY?: number) {
+		return this._cat(Matrix.hexad(scaleX, 0, 0, scaleY ?? scaleX, 0, 0));
 	}
 
 	rotate(ang: number, x: number = 0, y: number = 0): Matrix {
@@ -214,7 +213,7 @@ export class Matrix {
 	// Static methods
 
 	public static compose(dec: any) {
-		const {translateX, translateY, rotate, skewX, scaleX, scaleY} = dec;
+		const { translateX, translateY, rotate, skewX, scaleX, scaleY } = dec;
 		return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${
 			rotate ? `rotate(${rotate})` : ''
 		}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`}`;
@@ -222,7 +221,14 @@ export class Matrix {
 		// return `translate(${dec.translateX}, ${dec.translateY}) rotate(${dec.rotate}) skewX(${dec.skewX}) scale(${dec.scaleX}, ${dec.scaleY})`;
 	}
 
-	public static hexad(a: number = 1, b: number = 0, c: number = 0, d: number = 1, e: number = 0, f: number = 0): Matrix {
+	public static hexad(
+		a: number = 1,
+		b: number = 0,
+		c: number = 0,
+		d: number = 1,
+		e: number = 0,
+		f: number = 0
+	): Matrix {
 		return new this([a, b, c, d, e, f]);
 	}
 
@@ -264,7 +270,7 @@ export class Matrix {
 				} else if ((first as any).nodeType === 1) {
 					return this.fromElement(first as any as ElementLike);
 				} else {
-					const {a, b, c, d, e, f} = first as any;
+					const { a, b, c, d, e, f } = first as any;
 
 					return this.hexad(a, b, c, d, e, f);
 				}
@@ -312,8 +318,8 @@ export class Matrix {
 		return this.hexad(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0);
 	}
 
-	static scale(scaleX: number, scaleY = scaleX) {
-		return this.hexad(scaleX, 0, 0, scaleY, 0, 0);
+	static scale(scaleX: number, scaleY?: number) {
+		return this.hexad(scaleX, 0, 0, scaleY ?? scaleX, 0, 0);
 	}
 	static identity() {
 		return new this();
@@ -346,8 +352,8 @@ export class MatrixMut extends Matrix {
 		this.f = f;
 	}
 	protected _catSelf(m: Matrix): Matrix {
-		const {a, b, c, d, e, f} = this;
-		const {a: A, b: B, c: C, d: D, e: E, f: F} = m;
+		const { a, b, c, d, e, f } = this;
+		const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
 		this.a = a * A + c * B + e * 0;
 		this.b = b * A + d * B + f * 0;
 		this.c = a * C + c * D + e * 0;
@@ -358,7 +364,7 @@ export class MatrixMut extends Matrix {
 	}
 	multiplySelf(m: Matrix): Matrix {
 		return this._catSelf(m);
-	}	
+	}
 	// invertSelf():this{
 
 	// }
@@ -367,7 +373,6 @@ export class MatrixMut extends Matrix {
 // type CreateMutable<Type> = {
 //   -readonly [Property in keyof Type]: Type[Property];
 // };
-
 
 // export class MutMatrix extends CreateMutable<Matrix> {
 // 	setHexad(a: number, b: number, c: number, d: number, e: number, f: number) {

@@ -9,7 +9,12 @@ test.test(`Matrix.scale`, { bail: !CI }, function (t) {
 	t.ok(Matrix.hexad(2, 0, 0, 2, 0, 0).equals(Matrix.scale(2)), 'x2 scale');
 	t.ok(Matrix.hexad(-1, 0, 0, 1, 0, 0).equals(Matrix.scale(-1, 1)), 'hflip');
 	t.ok(Matrix.hexad(1, 0, 0, -1, 0, 0).equals(Matrix.scale(1, -1)), 'vflip');
-	t.ok(Matrix.parse('scale(2)').inverse().equals(Matrix.scale(0.5)), 'reverse_scale');
+	t.same(Matrix.parse('scale(2,3)').toString(), Matrix.scale(2,3).toString(), 'scale x y');
+	t.same(Matrix.parse('scale(3)').toString(), Matrix.scale(3).toString(), 'scale x y');
+	t.same(Matrix.parse('scale(2)translate(0,60)').toString(), Matrix.scale(2).translate(0,60).toString(), 'scale x y');
+	t.match(Matrix.scale(2), {a:2, d:2} , 'scale x x');
+	t.match(Matrix.scale(2,3), {a:2, d:3} , 'scale x y');
+	t.same(Matrix.parse('scale(2)').inverse().toString(), Matrix.scale(0.5).toString(), 'reverse_scale');
 	t.end();
 });
 
