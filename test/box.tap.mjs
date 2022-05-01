@@ -154,7 +154,16 @@ test.test(`Box merge`, { bail: !CI }, function (t) {
 	t.same(D.merge(C).toArray(), D.toArray());
 	t.same(B.overlap(C).merge(D).toArray(), D.toArray());
 	t.same(E.merge(C).merge(F).toArray(), B.toArray());
+	t.same(Box.merge(C, F, E).toArray(), B.toArray());
+
 	const not = Box.not();
+	t.same(Box.merge(C, not).toArray(), C.toArray());
+	t.same(Box.merge(not, C).toArray(), C.toArray());
+	t.same(Box.merge(not, not).toArray(), not.toArray());
+	t.same(not.merge(not).toArray(), not.toArray());
+	t.notOk(not.isValid());
+	t.same(not.merge(C).toArray(), C.toArray());
+	t.same(C.merge(not).toArray(), C.toArray());
 
 	for (const b of [A, B, C, D, E, F]) {
 		t.same(not.merge(b).toArray(), b.toArray());

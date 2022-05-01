@@ -10,20 +10,8 @@ export class MatrixInterpolate {
 	static translate(x: number | Iterable<number>, y: number = 0) {
 		return new Translate(x, y);
 	}
-	static translateX(n: number) {
-		return this.translate(n, 0);
-	}
-	static translateY(n: number) {
-		return this.translate(0, n);
-	}
 	static scale(sx: number, sy?: number) {
 		return new Scale(sx, sy);
-	}
-	static scaleY(n: number) {
-		return this.scale(1, n);
-	}
-	static scaleX(n: number) {
-		return this.scale(n, 1);
 	}
 	static rotate(θ: number) {
 		return new Rotate(θ);
@@ -36,6 +24,18 @@ export class MatrixInterpolate {
 	}
 	static identity() {
 		return new Identity();
+	}
+	static translateX(n: number) {
+		return this.translate(n, 0);
+	}
+	static translateY(n: number) {
+		return this.translate(0, n);
+	}
+	static scaleY(n: number) {
+		return this.scale(1, n);
+	}
+	static scaleX(n: number) {
+		return this.scale(n, 1);
 	}
 	// static track(seg: Segment) {
 	// 	return new Select().weight(n);
@@ -265,4 +265,23 @@ export function cubicTrack(h1: Vec, h2: Vec, p1: Vec, p2?: Vec) {
 	const c2 = p2.add(Vec.polar(h2.abs() * d, h2.angle));
 	const q = new Cubic(p1, c1, c2, p2);
 	return q;
+}
+
+export function MInterp(m1: Matrix, m2: Matrix) {
+	const d1 = m1.decompose();
+	const d2 = m2.decompose();
+	if(d1.translateX == d2.translateX){
+		if(d1.translateY == d2.translateY){
+
+		}
+	}
+
+	// translateX: e,
+	// translateY: f,
+	// rotate: (atan2(b, a) * 180) / PI,
+	// skewX: (atan(skewX) * 180) / PI,
+	// scaleX: scaleX,
+	// scaleY: scaleY,
+	// {do:translate}{do:scale,from:.3,to:9}
+	// return q;
 }
