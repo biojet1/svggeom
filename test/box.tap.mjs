@@ -154,6 +154,8 @@ test.test(`Box merge`, { bail: !CI }, function (t) {
 	t.same(D.merge(C).toArray(), D.toArray());
 	t.same(B.overlap(C).merge(D).toArray(), D.toArray());
 	t.same(E.merge(C).merge(F).toArray(), B.toArray());
+	t.same(Box.merge(C, F, E).toArray(), B.toArray());
+
 	const not = Box.not();
 
 	for (const b of [A, B, C, D, E, F]) {

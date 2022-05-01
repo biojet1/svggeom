@@ -239,6 +239,13 @@ export class Box {
 		const v = s.split(/[\s,]+/).map(parseFloat);
 		return this.forRect(v[0], v[1], v[2], v[3]);
 	}
+	public static merge(...args: Array<Box>) {
+		let x = Box.not();
+		for (const b of args) {
+			x = b.merge(x);
+		}
+		return x;
+	}
 	public static new(
 		first?: number | number[] | [number[], number[]] | string | Box,
 		y?: number,
