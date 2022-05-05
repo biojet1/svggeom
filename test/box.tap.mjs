@@ -157,6 +157,13 @@ test.test(`Box merge`, { bail: !CI }, function (t) {
 	t.same(Box.merge(C, F, E).toArray(), B.toArray());
 
 	const not = Box.not();
+	t.same(Box.merge(C, not).toArray(), C.toArray());
+	t.same(Box.merge(not, C).toArray(), C.toArray());
+	t.same(Box.merge(not, not).toArray(), not.toArray());
+	t.same(not.merge(not).toArray(), not.toArray());
+	t.notOk(not.isValid());
+	t.same(not.merge(C).toArray(), C.toArray());
+	t.same(C.merge(not).toArray(), C.toArray());
 
 	for (const b of [A, B, C, D, E, F]) {
 		t.same(not.merge(b).toArray(), b.toArray());
