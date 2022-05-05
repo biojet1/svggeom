@@ -181,6 +181,24 @@ class Scale extends Transform {
 	}
 }
 
+class Compose extends Transform {
+	comp: any;
+	constructor(m: Matrix) {
+		super();
+		this.comp = m.decompose();
+	}
+	at(t: number, m: Matrix) {
+		const { translateX, translateY, rotate, skewX, scaleX, scaleY } = this.comp;
+		const m1 = (translateX || translateY) && Matrix.translate(fromTo(t, 0, translateX), fromTo(t, 0, translateY));
+		const m2 = rotate && Matrix.rotate(rotate);
+		const m3 = !(scaleX == 1 && scaleY == 1) && Matrix.scale(scaleX, scaleY);
+		for (const v of [m1, m2, m3]) {
+			v && (m = m ? m.multiply(v) : v);
+		}
+		return m ?? Matrix.identity();
+	}
+}
+
 class Rotate extends Transform {
 	θ: number;
 	constructor(θ: number) {
@@ -270,9 +288,8 @@ export function cubicTrack(h1: Vec, h2: Vec, p1: Vec, p2?: Vec) {
 export function MInterp(m1: Matrix, m2: Matrix) {
 	const d1 = m1.decompose();
 	const d2 = m2.decompose();
-	if(d1.translateX == d2.translateX){
-		if(d1.translateY == d2.translateY){
-
+	if (d1.translateX == d2.translateX) {
+		if (d1.translateY == d2.translateY) {
 		}
 	}
 

@@ -324,6 +324,17 @@ export class Matrix {
 	static identity() {
 		return new this();
 	}
+	static multiply(args: Array<Matrix>): Matrix {
+		let m;
+		for (const v of args) {
+			if (m) {
+				m = m.multiply(v);
+			} else {
+				m = v;
+			}
+		}
+		return m ?? this.identity();
+	}
 
 	final() {
 		return Object.isFrozen(this) ? this : Object.freeze(this.clone());

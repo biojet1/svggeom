@@ -174,6 +174,10 @@ export class Box {
 		// const { x, y, width, height } = this;
 		// return x == null || y == null || width == null || height == null;
 	}
+	isEmpty() {
+		const { x, y, width, height } = this;
+		return x == 0 || y == 0 || width == 0 || height == 0;
+	}
 	toArray() {
 		const { x, y, width, height } = this;
 		return [x, y, width, height];

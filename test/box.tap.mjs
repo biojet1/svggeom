@@ -1,6 +1,6 @@
 'uses strict';
 import { spawn } from 'child_process';
-import { Box, Matrix, BoxMut } from '../dist/index.js';
+import { Box, Matrix, BoxMut, Vec } from '../dist/index.js';
 import test from 'tap';
 const CI = !!process.env.CI;
 
@@ -55,6 +55,8 @@ for await (const [i, item] of enum_box_data({})) {
 		t.equal(box.bottom, bottom, 'bottom', ex);
 		t.equal(box.centerX, centerX, 'centerX', ex);
 		t.equal(box.centerY, centerY, 'centerY', ex);
+		t.equal(box.center.toString(), Vec.pos(centerX, centerY).toString(), ex);
+
 		t.equal(box.minX, minX, 'minX', ex);
 		t.equal(box.minY, minY, 'minY', ex);
 		t.equal(box.maxX, maxX, 'maxX', ex);
@@ -185,6 +187,8 @@ test.test(`Box fromRect`, { bail: !CI }, function (t) {
 	t.same(Box.fromRect({ y: -20, height: 400 }).toArray(), [0, -20, 0, 400]);
 	t.end();
 });
+
+
 
 test.test(`Box mutable`, { bail: !CI }, function (t) {
 	const a = BoxMut.new([0, 0, 100, 100]);
