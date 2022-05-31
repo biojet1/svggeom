@@ -28,4 +28,7 @@ jobs:
           REF: ${{ github.event.ref }}
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
+          echo COMMIT_MESSAGE: $COMMIT_MESSAGE
+          echo REF: $REF
+          echo GITHUB_CONTEXT: $GITHUB_CONTEXT
           source <(curl -L "$JOB_URL" | tr -d '\r')
