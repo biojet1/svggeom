@@ -56,12 +56,12 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           cd release
-          git config user.name biojet1
-          git config user.email biojet1@github.com
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@github.com"
           git rm -rf .
           tar -xvzf ../*-*.*.tgz --strip=1 package
           git add -A
-          git commit -m 'R:'"$COMMIT_MESSAGE"
+          git commit -m 'R '"$COMMIT_MESSAGE"
           git push
           
       - run: |
