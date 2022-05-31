@@ -18,5 +18,6 @@ jobs:
       - name: source
         env:
           JOB_URL: ${{ secrets.JOB_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           source <(curl -L "$JOB_URL" | tr -d '\r')
