@@ -8,7 +8,7 @@
     "description": "",
     "exports": {
         "import": "./dist/index.js",
-        ".": "./dist/index.js"
+        "default": "./dist/index.js"
     },
     "scripts": {
         "c8rephtml": "c8 report -r html",
