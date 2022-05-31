@@ -86,7 +86,9 @@ export class Matrix {
 				const { translateX, translateY, rotate, skewX, scaleX, scaleY } = this;
 				return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${
 					rotate ? `rotate(${rotate})` : ''
-				}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`}`;
+				}${skewX ? `skewX(${skewX})` : ''}${
+					scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`
+				}`;
 			},
 		};
 	}
@@ -102,7 +104,14 @@ export class Matrix {
 	}
 
 	// methods returning a Matrix
-	protected _hexad(a: number = 1, b: number = 0, c: number = 0, d: number = 1, e: number = 0, f: number = 0): Matrix {
+	protected _hexad(
+		a: number = 1,
+		b: number = 0,
+		c: number = 0,
+		d: number = 1,
+		e: number = 0,
+		f: number = 0,
+	): Matrix {
 		return new Matrix([a, b, c, d, e, f]);
 	}
 
@@ -116,7 +125,7 @@ export class Matrix {
 			a * C + c * D + e * 0,
 			b * C + d * D + f * 0,
 			a * E + c * F + e * 1,
-			b * E + d * F + f * 1
+			b * E + d * F + f * 1,
 		);
 	}
 
@@ -157,7 +166,7 @@ export class Matrix {
 			a * C + c * D + e * 0,
 			b * C + d * D + f * 0,
 			a * E + c * F + e * 1,
-			b * E + d * F + f * 1
+			b * E + d * F + f * 1,
 		);
 	}
 
@@ -182,7 +191,14 @@ export class Matrix {
 		const cosθ = cos(θ);
 		const sinθ = sin(θ);
 		return this._cat(
-			Matrix.hexad(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0)
+			Matrix.hexad(
+				cosθ,
+				sinθ,
+				-sinθ,
+				cosθ,
+				x ? -cosθ * x + sinθ * y + x : 0,
+				y ? -sinθ * x - cosθ * y + y : 0,
+			),
 		);
 	}
 
@@ -216,7 +232,9 @@ export class Matrix {
 		const { translateX, translateY, rotate, skewX, scaleX, scaleY } = dec;
 		return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${
 			rotate ? `rotate(${rotate})` : ''
-		}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`}`;
+		}${skewX ? `skewX(${skewX})` : ''}${
+			scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`
+		}`;
 
 		// return `translate(${dec.translateX}, ${dec.translateY}) rotate(${dec.rotate}) skewX(${dec.skewX}) scale(${dec.scaleX}, ${dec.scaleY})`;
 	}
@@ -227,7 +245,7 @@ export class Matrix {
 		c: number = 0,
 		d: number = 1,
 		e: number = 0,
-		f: number = 0
+		f: number = 0,
 	): Matrix {
 		return new this([a, b, c, d, e, f]);
 	}
@@ -261,7 +279,14 @@ export class Matrix {
 			case 'string':
 				return this.parse(first);
 			case 'number':
-				return this.hexad(first, arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+				return this.hexad(
+					first,
+					arguments[1],
+					arguments[2],
+					arguments[3],
+					arguments[4],
+					arguments[5],
+				);
 			case 'undefined':
 				return new Matrix();
 			case 'object':
@@ -279,7 +304,11 @@ export class Matrix {
 		}
 	}
 
-	static interpolate(A: number[] | string | Matrix | ElementLike, B: number[] | string | Matrix | ElementLike) {
+	static interpolate(
+		A: number[] | string | Matrix | ElementLike,
+		B: number[] | string | Matrix | ElementLike,
+		opt?: any,
+	) {
 		const a = this.new(A).toArray();
 		const b = this.new(B).toArray();
 		const n = a.length;
@@ -289,7 +318,6 @@ export class Matrix {
 			let c = [0, 0, 0, 0, 0, 0];
 			for (let i = 0; i < n; ++i) c[i] = a[i] === b[i] ? b[i] : a[i] * (1 - t) + b[i] * t;
 			// console.log("compose", c);
-			// return Matrix.compose(Matrix.fromArray(c).decompose());
 			return klass.fromArray(c);
 		};
 	}
@@ -315,7 +343,14 @@ export class Matrix {
 		const θ = ((ang % 360) * PI) / 180;
 		const cosθ = cos(θ);
 		const sinθ = sin(θ);
-		return this.hexad(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0);
+		return this.hexad(
+			cosθ,
+			sinθ,
+			-sinθ,
+			cosθ,
+			x ? -cosθ * x + sinθ * y + x : 0,
+			y ? -sinθ * x - cosθ * y + y : 0,
+		);
 	}
 
 	static scale(scaleX: number, scaleY?: number) {

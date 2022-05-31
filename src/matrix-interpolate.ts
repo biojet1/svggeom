@@ -189,7 +189,9 @@ class Compose extends Transform {
 	}
 	at(t: number, m: Matrix) {
 		const { translateX, translateY, rotate, skewX, scaleX, scaleY } = this.comp;
-		const m1 = (translateX || translateY) && Matrix.translate(fromTo(t, 0, translateX), fromTo(t, 0, translateY));
+		const m1 =
+			(translateX || translateY) &&
+			Matrix.translate(fromTo(t, 0, translateX), fromTo(t, 0, translateY));
 		const m2 = rotate && Matrix.rotate(rotate);
 		const m3 = !(scaleX == 1 && scaleY == 1) && Matrix.scale(scaleX, scaleY);
 		for (const v of [m1, m2, m3]) {
@@ -278,11 +280,9 @@ export function cubicTrack(h1: Vec, h2: Vec, p1: Vec, p2?: Vec) {
 	}
 
 	const d = p2.distance(p1);
-
 	const c1 = p1.add(Vec.polar(h1.abs() * d, h1.angle));
-	const c2 = p2.add(Vec.polar(h2.abs() * d, h2.angle));
-	const q = new Cubic(p1, c1, c2, p2);
-	return q;
+	const c2 = h2 ? p2.add(Vec.polar(h2.abs() * d, h2.angle)) : p2;
+	return  new Cubic(p1, c1, c2, p2);
 }
 
 export function MInterp(m1: Matrix, m2: Matrix) {
@@ -292,6 +292,15 @@ export function MInterp(m1: Matrix, m2: Matrix) {
 		if (d1.translateY == d2.translateY) {
 		}
 	}
+
+	do {
+		if (d1.scaleX == d2.scaleX) {
+			if (d1.scaleY == d2.scaleY) {
+				break;
+			}
+		}
+		
+	} while (0);
 
 	// translateX: e,
 	// translateY: f,
