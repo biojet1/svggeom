@@ -6,14 +6,19 @@ jobs:
   start:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          path: archive
+          path: workflow
 
       - name: Use Node.js 16.x
         uses: actions/setup-node@v2
         with:
           node-version: 16.x
+
+      - uses: actions/checkout@v3
+        with:
+          ref: release
+          path: release
 
       - name: source
         env:
