@@ -1,0 +1,31 @@
+import { Vec } from '../point.js';
+import { Box } from '../box.js';
+import { SegmentSE } from './index.js';
+import { Line } from './line.js';
+import { Cubic } from './cubic.js';
+export declare class Arc extends SegmentSE {
+    readonly rx: number;
+    readonly ry: number;
+    readonly phi: number;
+    readonly arc: boolean;
+    readonly sweep: boolean;
+    readonly cosφ: number;
+    readonly sinφ: number;
+    readonly rtheta: number;
+    readonly rdelta: number;
+    readonly cx: number;
+    readonly cy: number;
+    private constructor();
+    static fromEndPoint(start: Iterable<number>, rx: number, ry: number, φ: number, arc: boolean | number, sweep: boolean | number, end: Iterable<number>): Line | Arc;
+    static fromCenterForm(c: Vec, rx: number, ry: number, φ: number, θ: number, Δθ: number): Arc;
+    bbox(): Box;
+    clone(): Arc;
+    get length(): number;
+    pointAt(t: number): Vec;
+    splitAt(t: number): Arc[];
+    toPathFragment(): (string | number)[];
+    slopeAt(t: number): Vec;
+    transform(matrix: any): Arc;
+    reversed(): Arc;
+    asCubic(): Cubic[] | Line[];
+}

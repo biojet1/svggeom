@@ -1,0 +1,51 @@
+import { Segment } from './path/index.js';
+import { Box } from './box.js';
+interface IDescOpt {
+    relative?: boolean;
+    close?: boolean | null;
+    smooth?: boolean;
+    short?: boolean;
+}
+export declare class Path {
+    private _segs;
+    private _length?;
+    private _lengths?;
+    private constructor();
+    getTotalLength(): number | undefined;
+    getBBox(): Box;
+    tangentAt(T: number): import("./point.js").Vec | undefined;
+    slopeAt(T: number): import("./point.js").Vec | undefined;
+    pointAt(T: number): import("./point.js").Vec | undefined;
+    bbox(): Box;
+    splitAt(T: number): Path[] | undefined;
+    cutAt(T: number): Path;
+    cropAt(T0: number, T1?: number): Path;
+    transform(M: any): Path;
+    reversed(): Path;
+    get length(): number | undefined;
+    get totalLength(): number | undefined;
+    pointAtLength(L: number): 0 | import("./point.js").Vec | undefined;
+    [Symbol.iterator](): IterableIterator<Segment>;
+    private calcLength;
+    private get lengths();
+    get firstPoint(): import("./point.js").Vec | undefined;
+    get firstSegment(): Segment | undefined;
+    get lastPoint(): import("./point.js").Vec | undefined;
+    get lastSegment(): Segment | undefined;
+    segmentAt(T: number): [Segment | undefined, number, number];
+    isContinuous(): boolean;
+    isClosed(): boolean;
+    private enumDesc;
+    descArray(params?: IDescOpt): (number | "M" | "L" | "Z" | "Q" | "C" | "A" | "h" | "v" | "m" | "z" | "l" | "H" | "V" | "a" | "c" | "q" | "S" | "s" | "T" | "t")[];
+    describe(params?: IDescOpt): string;
+    toString(): string;
+    enumSubPaths(): Generator<Path, void, unknown>;
+    static parse(d: string): Path;
+    static new(v?: Segment[] | string | Segment | Path): Path;
+}
+import { Line } from './path/line.js';
+import { Arc } from './path/arc.js';
+import { Quadratic } from './path/quadratic.js';
+export * from './path/describe.js';
+export * from './path/cubic.js';
+export { Arc, Quadratic, Line };
