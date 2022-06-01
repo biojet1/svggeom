@@ -30,9 +30,6 @@ export class Box {
         const { x, y, width, height } = this;
         return Box.forRect(x, y, width, height);
     }
-    _notsup() {
-        return new Error(`Not Supported`);
-    }
     get x() {
         return this._x;
     }

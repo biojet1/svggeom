@@ -33,9 +33,9 @@ export declare class Vec {
     normalize(): Vec;
     reflectAt(p: Iterable<number>): Vec;
     transform(matrix: any): Vec;
-    flipX(d: number): Vec;
-    flipY(d: number): Vec;
-    flipZ(d: number): Vec;
+    flipX(): Vec;
+    flipY(): Vec;
+    flipZ(): Vec;
     shiftX(d: number): Vec;
     shiftY(d: number): Vec;
     shiftZ(d: number): Vec;

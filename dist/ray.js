@@ -1,5 +1,5 @@
 import { Vec } from './point.js';
-const { abs, atan, tan, cos, sin, sqrt, acos, atan2, PI, ceil, max } = Math;
+const { abs, sqrt, PI } = Math;
 const TAU = PI * 2;
 function* pickXY(args) {
     for (const v of args) {
@@ -180,14 +180,14 @@ export class Ray extends VecRay {
     shiftZ(d) {
         return this._Pos(this.pos.shiftZ(d));
     }
-    flipX(d) {
-        return this._Pos(this.pos.flipX(d));
+    flipX() {
+        return this._Pos(this.pos.flipX());
     }
-    flipY(d) {
-        return this._Pos(this.pos.flipY(d));
+    flipY() {
+        return this._Pos(this.pos.flipY());
     }
-    flipZ(d) {
-        return this._Pos(this.pos.flipZ(d));
+    flipZ() {
+        return this._Pos(this.pos.flipZ());
     }
     goto(x, y) {
         return this._Pos(Pt(x, y));

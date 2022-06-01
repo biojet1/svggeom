@@ -37,9 +37,9 @@ export declare class Ray extends VecRay {
     shiftX(d: number): Ray;
     shiftY(d: number): Ray;
     shiftZ(d: number): Ray;
-    flipX(d: number): Ray;
-    flipY(d: number): Ray;
-    flipZ(d: number): Ray;
+    flipX(): Ray;
+    flipY(): Ray;
+    flipZ(): Ray;
     goto(x: NumOrVec, y?: number): Ray;
     forward(d: number): Ray;
     back(d?: number): Ray;

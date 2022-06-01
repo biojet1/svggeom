@@ -7,7 +7,6 @@ export declare class Box {
     private static _not;
     protected constructor(x: number, y: number, width: number, height: number);
     clone(): Box;
-    private _notsup;
     get x(): number;
     get left(): number;
     get minX(): number;
