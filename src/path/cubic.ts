@@ -1,15 +1,18 @@
-import {Vec} from '../point.js';
-import {Box} from '../box.js';
-import {SegmentSE, Segment} from './index.js';
-import {Matrix} from '../matrix.js';
-// import assert from "assert";
+import { Vec } from '../point.js';
+import { Box } from '../box.js';
+import { SegmentSE } from './index.js';
 
 export class Cubic extends SegmentSE {
 	readonly c1: Vec;
 	readonly c2: Vec;
 	t_value?: number;
 
-	constructor(start: Iterable<number>, c1: Iterable<number>, c2: Iterable<number>, end: Iterable<number>) {
+	constructor(
+		start: Iterable<number>,
+		c1: Iterable<number>,
+		c2: Iterable<number>,
+		end: Iterable<number>,
+	) {
 		super(start, end);
 		this.c1 = Vec.new(c1);
 		this.c2 = Vec.new(c2);
@@ -20,7 +23,7 @@ export class Cubic extends SegmentSE {
 	}
 
 	bbox() {
-		const {start, c1, c2, end} = this;
+		const { start, c1, c2, end } = this;
 		const [xmin, xmax] = cubic_extrema(start.x, c1.x, c2.x, end.x);
 		const [ymin, ymax] = cubic_extrema(start.y, c1.y, c2.y, end.y);
 		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
@@ -65,29 +68,29 @@ export class Cubic extends SegmentSE {
 		}
 	}
 	pointAt(t: number) {
-		const {start, c1, c2, end} = this;
+		const { start, c1, c2, end } = this;
 		const F = 1 - t;
 		return Vec.at(
 			F * F * F * start.x + 3 * F * F * t * c1.x + 3 * F * t * t * c2.x + t * t * t * end.x,
-			F * F * F * start.y + 3 * F * F * t * c1.y + 3 * F * t * t * c2.y + t * t * t * end.y
+			F * F * F * start.y + 3 * F * F * t * c1.y + 3 * F * t * t * c2.y + t * t * t * end.y,
 		);
 	}
 
 	splitAt(z: number) {
-		const {start, c1, c2, end} = this;
+		const { start, c1, c2, end } = this;
 		const x = this.splitAtScalar(z, start.x, c1.x, c2.x, end.x);
 		const y = this.splitAtScalar(z, start.y, c1.y, c2.y, end.y);
 		const a = this.new(
 			Vec.at(x[0][0], y[0][0]),
 			Vec.at(x[0][1], y[0][1]),
 			Vec.at(x[0][2], y[0][2]),
-			Vec.at(x[0][3], y[0][3])
+			Vec.at(x[0][3], y[0][3]),
 		);
 		const b = this.new(
 			Vec.at(x[1][0], y[1][0]),
 			Vec.at(x[1][1], y[1][1]),
 			Vec.at(x[1][2], y[1][2]),
-			Vec.at(x[1][3], y[1][3])
+			Vec.at(x[1][3], y[1][3]),
 		);
 		return [a, b];
 	}
@@ -97,27 +100,35 @@ export class Cubic extends SegmentSE {
 		start: number,
 		end: number,
 		p3: number,
-		p4: number
+		p4: number,
 	): [[number, number, number, number], [number, number, number, number]] {
 		const t =
-			z * z * z * p4 - 3 * z * z * (z - 1) * p3 + 3 * z * (z - 1) * (z - 1) * end - (z - 1) * (z - 1) * (z - 1) * start;
+			z * z * z * p4 -
+			3 * z * z * (z - 1) * p3 +
+			3 * z * (z - 1) * (z - 1) * end -
+			(z - 1) * (z - 1) * (z - 1) * start;
 		return [
-			[start, z * end - (z - 1) * start, z * z * p3 - 2 * z * (z - 1) * end + (z - 1) * (z - 1) * start, t],
+			[
+				start,
+				z * end - (z - 1) * start,
+				z * z * p3 - 2 * z * (z - 1) * end + (z - 1) * (z - 1) * start,
+				t,
+			],
 			[t, z * z * p4 - 2 * z * (z - 1) * p3 + (z - 1) * (z - 1) * end, z * p4 - (z - 1) * p3, p4],
 		];
 	}
 	toPathFragment() {
 		const {
-			c1: {x: x1, y: y1},
-			c2: {x: x2, y: y2},
-			end: {x: x3, y: y3},
+			c1: { x: x1, y: y1 },
+			c2: { x: x2, y: y2 },
+			end: { x: x3, y: y3 },
 		} = this;
 		return ['C', x1, y1, x2, y2, x3, y3];
 	}
 
 	slopeAt(t: number): Vec {
-		const {start, c1, c2, end} = this;
-		let d1; // 1st derivative
+		const { start, c1, c2, end } = this;
+		// let d1; // 1st derivative
 		if (t <= 0) {
 			return c1.sub(start);
 		} else if (t >= 1) {
@@ -146,11 +157,11 @@ export class Cubic extends SegmentSE {
 		}
 	}
 	transform(M: any) {
-		const {start, c1, c2, end} = this;
+		const { start, c1, c2, end } = this;
 		return this.new(start.transform(M), c1.transform(M), c2.transform(M), end.transform(M));
 	}
 	reversed() {
-		const {start, c1, c2, end} = this;
+		const { start, c1, c2, end } = this;
 		return this.new(end, c2, c1, start);
 	}
 }
@@ -186,7 +197,7 @@ function cubic_extrema(s: number, a: number, b: number, e: number) {
 	return [cmin, cmax];
 }
 
-export {Cubic as CubicSegment};
+export { Cubic as CubicSegment };
 
 // export class Cubic2 extends Segment {
 // 	private readonly _start: Vec;

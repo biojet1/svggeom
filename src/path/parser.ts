@@ -1,6 +1,4 @@
-// import * as regex from '../regex.js';
 import {Vec} from '../point.js';
-import {Box} from '../box.js';
 import {Segment} from './index.js';
 import {Arc} from './arc.js';
 import {Cubic} from './cubic.js';

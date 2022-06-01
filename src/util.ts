@@ -1,6 +1,6 @@
 import { Point } from "./point.js";
 
-const { abs, atan, tan, cos, sin, sqrt, acos, atan2, PI, ceil, max } = Math;
+const { abs, tan, cos, sin, sqrt, acos, PI, ceil, max } = Math;
 const TAU = PI * 2;
 
 export function cossin(θ: number) {

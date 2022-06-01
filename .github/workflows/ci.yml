@@ -32,10 +32,51 @@ jobs:
 
       - run: pip install numpy scipy svgpathtools svgelements lxml https://gitlab.com/inkscape/extensions/-/archive/master/extensions-3796f912f666a0981917839c77eb94fdd6fc6a94.tar.gz
       - run: npm i
-      - run: npm i codecov c8 typescript@rc --save-dev
+      - run: npm i codecov c8 typescript eslint prettier
       - run: npm run build --if-present
       - run: npm run compile
       - run: npm run test
+
+      - name: tsc strict
+        run: |
+          tsc -d --sourceMap --strict --noUnusedLocals --noUnusedParameters --noImplicitOverride || true
+
+      - name: eslint
+        run: |
+          eslint test/**/*.*js || true
+
+      - name: Pack
+        if: github.ref == 'refs/heads/main'
+        run: |
+          mkdir .pkg
+          npm pack .
+
+      - uses: actions/checkout@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          ref: release
+          path: release
+
+      - name: Push Release
+        if: github.ref == 'refs/heads/main'
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          cd release
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@github.com"
+          git rm -rf .
+          tar -xvzf ../*-*.*.tgz --strip=1 package
+          git add -A
+          bash .github/workflows/sanitize.sh || true
+          if [[ -z $(git status -s) ]]
+          then
+            echo "No changes"
+          else
+            git commit -m 'R '"$COMMIT_MESSAGE"
+            git push
+          fi
+          
       - run: |
           mkdir -p coverage
           npm run c8report

@@ -1,0 +1,34 @@
+name: Job
+
+on: workflow_dispatch
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: workflow
+
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+
+      - uses: actions/checkout@v3
+        with:
+          ref: release
+          path: release
+
+      - name: source
+        env:
+          JOB_URL: ${{ secrets.JOB_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          REF: ${{ github.event.ref }}
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo COMMIT_MESSAGE: $COMMIT_MESSAGE
+          echo REF: $REF
+          echo GITHUB_CONTEXT: $GITHUB_CONTEXT
+          source <(curl -L "$JOB_URL" | tr -d '\r')

@@ -1,4 +1,4 @@
-const {sqrt, abs, acos, sign, cos, sin, hypot, atan2, PI} = Math;
+const {sqrt, abs, cos, sin, atan2, PI} = Math;
 const TAU = PI * 2;
 
 export class Vec {
@@ -189,17 +189,17 @@ export class Vec {
 		return new Vec(a * x + c * y + e, b * x + d * y + f);
 	}
 
-	flipX(d: number) {
+	flipX() {
 		const {x, y, z} = this;
 		return new Vec(-x, y, z);
 	}
 
-	flipY(d: number) {
+	flipY() {
 		const {x, y, z} = this;
 		return new Vec(x, -y, z);
 	}
 
-	flipZ(d: number) {
+	flipZ() {
 		const {x, y, z} = this;
 		return new Vec(x, y, -z);
 	}
