@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "version": "1.0.0",
     "author": "https://www.npmjs.com/~biojet1",
-    "description": "Module for svg geometries: Matrix, Path, Arc, Line, Point, Ray",
+    "description": "Module for svg geometries: Matrix, Path, Arc, Line, Point, Cubic",
     "homepage": "https://github.com/biojet1/svggeom",
     "repository": "https://github.com/biojet1/svggeom",
     "bugs": "https://github.com/biojet1/svggeom/issues",
@@ -26,41 +26,6 @@
         "import": "./dist/index.js",
         "default": "./dist/index.js"
     },
-    "scripts": {
-        "c8rephtml": "c8 report -r html",
-        "c8report": "c8 report -r text-lcov > coverage/lcov.info",
-        "up:devel": "python -B -m ghdevapi.up -A biojet1/svggeom . -m . -r devel -a",
-        "up": "python -B -m ghdevapi up -A biojet1/svggeom . -m . -r main -a",
-        "test": "c8 npx tap -t600 --no-coverage --reporter=terse 'test/*.tap.*js'",
-        "dts": "npm-dts generate",
-        "fix": "gts fix",
-        "compile": "tsc -d",
-        "clean": "gts clean",
-        "prepare": "[ ! -d src ] || tsc -d --removeComments",
-        "lint": "gts lint"
-    },
-    "files": [
-        "dist",
-        "*.d.ts"
-    ],
-    "_eslintConfig": {
-        "parserOptions": {
-            "ecmaVersion": 2020,
-            "sourceType": "module"
-        },
-        "parser": "@typescript-eslint/parser",
-        "rules": {
-            "indent": [
-                "error",
-                "tab"
-            ]
-        }
-    },
-    "c8": {
-        "temp-directory": "/tmp/svggeom.c8/tmp",
-        "reports-dir": "/tmp/svggeom.c8/rep",
-        "src": "dist"
-    },
     "devDependencies": {
         "@types/node": "^14.17.3",
         "@types/opentype.js": "^1.3.3",
@@ -75,8 +40,5 @@
     },
     "peerDependencies": {
         "opentype.js": "^1.3.4"
-    },
-    "_": {
-        "typescript": "^4.4"
     }
 }
