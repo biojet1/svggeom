@@ -5,7 +5,7 @@ import { Line } from './line.js';
 import { Cubic } from './cubic.js';
 import { Matrix } from '../matrix.js';
 import { segment_length, arcParams, arcToCurve } from '../util.js';
-const { abs, atan, tan, cos, sin,   PI, min, max } = Math;
+const { abs, atan, tan, cos, sin, PI, min, max } = Math;
 
 export class Arc extends SegmentSE {
 	readonly rx: number;

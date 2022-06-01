@@ -67,8 +67,8 @@ jobs:
           git config user.email "$GITHUB_ACTOR@github.com"
           git rm -rf .
           tar -xvzf ../*-*.*.tgz --strip=1 package
+          bash ../.github/workflows/sanitize.sh || true
           git add -A
-          bash .github/workflows/sanitize.sh || true
           if [[ -z $(git status -s) ]]
           then
             echo "No changes"
