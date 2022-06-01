@@ -3,8 +3,6 @@ import path from 'path';
 import os from 'os';
 import fsp from 'fs/promises';
 import { createHash } from 'crypto';
-import { Font, parse } from 'opentype.js';
-export { Font };
 export class FontCache {
     _cacheDir;
     _cacheFonts;
@@ -54,15 +52,15 @@ export class FontCache {
         const file = path.join(dir, key.substring(2));
         return (cacheFonts[url] = await fsp
             .stat(file)
-            .catch(err => {
+            .catch((err) => {
             console.log(`Cache: File DL ${url}`);
             return fsp
                 .stat(dir)
-                .catch(err => fsp.mkdir(dir, { recursive: true }))
-                .then(ret => downloadURL(url, file + '.tmp'))
-                .then(tmp => fsp.rename(tmp, file));
+                .catch((err) => fsp.mkdir(dir, { recursive: true }))
+                .then((ret) => downloadURL(url, file + '.tmp'))
+                .then((tmp) => fsp.rename(tmp, file));
         })
-            .then(ret => {
+            .then((ret) => {
             if (ret) {
                 console.log(`Cache: File Hit ${url} <-- ${file}`);
             }
@@ -70,8 +68,8 @@ export class FontCache {
             }
             return fsp
                 .open(file, 'r')
-                .then(fh => fh.readFile().finally(() => fh.close()))
-                .then(buf => parse(buf.buffer));
+                .then((fh) => fh.readFile().finally(() => fh.close()))
+                .then((buf) => import('opentype.js').then((mod) => mod.parse(buf.buffer)));
         }));
     }
     async getFont(name) {
@@ -93,21 +91,22 @@ export function downloadURL(url, dest) {
     const uri = new URL(url);
     const pkg = url.toLowerCase().startsWith('https:') ? https : http;
     return new Promise((resolve, reject) => {
-        const request = pkg.get(uri.href).on('response', res => {
+        const request = pkg.get(uri.href).on('response', (res) => {
             if (res.statusCode === 200) {
                 const file = fs.createWriteStream(dest, { flags: 'wx' });
-                res.on('end', () => {
+                res
+                    .on('end', () => {
                     file.end();
                     resolve(dest);
                 })
-                    .on('error', err => {
+                    .on('error', (err) => {
                     file.destroy();
                     fs.unlink(dest, () => reject(err));
                 })
                     .pipe(file);
             }
             else if (res.statusCode === 302 || res.statusCode === 301) {
-                downloadURL(res.headers.location || '', dest).then(dest => resolve(dest));
+                downloadURL(res.headers.location || '', dest).then((dest) => resolve(dest));
             }
             else {
                 reject(new Error(`Download request failed, response status: ${res.statusCode} ${res.statusMessage}`));

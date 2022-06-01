@@ -1,4 +1,4 @@
-const { sqrt, abs, tan, sign, cos, sin, atan, atan2, PI } = Math;
+const { sqrt, abs, tan, cos, sin, atan, atan2, PI } = Math;
 const { isFinite } = Number;
 const radians = function (d) {
     return ((d % 360) * PI) / 180;

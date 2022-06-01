@@ -5,7 +5,7 @@ import { Line } from './line.js';
 import { Cubic } from './cubic.js';
 import { Matrix } from '../matrix.js';
 import { segment_length, arcParams, arcToCurve } from '../util.js';
-const { abs, atan, tan, cos, sin, sqrt, acos, atan2, pow, PI, min, max, ceil } = Math;
+const { abs, atan, tan, cos, sin, PI, min, max } = Math;
 export class Arc extends SegmentSE {
     rx;
     ry;
@@ -24,7 +24,8 @@ export class Arc extends SegmentSE {
         super(start, end);
         const { x: x1, y: y1 } = this.start;
         const { x: x2, y: y2 } = this.end;
-        [this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] = arcParams(x1, y1, rx, ry, φ, (this.arc = !!arc), (this.sweep = !!sweep), x2, y2);
+        [this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] =
+            arcParams(x1, y1, rx, ry, φ, (this.arc = !!arc), (this.sweep = !!sweep), x2, y2);
     }
     static fromEndPoint(start, rx, ry, φ, arc, sweep, end) {
         if (!rx || !ry) {
@@ -115,10 +116,22 @@ export class Arc extends SegmentSE {
         const delta1 = deltaA * t;
         const delta2 = deltaA * (1 - t);
         const pT = this.pointAt(t);
-        return [new Arc(start, pT, rx, ry, phi, delta1 > PI, sweep), new Arc(pT, end, rx, ry, phi, delta2 > PI, sweep)];
+        return [
+            new Arc(start, pT, rx, ry, phi, delta1 > PI, sweep),
+            new Arc(pT, end, rx, ry, phi, delta2 > PI, sweep),
+        ];
     }
     toPathFragment() {
-        return ['A', this.rx, this.ry, this.phi, this.arc ? 1 : 0, this.sweep ? 1 : 0, this.end.x, this.end.y];
+        return [
+            'A',
+            this.rx,
+            this.ry,
+            this.phi,
+            this.arc ? 1 : 0,
+            this.sweep ? 1 : 0,
+            this.end.x,
+            this.end.y,
+        ];
     }
     slopeAt(t) {
         const { rx, ry, cosφ, sinφ, rdelta, rtheta } = this;
@@ -149,11 +162,7 @@ export class Arc extends SegmentSE {
             const A = (d ** 2 / rx ** 2 + c ** 2 / ry ** 2) / detT2;
             const B = -((d * b) / rx ** 2 + (c * a) / ry ** 2) / detT2;
             const D = (b ** 2 / rx ** 2 + a ** 2 / ry ** 2) / detT2;
-            const theta = atan2(-2 * B, D - A) / 2;
             const DA = D - A;
-            const l2 = 4 * B ** 2 + DA ** 2;
-            const delta = l2 ? (0.5 * (-DA * DA - 4 * B * B)) / sqrt(l2) : 0;
-            const half = (A + D) / 2;
             if (detT < 0) {
                 sweep = !sweep;
             }
@@ -165,7 +174,7 @@ export class Arc extends SegmentSE {
         return new Arc(end, start, rx, ry, phi, arc, sweep ? 0 : 1);
     }
     asCubic() {
-        const { arc, end: { x: x2, y: y2 }, start: { x: x1, y: y1 }, rx, ry, sweep, phi, cx, cy, cosφ, sinφ, rdelta, rtheta, } = this;
+        const { end: { x: x2, y: y2 }, start: { x: x1, y: y1 }, rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta, } = this;
         const segments = arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
         if (segments.length === 0) {
             return [new Line([x1, y1], [x2, y2])];

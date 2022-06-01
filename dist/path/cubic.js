@@ -72,9 +72,17 @@ export class Cubic extends SegmentSE {
         return [a, b];
     }
     splitAtScalar(z, start, end, p3, p4) {
-        const t = z * z * z * p4 - 3 * z * z * (z - 1) * p3 + 3 * z * (z - 1) * (z - 1) * end - (z - 1) * (z - 1) * (z - 1) * start;
+        const t = z * z * z * p4 -
+            3 * z * z * (z - 1) * p3 +
+            3 * z * (z - 1) * (z - 1) * end -
+            (z - 1) * (z - 1) * (z - 1) * start;
         return [
-            [start, z * end - (z - 1) * start, z * z * p3 - 2 * z * (z - 1) * end + (z - 1) * (z - 1) * start, t],
+            [
+                start,
+                z * end - (z - 1) * start,
+                z * z * p3 - 2 * z * (z - 1) * end + (z - 1) * (z - 1) * start,
+                t,
+            ],
             [t, z * z * p4 - 2 * z * (z - 1) * p3 + (z - 1) * (z - 1) * end, z * p4 - (z - 1) * p3, p4],
         ];
     }
@@ -84,7 +92,6 @@ export class Cubic extends SegmentSE {
     }
     slopeAt(t) {
         const { start, c1, c2, end } = this;
-        let d1;
         if (t <= 0) {
             return c1.sub(start);
         }

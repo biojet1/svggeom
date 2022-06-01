@@ -5,7 +5,6 @@ export interface IFontCache {
 export interface IFontMap {
     [key: string]: string;
 }
-export { Font };
 export declare class FontCache {
     private _cacheDir?;
     private _cacheFonts?;
