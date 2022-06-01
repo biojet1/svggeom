@@ -37,6 +37,13 @@ jobs:
       - run: npm run compile
       - run: npm run test
 
+      - name: tsc strict
+        run: |
+          tsc -d --sourceMap --strict --noUnusedLocals --noUnusedParameters --noImplicitOverride || true
+
+      - name: eslint
+        run: |
+          eslint test/**/*.*js || true
 
       - name: Pack
         if: github.ref == 'refs/heads/main'
