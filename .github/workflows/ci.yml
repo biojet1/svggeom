@@ -61,8 +61,13 @@ jobs:
           git rm -rf .
           tar -xvzf ../*-*.*.tgz --strip=1 package
           git add -A
-          git commit -m 'R '"$COMMIT_MESSAGE"
-          git push
+          if [[ -z $(git status -s) ]]
+          then
+            echo "No changes"
+          else
+            git commit -m 'R '"$COMMIT_MESSAGE"
+            git push
+          fi
           
       - run: |
           mkdir -p coverage
