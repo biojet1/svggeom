@@ -1,18 +1,18 @@
 import {Vec} from '../point.js';
 import {Box} from '../box.js';
 
-interface ISegment {
-	get start(): Vec;
-	get end(): Vec;
-	get length(): number;
-	toPathFragment(): (string | number)[];
-	bbox(): Box;
-	pointAt(t: number): Vec;
-	slopeAt(t: number): Vec;
-	transform(M: any): Segment;
-	reversed(): Segment;
-	splitAt(t: number): Segment[];
-}
+// interface ISegment {
+// 	get start(): Vec;
+// 	get end(): Vec;
+// 	get length(): number;
+// 	toPathFragment(): (string | number)[];
+// 	bbox(): Box;
+// 	pointAt(t: number): Vec;
+// 	slopeAt(t: number): Vec;
+// 	transform(M: any): Segment;
+// 	reversed(): Segment;
+// 	splitAt(t: number): Segment[];
+// }
 
 export abstract class Segment {
 	abstract get start(): Vec;

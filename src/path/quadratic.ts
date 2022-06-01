@@ -1,8 +1,6 @@
-import {Vec} from '../point.js';
-import {Box} from '../box.js';
-import {Matrix} from '../matrix.js';
-import {Segment} from './index.js';
-import {Cubic} from './cubic.js';
+import { Vec } from '../point.js';
+import { Box } from '../box.js';
+import { Cubic } from './cubic.js';
 
 export class Quadratic extends Cubic {
 	readonly c: Vec;
@@ -18,8 +16,8 @@ export class Quadratic extends Cubic {
 		this.c = c;
 	}
 
-	slopeAt(t: number): Vec {
-		const {start, c, end} = this;
+	override slopeAt(t: number): Vec {
+		const { start, c, end } = this;
 
 		if (t >= 1) {
 			return end.sub(c);
@@ -36,17 +34,20 @@ export class Quadratic extends Cubic {
 		return a.add(b).mul(2); // 1st derivative;
 	}
 
-	pointAt(t: number) {
-		const {start, c, end} = this;
+	override pointAt(t: number) {
+		const { start, c, end } = this;
 		const v = 1 - t;
-		return Vec.at(v * v * start.x + 2 * v * t * c.x + t * t * end.x, v * v * start.y + 2 * v * t * c.y + t * t * end.y);
+		return Vec.at(
+			v * v * start.x + 2 * v * t * c.x + t * t * end.x,
+			v * v * start.y + 2 * v * t * c.y + t * t * end.y,
+		);
 	}
 
-	splitAt(t: number) {
+	override splitAt(t: number) {
 		const {
-			start: {x: x1, y: y1},
-			c: {x: cx, y: cy},
-			end: {x: x2, y: y2},
+			start: { x: x1, y: y1 },
+			c: { x: cx, y: cy },
+			end: { x: x2, y: y2 },
 		} = this;
 		const mx1 = (1 - t) * x1 + t * cx;
 		const mx2 = (1 - t) * cx + t * x2;
@@ -62,8 +63,8 @@ export class Quadratic extends Cubic {
 		];
 	}
 
-	bbox() {
-		const {start, c, end} = this;
+	override bbox() {
+		const { start, c, end } = this;
 		const [x1, x2, x3] = [start.x, c.x, end.x];
 		const [y1, y2, y3] = [start.y, c.y, end.y];
 		const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
@@ -71,18 +72,18 @@ export class Quadratic extends Cubic {
 		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 
-	toPathFragment() {
-		const {c, end} = this;
+	override toPathFragment() {
+		const { c, end } = this;
 		return ['Q', c.x, c.y, end.x, end.y];
 	}
 
-	transform(M: any) {
-		const {start, c, end} = this;
+	override transform(M: any) {
+		const { start, c, end } = this;
 		return new Quadratic(start.transform(M), c.transform(M), end.transform(M));
 	}
 
-	reversed() {
-		const {start, c, end} = this;
+	override reversed() {
+		const { start, c, end } = this;
 		return new Quadratic(end, c, start);
 	}
 }

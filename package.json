@@ -20,7 +20,7 @@
         "fix": "gts fix",
         "compile": "tsc -d",
         "clean": "gts clean",
-        "prepare": "[ -d src ] && tsc -d --removeComments",
+        "prepare": "[ ! -d src ] || tsc -d --removeComments",
         "lint": "gts lint"
     },
     "files": [
