@@ -273,12 +273,11 @@ import { Cubic } from './path/cubic.js';
 import { Line } from './path/line.js';
 import { Segment } from './path/index.js';
 
-export function cubicTrack(h1: Vec, h2: Vec, p1: Vec, p2?: Vec) {
+export function cubicTrack(h1: Vec, h2: Vec|undefined, p1: Vec, p2?: Vec) {
 	if (!p2) {
 		p2 = p1;
 		p1 = Vec.pos(0, 0);
 	}
-
 	const d = p2.distance(p1);
 	const c1 = p1.add(Vec.polar(h1.abs() * d, h1.angle));
 	const c2 = h2 ? p2.add(Vec.polar(h2.abs() * d, h2.angle)) : p2;

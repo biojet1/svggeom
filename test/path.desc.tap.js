@@ -1,49 +1,49 @@
 'uses strict';
 import test from 'tap';
-import {Path, PathData} from '../dist/index.js';
+import {Path, PathData} from 'svggeom';
 import './utils.js';
 const CI = !!process.env.CI;
 
 test.test(`moveTo`, {bail: CI}, function (t) {
-	const p = PathData.moveTo(150, 50);
-	t.same(p.toString(), 'M150,50');
-	t.same(`${p}`, 'M150,50');
-	t.same(`${p.lineTo(200, 100)}`, 'M150,50L200,100');
-	t.same(`${p.moveTo(100, 50)}`, 'M150,50L200,100M100,50');
-	t.end();
+    const p = PathData.moveTo(150, 50);
+    t.same(p.toString(), 'M150,50');
+    t.same(`${p}`, 'M150,50');
+    t.same(`${p.lineTo(200, 100)}`, 'M150,50L200,100');
+    t.same(`${p.moveTo(100, 50)}`, 'M150,50L200,100M100,50');
+    t.end();
 });
 
 test.test('path.closePath() appends a Z command', {bail: CI}, function (t) {
-	const p = PathData.moveTo(150, 50);
-	t.same(p.toString(), 'M150,50');
-	t.same(`${p.closePath()}`, 'M150,50Z');
-	t.same(`${p.closePath()}`, 'M150,50ZZ');
-	t.end();
+    const p = PathData.moveTo(150, 50);
+    t.same(p.toString(), 'M150,50');
+    t.same(`${p.closePath()}`, 'M150,50Z');
+    t.same(`${p.closePath()}`, 'M150,50ZZ');
+    t.end();
 });
 
 test.test('path.closePath() does nothing if the path is empty', {bail: CI}, function (t) {
-	const p = new PathData();
-	t.same(p.toString(), '');
-	t.same(`${p.closePath()}`, '');
-	t.end();
+    const p = new PathData();
+    t.same(p.toString(), '');
+    t.same(`${p.closePath()}`, '');
+    t.end();
 });
 
 test.test('path.lineTo(x, y) appends an L command', {bail: CI}, function (t) {
-	const p = PathData.moveTo(150, 50);
-	t.same(p.toString(), 'M150,50');
-	t.same(`${p.lineTo(200, 100)}`, 'M150,50L200,100');
-	t.same(`${p.lineTo(100, 50)}`, 'M150,50L200,100L100,50');
-	t.end();
+    const p = PathData.moveTo(150, 50);
+    t.same(p.toString(), 'M150,50');
+    t.same(`${p.lineTo(200, 100)}`, 'M150,50L200,100');
+    t.same(`${p.lineTo(100, 50)}`, 'M150,50L200,100L100,50');
+    t.end();
 });
 
 test.test('path.quadraticCurveTo(x1, y1, x, y) appends a Q command', {bail: CI}, function (t) {
-	t.same(`${PathData.moveTo(150, 50).quadraticCurveTo(100, 50, 200, 100)}`, 'M150,50Q100,50,200,100');
-	t.end();
+    t.same(`${PathData.moveTo(150, 50).quadraticCurveTo(100, 50, 200, 100)}`, 'M150,50Q100,50,200,100');
+    t.end();
 });
 
 test.test('path.bezierCurveTo(x1, y1, x, y) appends a C command', {bail: CI}, function (t) {
-	t.same(`${PathData.moveTo(150, 50).bezierCurveTo(100, 50, 0, 24, 200, 100)}`, 'M150,50C100,50,0,24,200,100');
-	t.end();
+    t.same(`${PathData.moveTo(150, 50).bezierCurveTo(100, 50, 0, 24, 200, 100)}`, 'M150,50C100,50,0,24,200,100');
+    t.end();
 });
 
 // it("path.arc(x, y, radius, startAngle, endAngle) throws an error if the radius is negative", () => {
@@ -51,10 +51,10 @@ test.test('path.bezierCurveTo(x1, y1, x, y) appends a C command', {bail: CI}, fu
 //   assert.throws(function() { p.arc(100, 100, -50, 0, Math.PI / 2); }, /negative radius/);
 // });
 test.test('path.arc(x, y, radius, startAngle, endAngle) throws an error if the radius is negative', {bail: CI}, function (t) {
-	t.throwsRE(function () {
-		PathData.moveTo(150, 100).arc(100, 100, -50, 0, Math.PI / 2);
-	}, /negative radius/);
-	t.end();
+    t.throwsRE(function () {
+        PathData.moveTo(150, 100).arc(100, 100, -50, 0, Math.PI / 2);
+    }, /negative radius/);
+    t.end();
 });
 
 // it("path.arc(x, y, radius, startAngle, endAngle) may append only an M command if the radius is zero", () => {
@@ -62,13 +62,13 @@ test.test('path.arc(x, y, radius, startAngle, endAngle) throws an error if the r
 //   assertPathEqual(p, "M100,100");
 // });
 test.test(
-	'path.arc(x, y, radius, startAngle, endAngle) may append only an M command if the radius is zero',
-	{bail: CI},
-	function (t) {
-		const p = new PathData();
-		t.same(`${p.arc(100, 100, 0, 0, Math.PI / 2)}`, 'M100,100');
-		t.end();
-	}
+    'path.arc(x, y, radius, startAngle, endAngle) may append only an M command if the radius is zero',
+    {bail: CI},
+    function (t) {
+        const p = new PathData();
+        t.same(`${p.arc(100, 100, 0, 0, Math.PI / 2)}`, 'M100,100');
+        t.end();
+    }
 );
 
 // it("path.arc(x, y, radius, startAngle, endAngle) may append only an L command if the radius is zero", () => {
@@ -76,12 +76,12 @@ test.test(
 //   assertPathEqual(p, "M0,0L100,100");
 // });
 test.test(
-	'path.arc(x, y, radius, startAngle, endAngle) may append only an L command if the radius is zero',
-	{bail: CI},
-	function (t) {
-		t.same(`${PathData.moveTo(0, 0).arc(100, 100, 0, 0, Math.PI / 2)}`, 'M0,0L100,100');
-		t.end();
-	}
+    'path.arc(x, y, radius, startAngle, endAngle) may append only an L command if the radius is zero',
+    {bail: CI},
+    function (t) {
+        t.same(`${PathData.moveTo(0, 0).arc(100, 100, 0, 0, Math.PI / 2)}`, 'M0,0L100,100');
+        t.end();
+    }
 );
 
 // it("path.arc(x, y, radius, startAngle, endAngle) may append only an M command if the angle is zero", () => {
@@ -90,12 +90,12 @@ test.test(
 // });
 
 test.test(
-	'path.arc(x, y, radius, startAngle, endAngle) may append only an M command if the angle is zero',
-	{bail: CI},
-	function (t) {
-		t.same(`${new PathData().arc(100, 100, 0, 0, 0)}`, 'M100,100');
-		t.end();
-	}
+    'path.arc(x, y, radius, startAngle, endAngle) may append only an M command if the angle is zero',
+    {bail: CI},
+    function (t) {
+        t.same(`${new PathData().arc(100, 100, 0, 0, 0)}`, 'M100,100');
+        t.end();
+    }
 );
 
 // it("path.arc(x, y, radius, startAngle, endAngle) may append only an M command if the angle is near zero", () => {
@@ -103,12 +103,12 @@ test.test(
 //   assertPathEqual(p, "M100,100");
 // });
 test.test(
-	'path.arc(x, y, radius, startAngle, endAngle) may append only an M command if the angle is near zero',
-	{bail: CI},
-	function (t) {
-		t.same(`${new PathData().arc(100, 100, 0, 0, 1e-16)}`, 'M100,100');
-		t.end();
-	}
+    'path.arc(x, y, radius, startAngle, endAngle) may append only an M command if the angle is near zero',
+    {bail: CI},
+    function (t) {
+        t.same(`${new PathData().arc(100, 100, 0, 0, 1e-16)}`, 'M100,100');
+        t.end();
+    }
 );
 
 // it("path.arc(x, y, radius, startAngle, endAngle) may append an M command if the path was empty", () => {
@@ -119,15 +119,14 @@ test.test(
 // });
 
 test.test(
-	"path.arc(x, y, radius, startAngle, endAngle) may append an M command if the path was empty",
-	{bail: CI},
-	function (t) {
-		t.same(`${new PathData().arc(100, 100, 50, 0, Math.PI * 2)}`, "M150,100A50,50,0,1,1,50,100A50,50,0,1,1,150,100");
-		// t.same(`${new PathData().arc(0, 50, 50, -Math.PI / 2, 0)}`, "M0,0A50,50,0,0,1,50,50");
-		t.end();
-	}
+    'path.arc(x, y, radius, startAngle, endAngle) may append an M command if the path was empty',
+    {bail: CI},
+    function (t) {
+        t.same(`${new PathData().arc(100, 100, 50, 0, Math.PI * 2)}`, 'M150,100A50,50,0,1,1,50,100A50,50,0,1,1,150,100');
+        // t.same(`${new PathData().arc(0, 50, 50, -Math.PI / 2, 0)}`, "M0,0A50,50,0,0,1,50,50");
+        t.end();
+    }
 );
-
 
 // it("path.arc(x, y, radius, startAngle, endAngle) may append an L command if the arc doesn’t start at the current point", () => {
 //   const p = path(); p.moveTo(100, 100); p.arc(100, 100, 50, 0, Math.PI * 2);
@@ -336,6 +335,6 @@ test.test(
 // });
 
 test.test('path.rect(x, y, w, h) appends M, h, v, h, and Z commands', {bail: CI}, function (t) {
-	t.same(`${PathData.moveTo(150, 100).rect(100, 200, 50, 25)}`, 'M150,100M100,200h50v25h-50Z');
-	t.end();
+    t.same(`${PathData.moveTo(150, 100).rect(100, 200, 50, 25)}`, 'M150,100M100,200h50v25h-50Z');
+    t.end();
 });

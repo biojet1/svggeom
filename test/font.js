@@ -1,14 +1,13 @@
 import {loadFont} from 'svggeom';
 globalThis.window = 444;
-// import { loadFont, FontCache, downloadURL } from "../dist/font.js";
 
 //  const fonts = new FontCache()
 // // let font = await loadFont("/media/biojet1/OS/var/tmp/OpenSans/OpenSans-Regular.ttf");
 let font = await loadFont('');
- // console.log(font);
-        const path = font.getPath('Hello,\nWorld!', 0, 0, 384);
+// console.log(font);
+const path = font.getPath('Hello,\nWorld!', 0, 0, 384);
 
- console.log(path.toPathData());
+console.log(path.toPathData());
 //  console.log(fonts.cacheDir);
 //  // await downloadURL('https://raw.githubusercontent.com/google/fonts/main/ufl/ubuntu/Ubuntu-Regular.ttf', '/tmp/font.ttf');
 //  // fonts.loadURL('https://raw.githubusercontent.com/google/fonts/main/ufl/ubuntu/Ubuntu-Regular.ttf')
