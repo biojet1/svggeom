@@ -60,6 +60,6 @@ declare class Par extends Transforms {
 }
 import { Cubic } from './path/cubic.js';
 import { Segment } from './path/index.js';
-export declare function cubicTrack(h1: Vec, h2: Vec, p1: Vec, p2?: Vec): Cubic;
+export declare function cubicTrack(h1: Vec, h2: Vec | undefined, p1: Vec, p2?: Vec): Cubic;
 export declare function MInterp(m1: Matrix, m2: Matrix): void;
 export {};
