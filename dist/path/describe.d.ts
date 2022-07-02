@@ -13,6 +13,7 @@ export declare class PathData {
     bezierCurveTo(...args: NumOrVec[]): this;
     rect(...args: NumOrVec[]): this;
     arcTo(...args: NumOrVec[]): this;
+    arcd(...args: NumOrVec[]): this;
     arc(...args: NumOrVec[]): this;
     toString(): string;
 }

@@ -12,6 +12,7 @@ export declare class Draw {
     quadraticCurveTo(...args: Point[] | number[]): this;
     bezierCurveTo(...args: Point[] | number[]): this;
     arcTo(...args: Point[] | number[]): this;
+    arcd(...args: Point[] | number[]): this | undefined;
     arc(...args: Point[] | number[]): this | undefined;
     rect(...args: Point[] | number[]): this;
     toString(): string;

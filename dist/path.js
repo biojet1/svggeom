@@ -89,10 +89,10 @@ export class Path {
         return new Path([]);
     }
     transform(M) {
-        return new Path(this._segs.map(seg => seg.transform(M)));
+        return new Path(this._segs.map((seg) => seg.transform(M)));
     }
     reversed() {
-        return new Path(this._segs.map(seg => seg.reversed()).reverse());
+        return new Path(this._segs.map((seg) => seg.reversed()).reverse());
     }
     get length() {
         return this.calcLength();
@@ -113,7 +113,7 @@ export class Path {
         }
         const lens = this._segs.map((c) => c.length);
         const len = (this._length = lens.reduce((a, b) => a + b, 0));
-        this._lengths = lens.map(v => v / len);
+        this._lengths = lens.map((v) => v / len);
         return len;
     }
     get lengths() {
@@ -212,7 +212,9 @@ export class Path {
         const end = segs.length > 0 ? segs[segs.length - 1].end : undefined;
         for (const [i, seg] of segs.entries()) {
             const { start: seg_start } = seg;
-            if (!current_pos || !seg_start.equals(current_pos) || (self_closed && end && seg_start.equals(end))) {
+            if (!current_pos ||
+                !seg_start.equals(current_pos) ||
+                (self_closed && end && seg_start.equals(end))) {
                 move_pos = seg_start;
                 const _seg_start = rel ? (current_pos ? seg_start.sub(current_pos) : seg_start) : seg_start;
                 yield rel ? 'm' : 'M';

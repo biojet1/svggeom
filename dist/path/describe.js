@@ -129,6 +129,10 @@ export class PathData {
         }
         return this;
     }
+    arcd(...args) {
+        const [x, y, r, a0, a1, ccw] = pickXY(args);
+        return this.arc(x, y, r, (a0 * pi) / 180, (a1 * pi) / 180, ccw);
+    }
     arc(...args) {
         let [x, y, r, a0, a1, ccw] = pickXY(args);
         (x = +x), (y = +y), (r = +r), (ccw = !!ccw ? 1 : 0);
