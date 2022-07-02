@@ -5,7 +5,7 @@ import { Line } from './line.js';
 import { Cubic } from './cubic.js';
 import { Matrix } from '../matrix.js';
 import { segment_length, arcParams, arcToCurve } from '../util.js';
-const { abs, atan, tan, cos, sin, sqrt, atan2, PI, min, max } = Math;
+const { abs, atan, tan, cos, sin, PI, min, max } = Math;
 
 export class Arc extends SegmentSE {
 	readonly rx: number;
@@ -207,9 +207,9 @@ export class Arc extends SegmentSE {
 			// const theta = atan2(-2 * B, D - A) / 2;
 			// console.log('theta', theta_deg, theta, A, B, D, a, c, b, d, detT2);
 			const DA = D - A;
-			const l2 = 4 * B ** 2 + DA ** 2;
+			// const l2 = 4 * B ** 2 + DA ** 2;
 			// const delta = l2 ? (0.5 * (-DA * DA - 4 * B * B)) / sqrt(l2) : 0;
-			const half = (A + D) / 2;
+			// const half = (A + D) / 2;
 			// if (skewX || scaleX != 1 || scaleY != 1) {
 			// 	rx = 1.0 / sqrt(half + delta);
 			// 	ry = 1.0 / sqrt(half - delta);

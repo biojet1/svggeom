@@ -23,4 +23,4 @@ with open('package.json') as r:
 		dump(data, w, indent=4)
 EOF
 
-prettier --write package.json || true
+npx prettier --write package.json || true

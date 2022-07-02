@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import fsp from 'fs/promises';
 import { createHash } from 'crypto';
-import { parse, Font /*, load, loadSync*/ } from 'opentype.js';
+import { Font /*, load, loadSync*/ } from 'opentype.js';
 
 export interface IFontCache {
 	[key: string]: Font;
@@ -93,7 +93,7 @@ export class FontCache {
 				return fsp
 					.open(file, 'r')
 					.then((fh) => fh.readFile().finally(() => fh.close()))
-					.then((buf) => parse(buf.buffer));
+					.then((buf) => import('opentype.js').then((mod) => mod.parse(buf.buffer)));
 			}));
 	}
 

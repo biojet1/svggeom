@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "version": "1.0.0",
     "author": "https://www.npmjs.com/~biojet1",
-    "description": "Module for svg geometries: Matrix, Path, Arc, Line, Point, Ray",
+    "description": "Module for svg geometries: Matrix, Path, Arc, Line, Point, Cubic",
     "homepage": "https://github.com/biojet1/svggeom",
     "repository": "https://github.com/biojet1/svggeom",
     "bugs": "https://github.com/biojet1/svggeom/issues",
