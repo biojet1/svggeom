@@ -115,9 +115,23 @@ export class Matrix {
 		return new Matrix([a, b, c, d, e, f]);
 	}
 
-	protected _cat(m: Matrix): Matrix {
+	_cat(m: Matrix): Matrix {
 		const { a, b, c, d, e, f } = this;
 		const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
+
+		return this._hexad(
+			a * A + c * B + e * 0,
+			b * A + d * B + f * 0,
+			a * C + c * D + e * 0,
+			b * C + d * D + f * 0,
+			a * E + c * F + e * 1,
+			b * E + d * F + f * 1,
+		);
+	}
+
+	_postCat(m: Matrix): Matrix {
+		const { a, b, c, d, e, f } = m;
+		const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
 
 		return this._hexad(
 			a * A + c * B + e * 0,
@@ -152,22 +166,20 @@ export class Matrix {
 		return this._hexad(na, nb, nc, nd, ne, nf);
 	}
 
+	cat(m: Matrix): Matrix {
+		return this._cat(m);
+	}
+
+	postCat(m: Matrix): Matrix {
+		return this._postCat(m);
+	}
+
 	multiply(m: Matrix): Matrix {
 		return this._cat(m);
 	}
 
 	postMultiply(m: Matrix): Matrix {
-		const { a, b, c, d, e, f } = m;
-		const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
-
-		return this._hexad(
-			a * A + c * B + e * 0,
-			b * A + d * B + f * 0,
-			a * C + c * D + e * 0,
-			b * C + d * D + f * 0,
-			a * E + c * F + e * 1,
-			b * E + d * F + f * 1,
-		);
+		return this._postCat(m);
 	}
 
 	translate(x = 0, y = 0) {
@@ -264,7 +276,7 @@ export class Matrix {
 				const args = kv[1].split(/[\s,]+/).map(function (str) {
 					return parseFloat(str.trim());
 				});
-				m = name === 'matrix' ? m.multiply(Matrix.fromArray(args)) : m[name].apply(m, args);
+				m = name === 'matrix' ? m._cat(Matrix.fromArray(args)) : m[name].apply(m, args);
 			}
 		return m;
 	}
@@ -363,7 +375,7 @@ export class Matrix {
 		let m;
 		for (const v of args) {
 			if (m) {
-				m = m.multiply(v);
+				m = m._cat(v);
 			} else {
 				m = v;
 			}
@@ -396,8 +408,9 @@ export class MatrixMut extends Matrix {
 		this.d = d;
 		this.e = e;
 		this.f = f;
+		return this;
 	}
-	protected _catSelf(m: Matrix): Matrix {
+	_catSelf(m: Matrix): this {
 		const { a, b, c, d, e, f } = this;
 		const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
 		this.a = a * A + c * B + e * 0;
@@ -408,12 +421,46 @@ export class MatrixMut extends Matrix {
 		this.f = b * E + d * F + f * 1;
 		return this;
 	}
-	multiplySelf(m: Matrix): Matrix {
+	_preCatSelf(m: Matrix): this {
+		const { a, b, c, d, e, f } = m;
+		const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
+		this.a = a * A + c * B + e * 0;
+		this.b = b * A + d * B + f * 0;
+		this.c = a * C + c * D + e * 0;
+		this.d = b * C + d * D + f * 0;
+		this.e = a * E + c * F + e * 1;
+		this.f = b * E + d * F + f * 1;
+		return this;
+	}
+	invertSelf(): this {
+		// Get the current parameters out of the matrix
+		const { a, b, c, d, e, f } = this;
+
+		// Invert the 2x2 matrix in the top left
+		const det = a * d - b * c;
+		if (!det) throw new Error('Cannot invert ' + this);
+
+		// Calculate the top 2x2 matrix
+		const na = d / det;
+		const nb = -b / det;
+		const nc = -c / det;
+		const nd = a / det;
+
+		// Apply the inverted matrix to the top right
+		const ne = -(na * e + nc * f);
+		const nf = -(nb * e + nd * f);
+
+		// Construct the inverted matrix
+
+		return this.setHexad(na, nb, nc, nd, ne, nf);
+	}
+
+	catSelf(m: Matrix): this {
 		return this._catSelf(m);
 	}
-	// invertSelf():this{
-
-	// }
+	preCatSelf(m: Matrix): this {
+		return this._preCatSelf(m);
+	}
 }
 
 // type CreateMutable<Type> = {
