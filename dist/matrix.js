@@ -91,6 +91,11 @@ export class Matrix {
         const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
         return this._hexad(a * A + c * B + e * 0, b * A + d * B + f * 0, a * C + c * D + e * 0, b * C + d * D + f * 0, a * E + c * F + e * 1, b * E + d * F + f * 1);
     }
+    _postCat(m) {
+        const { a, b, c, d, e, f } = m;
+        const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
+        return this._hexad(a * A + c * B + e * 0, b * A + d * B + f * 0, a * C + c * D + e * 0, b * C + d * D + f * 0, a * E + c * F + e * 1, b * E + d * F + f * 1);
+    }
     inverse() {
         const { a, b, c, d, e, f } = this;
         const det = a * d - b * c;
@@ -104,13 +109,17 @@ export class Matrix {
         const nf = -(nb * e + nd * f);
         return this._hexad(na, nb, nc, nd, ne, nf);
     }
+    cat(m) {
+        return this._cat(m);
+    }
+    postCat(m) {
+        return this._postCat(m);
+    }
     multiply(m) {
         return this._cat(m);
     }
     postMultiply(m) {
-        const { a, b, c, d, e, f } = m;
-        const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
-        return this._hexad(a * A + c * B + e * 0, b * A + d * B + f * 0, a * C + c * D + e * 0, b * C + d * D + f * 0, a * E + c * F + e * 1, b * E + d * F + f * 1);
+        return this._postCat(m);
     }
     translate(x = 0, y = 0) {
         return this._cat(Matrix.hexad(1, 0, 0, 1, x, y));
@@ -159,7 +168,7 @@ export class Matrix {
                 const args = kv[1].split(/[\s,]+/).map(function (str) {
                     return parseFloat(str.trim());
                 });
-                m = name === 'matrix' ? m.multiply(Matrix.fromArray(args)) : m[name].apply(m, args);
+                m = name === 'matrix' ? m._cat(Matrix.fromArray(args)) : m[name].apply(m, args);
             }
         return m;
     }
@@ -235,7 +244,7 @@ export class Matrix {
         let m;
         for (const v of args) {
             if (m) {
-                m = m.multiply(v);
+                m = m._cat(v);
             }
             else {
                 m = v;
@@ -261,6 +270,7 @@ export class MatrixMut extends Matrix {
         this.d = d;
         this.e = e;
         this.f = f;
+        return this;
     }
     _catSelf(m) {
         const { a, b, c, d, e, f } = this;
@@ -273,8 +283,35 @@ export class MatrixMut extends Matrix {
         this.f = b * E + d * F + f * 1;
         return this;
     }
-    multiplySelf(m) {
+    _preCatSelf(m) {
+        const { a, b, c, d, e, f } = m;
+        const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
+        this.a = a * A + c * B + e * 0;
+        this.b = b * A + d * B + f * 0;
+        this.c = a * C + c * D + e * 0;
+        this.d = b * C + d * D + f * 0;
+        this.e = a * E + c * F + e * 1;
+        this.f = b * E + d * F + f * 1;
+        return this;
+    }
+    invertSelf() {
+        const { a, b, c, d, e, f } = this;
+        const det = a * d - b * c;
+        if (!det)
+            throw new Error('Cannot invert ' + this);
+        const na = d / det;
+        const nb = -b / det;
+        const nc = -c / det;
+        const nd = a / det;
+        const ne = -(na * e + nc * f);
+        const nf = -(nb * e + nd * f);
+        return this.setHexad(na, nb, nc, nd, ne, nf);
+    }
+    catSelf(m) {
         return this._catSelf(m);
+    }
+    preCatSelf(m) {
+        return this._preCatSelf(m);
     }
 }
 //# sourceMappingURL=matrix.js.map

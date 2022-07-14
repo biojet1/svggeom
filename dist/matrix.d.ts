@@ -24,8 +24,11 @@ export declare class Matrix {
     toArray(): number[];
     describe(): string;
     protected _hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;
-    protected _cat(m: Matrix): Matrix;
+    _cat(m: Matrix): Matrix;
+    _postCat(m: Matrix): Matrix;
     inverse(): Matrix;
+    cat(m: Matrix): Matrix;
+    postCat(m: Matrix): Matrix;
     multiply(m: Matrix): Matrix;
     postMultiply(m: Matrix): Matrix;
     translate(x?: number, y?: number): Matrix;
@@ -62,8 +65,11 @@ interface ElementLike {
     getAttribute(name: string): null | string;
 }
 export declare class MatrixMut extends Matrix {
-    setHexad(a: number, b: number, c: number, d: number, e: number, f: number): void;
-    protected _catSelf(m: Matrix): Matrix;
-    multiplySelf(m: Matrix): Matrix;
+    setHexad(a: number, b: number, c: number, d: number, e: number, f: number): this;
+    _catSelf(m: Matrix): this;
+    _preCatSelf(m: Matrix): this;
+    invertSelf(): this;
+    catSelf(m: Matrix): this;
+    preCatSelf(m: Matrix): this;
 }
 export {};
