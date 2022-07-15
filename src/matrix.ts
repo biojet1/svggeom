@@ -174,13 +174,13 @@ export class Matrix {
 		return this._postCat(m);
 	}
 
-	multiply(m: Matrix): Matrix {
-		return this._cat(m);
-	}
+	// multiply(m: Matrix): Matrix {
+	// 	return this._cat(m);
+	// }
 
-	postMultiply(m: Matrix): Matrix {
-		return this._postCat(m);
-	}
+	// postMultiply(m: Matrix): Matrix {
+	// 	return this._postCat(m);
+	// }
 
 	translate(x = 0, y = 0) {
 		return this._cat(Matrix.hexad(1, 0, 0, 1, x, y));
@@ -371,7 +371,7 @@ export class Matrix {
 	static identity() {
 		return new this();
 	}
-	static multiply(args: Array<Matrix>): Matrix {
+	static cat(args: Array<Matrix>): Matrix {
 		let m;
 		for (const v of args) {
 			if (m) {
