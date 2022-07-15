@@ -187,7 +187,7 @@ class Compose extends Transform {
         const m2 = rotate && Matrix.rotate(rotate);
         const m3 = !(scaleX == 1 && scaleY == 1) && Matrix.scale(scaleX, scaleY);
         for (const v of [m1, m2, m3]) {
-            v && (m = m ? m.multiply(v) : v);
+            v && (m = m ? m.cat(v) : v);
         }
         return m ?? Matrix.identity();
     }

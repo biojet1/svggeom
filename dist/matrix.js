@@ -115,12 +115,6 @@ export class Matrix {
     postCat(m) {
         return this._postCat(m);
     }
-    multiply(m) {
-        return this._cat(m);
-    }
-    postMultiply(m) {
-        return this._postCat(m);
-    }
     translate(x = 0, y = 0) {
         return this._cat(Matrix.hexad(1, 0, 0, 1, x, y));
     }
@@ -240,7 +234,7 @@ export class Matrix {
     static identity() {
         return new this();
     }
-    static multiply(args) {
+    static cat(args) {
         let m;
         for (const v of args) {
             if (m) {

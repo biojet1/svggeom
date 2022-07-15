@@ -29,8 +29,6 @@ export declare class Matrix {
     inverse(): Matrix;
     cat(m: Matrix): Matrix;
     postCat(m: Matrix): Matrix;
-    multiply(m: Matrix): Matrix;
-    postMultiply(m: Matrix): Matrix;
     translate(x?: number, y?: number): Matrix;
     translateY(v: number): Matrix;
     translateX(v: number): Matrix;
@@ -56,7 +54,7 @@ export declare class Matrix {
     static rotate(ang: number, x?: number, y?: number): Matrix;
     static scale(scaleX: number, scaleY?: number): Matrix;
     static identity(): Matrix;
-    static multiply(args: Array<Matrix>): Matrix;
+    static cat(args: Array<Matrix>): Matrix;
     final(): Readonly<Matrix>;
     mut(): Matrix;
 }
