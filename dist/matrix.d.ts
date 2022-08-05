@@ -53,8 +53,8 @@ export declare class Matrix {
     static skewY(y: number): Matrix;
     static rotate(ang: number, x?: number, y?: number): Matrix;
     static scale(scaleX: number, scaleY?: number): Matrix;
+    static Identity: Matrix;
     static identity(): Matrix;
-    static cat(args: Array<Matrix>): Matrix;
     final(): Readonly<Matrix>;
     mut(): Matrix;
 }
@@ -63,11 +63,11 @@ interface ElementLike {
     getAttribute(name: string): null | string;
 }
 export declare class MatrixMut extends Matrix {
-    setHexad(a: number, b: number, c: number, d: number, e: number, f: number): this;
+    protected setHexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): this;
     _catSelf(m: Matrix): this;
-    _preCatSelf(m: Matrix): this;
+    _postCatSelf(m: Matrix): this;
     invertSelf(): this;
     catSelf(m: Matrix): this;
-    preCatSelf(m: Matrix): this;
+    postCatSelf(m: Matrix): this;
 }
 export {};

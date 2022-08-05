@@ -3,6 +3,31 @@ const { isFinite } = Number;
 const radians = function (d) {
     return ((d % 360) * PI) / 180;
 };
+const _cat = function (m, n) {
+    const { a, b, c, d, e, f } = m;
+    const { a: A, b: B, c: C, d: D, e: E, f: F } = n;
+    return [
+        a * A + c * B + e * 0,
+        b * A + d * B + f * 0,
+        a * C + c * D + e * 0,
+        b * C + d * D + f * 0,
+        a * E + c * F + e * 1,
+        b * E + d * F + f * 1,
+    ];
+};
+const _inv = function (m) {
+    const { a, b, c, d, e, f } = m;
+    const det = a * d - b * c;
+    if (!det)
+        throw new Error('Cannot invert ' + m);
+    const na = d / det;
+    const nb = -b / det;
+    const nc = -c / det;
+    const nd = a / det;
+    const ne = -(na * e + nc * f);
+    const nf = -(nb * e + nd * f);
+    return [na, nb, nc, nd, ne, nf];
+};
 export class Matrix {
     a;
     b;
@@ -87,27 +112,13 @@ export class Matrix {
         return new Matrix([a, b, c, d, e, f]);
     }
     _cat(m) {
-        const { a, b, c, d, e, f } = this;
-        const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
-        return this._hexad(a * A + c * B + e * 0, b * A + d * B + f * 0, a * C + c * D + e * 0, b * C + d * D + f * 0, a * E + c * F + e * 1, b * E + d * F + f * 1);
+        return this._hexad(..._cat(this, m));
     }
     _postCat(m) {
-        const { a, b, c, d, e, f } = m;
-        const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
-        return this._hexad(a * A + c * B + e * 0, b * A + d * B + f * 0, a * C + c * D + e * 0, b * C + d * D + f * 0, a * E + c * F + e * 1, b * E + d * F + f * 1);
+        return this._hexad(..._cat(m, this));
     }
     inverse() {
-        const { a, b, c, d, e, f } = this;
-        const det = a * d - b * c;
-        if (!det)
-            throw new Error('Cannot invert ' + this);
-        const na = d / det;
-        const nb = -b / det;
-        const nc = -c / det;
-        const nd = a / det;
-        const ne = -(na * e + nc * f);
-        const nf = -(nb * e + nd * f);
-        return this._hexad(na, nb, nc, nd, ne, nf);
+        return this._hexad(..._inv(this));
     }
     cat(m) {
         return this._cat(m);
@@ -231,20 +242,9 @@ export class Matrix {
     static scale(scaleX, scaleY) {
         return this.hexad(scaleX, 0, 0, scaleY ?? scaleX, 0, 0);
     }
+    static Identity = new Matrix();
     static identity() {
-        return new this();
-    }
-    static cat(args) {
-        let m;
-        for (const v of args) {
-            if (m) {
-                m = m._cat(v);
-            }
-            else {
-                m = v;
-            }
-        }
-        return m ?? this.identity();
+        return this.Identity;
     }
     final() {
         return Object.isFrozen(this) ? this : Object.freeze(this.clone());
@@ -257,7 +257,7 @@ function closeEnough(a, b, threshold = 1e-6) {
     return abs(b - a) <= threshold;
 }
 export class MatrixMut extends Matrix {
-    setHexad(a, b, c, d, e, f) {
+    setHexad(a = 1, b = 0, c = 0, d = 1, e = 0, f = 0) {
         this.a = a;
         this.b = b;
         this.c = c;
@@ -267,45 +267,19 @@ export class MatrixMut extends Matrix {
         return this;
     }
     _catSelf(m) {
-        const { a, b, c, d, e, f } = this;
-        const { a: A, b: B, c: C, d: D, e: E, f: F } = m;
-        this.a = a * A + c * B + e * 0;
-        this.b = b * A + d * B + f * 0;
-        this.c = a * C + c * D + e * 0;
-        this.d = b * C + d * D + f * 0;
-        this.e = a * E + c * F + e * 1;
-        this.f = b * E + d * F + f * 1;
-        return this;
+        return this.setHexad(..._cat(this, m));
     }
-    _preCatSelf(m) {
-        const { a, b, c, d, e, f } = m;
-        const { a: A, b: B, c: C, d: D, e: E, f: F } = this;
-        this.a = a * A + c * B + e * 0;
-        this.b = b * A + d * B + f * 0;
-        this.c = a * C + c * D + e * 0;
-        this.d = b * C + d * D + f * 0;
-        this.e = a * E + c * F + e * 1;
-        this.f = b * E + d * F + f * 1;
-        return this;
+    _postCatSelf(m) {
+        return this.setHexad(..._cat(m, this));
     }
     invertSelf() {
-        const { a, b, c, d, e, f } = this;
-        const det = a * d - b * c;
-        if (!det)
-            throw new Error('Cannot invert ' + this);
-        const na = d / det;
-        const nb = -b / det;
-        const nc = -c / det;
-        const nd = a / det;
-        const ne = -(na * e + nc * f);
-        const nf = -(nb * e + nd * f);
-        return this.setHexad(na, nb, nc, nd, ne, nf);
+        return this.setHexad(..._inv(this));
     }
     catSelf(m) {
         return this._catSelf(m);
     }
-    preCatSelf(m) {
-        return this._preCatSelf(m);
+    postCatSelf(m) {
+        return this._postCatSelf(m);
     }
 }
 //# sourceMappingURL=matrix.js.map
