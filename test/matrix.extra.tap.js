@@ -37,12 +37,12 @@ test.test(`Matrix.identity`, {bail: !CI}, function (t) {
     t.ok(Matrix.parse('scale(1 1)').isIdentity);
     t.ok(Matrix.parse('rotate(0)').isIdentity);
     t.ok(Matrix.parse('translate(0 0)').isIdentity);
-    t.ok(Matrix.identity().multiply(Matrix.hexad(1, 2, 3, 4, 5, 6)).equals(Matrix.parse('matrix(1 2 3 4 5 6)')));
+    t.ok(Matrix.identity().cat(Matrix.hexad(1, 2, 3, 4, 5, 6)).equals(Matrix.parse('matrix(1 2 3 4 5 6)')));
     t.end();
 });
 
 test.test(`Matrix.preMultiply`, {bail: !CI}, function (t) {
-    const m1 = Matrix.translate(-20, -20).multiply(Matrix.scale(2));
+    const m1 = Matrix.translate(-20, -20).cat(Matrix.scale(2));
     const m2 = Matrix.parse('matrix(2, 0, 0, 2, -20, -20)');
     t.ok(m1.equals(m2), `preMultiply ${m1} ${m2}`);
     t.end();
@@ -62,24 +62,24 @@ test.test(`Matrix.inverse`, {bail: !CI}, function (t) {
     const a = Matrix.parse('matrix(1 2 3 4 5 6)');
     const b = Matrix.parse('matrix(7 8 9 0 1 2)');
     const c = Matrix.parse('matrix(3 4 5 6 7 8)');
-    const d = a.multiply(b).multiply(c);
-    const e = c.multiply(b).multiply(a);
+    const d = a.cat(b).cat(c);
+    const e = c.cat(b).cat(a);
     const I = Matrix.identity();
     t.ok(d.is2D);
     t.ok(e.equals(e.inverse().inverse(), 1e-9), `.inverse().inverse() ${e} ${e.inverse().inverse()}`);
-    t.ok(a.multiply(b.multiply(c)).equals(d), `assoc ${d} ${a.multiply(b.multiply(c))}`);
-    t.ok(a.postMultiply(b).postMultiply(c).equals(e), `assoc ${e} ${a.postMultiply(b).postMultiply(c)}`);
-    t.notOk(b.multiply(c).equals(c.multiply(b)), `assoc ${c.multiply(b)} ${b.multiply(c)}`);
-    t.ok(b.multiply(c).equals(c.postMultiply(b)), `assoc ${c.multiply(b)} ${b.multiply(c)}`);
+    t.ok(a.cat(b.cat(c)).equals(d), `assoc ${d} ${a.cat(b.cat(c))}`);
+    t.ok(a.postCat(b).postCat(c).equals(e), `assoc ${e} ${a.postCat(b).postCat(c)}`);
+    t.notOk(b.cat(c).equals(c.cat(b)), `assoc ${c.cat(b)} ${b.cat(c)}`);
+    t.ok(b.cat(c).equals(c.postCat(b)), `assoc ${c.cat(b)} ${b.cat(c)}`);
     // The identity matrix
-    t.ok(I.multiply(I).multiply(I).equals(I), `I When multiplied by itself, the result is itself ${I}`);
+    t.ok(I.cat(I).cat(I).equals(I), `I When multiplied by itself, the result is itself ${I}`);
     // Suppose A is an m×n matrix and I is the n×n identity matrix
-    t.ok(a.multiply(I).equals(a), `A*I = A, ${a} ${I}`);
+    t.ok(a.cat(I).equals(a), `A*I = A, ${a} ${I}`);
     // A square n×n matrix A is said to have an inverse A⁻¹ if and only if
-    t.ok(d.inverse().multiply(d).equals(I, 1e-9), `A⁻¹*A = I, ${d} ${d.inverse()}`);
-    t.ok(d.multiply(d.inverse()).equals(I, 1e-9), `A*A⁻¹ = I, ${d} ${d.inverse()}`);
+    t.ok(d.inverse().cat(d).equals(I, 1e-9), `A⁻¹*A = I, ${d} ${d.inverse()}`);
+    t.ok(d.cat(d.inverse()).equals(I, 1e-9), `A*A⁻¹ = I, ${d} ${d.inverse()}`);
     // If A and B are invertible matrices, then AB is invertible and (A*B)⁻¹ = B⁻¹*A⁻¹
-    t.ok(a.multiply(b).inverse().equals(b.inverse().multiply(a.inverse()), 1e-9), `(A*B)⁻¹ = B⁻¹*A⁻¹ ${a} ${b}`);
+    t.ok(a.cat(b).inverse().equals(b.inverse().cat(a.inverse()), 1e-9), `(A*B)⁻¹ = B⁻¹*A⁻¹ ${a} ${b}`);
     // I is invertible and I⁻¹=I
     t.ok(I.inverse().equals(I), `I⁻¹=I ${I}`);
 

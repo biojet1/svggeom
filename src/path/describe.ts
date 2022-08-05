@@ -198,7 +198,10 @@ export class PathData {
 		}
 		return this;
 	}
-
+	arcd(...args: NumOrVec[]) {
+		const [x, y, r, a0, a1, ccw] = pickXY(args);
+		return this.arc(x, y, r, (a0 * pi) / 180, (a1 * pi) / 180, ccw);
+	}
 	arc(...args: NumOrVec[]) {
 		let [x, y, r, a0, a1, ccw] = pickXY(args);
 
