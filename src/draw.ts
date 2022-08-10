@@ -255,6 +255,45 @@ export class Draw {
 		return this._;
 	}
 
+	// withFont(name:string){
+	// 	this._font = loadFont(name);
+	// }
+	// withBaseLine(name:string){
+	// 	this._baseLine = name;
+	// }
+	// withAnchor(name:string){
+	// 	this._textAlign = name;
+	// }
+
+	// _font?: number;
+	text(
+		options: {
+			fontSize: number;
+			font: Font;
+			kerning?: boolean;
+			tracking?: number;
+			letterSpacing?: number;
+		},
+		text: string,
+		x?: number,
+		y?: number,
+		maxWidth?: number,
+	) {
+		const { font, fontSize = 72, kerning, letterSpacing, tracking} = options;
+		// const fontSize = options.fontSize || 72;
+		//   const kerning = 'kerning' in options ? options.kerning : true;
+		//   const letterSpacing = 'letterSpacing' in options ? options.letterSpacing : false;
+		// const tracking = 'tracking' in options ? options.tracking : false;
+		// const metrics = this.getMetrics(text, options);
+		const path = font.getPath(text, 0, 0, fontSize, {
+			kerning,
+			letterSpacing,
+			tracking,
+		});
+		this._ += path.toPathData(1);
+		return this;
+	}
+
 	static new() {
 		return new Draw();
 	}
@@ -267,3 +306,5 @@ export class Draw {
 		return Draw.new().lineTo(...arguments);
 	}
 }
+
+import { Font /*, load, loadSync*/ } from 'opentype.js';

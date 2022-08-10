@@ -124,7 +124,7 @@ export class Arc extends SegmentSE {
 				rx * sinφ * cosθ + ry * cosφ * sinθ + cy,
 			);
 		} catch (err) {
-			console.log(rtheta, rdelta, rx, cosφ, cosθ, ry, sinφ, sinθ, cx, cy);
+			console.warn(rtheta, rdelta, rx, cosφ, cosθ, ry, sinφ, sinθ, cx, cy);
 			throw err;
 		}
 	}
@@ -205,7 +205,7 @@ export class Arc extends SegmentSE {
 			const B = -((d * b) / rx ** 2 + (c * a) / ry ** 2) / detT2;
 			const D = (b ** 2 / rx ** 2 + a ** 2 / ry ** 2) / detT2;
 			// const theta = atan2(-2 * B, D - A) / 2;
-			// console.log('theta', theta_deg, theta, A, B, D, a, c, b, d, detT2);
+			// console.warn('theta', theta_deg, theta, A, B, D, a, c, b, d, detT2);
 			const DA = D - A;
 			// const l2 = 4 * B ** 2 + DA ** 2;
 			// const delta = l2 ? (0.5 * (-DA * DA - 4 * B * B)) / sqrt(l2) : 0;

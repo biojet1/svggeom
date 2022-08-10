@@ -218,7 +218,7 @@ export class PathData {
 
 		// Is this path empty? Move to (x0,y0).
 		if (this._x1 === undefined) {
-			console.log(dx);
+			console.warn(dx);
 			this._ += 'M' + x0 + ',' + y0;
 		}
 
