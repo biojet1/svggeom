@@ -17,7 +17,15 @@ export declare class Draw {
     rect(...args: Point[] | number[]): this;
     toString(): string;
     d(): string;
+    text(options: {
+        fontSize: number;
+        font: Font;
+        kerning?: boolean;
+        tracking?: number;
+        letterSpacing?: number;
+    }, text: string, x?: number, y?: number, maxWidth?: number): this;
     static new(): Draw;
     static moveTo(): Draw;
     static lineTo(): Draw;
 }
+import { Font } from 'opentype.js';

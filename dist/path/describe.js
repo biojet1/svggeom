@@ -140,7 +140,7 @@ export class PathData {
         if (r < 0)
             throw new Error('negative radius: ' + r);
         if (this._x1 === undefined) {
-            console.log(dx);
+            console.warn(dx);
             this._ += 'M' + x0 + ',' + y0;
         }
         else if (Math.abs((this._x1 ?? 0) - x0) > epsilon || Math.abs((this._y1 ?? 0) - y0) > epsilon) {

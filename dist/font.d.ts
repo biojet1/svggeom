@@ -12,7 +12,7 @@ export declare class FontCache {
     private static instance;
     private constructor();
     static getInstance(): FontCache;
-    get_cache_dir(): string;
+    findCacheDir(): string;
     get cacheDir(): string;
     get cacheFonts(): IFontCache;
     get fontMap(): IFontMap;

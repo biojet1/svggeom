@@ -13,7 +13,7 @@ export class FontCache {
         const { instance } = FontCache;
         return instance || (FontCache.instance = new FontCache());
     }
-    get_cache_dir() {
+    findCacheDir() {
         let dir = process.env._FONT_CACEH_DIR;
         if (dir && fs.existsSync(dir)) {
             return dir;
@@ -22,7 +22,7 @@ export class FontCache {
     }
     get cacheDir() {
         const { _cacheDir } = this;
-        return _cacheDir || (this._cacheDir = this.get_cache_dir());
+        return _cacheDir || (this._cacheDir = this.findCacheDir());
     }
     get cacheFonts() {
         const { _cacheFonts } = this;
@@ -32,7 +32,7 @@ export class FontCache {
         const { _fontMap } = this;
         return (_fontMap ||
             (this._fontMap = {
-                'roboto-regular': 'https://raw.githubusercontent.com/google/fonts/blob/main/apache/roboto/static/Roboto-Regular.ttf',
+                'roboto-regular': 'https://raw.githubusercontent.com/google/fonts/blob/main/apache/roboto/Roboto%5Bwdth%2Cwght%5D.ttf',
                 'ubuntu-regular': 'https://raw.githubusercontent.com/google/fonts/main/ufl/ubuntu/Ubuntu-Regular.ttf',
                 'latin-modern-math': 'https://mirrors.rit.edu/CTAN/fonts/lm-math/opentype/latinmodern-math.otf',
             }));
@@ -41,8 +41,11 @@ export class FontCache {
         const { cacheFonts } = this;
         let font = cacheFonts[url];
         if (font) {
-            console.log(`Cache: Hit ${url}`);
+            console.warn(`Cache: Hit ${url}`);
             return font;
+        }
+        else if (!url) {
+            throw new Error(`Invalid URL '${url}'`);
         }
         const hash = createHash('sha1');
         hash.update(url);
@@ -53,7 +56,7 @@ export class FontCache {
         return (cacheFonts[url] = await fsp
             .stat(file)
             .catch((err) => {
-            console.log(`Cache: File DL ${url}`);
+            console.warn(`Cache: File DL ${url} --> ${file}`);
             return fsp
                 .stat(dir)
                 .catch((err) => fsp.mkdir(dir, { recursive: true }))
@@ -62,7 +65,7 @@ export class FontCache {
         })
             .then((ret) => {
             if (ret) {
-                console.log(`Cache: File Hit ${url} <-- ${file}`);
+                console.warn(`Cache: File Hit ${url} <-- ${file}`);
             }
             else {
             }
@@ -88,7 +91,7 @@ import http from 'http';
 import { URL } from 'url';
 const TIMEOUT = 10000;
 export function downloadURL(url, dest) {
-    const uri = new URL(url);
+    const uri = new URL(decodeURI(url));
     const pkg = url.toLowerCase().startsWith('https:') ? https : http;
     return new Promise((resolve, reject) => {
         const request = pkg.get(uri.href).on('response', (res) => {

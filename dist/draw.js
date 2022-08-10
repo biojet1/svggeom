@@ -164,6 +164,16 @@ export class Draw {
     d() {
         return this._;
     }
+    text(options, text, x, y, maxWidth) {
+        const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
+        const path = font.getPath(text, 0, 0, fontSize, {
+            kerning,
+            letterSpacing,
+            tracking,
+        });
+        this._ += path.toPathData(1);
+        return this;
+    }
     static new() {
         return new Draw();
     }
