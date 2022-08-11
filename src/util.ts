@@ -144,7 +144,7 @@ export function arcParams(
 		// B.2.5. Correction of out-of-range radii
 		if (!rx || !ry) {
 			// Step 1: Ensure radii are non-zero
-			// console.log([rx, ry], φ, [arc, sweep], p1, p2);
+			// console.warn([rx, ry], φ, [arc, sweep], p1, p2);
 			throw new Error("Not an ellipse");
 		} else {
 			// Step 2: Ensure radii are positive (eq. 6.1)

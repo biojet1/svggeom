@@ -311,11 +311,11 @@ export class Matrix {
 		const b = this.new(B).toArray();
 		const n = a.length;
 		const klass = this;
-		// console.log("interpolate T", A, B, a, b);
+		// console.warn("interpolate T", A, B, a, b);
 		return function (t: number) {
 			let c = [0, 0, 0, 0, 0, 0];
 			for (let i = 0; i < n; ++i) c[i] = a[i] === b[i] ? b[i] : a[i] * (1 - t) + b[i] * t;
-			// console.log("compose", c);
+			// console.warn("compose", c);
 			return klass.fromArray(c);
 		};
 	}
@@ -354,8 +354,9 @@ export class Matrix {
 	static scale(scaleX: number, scaleY?: number) {
 		return this.hexad(scaleX, 0, 0, scaleY ?? scaleX, 0, 0);
 	}
+	static Identity = new Matrix();
 	static identity() {
-		return new this();
+		return this.Identity;
 	}
 	// static cat(args: Array<Matrix>): Matrix {
 	// 	let m;
@@ -368,7 +369,6 @@ export class Matrix {
 	// 	}
 	// 	return m ?? this.identity();
 	// }
-	static Identity = new Matrix();
 
 	final() {
 		return Object.isFrozen(this) ? this : Object.freeze(this.clone());
