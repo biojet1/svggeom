@@ -1,30 +1,27 @@
-import {Vec} from '../point.js';
-import {Box} from '../box.js';
-
-// interface ISegment {
-// 	get start(): Vec;
-// 	get end(): Vec;
-// 	get length(): number;
-// 	toPathFragment(): (string | number)[];
-// 	bbox(): Box;
-// 	pointAt(t: number): Vec;
-// 	slopeAt(t: number): Vec;
-// 	transform(M: any): Segment;
-// 	reversed(): Segment;
-// 	splitAt(t: number): Segment[];
-// }
+import { Vec } from '../point.js';
+import { Box } from '../box.js';
 
 export abstract class Segment {
 	abstract get start(): Vec;
 	abstract get end(): Vec;
 	abstract get length(): number;
-	abstract toPathFragment(): (string | number)[];
 	abstract bbox(): Box;
 	abstract pointAt(t: number): Vec;
 	abstract slopeAt(t: number): Vec;
-	abstract transform(M: any): Segment;
-	abstract reversed(): Segment;
-	abstract splitAt(t: number): Segment[];
+	transform(M: any): Segment {
+		throw new Error('NOTIMPL');
+	}
+	toPathFragment(): (string | number)[] {
+		throw new Error('NOTIMPL');
+	}
+
+	reversed(): Segment {
+		throw new Error('NOTIMPL');
+	}
+
+	splitAt(t: number): Segment[] {
+		throw new Error('NOTIMPL');
+	}
 
 	get firstPoint() {
 		return this.start;
@@ -35,7 +32,7 @@ export abstract class Segment {
 	}
 
 	toPath(): string {
-		const {x, y} = this.start;
+		const { x, y } = this.start;
 		return ['M', x, y].concat(this.toPathFragment()).join(' ');
 	}
 
@@ -81,25 +78,6 @@ export abstract class SegmentSE extends Segment {
 
 	get start() {
 		return this._start;
-	}
-
-	get end() {
-		return this._end;
-	}
-}
-
-export abstract class LinkedSegment extends Segment {
-	private readonly _prev: LinkedSegment;
-	private readonly _end: Vec;
-
-	constructor(prev: LinkedSegment, end: Iterable<number>) {
-		super();
-		this._prev = prev;
-		this._end = Vec.new(end);
-	}
-
-	get start() {
-		return this._prev._end;
 	}
 
 	get end() {

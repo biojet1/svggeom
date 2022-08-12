@@ -165,7 +165,12 @@ export class Ray extends VecRay {
 		const { _pos, _dir } = this;
 		return new Ray(_pos, _dir);
 	}
-
+	begin() {
+		return new RayStack(this);
+	}
+	end(): Ray | undefined {
+		return undefined;
+	}
 	private _Pos(v: Vec) {
 		return new Ray(v, this._dir);
 	}
@@ -421,5 +426,17 @@ export class Ray extends VecRay {
 
 	static get home() {
 		return new this(Vec.pos(0, 0), Vec.pos(1, 0));
+	}
+}
+
+export class RayStack extends VecRay {
+	_prev: Ray;
+	constructor(ray: Ray) {
+		const { _pos, _dir } = ray;
+		super(_pos, _dir);
+		this._prev = ray;
+	}
+	end() {
+		return this._prev;
 	}
 }

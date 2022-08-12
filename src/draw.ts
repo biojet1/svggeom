@@ -1,40 +1,7 @@
-import { Point } from './point.js';
-// import { Box } from "../box.js";
+import { Vec } from './point.js';
+const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
 
-// export abstract class Segment {
-// 	_prev?: Segment;
-// 	_p: Point;
-
-// 	constructor(p: Point) {
-// 		this._p = p;
-// 	}
-// 	get p1() {
-// 		return this.prev?.p2 ?? Point.at(0, 0);
-// 	}
-// 	get p2() {
-// 		return this._p;
-// 	}
-// 	get prev() {
-// 		return this._prev;
-// 	}
-// 	set prev(prev: Segment | undefined) {
-// 		this._prev = prev;
-// 	}
-// }
-
-// export class Move extends Segment {
-// 	constructor(p?: Point) {
-// 		super(p || Point.at(0, 0));
-// 	}
-// }
-
-// export class Line extends Segment {}
-
-// export class Close extends Line {}
-// export class Horizontal extends Line {}
-// export class Vertical extends Line {}
-
-function* pick(args: Point[] | number[]) {
+function* pick(args: Vec[] | number[]) {
 	for (const v of args) {
 		if (typeof v == 'number') {
 			yield v;
@@ -45,7 +12,6 @@ function* pick(args: Point[] | number[]) {
 		}
 	}
 }
-const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
 
 const tau = 2 * pi,
 	epsilon = 1e-6,
@@ -62,13 +28,13 @@ export class Draw {
 		this._ = '';
 	}
 
-	moveTo(...args: Point[] | number[]) {
+	moveTo(...args: Vec[] | number[]) {
 		const [x, y] = pick(args);
 		this._ += 'M' + (this._x0 = this._x1 = +x) + ',' + (this._y0 = this._y1 = +y);
 		return this;
 	}
 
-	lineTo(...args: Point[] | number[]) {
+	lineTo(...args: Vec[] | number[]) {
 		const [x, y] = pick(args);
 		this._ += 'L' + (this._x1 = +x) + ',' + (this._y1 = +y);
 		return this;
@@ -82,20 +48,20 @@ export class Draw {
 		return this;
 	}
 
-	quadraticCurveTo(...args: Point[] | number[]) {
+	quadraticCurveTo(...args: Vec[] | number[]) {
 		const [x1, y1, x, y] = pick(args);
 		this._ += 'Q' + +x1 + ',' + +y1 + ',' + (this._x1 = +x) + ',' + (this._y1 = +y);
 		return this;
 	}
 
-	bezierCurveTo(...args: Point[] | number[]) {
+	bezierCurveTo(...args: Vec[] | number[]) {
 		const [x1, y1, x2, y2, x, y] = pick(args);
 		this._ +=
 			'C' + +x1 + ',' + +y1 + ',' + +x2 + ',' + +y2 + ',' + (this._x1 = +x) + ',' + (this._y1 = +y);
 		return this;
 	}
 
-	arcTo(...args: Point[] | number[]) {
+	arcTo(...args: Vec[] | number[]) {
 		const [x1, y1, x2, y2, r] = pick(args);
 
 		// (x1 = +x1), (y1 = +y1), (x2 = +x2), (y2 = +y2), (r = +r);
@@ -151,12 +117,12 @@ export class Draw {
 		}
 		return this;
 	}
-	arcd(...args: Point[] | number[]) {
+	arcd(...args: Vec[] | number[]) {
 		const [x, y, r, a0, a1, ccw] = pick(args);
 		return this.arc(x, y, r, (a0 * pi) / 180, (a1 * pi) / 180, ccw);
 	}
 	// qTo()
-	arc(...args: Point[] | number[]) {
+	arc(...args: Vec[] | number[]) {
 		const [x, y, r, a0, a1, ccw] = pick(args);
 		const { _x1, _y1 } = this;
 		// (x = +x), (y = +y), (r = +r), (ccw = !!ccw);
@@ -230,7 +196,7 @@ export class Draw {
 		return this;
 	}
 
-	rect(...args: Point[] | number[]) {
+	rect(...args: Vec[] | number[]) {
 		const [x, y, w, h] = pick(args);
 		this._ +=
 			'M' +
@@ -279,7 +245,7 @@ export class Draw {
 		y?: number,
 		maxWidth?: number,
 	) {
-		const { font, fontSize = 72, kerning, letterSpacing, tracking} = options;
+		const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
 		// const fontSize = options.fontSize || 72;
 		//   const kerning = 'kerning' in options ? options.kerning : true;
 		//   const letterSpacing = 'letterSpacing' in options ? options.letterSpacing : false;
