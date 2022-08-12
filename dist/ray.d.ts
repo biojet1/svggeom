@@ -25,6 +25,8 @@ export declare class VecRay {
 }
 export declare class Ray extends VecRay {
     clone(): Ray;
+    begin(): RayStack;
+    end(): Ray | undefined;
     private _Pos;
     private _Dir;
     private _Set;
@@ -71,5 +73,10 @@ export declare class Ray extends VecRay {
     static before(x: NumOrVec, y?: number): Ray;
     static fromLine(a: Iterable<number>, b: Iterable<number>): Ray;
     static get home(): Ray;
+}
+export declare class RayStack extends VecRay {
+    _prev: Ray;
+    constructor(ray: Ray);
+    end(): Ray;
 }
 export {};

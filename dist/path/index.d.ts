@@ -4,13 +4,13 @@ export declare abstract class Segment {
     abstract get start(): Vec;
     abstract get end(): Vec;
     abstract get length(): number;
-    abstract toPathFragment(): (string | number)[];
     abstract bbox(): Box;
     abstract pointAt(t: number): Vec;
     abstract slopeAt(t: number): Vec;
-    abstract transform(M: any): Segment;
-    abstract reversed(): Segment;
-    abstract splitAt(t: number): Segment[];
+    transform(M: any): Segment;
+    toPathFragment(): (string | number)[];
+    reversed(): Segment;
+    splitAt(t: number): Segment[];
     get firstPoint(): Vec;
     get lastPoint(): Vec;
     toPath(): string;
@@ -22,13 +22,6 @@ export declare abstract class SegmentSE extends Segment {
     private readonly _start;
     private readonly _end;
     constructor(start: Iterable<number>, end: Iterable<number>);
-    get start(): Vec;
-    get end(): Vec;
-}
-export declare abstract class LinkedSegment extends Segment {
-    private readonly _prev;
-    private readonly _end;
-    constructor(prev: LinkedSegment, end: Iterable<number>);
     get start(): Vec;
     get end(): Vec;
 }

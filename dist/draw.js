@@ -1,3 +1,4 @@
+const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
 function* pick(args) {
     for (const v of args) {
         if (typeof v == 'number') {
@@ -10,7 +11,6 @@ function* pick(args) {
         }
     }
 }
-const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
 const tau = 2 * pi, epsilon = 1e-6, tauEpsilon = tau - epsilon;
 export class Draw {
     _;

@@ -1,4 +1,4 @@
-import { Point } from './point.js';
+import { Vec } from './point.js';
 export declare class Draw {
     _: string;
     _x0?: number;
@@ -6,15 +6,15 @@ export declare class Draw {
     _x1?: number;
     _y1?: number;
     constructor();
-    moveTo(...args: Point[] | number[]): this;
-    lineTo(...args: Point[] | number[]): this;
+    moveTo(...args: Vec[] | number[]): this;
+    lineTo(...args: Vec[] | number[]): this;
     closePath(): this;
-    quadraticCurveTo(...args: Point[] | number[]): this;
-    bezierCurveTo(...args: Point[] | number[]): this;
-    arcTo(...args: Point[] | number[]): this;
-    arcd(...args: Point[] | number[]): this | undefined;
-    arc(...args: Point[] | number[]): this | undefined;
-    rect(...args: Point[] | number[]): this;
+    quadraticCurveTo(...args: Vec[] | number[]): this;
+    bezierCurveTo(...args: Vec[] | number[]): this;
+    arcTo(...args: Vec[] | number[]): this;
+    arcd(...args: Vec[] | number[]): this | undefined;
+    arc(...args: Vec[] | number[]): this | undefined;
+    rect(...args: Vec[] | number[]): this;
     toString(): string;
     d(): string;
     text(options: {

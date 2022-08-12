@@ -2,6 +2,7 @@ import { parseDesc } from './path/parser.js';
 import { Segment } from './path/index.js';
 import { Box } from './box.js';
 export class Path {
+    static digits = 5;
     _segs;
     _length;
     _lengths;
@@ -202,10 +203,14 @@ export class Path {
         return false;
     }
     *enumDesc(params) {
-        const { relative: rel = false, close = true, smooth = false, short = false } = params;
+        const { relative: rel = false, close = true, smooth = false, short = false, dfix = Path.digits, } = params;
         let segs = this._segs;
         const n = segs.length;
         let self_closed = false;
+        function fixNum(n) {
+            const v = n.toFixed(dfix);
+            return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
+        }
         let current_pos = null;
         let move_pos = null;
         let previous_segment;
@@ -218,8 +223,8 @@ export class Path {
                 move_pos = seg_start;
                 const _seg_start = rel ? (current_pos ? seg_start.sub(current_pos) : seg_start) : seg_start;
                 yield rel ? 'm' : 'M';
-                yield _seg_start.x;
-                yield _seg_start.y;
+                yield fixNum(_seg_start.x);
+                yield fixNum(_seg_start.y);
             }
             if (seg instanceof Line) {
                 OUT: {
@@ -240,17 +245,17 @@ export class Path {
                     if (short) {
                         if (seg instanceof Horizontal && !y) {
                             yield rel ? 'h' : 'H';
-                            yield x;
+                            yield fixNum(x);
                         }
                         else if (seg instanceof Vertical && !x) {
                             yield rel ? 'v' : 'V';
-                            yield y;
+                            yield fixNum(y);
                         }
                     }
                     else {
                         yield rel ? 'l' : 'L';
-                        yield x;
-                        yield y;
+                        yield fixNum(x);
+                        yield fixNum(y);
                     }
                 }
             }
@@ -258,13 +263,13 @@ export class Path {
                 const end = rel ? seg.end.sub(seg_start) : seg.end;
                 const { rx, ry, phi, arc, sweep } = seg;
                 yield rel ? 'a' : 'A';
-                yield rx;
-                yield ry;
-                yield phi;
+                yield fixNum(rx);
+                yield fixNum(ry);
+                yield fixNum(phi);
                 yield arc ? 1 : 0;
                 yield sweep ? 1 : 0;
-                yield end.x;
-                yield end.y;
+                yield fixNum(end.x);
+                yield fixNum(end.y);
             }
             else if (seg instanceof Quadratic) {
                 let { c, end } = seg;
@@ -287,11 +292,11 @@ export class Path {
                 }
                 else {
                     yield rel ? 'q' : 'Q';
-                    yield c.x;
-                    yield c.y;
+                    yield fixNum(c.x);
+                    yield fixNum(c.y);
                 }
-                yield end.x;
-                yield end.y;
+                yield fixNum(end.x);
+                yield fixNum(end.y);
             }
             else if (seg instanceof Cubic) {
                 let { c1, c2, end } = seg;
@@ -317,13 +322,13 @@ export class Path {
                     if (rel) {
                         c1 = c1.sub(seg_start);
                     }
-                    yield c1.x;
-                    yield c1.y;
+                    yield fixNum(c1.x);
+                    yield fixNum(c1.y);
                 }
-                yield c2.x;
-                yield c2.y;
-                yield end.x;
-                yield end.y;
+                yield fixNum(c2.x);
+                yield fixNum(c2.y);
+                yield fixNum(end.x);
+                yield fixNum(end.y);
             }
             current_pos = seg.end;
             previous_segment = seg;
@@ -378,5 +383,6 @@ import { Cubic } from './path/cubic.js';
 import { Quadratic } from './path/quadratic.js';
 export * from './path/describe.js';
 export * from './path/cubic.js';
+export * from './path/linked.js';
 export { Arc, Quadratic, Line };
 //# sourceMappingURL=path.js.map

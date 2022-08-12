@@ -14,23 +14,17 @@ export class Cubic extends SegmentSE {
         return new Cubic(start, c1, c2, end);
     }
     bbox() {
-        const { start, c1, c2, end } = this;
-        const [xmin, xmax] = cubic_extrema(start.x, c1.x, c2.x, end.x);
-        const [ymin, ymax] = cubic_extrema(start.y, c1.y, c2.y, end.y);
-        return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+        return cubicBox(this);
     }
-    flatness() {
-        let ux = Math.pow(3 * this.c1.x - 2 * this.start.x - this.end.x, 2);
-        let uy = Math.pow(3 * this.c1.y - 2 * this.start.y - this.end.y, 2);
-        const vx = Math.pow(3 * this.c2.x - 2 * this.end.x - this.start.x, 2);
-        const vy = Math.pow(3 * this.c2.y - 2 * this.end.y - this.start.y, 2);
-        if (ux < vx) {
-            ux = vx;
-        }
-        if (uy < vy) {
-            uy = vy;
-        }
-        return ux + uy;
+    pointAt(t) {
+        return pointAt(this, t);
+    }
+    splitAt(z) {
+        const [x, y] = splitAt(this, z);
+        return [
+            this.new(Vec.at(x[0][0], y[0][0]), Vec.at(x[0][1], y[0][1]), Vec.at(x[0][2], y[0][2]), Vec.at(x[0][3], y[0][3])),
+            this.new(Vec.at(x[1][0], y[1][0]), Vec.at(x[1][1], y[1][1]), Vec.at(x[1][2], y[1][2]), Vec.at(x[1][3], y[1][3])),
+        ];
     }
     get length() {
         return this.lengthAt();
@@ -44,7 +38,7 @@ export class Cubic extends SegmentSE {
         return length;
     }
     makeFlat(t) {
-        if (this.flatness() > 0.15) {
+        if (cubicFlatness(this) > 0.15) {
             return this.splitAt(0.5)
                 .map(function (el) {
                 return el.makeFlat(t * 0.5);
@@ -58,70 +52,12 @@ export class Cubic extends SegmentSE {
             return [this];
         }
     }
-    pointAt(t) {
-        const { start, c1, c2, end } = this;
-        const F = 1 - t;
-        return Vec.at(F * F * F * start.x + 3 * F * F * t * c1.x + 3 * F * t * t * c2.x + t * t * t * end.x, F * F * F * start.y + 3 * F * F * t * c1.y + 3 * F * t * t * c2.y + t * t * t * end.y);
-    }
-    splitAt(z) {
-        const { start, c1, c2, end } = this;
-        const x = this.splitAtScalar(z, start.x, c1.x, c2.x, end.x);
-        const y = this.splitAtScalar(z, start.y, c1.y, c2.y, end.y);
-        const a = this.new(Vec.at(x[0][0], y[0][0]), Vec.at(x[0][1], y[0][1]), Vec.at(x[0][2], y[0][2]), Vec.at(x[0][3], y[0][3]));
-        const b = this.new(Vec.at(x[1][0], y[1][0]), Vec.at(x[1][1], y[1][1]), Vec.at(x[1][2], y[1][2]), Vec.at(x[1][3], y[1][3]));
-        return [a, b];
-    }
-    splitAtScalar(z, start, end, p3, p4) {
-        const t = z * z * z * p4 -
-            3 * z * z * (z - 1) * p3 +
-            3 * z * (z - 1) * (z - 1) * end -
-            (z - 1) * (z - 1) * (z - 1) * start;
-        return [
-            [
-                start,
-                z * end - (z - 1) * start,
-                z * z * p3 - 2 * z * (z - 1) * end + (z - 1) * (z - 1) * start,
-                t,
-            ],
-            [t, z * z * p4 - 2 * z * (z - 1) * p3 + (z - 1) * (z - 1) * end, z * p4 - (z - 1) * p3, p4],
-        ];
+    slopeAt(t) {
+        return slopeAt(this, t);
     }
     toPathFragment() {
         const { c1: { x: x1, y: y1 }, c2: { x: x2, y: y2 }, end: { x: x3, y: y3 }, } = this;
         return ['C', x1, y1, x2, y2, x3, y3];
-    }
-    slopeAt(t) {
-        const { start, c1, c2, end } = this;
-        if (t <= 0) {
-            return c1.sub(start);
-        }
-        else if (t >= 1) {
-            return end.sub(c2);
-        }
-        if (start.equals(c1)) {
-            if (end.equals(c2)) {
-                return end.sub(start);
-            }
-            if (t <= 0) {
-                return c2.sub(start).mul(2);
-            }
-            else {
-                const a = c2.sub(start).mul(2 * (1 - t));
-                const b = end.sub(c2).mul(t);
-                return a.add(b);
-            }
-        }
-        else if (end.equals(c2)) {
-            const a = c1.sub(start).mul(2 * (1 - t));
-            const b = end.sub(c1).mul(t);
-            return a.add(b);
-        }
-        else {
-            const a = c1.sub(start).mul(3 * (1 - t) ** 2);
-            const b = c2.sub(c1).mul(6 * (1 - t) * t);
-            const c = end.sub(c2).mul(3 * t ** 2);
-            return a.add(b).add(c);
-        }
     }
     transform(M) {
         const { start, c1, c2, end } = this;
@@ -160,4 +96,142 @@ function cubic_extrema(s, a, b, e) {
     return [cmin, cmax];
 }
 export { Cubic as CubicSegment };
+function splitAtScalar(z, start, end, p3, p4) {
+    const t = z * z * z * p4 -
+        3 * z * z * (z - 1) * p3 +
+        3 * z * (z - 1) * (z - 1) * end -
+        (z - 1) * (z - 1) * (z - 1) * start;
+    return [
+        [
+            start,
+            z * end - (z - 1) * start,
+            z * z * p3 - 2 * z * (z - 1) * end + (z - 1) * (z - 1) * start,
+            t,
+        ],
+        [t, z * z * p4 - 2 * z * (z - 1) * p3 + (z - 1) * (z - 1) * end, z * p4 - (z - 1) * p3, p4],
+    ];
+}
+function cubicBox({ start: { x: sx, y: sy }, c1: { x: x1, y: y1 }, c2: { x: x2, y: y2 }, end: { x: ex, y: ey }, }) {
+    const [xmin, xmax] = cubic_extrema(sx, x1, x2, ex);
+    const [ymin, ymax] = cubic_extrema(sy, y1, y2, ey);
+    return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+}
+const { pow } = Math;
+function cubicFlatness({ start: { x: sx, y: sy }, c1: { x: x1, y: y1 }, c2: { x: x2, y: y2 }, end: { x: ex, y: ey }, }) {
+    let ux = pow(3 * x1 - 2 * sx - ex, 2);
+    let uy = pow(3 * y1 - 2 * sy - ey, 2);
+    const vx = pow(3 * x2 - 2 * ex - sx, 2);
+    const vy = pow(3 * y2 - 2 * ey - sy, 2);
+    if (ux < vx) {
+        ux = vx;
+    }
+    if (uy < vy) {
+        uy = vy;
+    }
+    return ux + uy;
+}
+function pointAt({ start: { x: sx, y: sy }, c1: { x: x1, y: y1 }, c2: { x: x2, y: y2 }, end: { x: ex, y: ey }, }, t) {
+    const F = 1 - t;
+    return Vec.at(F * F * F * sx + 3 * F * F * t * x1 + 3 * F * t * t * x2 + t * t * t * ex, F * F * F * sy + 3 * F * F * t * y1 + 3 * F * t * t * y2 + t * t * t * ey);
+}
+function splitAt({ start: { x: sx, y: sy }, c1: { x: x1, y: y1 }, c2: { x: x2, y: y2 }, end: { x: ex, y: ey }, }, z) {
+    return [splitAtScalar(z, sx, x1, x2, ex), splitAtScalar(z, sy, y1, y2, ey)];
+}
+function slopeAt({ start, c1, c2, end }, t) {
+    if (t <= 0) {
+        return c1.sub(start);
+    }
+    else if (t >= 1) {
+        return end.sub(c2);
+    }
+    if (start.equals(c1)) {
+        if (end.equals(c2)) {
+            return end.sub(start);
+        }
+        if (t <= 0) {
+            return c2.sub(start).mul(2);
+        }
+        else {
+            const a = c2.sub(start).mul(2 * (1 - t));
+            const b = end.sub(c2).mul(t);
+            return a.add(b);
+        }
+    }
+    else if (end.equals(c2)) {
+        const a = c1.sub(start).mul(2 * (1 - t));
+        const b = end.sub(c1).mul(t);
+        return a.add(b);
+    }
+    else {
+        const a = c1.sub(start).mul(3 * (1 - t) ** 2);
+        const b = c2.sub(c1).mul(6 * (1 - t) * t);
+        const c = end.sub(c2).mul(3 * t ** 2);
+        return a.add(b).add(c);
+    }
+}
+import { PathLS } from './linked.js';
+export class CubicLS extends PathLS {
+    c1;
+    c2;
+    t_value;
+    constructor(prev, c1, c2, end) {
+        super(prev, end);
+        this.c1 = Vec.new(c1);
+        this.c2 = Vec.new(c2);
+    }
+    pointAt(t) {
+        return pointAt(this, t);
+    }
+    bbox() {
+        return cubicBox(this);
+    }
+    slopeAt(t) {
+        return slopeAt(this, t);
+    }
+    splitAt(t) {
+        const [x, y] = splitAt(this, t);
+        return [
+            new CubicLS(this._prev, Vec.at(x[0][1], y[0][1]), Vec.at(x[0][2], y[0][2]), Vec.at(x[0][3], y[0][3])),
+            new CubicLS(PathLS.moveTo(Vec.at(x[1][0], y[1][0])), Vec.at(x[1][1], y[1][1]), Vec.at(x[1][2], y[1][2]), Vec.at(x[1][3], y[1][3])),
+        ];
+    }
+    makeFlat(t) {
+        if (cubicFlatness(this) > 0.15) {
+            return this.splitAt(0.5)
+                .map(function (el) {
+                return el.makeFlat(t * 0.5);
+            })
+                .reduce(function (last, current) {
+                return last.concat(current);
+            }, []);
+        }
+        else {
+            this.t_value = t;
+            return [this];
+        }
+    }
+    lengthAt(t = 1) {
+        const curves = this.splitAt(t)[0].makeFlat(t);
+        let length = 0;
+        for (let i = 0, len = curves.length; i < len; ++i) {
+            length += curves[i].end.sub(curves[i].start).abs();
+        }
+        return length;
+    }
+    get length() {
+        return this.lengthAt();
+    }
+    reversed() {
+        const { start, c1, c2, end } = this;
+        return new CubicLS(PathLS.moveTo(end), c2, c1, start);
+    }
+    transform(M) {
+        const { start, c1, c2, end } = this;
+        return new CubicLS(PathLS.moveTo(start.transform(M)), c1.transform(M), c2.transform(M), end.transform(M));
+    }
+    d() {
+        const { _prev, c1: { x: x1, y: y1 }, c2: { x: x2, y: y2 }, end: { x: ex, y: ey }, } = this;
+        return `${_prev?.d() ?? ''}C${x1},${y1} ${x2},${y2} ${ex},${ey}`;
+    }
+}
 //# sourceMappingURL=cubic.js.map

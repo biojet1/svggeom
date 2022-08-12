@@ -1,5 +1,17 @@
 import { Vec } from '../point.js';
 export class Segment {
+    transform(M) {
+        throw new Error('NOTIMPL');
+    }
+    toPathFragment() {
+        throw new Error('NOTIMPL');
+    }
+    reversed() {
+        throw new Error('NOTIMPL');
+    }
+    splitAt(t) {
+        throw new Error('NOTIMPL');
+    }
     get firstPoint() {
         return this.start;
     }
@@ -52,21 +64,6 @@ export class SegmentSE extends Segment {
     }
     get start() {
         return this._start;
-    }
-    get end() {
-        return this._end;
-    }
-}
-export class LinkedSegment extends Segment {
-    _prev;
-    _end;
-    constructor(prev, end) {
-        super();
-        this._prev = prev;
-        this._end = Vec.new(end);
-    }
-    get start() {
-        return this._prev._end;
     }
     get end() {
         return this._end;

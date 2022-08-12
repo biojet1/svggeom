@@ -5,8 +5,10 @@ interface IDescOpt {
     close?: boolean | null;
     smooth?: boolean;
     short?: boolean;
+    dfix?: number;
 }
 export declare class Path {
+    static digits: number;
     private _segs;
     private _length?;
     private _lengths?;
@@ -36,7 +38,7 @@ export declare class Path {
     isContinuous(): boolean;
     isClosed(): boolean;
     private enumDesc;
-    descArray(params?: IDescOpt): (number | "M" | "L" | "Z" | "Q" | "C" | "A" | "h" | "v" | "m" | "z" | "l" | "H" | "V" | "a" | "c" | "q" | "S" | "s" | "T" | "t")[];
+    descArray(params?: IDescOpt): (string | 0 | 1)[];
     describe(params?: IDescOpt): string;
     toString(): string;
     enumSubPaths(): Generator<Path, void, unknown>;
@@ -48,4 +50,5 @@ import { Arc } from './path/arc.js';
 import { Quadratic } from './path/quadratic.js';
 export * from './path/describe.js';
 export * from './path/cubic.js';
+export * from './path/linked.js';
 export { Arc, Quadratic, Line };
