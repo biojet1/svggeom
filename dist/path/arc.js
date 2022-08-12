@@ -47,78 +47,25 @@ export class Arc extends SegmentSE {
         const sweep = Δθ > 0 ? 1 : 0;
         return new Arc(start, end, rx, ry, φ, arc, sweep);
     }
-    bbox() {
-        const { rx, ry, cosφ, sinφ, start, end, rdelta, rtheta, phi } = this;
-        let atan_x, atan_y;
-        if (cosφ == 0) {
-            atan_x = PI / 2;
-            atan_y = 0;
-        }
-        else if (sinφ == 0) {
-            atan_x = 0;
-            atan_y = PI / 2;
-        }
-        else {
-            const tanφ = tan(phi);
-            atan_x = atan(-(ry / rx) * tanφ);
-            atan_y = atan(ry / rx / tanφ);
-        }
-        const xtrema = [start.x, end.x];
-        const ytrema = [start.y, end.y];
-        function angle_inv(ang, k) {
-            return (ang + PI * k - rtheta) / rdelta;
-        }
-        for (let k = -4; k < 5; ++k) {
-            const tx = angle_inv(atan_x, k);
-            const ty = angle_inv(atan_y, k);
-            0 <= tx && tx <= 1 && xtrema.push(this.pointAt(tx).x);
-            0 <= ty && ty <= 1 && ytrema.push(this.pointAt(ty).y);
-        }
-        const [xmin, xmax] = [min(...xtrema), max(...xtrema)];
-        const [ymin, ymax] = [min(...ytrema), max(...ytrema)];
-        return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
-    }
     clone() {
         return new Arc(this.start, this.end, this.rx, this.ry, this.phi, this.arc, this.sweep);
     }
+    bbox() {
+        return arcBBox(this);
+    }
     get length() {
-        const { start, end } = this;
-        if (start.equals(end))
-            return 0;
-        return segment_length(this, 0, 1, start, end);
+        return arcLength(this);
     }
     pointAt(t) {
-        const { start, end } = this;
-        if (start.equals(end)) {
-            return start.clone();
-        }
-        else if (t <= 0) {
-            return start;
-        }
-        else if (t >= 1) {
-            return end;
-        }
-        const { rx, ry, cosφ, sinφ, rtheta, rdelta, cx, cy } = this;
-        const θ = rtheta + rdelta * t;
-        const sinθ = sin(θ);
-        const cosθ = cos(θ);
-        try {
-            return Vec.at(rx * cosφ * cosθ - ry * sinφ * sinθ + cx, rx * sinφ * cosθ + ry * cosφ * sinθ + cy);
-        }
-        catch (err) {
-            console.warn(rtheta, rdelta, rx, cosφ, cosθ, ry, sinφ, sinθ, cx, cy);
-            throw err;
-        }
+        return arcPointAt(this, t);
     }
     splitAt(t) {
         const { rx, ry, phi, sweep, rdelta, start, end } = this;
         const deltaA = abs(rdelta);
-        const delta1 = deltaA * t;
-        const delta2 = deltaA * (1 - t);
-        const pT = this.pointAt(t);
+        const mid = arcPointAt(this, t);
         return [
-            new Arc(start, pT, rx, ry, phi, delta1 > PI, sweep),
-            new Arc(pT, end, rx, ry, phi, delta2 > PI, sweep),
+            new Arc(start, mid, rx, ry, phi, deltaA * t > PI, sweep),
+            new Arc(mid, end, rx, ry, phi, deltaA * (1 - t) > PI, sweep),
         ];
     }
     toPathFragment() {
@@ -185,5 +132,76 @@ export class Arc extends SegmentSE {
             });
         }
     }
+}
+function arcPointAt(arc, t) {
+    const { start, end } = arc;
+    if (start.equals(end)) {
+        return start.clone();
+    }
+    else if (t <= 0) {
+        return start;
+    }
+    else if (t >= 1) {
+        return end;
+    }
+    const { rx, ry, cosφ, sinφ, rtheta, rdelta, cx, cy } = arc;
+    const θ = rtheta + rdelta * t;
+    const sinθ = sin(θ);
+    const cosθ = cos(θ);
+    try {
+        return Vec.at(rx * cosφ * cosθ - ry * sinφ * sinθ + cx, rx * sinφ * cosθ + ry * cosφ * sinθ + cy);
+    }
+    catch (err) {
+        console.warn(rtheta, rdelta, rx, cosφ, cosθ, ry, sinφ, sinθ, cx, cy);
+        throw err;
+    }
+}
+function arcBBox(arc) {
+    const { rx, ry, cosφ, sinφ, start, end, rdelta, rtheta, phi } = arc;
+    let atan_x, atan_y;
+    if (cosφ == 0) {
+        atan_x = PI / 2;
+        atan_y = 0;
+    }
+    else if (sinφ == 0) {
+        atan_x = 0;
+        atan_y = PI / 2;
+    }
+    else {
+        const tanφ = tan(phi);
+        atan_x = atan(-(ry / rx) * tanφ);
+        atan_y = atan(ry / rx / tanφ);
+    }
+    const xtrema = [start.x, end.x];
+    const ytrema = [start.y, end.y];
+    function angle_inv(ang, k) {
+        return (ang + PI * k - rtheta) / rdelta;
+    }
+    for (let k = -4; k < 5; ++k) {
+        const tx = angle_inv(atan_x, k);
+        const ty = angle_inv(atan_y, k);
+        0 <= tx && tx <= 1 && xtrema.push(arcPointAt(arc, tx).x);
+        0 <= ty && ty <= 1 && ytrema.push(arcPointAt(arc, ty).y);
+    }
+    const [xmin, xmax] = [min(...xtrema), max(...xtrema)];
+    const [ymin, ymax] = [min(...ytrema), max(...ytrema)];
+    return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+}
+function arcLength(arc) {
+    const { start, end } = arc;
+    if (start.equals(end))
+        return 0;
+    return segment_length(arc, 0, 1, start, end);
+}
+function arcSplitAt(arc, t) {
+    const { rx, ry, phi, sweep, rdelta, start, end } = arc;
+    const deltaA = abs(rdelta);
+    const delta1 = deltaA * t;
+    const delta2 = deltaA * (1 - t);
+    const pT = arcPointAt(arc, t);
+    return [
+        [start, pT, delta1 > PI],
+        [pT, end, delta2 > PI],
+    ];
 }
 //# sourceMappingURL=arc.js.map
