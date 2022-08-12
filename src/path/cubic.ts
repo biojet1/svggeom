@@ -21,61 +21,34 @@ export class Cubic extends SegmentSE {
 	new(start: Iterable<number>, c1: Iterable<number>, c2: Iterable<number>, end: Iterable<number>) {
 		return new Cubic(start, c1, c2, end);
 	}
-	//////
-	bbox() {
-		return cubicBox(this);
-	}
-	pointAt(t: number) {
-		return pointAt(this, t);
-	}
-	splitAt(z: number) {
-		const [x, y] = splitAt(this, z);
-		return [
-			this.new(
-				Vec.at(x[0][0], y[0][0]),
-				Vec.at(x[0][1], y[0][1]),
-				Vec.at(x[0][2], y[0][2]),
-				Vec.at(x[0][3], y[0][3]),
-			),
-			this.new(
-				Vec.at(x[1][0], y[1][0]),
-				Vec.at(x[1][1], y[1][1]),
-				Vec.at(x[1][2], y[1][2]),
-				Vec.at(x[1][3], y[1][3]),
-			),
-		];
+	private get _cpts(): Vec[] {
+		const { start, c1, c2, end } = this;
+		return [start, c1, c2, end];
 	}
 	//////
-	get length() {
-		return this.lengthAt();
+
+	override bbox() {
+		return cubicBox(this._cpts);
+	}
+	override pointAt(t: number) {
+		return cubicPointAt(this._cpts, t);
+	}
+	override splitAt(z: number) {
+		const [x, y] = cubicSplitAt(this._cpts, z);
+		return [this.new(x[0], x[1], x[2], x[3]), this.new(y[0], y[1], y[2], y[3])];
+	}
+	//////
+	override get length() {
+		return cubicLengthAt(this._cpts, 1);
 	}
 	lengthAt(t = 1) {
-		const curves = this.splitAt(t)[0].makeFlat(t);
-		let length = 0;
-		for (let i = 0, len = curves.length; i < len; ++i) {
-			length += curves[i].end.sub(curves[i].start).abs();
-		}
-		return length;
+		return cubicLengthAt(this._cpts, t);
 	}
-	makeFlat(t: number): Cubic[] {
-		if (cubicFlatness(this) > 0.15) {
-			return this.splitAt(0.5)
-				.map(function (el) {
-					return el.makeFlat(t * 0.5);
-				})
-				.reduce(function (last, current) {
-					return last.concat(current);
-				}, []);
-		} else {
-			this.t_value = t;
-			return [this];
-		}
-	}
-	slopeAt(t: number): Vec {
-		return slopeAt(this, t);
+	override slopeAt(t: number): Vec {
+		return cubicSlopeAt(this._cpts, t);
 	}
 
-	toPathFragment() {
+	override toPathFragment() {
 		const {
 			c1: { x: x1, y: y1 },
 			c2: { x: x2, y: y2 },
@@ -84,11 +57,11 @@ export class Cubic extends SegmentSE {
 		return ['C', x1, y1, x2, y2, x3, y3];
 	}
 
-	transform(M: any) {
+	override transform(M: any) {
 		const { start, c1, c2, end } = this;
 		return this.new(start.transform(M), c1.transform(M), c2.transform(M), end.transform(M));
 	}
-	reversed() {
+	override reversed() {
 		const { start, c1, c2, end } = this;
 		return this.new(end, c2, c1, start);
 	}
@@ -155,23 +128,13 @@ interface ICubic {
 	start: Vec;
 	end: Vec;
 }
-function cubicBox({
-	start: { x: sx, y: sy },
-	c1: { x: x1, y: y1 },
-	c2: { x: x2, y: y2 },
-	end: { x: ex, y: ey },
-}: ICubic) {
+function cubicBox([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Vec[]) {
 	const [xmin, xmax] = cubic_extrema(sx, x1, x2, ex);
 	const [ymin, ymax] = cubic_extrema(sy, y1, y2, ey);
 	return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 }
 const { pow } = Math;
-function cubicFlatness({
-	start: { x: sx, y: sy },
-	c1: { x: x1, y: y1 },
-	c2: { x: x2, y: y2 },
-	end: { x: ex, y: ey },
-}: ICubic) {
+function cubicFlatness([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[]) {
 	let ux = pow(3 * x1 - 2 * sx - ex, 2);
 	let uy = pow(3 * y1 - 2 * sy - ey, 2);
 	const vx = pow(3 * x2 - 2 * ex - sx, 2);
@@ -212,6 +175,87 @@ function splitAt(
 ) {
 	return [splitAtScalar(z, sx, x1, x2, ex), splitAtScalar(z, sy, y1, y2, ey)];
 }
+
+function cubicPointAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[], t: number) {
+	const F = 1 - t;
+	return Vec.at(
+		F * F * F * sx + 3 * F * F * t * x1 + 3 * F * t * t * x2 + t * t * t * ex,
+		F * F * F * sy + 3 * F * F * t * y1 + 3 * F * t * t * y2 + t * t * t * ey,
+	);
+}
+
+function cubicSplitAt(
+	[[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[],
+	z: number,
+): Vec[][] {
+	const x = splitAtScalar(z, sx, x1, x2, ex);
+	const y = splitAtScalar(z, sy, y1, y2, ey);
+	return [
+		[
+			Vec.pos(x[0][0], y[0][0]),
+			Vec.pos(x[0][1], y[0][1]),
+			Vec.pos(x[0][2], y[0][2]),
+			Vec.pos(x[0][3], y[0][3]),
+		],
+		[
+			Vec.pos(x[1][0], y[1][0]),
+			Vec.pos(x[1][1], y[1][1]),
+			Vec.pos(x[1][2], y[1][2]),
+			Vec.pos(x[1][3], y[1][3]),
+		],
+	];
+}
+function cubicSlopeAt([start, c1, c2, end]: Vec[], t: number): Vec {
+	if (t <= 0) {
+		return c1.sub(start);
+	} else if (t >= 1) {
+		return end.sub(c2);
+	}
+	if (start.equals(c1)) {
+		if (end.equals(c2)) {
+			return end.sub(start);
+		}
+		if (t <= 0) {
+			return c2.sub(start).mul(2);
+		} else {
+			const a = c2.sub(start).mul(2 * (1 - t));
+			const b = end.sub(c2).mul(t);
+			return a.add(b);
+		}
+	} else if (end.equals(c2)) {
+		const a = c1.sub(start).mul(2 * (1 - t));
+		const b = end.sub(c1).mul(t);
+		return a.add(b);
+	} else {
+		const a = c1.sub(start).mul(3 * (1 - t) ** 2);
+		const b = c2.sub(c1).mul(6 * (1 - t) * t);
+		const c = end.sub(c2).mul(3 * t ** 2);
+		return a.add(b).add(c);
+	}
+}
+function cubicMakeFlat(_cpts: Vec[], t: number): Vec[][] {
+	if (cubicFlatness(_cpts) > 0.15) {
+		return cubicSplitAt(_cpts, 0.5)
+			.map(function (cpts) {
+				return cubicMakeFlat(cpts, t * 0.5);
+			})
+			.reduce(function (last, current) {
+				return last.concat(current);
+			}, []);
+	} else {
+		return [_cpts];
+	}
+}
+function cubicLengthAt(_cpts: Vec[], t = 1) {
+	const curves = cubicMakeFlat(t >= 1 ? _cpts : cubicSplitAt(_cpts, t)[0], t);
+	let length = 0;
+	for (let i = 0, len = curves.length; i < len; ++i) {
+		const [start, c1, c2, end] = curves[i];
+		length += end.sub(start).abs();
+	}
+	return length;
+}
+
 function slopeAt({ start, c1, c2, end }: ICubic, t: number): Vec {
 	if (t <= 0) {
 		return c1.sub(start);
@@ -257,59 +301,34 @@ export class CubicLS extends PathLS {
 		this.c1 = Vec.new(c1);
 		this.c2 = Vec.new(c2);
 	}
+	private get _cpts(): Vec[] {
+		const { start, c1, c2, end } = this;
+		return [start, c1, c2, end];
+	}
 
 	/////
 	pointAt(t: number) {
-		return pointAt(this, t);
+		return cubicPointAt(this._cpts, t);
 	}
 	bbox() {
-		return cubicBox(this);
+		return cubicBox(this._cpts);
 	}
 	slopeAt(t: number): Vec {
-		return slopeAt(this, t);
+		return cubicSlopeAt(this._cpts, t);
 	}
 
 	splitAt(t: number) {
-		const [x, y] = splitAt(this, t);
+		const [x, y] = cubicSplitAt(this._cpts, t);
 		return [
-			new CubicLS(
-				this._prev,
-				Vec.at(x[0][1], y[0][1]),
-				Vec.at(x[0][2], y[0][2]),
-				Vec.at(x[0][3], y[0][3]),
-			),
-			new CubicLS(
-				PathLS.moveTo(Vec.at(x[1][0], y[1][0])),
-				Vec.at(x[1][1], y[1][1]),
-				Vec.at(x[1][2], y[1][2]),
-				Vec.at(x[1][3], y[1][3]),
-			),
+			new CubicLS(this._prev, x[1], x[2], x[3]),
+			new CubicLS(PathLS.moveTo(y[0]), y[1], y[2], y[3]),
 		];
 	}
-	makeFlat(t: number): CubicLS[] {
-		if (cubicFlatness(this) > 0.15) {
-			return this.splitAt(0.5)
-				.map(function (el) {
-					return el.makeFlat(t * 0.5);
-				})
-				.reduce(function (last, current) {
-					return last.concat(current);
-				}, []);
-		} else {
-			this.t_value = t;
-			return [this];
-		}
-	}
 	lengthAt(t = 1) {
-		const curves = this.splitAt(t)[0].makeFlat(t);
-		let length = 0;
-		for (let i = 0, len = curves.length; i < len; ++i) {
-			length += curves[i].end.sub(curves[i].start).abs();
-		}
-		return length;
+		return cubicLengthAt(this._cpts, t);
 	}
 	get length() {
-		return this.lengthAt();
+		return cubicLengthAt(this._cpts, 1);
 	}
 	reversed() {
 		const { start, c1, c2, end } = this;
