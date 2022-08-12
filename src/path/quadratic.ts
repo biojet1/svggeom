@@ -68,7 +68,7 @@ function quadratic_extrema(a: number, b: number, c: number) {
 	return [cmin, cmax];
 }
 
-function splitAt([{ x: x1, y: y1 }, { x: cx, y: cy }, { x: x2, y: y2 }]: Vec[], t: number) {
+function splitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	const mx1 = (1 - t) * x1 + t * cx;
 	const mx2 = (1 - t) * cx + t * x2;
 	const mxt = (1 - t) * mx1 + t * mx2;
@@ -83,7 +83,7 @@ function splitAt([{ x: x1, y: y1 }, { x: cx, y: cy }, { x: x2, y: y2 }]: Vec[], 
 	];
 }
 
-function pointAt([{ x: x1, y: y1 }, { x: cx, y: cy }, { x: x2, y: y2 }]: Vec[], t: number) {
+function pointAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	const v = 1 - t;
 	return Vec.pos(
 		v * v * x1 + 2 * v * t * cx + t * t * x2,
@@ -107,7 +107,7 @@ function slopeAt([start, c, end]: Vec[], t: number): Vec {
 	return a.add(b).mul(2); // 1st derivative;
 }
 
-function bbox([{ x: x1, y: y1 }, { x: x2, y: y2 }, { x: x3, y: y3 }]: Vec[]) {
+function bbox([[x1, y1], [x2, y2], [x3, y3]]: Vec[]) {
 	const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
 	const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
 	return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);

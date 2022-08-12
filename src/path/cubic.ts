@@ -27,28 +27,28 @@ export class Cubic extends SegmentSE {
 	}
 	//////
 
-	bbox() {
+	override bbox() {
 		return cubicBox(this._cpts);
 	}
-	pointAt(t: number) {
+	override pointAt(t: number) {
 		return cubicPointAt(this._cpts, t);
 	}
-	splitAt(z: number) {
+	override splitAt(z: number) {
 		const [x, y] = cubicSplitAt(this._cpts, z);
 		return [this.new(x[0], x[1], x[2], x[3]), this.new(y[0], y[1], y[2], y[3])];
 	}
 	//////
-	get length() {
+	override get length() {
 		return cubicLengthAt(this._cpts, 1);
 	}
 	lengthAt(t = 1) {
 		return cubicLengthAt(this._cpts, t);
 	}
-	slopeAt(t: number): Vec {
+	override slopeAt(t: number): Vec {
 		return cubicSlopeAt(this._cpts, t);
 	}
 
-	toPathFragment() {
+	override toPathFragment() {
 		const {
 			c1: { x: x1, y: y1 },
 			c2: { x: x2, y: y2 },
@@ -57,11 +57,11 @@ export class Cubic extends SegmentSE {
 		return ['C', x1, y1, x2, y2, x3, y3];
 	}
 
-	transform(M: any) {
+	override transform(M: any) {
 		const { start, c1, c2, end } = this;
 		return this.new(start.transform(M), c1.transform(M), c2.transform(M), end.transform(M));
 	}
-	reversed() {
+	override reversed() {
 		const { start, c1, c2, end } = this;
 		return this.new(end, c2, c1, start);
 	}
@@ -320,8 +320,8 @@ export class CubicLS extends PathLS {
 	splitAt(t: number) {
 		const [x, y] = cubicSplitAt(this._cpts, t);
 		return [
-			new CubicLS(this._prev, Vec.new(x[1]), Vec.new(x[2]), Vec.new(x[3])),
-			new CubicLS(PathLS.moveTo(Vec.new(y[0])), Vec.new(y[1]), Vec.new(y[2]), Vec.new(y[3])),
+			new CubicLS(this._prev, x[1], x[2], x[3]),
+			new CubicLS(PathLS.moveTo(y[0]), y[1], y[2], y[3]),
 		];
 	}
 	lengthAt(t = 1) {
