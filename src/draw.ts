@@ -1,43 +1,5 @@
 import { Vec } from './point.js';
-// import { Box } from "../box.js";
-
-// export abstract class ChainedSegment {
-// 	_prev?: Segment;
-// 	_p: Vec;
-
-// 	constructor(p: Vec) {
-// 		this._p = p;
-// 	}
-// 	get p1() {
-// 		return this.prev?.p2 ?? Vec.at(0, 0);
-// 	}
-// 	get p2() {
-// 		return this._p;
-// 	}
-// 	get prev() {
-// 		return this._prev;
-// 	}
-// 	set prev(prev: Segment | undefined) {
-// 		this._prev = prev;
-// 	}
-
-// 	moveTo(...args: Vec[] | number[]) {
-// 		const [x, y] = pick(args);
-// 		return new MoveCS(Vec.pos(x, y));
-// 	}
-// }
-
-// export class MoveCS extends ChainedSegment {
-// 	constructor(p?: Vec) {
-// 		super(p || Vec.at(0, 0));
-// 	}
-// }
-
-// export class Line extends Segment {}
-
-// export class Close extends Line {}
-// export class Horizontal extends Line {}
-// export class Vertical extends Line {}
+const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
 
 function* pick(args: Vec[] | number[]) {
 	for (const v of args) {
@@ -50,7 +12,6 @@ function* pick(args: Vec[] | number[]) {
 		}
 	}
 }
-const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
 
 const tau = 2 * pi,
 	epsilon = 1e-6,

@@ -451,4 +451,5 @@ import { Cubic } from './path/cubic.js';
 import { Quadratic } from './path/quadratic.js';
 export * from './path/describe.js';
 export * from './path/cubic.js';
+export * from './path/linked.js';
 export { Arc, Quadratic, Line };

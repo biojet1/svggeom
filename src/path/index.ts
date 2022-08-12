@@ -1,19 +1,6 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
 
-// interface ISegment {
-// 	get start(): Vec;
-// 	get end(): Vec;
-// 	get length(): number;
-// 	toPathFragment(): (string | number)[];
-// 	bbox(): Box;
-// 	pointAt(t: number): Vec;
-// 	slopeAt(t: number): Vec;
-// 	transform(M: any): Segment;
-// 	reversed(): Segment;
-// 	splitAt(t: number): Segment[];
-// }
-
 export abstract class Segment {
 	abstract get start(): Vec;
 	abstract get end(): Vec;
@@ -98,66 +85,3 @@ export abstract class SegmentSE extends Segment {
 	}
 }
 
-export abstract class LinkedSegment extends Segment {
-	private readonly _prev: LinkedSegment;
-	private readonly _end: Vec;
-
-	constructor(prev: LinkedSegment, end: Iterable<number>) {
-		super();
-		this._prev = prev;
-		this._end = Vec.new(end);
-	}
-
-	get start() {
-		return this._prev._end;
-	}
-
-	get end() {
-		return this._end;
-	}
-
-	// moveTo(pos: Vec) {
-	// 	return new MoveLS(this, pos);
-	// }
-	lineTo(pos: Vec) {
-		return new LineLS(this, pos);
-	}
-}
-
-export class LineLS extends LinkedSegment {
-	bbox() {
-		const {
-			start: { x: p1x, y: p1y },
-			end: { x: p2x, y: p2y },
-		} = this;
-		const [xmin, xmax] = [Math.min(p1x, p2x), Math.max(p1x, p2x)];
-		const [ymin, ymax] = [Math.min(p1y, p2y), Math.max(p1y, p2y)];
-		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
-	}
-
-	get length() {
-		const { start, end } = this;
-		return end.sub(start).abs();
-	}
-	pointAt(t: number) {
-		const { start, end } = this;
-		return end.sub(start).mul(t).postAdd(start);
-	}
-
-	slopeAt(t: number) {
-		const { start, end } = this;
-		const vec = end.sub(start);
-		return vec.div(vec.abs());
-	}
-
-	// splitAt(t: number): Segment[] {
-	// 	const { start, end } = this;
-	// 	const c = this.pointAt(t);
-	// 	return [this.newFromTo(start, c), this.newFromTo(c, end)];
-	// }
-
-	// newFromTo(a: Vec, b: Vec) {
-	// 	return new LineLS(a, b);
-	// }
-}
-// export class MoveLS extends LineLS {}
