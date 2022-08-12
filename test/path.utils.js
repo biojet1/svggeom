@@ -16,6 +16,7 @@ export async function* enum_path_data(env) {
     }
 }
 import {Cubic, Path} from 'svggeom';
+Path.digits = 16;
 
 export function test_segment(t, seg, item, opt = {}) {
     const {epsilon = 1e-11} = opt;

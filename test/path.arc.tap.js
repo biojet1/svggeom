@@ -6,7 +6,6 @@ import test from 'tap';
 import os from 'os';
 import fs from 'fs';
 const CI = !!process.env.CI;
-
 function dbgwrite(name, pC, pX) {
     function* gen() {
         const b = Path.parse(pC).bbox().merge(Path.parse(pX).bbox());
@@ -39,7 +38,7 @@ for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
         );
 
         test_segment(t, seg, item, {
-            len_epsilon: 0.1e-4,
+            len_epsilon: 1e-5,
             slope_epsilon: 5e-5,
             point_epsilon: 1.5e-6,
         });

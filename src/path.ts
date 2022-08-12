@@ -10,6 +10,7 @@ interface IDescOpt {
 }
 
 export class Path {
+	static digits = 5;
 	private _segs: Segment[];
 	private _length?: number;
 	private _lengths?: Array<number>;
@@ -240,11 +241,21 @@ export class Path {
 	}
 
 	private *enumDesc(params: IDescOpt) {
-		const { relative: rel = false, close = true, smooth = false, short = false, dfix = 4 } = params;
+		const {
+			relative: rel = false,
+			close = true,
+			smooth = false,
+			short = false,
+			dfix = Path.digits,
+		} = params;
 
 		let segs = this._segs;
 		const n = segs.length;
 		let self_closed = false;
+		function fixNum(n: number) {
+			const v = n.toFixed(dfix);
+			return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
+		}
 
 		// let self_closed =
 		// 	use_closed_attrib && this.isContinuous() && this.isClosed();
@@ -268,8 +279,8 @@ export class Path {
 				// console.error('Move', rel, _seg_start, current_pos, seg_start);
 
 				yield rel ? 'm' : 'M';
-				yield _seg_start.x.toFixed(dfix);
-				yield _seg_start.y.toFixed(dfix);
+				yield fixNum(_seg_start.x);
+				yield fixNum(_seg_start.y);
 			}
 			if (seg instanceof Line) {
 				OUT: {
@@ -308,28 +319,28 @@ export class Path {
 					if (short) {
 						if (seg instanceof Horizontal && !y) {
 							yield rel ? 'h' : 'H';
-							yield x.toFixed(dfix);
+							yield fixNum(x);
 						} else if (seg instanceof Vertical && !x) {
 							yield rel ? 'v' : 'V';
-							yield y.toFixed(dfix);
+							yield fixNum(y);
 						}
 					} else {
 						yield rel ? 'l' : 'L';
-						yield x.toFixed(dfix);
-						yield y.toFixed(dfix);
+						yield fixNum(x);
+						yield fixNum(y);
 					}
 				}
 			} else if (seg instanceof Arc) {
 				const end = rel ? seg.end.sub(seg_start) : seg.end;
 				const { rx, ry, phi, arc, sweep } = seg;
 				yield rel ? 'a' : 'A';
-				yield rx.toFixed(dfix);
-				yield ry.toFixed(dfix);
-				yield phi.toFixed(dfix);
+				yield fixNum(rx);
+				yield fixNum(ry);
+				yield fixNum(phi);
 				yield arc ? 1 : 0;
 				yield sweep ? 1 : 0;
-				yield end.x.toFixed(dfix);
-				yield end.y.toFixed(dfix);
+				yield fixNum(end.x);
+				yield fixNum(end.y);
 			} else if (seg instanceof Quadratic) {
 				let { c, end } = seg;
 				let _smooth = smooth;
@@ -349,11 +360,11 @@ export class Path {
 					yield rel ? 't' : 'T';
 				} else {
 					yield rel ? 'q' : 'Q';
-					yield c.x.toFixed(dfix);
-					yield c.y.toFixed(dfix);
+					yield fixNum(c.x);
+					yield fixNum(c.y);
 				}
-				yield end.x.toFixed(dfix);
-				yield end.y.toFixed(dfix);
+				yield fixNum(end.x);
+				yield fixNum(end.y);
 			} else if (seg instanceof Cubic) {
 				let { c1, c2, end } = seg;
 				let _smooth = smooth;
@@ -376,13 +387,13 @@ export class Path {
 					if (rel) {
 						c1 = c1.sub(seg_start);
 					}
-					yield c1.x.toFixed(dfix);
-					yield c1.y.toFixed(dfix);
+					yield fixNum(c1.x);
+					yield fixNum(c1.y);
 				}
-				yield c2.x.toFixed(dfix);
-				yield c2.y.toFixed(dfix);
-				yield end.x.toFixed(dfix);
-				yield end.y.toFixed(dfix);
+				yield fixNum(c2.x);
+				yield fixNum(c2.y);
+				yield fixNum(end.x);
+				yield fixNum(end.y);
 			}
 			current_pos = seg.end;
 			previous_segment = seg;
