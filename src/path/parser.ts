@@ -1,9 +1,9 @@
-import {Vec} from '../point.js';
-import {Segment} from './index.js';
-import {Arc} from './arc.js';
-import {Cubic} from './cubic.js';
-import {Line, Close, Vertical, Horizontal} from './line.js';
-import {Quadratic} from './quadratic.js';
+import { Vec } from '../point.js';
+import { Segment } from './index.js';
+import { Arc } from './arc.js';
+import { Cubic } from './cubic.js';
+import { Line, Close, Vertical, Horizontal } from './line.js';
+import { Quadratic } from './quadratic.js';
 
 // splits a transformation chain
 export const transforms = /\)\s*,?\s*/;
@@ -267,4 +267,49 @@ export function parseDesc(d: string) {
 	}
 
 	return segments;
+}
+
+import { SegmentLS } from './linked.js';
+
+export function parseDesc2(d: string) {
+	// prepare for parsing
+	const array = d
+		.replace(numbersWithDots, pathRegReplace) // convert 45.123.123 to 45.123 .123
+		.replace(pathLetters, ' $& ') // put some room between letters and numbers
+		.replace(hyphen, '$1 -') // add space before hyphen
+		.trim() // trim
+		.split(delimiter)
+		.reverse(); // split into array
+	const num = function () {
+		const v = array.pop();
+		if (!v) {
+			throw new Error(`Number expected '${v}' '${d}'`);
+		}
+		return parseFloat(v);
+	};
+	let moved: SegmentLS | undefined;
+	let cur: SegmentLS | undefined;
+
+	while (array.length > 0) {
+		let absolute = false;
+		const command = array.pop();
+		// const start = pos;
+		switch (command) {
+			case 'M':
+				absolute = true;
+			case 'm':
+				{
+					const x = num();
+					const y = num();
+					if (!cur) {
+						cur = moved = SegmentLS.moveTo(x, y);
+					} else if (absolute) {
+						cur = cur.moveTo(Vec.pos(x, y));
+					} else {
+						cur = cur.moveTo(cur.end.add(Vec.pos(x, y)));
+					}
+				}
+				break;
+		}
+	}
 }

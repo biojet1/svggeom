@@ -49,6 +49,7 @@ export class Quadratic extends SegmentSE {
 	}
 }
 
+// https://gitlab.com/inkscape/extensions/-/blob/master/inkex/transforms.py
 function quadratic_extrema(a: number, b: number, c: number) {
 	const atol = 1e-9;
 	const cmin = Math.min(a, c);
@@ -65,7 +66,7 @@ function quadratic_extrema(a: number, b: number, c: number) {
 }
 const { pow } = Math;
 
-function quadFlatness([[sx, sy], [cx, cy], [ex, ey]]: Iterable<number>[]) {
+export function quadFlatness([[sx, sy], [cx, cy], [ex, ey]]: Iterable<number>[]) {
 	// let ux = pow(3 * x1 - 2 * sx - ex, 2);   // 2cx−ex−sx
 	// let uy = pow(3 * y1 - 2 * sy - ey, 2);   // 2cy−ey−sy
 	// const vx = pow(3 * x2 - 2 * ex - sx, 2); // 2cx−ex−sx
@@ -80,7 +81,7 @@ function quadFlatness([[sx, sy], [cx, cy], [ex, ey]]: Iterable<number>[]) {
 	return pow(2 * cx - ex - sx, 2) + pow(2 * cy - ey - sy, 2);
 }
 
-function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
+export function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	const mx1 = (1 - t) * x1 + t * cx;
 	const mx2 = (1 - t) * cx + t * x2;
 	const mxt = (1 - t) * mx1 + t * mx2;
@@ -95,7 +96,7 @@ function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	];
 }
 
-function quadPointAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
+export function quadPointAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	const v = 1 - t;
 	return Vec.pos(
 		v * v * x1 + 2 * v * t * cx + t * t * x2,
@@ -103,7 +104,7 @@ function quadPointAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	);
 }
 
-function quadSlopeAt([start, c, end]: Vec[], t: number): Vec {
+export function quadSlopeAt([start, c, end]: Vec[], t: number): Vec {
 	if (t >= 1) {
 		return end.sub(c);
 	} else if (t <= 0) {
@@ -119,14 +120,14 @@ function quadSlopeAt([start, c, end]: Vec[], t: number): Vec {
 	return a.add(b).mul(2); // 1st derivative;
 }
 
-function quadBBox([[x1, y1], [x2, y2], [x3, y3]]: Vec[]) {
+export function quadBBox([[x1, y1], [x2, y2], [x3, y3]]: Vec[]) {
 	const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
 	const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
 	return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 }
 
 // https://github.com/rveciana/svg-path-properties/blob/master/src/bezier-functions.ts
-function quadLength([[x0, y0], [x1, y1], [x2, y2]]: Vec[], t: number = 1) {
+export function quadLength([[x0, y0], [x1, y1], [x2, y2]]: Vec[], t: number = 1) {
 	const ax = x0 - 2 * x1 + x2;
 	const ay = y0 - 2 * y1 + y2;
 	const bx = 2 * x1 - 2 * x0;
@@ -151,8 +152,4 @@ function quadLength([[x0, y0], [x1, y1], [x2, y2]]: Vec[], t: number = 1) {
 	return (Math.sqrt(A) / 2) * (u * uuk - b * bbk + term);
 }
 
-import { PathLS } from './linked.js';
-
-// export class QuadLS extends PathLS {
-
-// }
+// import { SegmentLS, MoveLS, LineLS } from './linked.js';

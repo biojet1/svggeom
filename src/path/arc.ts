@@ -98,6 +98,10 @@ export class Arc extends SegmentSE {
 	override pointAt(t: number) {
 		return arcPointAt(this, t);
 	}
+	override slopeAt(t: number): Vec {
+		return arcSlopeAt(this, t);
+	}
+
 	override splitAt(t: number) {
 		const { rx, ry, phi, sweep, rdelta, start, end } = this;
 		const deltaA = abs(rdelta);
@@ -109,19 +113,15 @@ export class Arc extends SegmentSE {
 	}
 
 	override toPathFragment() {
-		return [
-			'A',
-			this.rx,
-			this.ry,
-			this.phi,
-			this.arc ? 1 : 0,
-			this.sweep ? 1 : 0,
-			this.end.x,
-			this.end.y,
-		];
-	}
-	override slopeAt(t: number): Vec {
-		return arcSlopeAt(this, t);
+		const {
+			rx,
+			ry,
+			phi,
+			sweep,
+			arc,
+			end: [x, y],
+		} = this;
+		return ['A', rx, ry, phi, arc ? 1 : 0, sweep ? 1 : 0, x, y];
 	}
 
 	override transform(matrix: any) {
@@ -151,7 +151,7 @@ export class Arc extends SegmentSE {
 	}
 }
 
-function arcPointAt(arc: IArc, t: number) {
+export function arcPointAt(arc: IArc, t: number) {
 	const { start, end } = arc;
 	if (start.equals(end)) {
 		return start.clone();
@@ -177,7 +177,7 @@ function arcPointAt(arc: IArc, t: number) {
 	}
 }
 
-function arcBBox(arc: IArc) {
+export function arcBBox(arc: IArc) {
 	const { rx, ry, cosφ, sinφ, start, end, rdelta, rtheta, phi } = arc;
 	let atan_x, atan_y;
 	if (cosφ == 0) {
@@ -207,7 +207,7 @@ function arcBBox(arc: IArc) {
 	return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 }
 
-function arcLength(arc: IArc) {
+export function arcLength(arc: IArc) {
 	const { start, end } = arc;
 	if (start.equals(end)) return 0;
 	return segment_length(arc, 0, 1, start, end);
@@ -225,7 +225,7 @@ function arcLength(arc: IArc) {
 // 	];
 // }
 
-function arcSlopeAt(arc: IArc, t: number): Vec {
+export function arcSlopeAt(arc: IArc, t: number): Vec {
 	const { rx, ry, cosφ, sinφ, rdelta, rtheta } = arc;
 	const θ = rtheta + t * rdelta;
 	const sinθ = sin(θ);
@@ -237,7 +237,7 @@ function arcSlopeAt(arc: IArc, t: number): Vec {
 	);
 }
 
-function arcTransform(self: IArc, matrix: any) {
+export function arcTransform(self: IArc, matrix: any) {
 	// const { arc, end, start } = self;
 	let { rx, ry, sweep, phi } = self;
 	// const p1ˈ = start.transform(matrix);
