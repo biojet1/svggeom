@@ -445,12 +445,14 @@ export class Path {
 	}
 }
 
-export class PathLS {}
+// export class PathLS {}
 import { Line, Close, Vertical, Horizontal } from './path/line.js';
 import { Arc } from './path/arc.js';
 import { Cubic } from './path/cubic.js';
 import { Quadratic } from './path/quadratic.js';
 export * from './path/describe.js';
 export * from './path/cubic.js';
-export { SegmentLS } from './path/linked.js';
+import { SegmentLS } from './path/linked.js';
+export { SegmentLS, SegmentLS as PathLS} ;
+
 export { Arc, Quadratic, Line };

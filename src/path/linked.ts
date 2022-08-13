@@ -11,7 +11,13 @@ export abstract class SegmentLS extends Segment {
 		this._prev = prev;
 		this._end = end;
 	}
-
+	get prev() {
+		const { _prev } = this;
+		if (_prev) {
+			return _prev;
+		}
+		throw new Error('No prev');
+	}
 	get start() {
 		const { _prev } = this;
 		if (_prev) {
@@ -65,10 +71,10 @@ export abstract class SegmentLS extends Segment {
 		return this;
 	}
 
-	// bezierCurveTo(...args: Vec[] | number[]) {
-	// 	const [c1, c2, end] = pickPos(args);
-	// 	return new CubicLS(this, c1, c2, end);
-	// }
+	bezierCurveTo(...args: Vec[] | number[]) {
+		const [c1, c2, end] = pickPos(args);
+		return new CubicLS(this, c1, c2, end);
+	}
 	quadraticCurveTo(...args: Vec[] | number[]) {
 		const [c, end] = pickPos(args);
 		return new QuadLS(this, c, end);
@@ -101,23 +107,24 @@ function* pickPos(args: Vec[] | number[]) {
 				yield Vec.pos(n, v);
 				n = undefined;
 			}
-		} else {
-			if (n != undefined) {
-				throw new Error(`n == ${n}`);
-			}
+		} else if (n != undefined) {
+			throw new Error(`n == ${n}`);
+		} else if (v instanceof Vec) {
 			yield v;
+		} else {
+			yield Vec.new(v);
 		}
 	}
 }
-
+const { min, max } = Math;
 export class LineLS extends SegmentLS {
 	bbox() {
 		const {
-			start: { x: p1x, y: p1y },
-			end: { x: p2x, y: p2y },
+			start: [x1, y1],
+			end: [x2, y2],
 		} = this;
-		const [xmin, xmax] = [Math.min(p1x, p2x), Math.max(p1x, p2x)];
-		const [ymin, ymax] = [Math.min(p1y, p2y), Math.max(p1y, p2y)];
+		const [xmin, xmax] = [min(x1, x2), max(x1, x2)];
+		const [ymin, ymax] = [min(y1, y2), max(y1, y2)];
 		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 
@@ -207,12 +214,7 @@ export class CubicLS extends SegmentLS {
 	readonly c1: Vec;
 	readonly c2: Vec;
 
-	constructor(
-		prev: SegmentLS | undefined,
-		c1: Vec,
-		c2: Vec,
-		end: Vec,
-	) {
+	constructor(prev: SegmentLS | undefined, c1: Vec, c2: Vec, end: Vec) {
 		super(prev, end);
 		this.c1 = Vec.new(c1);
 		this.c2 = Vec.new(c2);
