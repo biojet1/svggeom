@@ -1,33 +1,31 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
-import { Cubic } from './cubic.js';
-export class Quadratic extends Cubic {
+import { SegmentSE } from './index.js';
+export class Quadratic extends SegmentSE {
     c;
     constructor(p1, control, p2) {
-        const start = Vec.new(p1);
-        const c = Vec.new(control);
-        const end = Vec.new(p2);
-        const c1 = start.equals(c) ? start : start.mul(1 / 3).add(c.mul(2 / 3));
-        const c2 = end.equals(c) ? end : c.mul(2 / 3).add(end.mul(1 / 3));
-        super(start, c1, c2, end);
-        this.c = c;
+        super(Vec.new(p1), Vec.new(p2));
+        this.c = Vec.new(control);
     }
     get _qpts() {
         const { start, c, end } = this;
         return [start, c, end];
     }
+    get length() {
+        return quadLength(this._qpts);
+    }
     slopeAt(t) {
-        return slopeAt(this._qpts, t);
+        return quadSlopeAt(this._qpts, t);
     }
     pointAt(t) {
-        return pointAt(this._qpts, t);
+        return quadPointAt(this._qpts, t);
     }
     splitAt(t) {
-        const [a, b] = splitAt(this._qpts, t);
+        const [a, b] = quadSplitAt(this._qpts, t);
         return [new Quadratic(a[0], a[1], a[2]), new Quadratic(b[0], b[1], b[2])];
     }
     bbox() {
-        return bbox(this._qpts);
+        return quadBBox(this._qpts);
     }
     toPathFragment() {
         const { c, end } = this;
@@ -55,7 +53,11 @@ function quadratic_extrema(a, b, c) {
     }
     return [cmin, cmax];
 }
-function splitAt([[x1, y1], [cx, cy], [x2, y2]], t) {
+const { pow } = Math;
+function quadFlatness([[sx, sy], [cx, cy], [ex, ey]]) {
+    return pow(2 * cx - ex - sx, 2) + pow(2 * cy - ey - sy, 2);
+}
+function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]], t) {
     const mx1 = (1 - t) * x1 + t * cx;
     const mx2 = (1 - t) * cx + t * x2;
     const mxt = (1 - t) * mx1 + t * mx2;
@@ -67,11 +69,11 @@ function splitAt([[x1, y1], [cx, cy], [x2, y2]], t) {
         [Vec.pos(mxt, myt), Vec.pos(mx2, my2), Vec.pos(x2, y2)],
     ];
 }
-function pointAt([[x1, y1], [cx, cy], [x2, y2]], t) {
+function quadPointAt([[x1, y1], [cx, cy], [x2, y2]], t) {
     const v = 1 - t;
     return Vec.pos(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
 }
-function slopeAt([start, c, end], t) {
+function quadSlopeAt([start, c, end], t) {
     if (t >= 1) {
         return end.sub(c);
     }
@@ -86,9 +88,29 @@ function slopeAt([start, c, end], t) {
     const b = end.sub(c).mul(t);
     return a.add(b).mul(2);
 }
-function bbox([[x1, y1], [x2, y2], [x3, y3]]) {
+function quadBBox([[x1, y1], [x2, y2], [x3, y3]]) {
     const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
     const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
     return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+}
+function quadLength([[x0, y0], [x1, y1], [x2, y2]], t = 1) {
+    const ax = x0 - 2 * x1 + x2;
+    const ay = y0 - 2 * y1 + y2;
+    const bx = 2 * x1 - 2 * x0;
+    const by = 2 * y1 - 2 * y0;
+    const A = 4 * (ax * ax + ay * ay);
+    const B = 4 * (ax * bx + ay * by);
+    const C = bx * bx + by * by;
+    if (A === 0) {
+        return t * Math.sqrt(Math.pow(x2 - x0, 2) + Math.pow(y2 - y0, 2));
+    }
+    const b = B / (2 * A);
+    const c = C / A;
+    const u = t + b;
+    const k = c - b * b;
+    const uuk = u * u + k > 0 ? Math.sqrt(u * u + k) : 0;
+    const bbk = b * b + k > 0 ? Math.sqrt(b * b + k) : 0;
+    const term = b + Math.sqrt(b * b + k) !== 0 ? k * Math.log(Math.abs((u + uuk) / (b + bbk))) : 0;
+    return (Math.sqrt(A) / 2) * (u * uuk - b * bbk + term);
 }
 //# sourceMappingURL=quadratic.js.map

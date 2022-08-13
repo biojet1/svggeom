@@ -12,7 +12,6 @@ export declare class Cubic extends SegmentSE {
     pointAt(t: number): Vec;
     splitAt(z: number): Cubic[];
     get length(): number;
-    lengthAt(t?: number): number;
     slopeAt(t: number): Vec;
     toPathFragment(): (string | number)[];
     transform(M: any): Cubic;
@@ -30,7 +29,6 @@ export declare class CubicLS extends PathLS {
     bbox(): Box;
     slopeAt(t: number): Vec;
     splitAt(t: number): CubicLS[];
-    lengthAt(t?: number): number;
     get length(): number;
     reversed(): CubicLS;
     transform(M: any): CubicLS;

@@ -20,16 +20,16 @@ export declare class VecRay {
     distanceFromLine(a: Iterable<number>, b: Iterable<number>): number;
     nearestPointOfLine(a: Iterable<number>, b: Iterable<number>): Vec;
     intersectOfLine(a: Iterable<number>, b: Iterable<number>): Vec;
-    intersectOfRay(r: Iterable<number>): Vec;
+    intersectOfRay(r: Ray): Vec;
     nearestPointFromPoint(p: Iterable<number>): Vec;
 }
 export declare class Ray extends VecRay {
     clone(): Ray;
     begin(): RayStack;
     end(): Ray | undefined;
-    private _Pos;
-    private _Dir;
-    private _Set;
+    protected _Pos(v: Vec): Ray;
+    protected _Dir(v: Vec): Ray;
+    protected _Set(p: Vec, a: Vec): Ray;
     withDir(rad: NumOrVec): Ray;
     withH(h?: number): Ray;
     withV(v?: number): Ray;
@@ -78,5 +78,13 @@ export declare class RayStack extends VecRay {
     _prev: Ray;
     constructor(ray: Ray);
     end(): Ray;
+}
+export declare class RayL extends Ray {
+    _prev: Ray | undefined;
+    constructor(pos: Vec, dir: Vec, ray?: Ray);
+    prev(): Ray | undefined;
+    protected _Pos(v: Vec): RayL;
+    protected _Dir(v: Vec): RayL;
+    protected _Set(p: Vec, a: Vec): RayL;
 }
 export {};
