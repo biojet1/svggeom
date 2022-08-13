@@ -3,7 +3,7 @@ import { Vec } from '../point.js';
 import { Box } from '../box.js';
 
 abstract class LineSegment extends Segment {
-	bbox() {
+	override bbox() {
 		const {
 			start: { x: p1x, y: p1y },
 			end: { x: p2x, y: p2y },
@@ -13,39 +13,39 @@ abstract class LineSegment extends Segment {
 		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 
-	get length() {
+	override get length() {
 		const { start, end } = this;
 		return end.sub(start).abs();
 	}
-	pointAt(t: number) {
+	override pointAt(t: number) {
 		const { start, end } = this;
 		return end.sub(start).mul(t).postAdd(start);
 	}
 
-	slopeAt(t: number) {
+	override slopeAt(t: number) {
 		const { start, end } = this;
 		const vec = end.sub(start);
 		return vec.div(vec.abs());
 	}
 
-	splitAt(t: number): Segment[] {
+	override splitAt(t: number): Segment[] {
 		const { start, end } = this;
 		const c = this.pointAt(t);
 		return [this.newFromTo(start, c), this.newFromTo(c, end)];
 	}
 
-	transform(M: any) {
+	override transform(M: any) {
 		const { start, end } = this;
 		// return new Line(start.transform(M), end.transform(M));
 		return this.newFromTo(start.transform(M), end.transform(M));
 	}
 
-	reversed() {
+	override reversed() {
 		const { start, end } = this;
 		return this.newFromTo(end, start);
 	}
 
-	toPathFragment() {
+	override toPathFragment() {
 		const {
 			end: { x, y },
 		} = this;
