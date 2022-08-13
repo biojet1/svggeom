@@ -84,4 +84,3 @@ export abstract class SegmentSE extends Segment {
 		return this._end;
 	}
 }
-

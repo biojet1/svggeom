@@ -98,6 +98,10 @@ export class Arc extends SegmentSE {
 	override pointAt(t: number) {
 		return arcPointAt(this, t);
 	}
+	override slopeAt(t: number): Vec {
+		return arcSlopeAt(this, t);
+	}
+
 	override splitAt(t: number) {
 		const { rx, ry, phi, sweep, rdelta, start, end } = this;
 		const deltaA = abs(rdelta);
@@ -109,19 +113,15 @@ export class Arc extends SegmentSE {
 	}
 
 	override toPathFragment() {
-		return [
-			'A',
-			this.rx,
-			this.ry,
-			this.phi,
-			this.arc ? 1 : 0,
-			this.sweep ? 1 : 0,
-			this.end.x,
-			this.end.y,
-		];
-	}
-	override slopeAt(t: number): Vec {
-		return arcSlopeAt(this, t);
+		const {
+			rx,
+			ry,
+			phi,
+			sweep,
+			arc,
+			end: [x, y],
+		} = this;
+		return ['A', rx, ry, phi, arc ? 1 : 0, sweep ? 1 : 0, x, y];
 	}
 
 	override transform(matrix: any) {
@@ -151,7 +151,7 @@ export class Arc extends SegmentSE {
 	}
 }
 
-function arcPointAt(arc: IArc, t: number) {
+export function arcPointAt(arc: IArc, t: number) {
 	const { start, end } = arc;
 	if (start.equals(end)) {
 		return start.clone();
@@ -177,7 +177,7 @@ function arcPointAt(arc: IArc, t: number) {
 	}
 }
 
-function arcBBox(arc: IArc) {
+export function arcBBox(arc: IArc) {
 	const { rx, ry, cosφ, sinφ, start, end, rdelta, rtheta, phi } = arc;
 	let atan_x, atan_y;
 	if (cosφ == 0) {
@@ -207,25 +207,25 @@ function arcBBox(arc: IArc) {
 	return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 }
 
-function arcLength(arc: IArc) {
+export function arcLength(arc: IArc) {
 	const { start, end } = arc;
 	if (start.equals(end)) return 0;
 	return segment_length(arc, 0, 1, start, end);
 }
 
-function arcSplitAt(arc: IArc, t: number) {
-	const { rx, ry, phi, sweep, rdelta, start, end } = arc;
-	const deltaA = abs(rdelta);
-	const delta1 = deltaA * t;
-	const delta2 = deltaA * (1 - t);
-	const pT = arcPointAt(arc, t);
-	return [
-		[start, pT, delta1 > PI],
-		[pT, end, delta2 > PI],
-	];
-}
+// function arcSplitAt(arc: IArc, t: number) {
+// 	const { rx, ry, phi, sweep, rdelta, start, end } = arc;
+// 	const deltaA = abs(rdelta);
+// 	const delta1 = deltaA * t;
+// 	const delta2 = deltaA * (1 - t);
+// 	const pT = arcPointAt(arc, t);
+// 	return [
+// 		[start, pT, delta1 > PI],
+// 		[pT, end, delta2 > PI],
+// 	];
+// }
 
-function arcSlopeAt(arc: IArc, t: number): Vec {
+export function arcSlopeAt(arc: IArc, t: number): Vec {
 	const { rx, ry, cosφ, sinφ, rdelta, rtheta } = arc;
 	const θ = rtheta + t * rdelta;
 	const sinθ = sin(θ);
@@ -237,11 +237,11 @@ function arcSlopeAt(arc: IArc, t: number): Vec {
 	);
 }
 
-function arcTransform(self: IArc, matrix: any) {
-	const { arc, end, start } = self;
+export function arcTransform(self: IArc, matrix: any) {
+	// const { arc, end, start } = self;
 	let { rx, ry, sweep, phi } = self;
-	const p1ˈ = start.transform(matrix);
-	const p2_ = end.transform(matrix);
+	// const p1ˈ = start.transform(matrix);
+	// const p2_ = end.transform(matrix);
 	const { rotate, scaleX, scaleY, skewX } = matrix.decompose();
 	if (scaleX == scaleY && scaleX != 1) {
 		rx = rx * scaleX;
@@ -254,10 +254,10 @@ function arcTransform(self: IArc, matrix: any) {
 		const detT = a * d - b * c;
 		const detT2 = detT * detT;
 		if (!rx || !ry || !detT2) break OUT;
-		const A = (d ** 2 / rx ** 2 + c ** 2 / ry ** 2) / detT2;
-		const B = -((d * b) / rx ** 2 + (c * a) / ry ** 2) / detT2;
-		const D = (b ** 2 / rx ** 2 + a ** 2 / ry ** 2) / detT2;
-		const DA = D - A;
+		// const A = (d ** 2 / rx ** 2 + c ** 2 / ry ** 2) / detT2;
+		// const B = -((d * b) / rx ** 2 + (c * a) / ry ** 2) / detT2;
+		// const D = (b ** 2 / rx ** 2 + a ** 2 / ry ** 2) / detT2;
+		// const DA = D - A;
 		if (detT < 0) {
 			sweep = !sweep;
 		}

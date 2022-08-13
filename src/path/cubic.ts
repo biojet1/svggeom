@@ -1,6 +1,5 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
-import { SegmentSE } from './index.js';
 
 export class Cubic extends SegmentSE {
 	readonly c1: Vec;
@@ -122,13 +121,8 @@ function splitAtScalar(
 		[t, z * z * end - 2 * z * (z - 1) * b + (z - 1) * (z - 1) * a, z * end - (z - 1) * b, end],
 	];
 }
-// interface ICubic {
-// 	c1: Vec;
-// 	c2: Vec;
-// 	start: Vec;
-// 	end: Vec;
-// }
-function cubicBox([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Vec[]) {
+
+export function cubicBox([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Vec[]) {
 	const [xmin, xmax] = cubic_extrema(sx, x1, x2, ex);
 	const [ymin, ymax] = cubic_extrema(sy, y1, y2, ey);
 	return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
@@ -148,7 +142,7 @@ function cubicFlatness([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number
 	return ux + uy;
 }
 
-function cubicPointAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[], t: number) {
+export function cubicPointAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[], t: number) {
 	const F = 1 - t;
 	return Vec.at(
 		F * F * F * sx + 3 * F * F * t * x1 + 3 * F * t * t * x2 + t * t * t * ex,
@@ -156,7 +150,7 @@ function cubicPointAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>
 	);
 }
 
-function cubicSplitAt(
+export function cubicSplitAt(
 	[[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[],
 	z: number,
 ): Vec[][] {
@@ -177,7 +171,7 @@ function cubicSplitAt(
 		],
 	];
 }
-function cubicSlopeAt([start, c1, c2, end]: Vec[], t: number): Vec {
+export function cubicSlopeAt([start, c1, c2, end]: Vec[], t: number): Vec {
 	if (t <= 0) {
 		return c1.sub(start);
 	} else if (t >= 1) {
@@ -205,20 +199,8 @@ function cubicSlopeAt([start, c1, c2, end]: Vec[], t: number): Vec {
 		return a.add(b).add(c);
 	}
 }
-function cubicMakeFlat(_cpts: Vec[], t: number): Vec[][] {
-	if (cubicFlatness(_cpts) > 0.15) {
-		return cubicSplitAt(_cpts, 0.5)
-			.map(function (cpts) {
-				return cubicMakeFlat(cpts, t * 0.5);
-			})
-			.reduce(function (last, current) {
-				return last.concat(current);
-			}, []);
-	} else {
-		return [_cpts];
-	}
-}
-function cubicLength(_cpts: Vec[]): number {
+
+export function cubicLength(_cpts: Vec[]): number {
 	if (cubicFlatness(_cpts) > 0.15) {
 		const [a, b] = cubicSplitAt(_cpts, 0.5);
 		return cubicLength(a) + cubicLength(b);
@@ -227,81 +209,9 @@ function cubicLength(_cpts: Vec[]): number {
 		return end.sub(start).abs();
 	}
 }
-// function cubicLengthAt(_cpts: Vec[], t = 1) {
-// 	const curves = cubicMakeFlat(t >= 1 ? _cpts : cubicSplitAt(_cpts, t)[0], t);
-// 	let length = 0;
-// 	for (let i = 0, len = curves.length; i < len; ++i) {
-// 		const [start, , , end] = curves[i];
-// 		length += end.sub(start).abs();
-// 	}
-// 	return length;
-// }
 
-import { PathLS } from './linked.js';
+// import { SegmentLS } from './linked.js';
 
-export class CubicLS extends PathLS {
-	readonly c1: Vec;
-	readonly c2: Vec;
-	t_value?: number;
-	constructor(
-		prev: PathLS | undefined,
-		c1: Iterable<number>,
-		c2: Iterable<number>,
-		end: Iterable<number>,
-	) {
-		super(prev, end);
-		this.c1 = Vec.new(c1);
-		this.c2 = Vec.new(c2);
-	}
-	private get _cpts(): Vec[] {
-		const { start, c1, c2, end } = this;
-		return [start, c1, c2, end];
-	}
 
-	/////
-	override pointAt(t: number) {
-		return cubicPointAt(this._cpts, t);
-	}
-	override bbox() {
-		return cubicBox(this._cpts);
-	}
-	override slopeAt(t: number): Vec {
-		return cubicSlopeAt(this._cpts, t);
-	}
-
-	override splitAt(t: number) {
-		const [x, y] = cubicSplitAt(this._cpts, t);
-		return [
-			new CubicLS(this._prev, x[1], x[2], x[3]),
-			new CubicLS(PathLS.moveTo(y[0]), y[1], y[2], y[3]),
-		];
-	}
-	// lengthAt(t = 1) {
-	// 	return cubicLengthAt(this._cpts, t);
-	// }
-	override get length() {
-		return cubicLength(this._cpts);
-	}
-	override reversed() {
-		const { start, c1, c2, end } = this;
-		return new CubicLS(PathLS.moveTo(end), c2, c1, start);
-	}
-	override transform(M: any) {
-		const { start, c1, c2, end } = this;
-		return new CubicLS(
-			PathLS.moveTo(start.transform(M)),
-			c1.transform(M),
-			c2.transform(M),
-			end.transform(M),
-		);
-	}
-	d() {
-		const {
-			_prev,
-			c1: { x: x1, y: y1 },
-			c2: { x: x2, y: y2 },
-			end: { x: ex, y: ey },
-		} = this;
-		return `${_prev?.d() ?? ''}C${x1},${y1} ${x2},${y2} ${ex},${ey}`;
-	}
-}
+import { SegmentSE } from './index.js';
+// import { SegmentLS, MoveLS, LineLS } from './linked.js';

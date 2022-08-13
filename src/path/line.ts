@@ -1,6 +1,6 @@
-import { Segment } from './index.js';
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
+import { Segment } from './index.js';
 
 abstract class LineSegment extends Segment {
 	override bbox() {
@@ -95,3 +95,21 @@ export class Close extends Line {
 export class Horizontal extends Line {}
 export class Vertical extends Line {}
 export { Line as LineSegment };
+
+// declare module './index.js' {
+// 	interface SegmentLS {
+// 		moveTo(pos: Vec): SegmentLS;
+// 		moveTo: (pos: Vec) => SegmentLS;
+// 	}
+// }
+
+// // declare interface SegmentLS {
+// // 	moveTo(pos: Vec): SegmentLS;
+// // }
+
+// SegmentLS.prototype.moveTo = function (pos: Vec) {
+// 	return new MoveLS(this, pos);
+// };
+// SegmentLS.moveTo = function (pos: Vec) {
+// 	return new MoveLS(undefined, pos);
+// };

@@ -1,40 +1,36 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
-import { Cubic } from './cubic.js';
+import { SegmentSE } from './index.js';
 
-export class Quadratic extends Cubic {
+export class Quadratic extends SegmentSE {
 	readonly c: Vec;
 
 	constructor(p1: Iterable<number>, control: Iterable<number>, p2: Iterable<number>) {
-		const start = Vec.new(p1);
-		const c = Vec.new(control);
-		const end = Vec.new(p2);
-
-		const c1 = start.equals(c) ? start : start.mul(1 / 3).add(c.mul(2 / 3));
-		const c2 = end.equals(c) ? end : c.mul(2 / 3).add(end.mul(1 / 3));
-		super(start, c1, c2, end);
-		this.c = c;
+		super(Vec.new(p1), Vec.new(p2));
+		this.c = Vec.new(control);
 	}
 	private get _qpts(): Vec[] {
 		const { start, c, end } = this;
 		return [start, c, end];
 	}
-
+	override get length() {
+		return quadLength(this._qpts);
+	}
 	override slopeAt(t: number): Vec {
-		return slopeAt(this._qpts, t);
+		return quadSlopeAt(this._qpts, t);
 	}
 
 	override pointAt(t: number) {
-		return pointAt(this._qpts, t);
+		return quadPointAt(this._qpts, t);
 	}
 
 	override splitAt(t: number) {
-		const [a, b] = splitAt(this._qpts, t);
+		const [a, b] = quadSplitAt(this._qpts, t);
 		return [new Quadratic(a[0], a[1], a[2]), new Quadratic(b[0], b[1], b[2])];
 	}
 
 	override bbox() {
-		return bbox(this._qpts);
+		return quadBBox(this._qpts);
 	}
 
 	override toPathFragment() {
@@ -53,6 +49,7 @@ export class Quadratic extends Cubic {
 	}
 }
 
+// https://gitlab.com/inkscape/extensions/-/blob/master/inkex/transforms.py
 function quadratic_extrema(a: number, b: number, c: number) {
 	const atol = 1e-9;
 	const cmin = Math.min(a, c);
@@ -67,8 +64,24 @@ function quadratic_extrema(a: number, b: number, c: number) {
 	}
 	return [cmin, cmax];
 }
+const { pow } = Math;
 
-function splitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
+export function quadFlatness([[sx, sy], [cx, cy], [ex, ey]]: Iterable<number>[]) {
+	// let ux = pow(3 * x1 - 2 * sx - ex, 2);   // 2cx−ex−sx
+	// let uy = pow(3 * y1 - 2 * sy - ey, 2);   // 2cy−ey−sy
+	// const vx = pow(3 * x2 - 2 * ex - sx, 2); // 2cx−ex−sx
+	// const vy = pow(3 * y2 - 2 * ey - sy, 2); // 2cy−ey−sy
+	// if (ux < vx) {
+	// 	ux = vx;
+	// }
+	// if (uy < vy) {
+	// 	uy = vy;
+	// }
+	// return ux + uy;
+	return pow(2 * cx - ex - sx, 2) + pow(2 * cy - ey - sy, 2);
+}
+
+export function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	const mx1 = (1 - t) * x1 + t * cx;
 	const mx2 = (1 - t) * cx + t * x2;
 	const mxt = (1 - t) * mx1 + t * mx2;
@@ -83,7 +96,7 @@ function splitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	];
 }
 
-function pointAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
+export function quadPointAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	const v = 1 - t;
 	return Vec.pos(
 		v * v * x1 + 2 * v * t * cx + t * t * x2,
@@ -91,7 +104,7 @@ function pointAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	);
 }
 
-function slopeAt([start, c, end]: Vec[], t: number): Vec {
+export function quadSlopeAt([start, c, end]: Vec[], t: number): Vec {
 	if (t >= 1) {
 		return end.sub(c);
 	} else if (t <= 0) {
@@ -107,8 +120,36 @@ function slopeAt([start, c, end]: Vec[], t: number): Vec {
 	return a.add(b).mul(2); // 1st derivative;
 }
 
-function bbox([[x1, y1], [x2, y2], [x3, y3]]: Vec[]) {
+export function quadBBox([[x1, y1], [x2, y2], [x3, y3]]: Vec[]) {
 	const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
 	const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
 	return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 }
+
+// https://github.com/rveciana/svg-path-properties/blob/master/src/bezier-functions.ts
+export function quadLength([[x0, y0], [x1, y1], [x2, y2]]: Vec[], t: number = 1) {
+	const ax = x0 - 2 * x1 + x2;
+	const ay = y0 - 2 * y1 + y2;
+	const bx = 2 * x1 - 2 * x0;
+	const by = 2 * y1 - 2 * y0;
+
+	const A = 4 * (ax * ax + ay * ay);
+	const B = 4 * (ax * bx + ay * by);
+	const C = bx * bx + by * by;
+
+	if (A === 0) {
+		return t * Math.sqrt(Math.pow(x2 - x0, 2) + Math.pow(y2 - y0, 2));
+	}
+	const b = B / (2 * A);
+	const c = C / A;
+	const u = t + b;
+	const k = c - b * b;
+
+	const uuk = u * u + k > 0 ? Math.sqrt(u * u + k) : 0;
+	const bbk = b * b + k > 0 ? Math.sqrt(b * b + k) : 0;
+	const term = b + Math.sqrt(b * b + k) !== 0 ? k * Math.log(Math.abs((u + uuk) / (b + bbk))) : 0;
+
+	return (Math.sqrt(A) / 2) * (u * uuk - b * bbk + term);
+}
+
+// import { SegmentLS, MoveLS, LineLS } from './linked.js';
