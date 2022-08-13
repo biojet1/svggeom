@@ -76,10 +76,10 @@ export class Arc extends SegmentSE {
 		const cosφ = cos((φ / 180) * PI);
 		const sinφ = sin((φ / 180) * PI);
 		const m = Matrix.hexad(cosφ, sinφ, -sinφ, cosφ, 0, 0);
-		const start = Vec.at(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
+		const start = Vec.pos(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
 			.transform(m)
 			.add(c);
-		const end = Vec.at(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
+		const end = Vec.pos(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
 			.transform(m)
 			.add(c);
 		const arc = abs(Δθ) > 180 ? 1 : 0;
@@ -121,113 +121,13 @@ export class Arc extends SegmentSE {
 		];
 	}
 	override slopeAt(t: number): Vec {
-		// throw new Error('Not implemented');
-		const { rx, ry, cosφ, sinφ, rdelta, rtheta } = this;
-		const θ = rtheta + t * rdelta;
-		const sinθ = sin(θ);
-		const cosθ = cos(θ);
-		const k = rdelta;
-
-		return Vec.at(
-			-rx * cosφ * sinθ * k - ry * sinφ * cosθ * k,
-			-rx * sinφ * sinθ * k + ry * cosφ * cosθ * k,
-		);
+		return arcSlopeAt(this, t);
 	}
 
 	override transform(matrix: any) {
-		// return arc_transform(this, matrix);
 		const { arc, end, start } = this;
-		let { rx, ry, sweep, phi } = this;
-		const p1ˈ = start.transform(matrix);
-		const p2_ = end.transform(matrix);
-		const { rotate, scaleX, scaleY, skewX } = matrix.decompose();
-		if (scaleX == scaleY && scaleX != 1) {
-			rx = rx * scaleX;
-			ry = ry * scaleX;
-		}
-
-		OUT: if (rotate || skewX || scaleX != 1 || scaleY != 1) {
-			phi = (((phi + rotate) % 360) + 360) % 360; // from -30 -> 330
-
-			// const M = phi ? matrix.rotate(phi) : matrix;
-			const M = matrix;
-
-			const { a, c, b, d } = M;
-			const detT = a * d - b * c;
-			const detT2 = detT * detT;
-			if (!rx || !ry || !detT2) break OUT;
-			const A = (d ** 2 / rx ** 2 + c ** 2 / ry ** 2) / detT2;
-			const B = -((d * b) / rx ** 2 + (c * a) / ry ** 2) / detT2;
-			const D = (b ** 2 / rx ** 2 + a ** 2 / ry ** 2) / detT2;
-			// const theta = atan2(-2 * B, D - A) / 2;
-			// console.warn('theta', theta_deg, theta, A, B, D, a, c, b, d, detT2);
-			const DA = D - A;
-			// const l2 = 4 * B ** 2 + DA ** 2;
-			// const delta = l2 ? (0.5 * (-DA * DA - 4 * B * B)) / sqrt(l2) : 0;
-			// const half = (A + D) / 2;
-			// if (skewX || scaleX != 1 || scaleY != 1) {
-			// 	rx = 1.0 / sqrt(half + delta);
-			// 	ry = 1.0 / sqrt(half - delta);
-			// }
-
-			// phi = (theta * 180.0) / PI;
-
-			// return new Arc(
-			// 	p1ˈ,
-			// 	p2_,
-			// 	rx,
-			// 	ry,
-			// 	phi,
-			// 	arc,
-			// 	detT > 0 ? this.sweep : this.sweep > 0 ? 0 : 1
-			// );
-			if (detT < 0) {
-				sweep = !sweep;
-			}
-		}
-
-		return new Arc(p1ˈ, p2_, rx, ry, phi, arc, sweep);
-
-		// new_start = to_complex(tf.dot(to_point(curve.start)))
-		// new_end = to_complex(tf.dot(to_point(curve.end)))
-		// new_radius = to_complex(tf.dot(to_vector(curve.radius)))
-		// if tf[0][0] * tf[1][1] >= 0.0:
-		//     new_sweep = curve.sweep
-		// else:
-		//     new_sweep = not curve.sweep
-		// return Arc(new_start, radius=new_radius, rotation=curve.rotation,
-		//            large_arc=curve.large_arc, sweep=new_sweep, end=new_end)
-
-		// const P1 = start.transform(matrix);
-		// const P2 = end.transform(matrix);
-
-		// new_start = to_complex(tf.dot(to_point(curve.start)))
-		//   new_end = to_complex(tf.dot(to_point(curve.end)))
-
-		//   # Based on https://math.stackexchange.com/questions/2349726/compute-the-major-and-minor-axis-of-an-ellipse-after-linearly-transforming-it
-		//  const rx2 = rx *rx
-		// const  ry2 = ry *ry
-
-		//   Q = np.array([[1/rx2, 0], [0, 1/ry2]])
-		//   invT = np.linalg.inv(tf[:2,:2])
-		//   D = reduce(np.matmul, [invT.T, Q, invT])
-
-		//   eigvals, eigvecs = np.linalg.eig(D)
-
-		//   rx = 1 / np.sqrt(eigvals[0])
-		//   ry = 1 / np.sqrt(eigvals[1])
-
-		//   new_radius = complex(rx, ry)
-
-		//   xeigvec = eigvecs[:, 0]
-		//   rot = np.degrees(np.arccos(xeigvec[0]))
-
-		//   if new_radius.real == 0 or new_radius.imag == 0 :
-		//       return Line(new_start, new_end)
-		//   else :
-		//       return Arc(new_start, radius=new_radius, rotation=curve.rotation + rot,
-		//                  large_arc=curve.large_arc, sweep=curve.sweep, end=new_end,
-		//                  autoscale_radius=False)
+		const [rx, ry, phi, sweep] = arcTransform(this, matrix);
+		return new Arc(start.transform(matrix), end.transform(matrix), rx, ry, phi, arc, sweep);
 	}
 
 	override reversed() {
@@ -236,26 +136,13 @@ export class Arc extends SegmentSE {
 	}
 
 	asCubic() {
-		const {
-			// arc,
-			end: { x: x2, y: y2 },
-			start: { x: x1, y: y1 },
-			rx,
-			ry,
-			// sweep,
-			// phi,
-			cx,
-			cy,
-			cosφ,
-			sinφ,
-			rdelta,
-			rtheta,
-		} = this;
+		const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = this;
 		const segments = arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
 		// Degenerated arcs can be ignored by renderer, but should not be dropped
 		// to avoid collisions with `S A S` and so on. Replace with empty line.
 		if (segments.length === 0) {
-			return [new Line([x1, y1], [x2, y2])];
+			const { end, start } = this;
+			return [new Line(start, end)];
 		} else {
 			return segments.map(function (s) {
 				return new Cubic([s[0], s[1]], [s[2], s[3]], [s[4], s[5]], [s[6], s[7]]);
@@ -280,7 +167,7 @@ function arcPointAt(arc: IArc, t: number) {
 	// const [cosθ, sinθ] = cossin((180 * rtheta + 180 * rdelta * t) / PI);
 	// (eq. 3.1) https://svgwg.org/svg2-draft/implnote.html#ArcParameterizationAlternatives
 	try {
-		return Vec.at(
+		return Vec.pos(
 			rx * cosφ * cosθ - ry * sinφ * sinθ + cx,
 			rx * sinφ * cosθ + ry * cosφ * sinθ + cy,
 		);
@@ -336,4 +223,50 @@ function arcSplitAt(arc: IArc, t: number) {
 		[start, pT, delta1 > PI],
 		[pT, end, delta2 > PI],
 	];
+}
+
+function arcSlopeAt(arc: IArc, t: number): Vec {
+	const { rx, ry, cosφ, sinφ, rdelta, rtheta } = arc;
+	const θ = rtheta + t * rdelta;
+	const sinθ = sin(θ);
+	const cosθ = cos(θ);
+	const k = rdelta;
+	return Vec.pos(
+		-rx * cosφ * sinθ * k - ry * sinφ * cosθ * k,
+		-rx * sinφ * sinθ * k + ry * cosφ * cosθ * k,
+	);
+}
+
+function arcTransform(self: IArc, matrix: any) {
+	const { arc, end, start } = self;
+	let { rx, ry, sweep, phi } = self;
+	const p1ˈ = start.transform(matrix);
+	const p2_ = end.transform(matrix);
+	const { rotate, scaleX, scaleY, skewX } = matrix.decompose();
+	if (scaleX == scaleY && scaleX != 1) {
+		rx = rx * scaleX;
+		ry = ry * scaleX;
+	}
+
+	OUT: if (rotate || skewX || scaleX != 1 || scaleY != 1) {
+		phi = (((phi + rotate) % 360) + 360) % 360; // from -30 -> 330
+		const { a, c, b, d } = matrix;
+		const detT = a * d - b * c;
+		const detT2 = detT * detT;
+		if (!rx || !ry || !detT2) break OUT;
+		const A = (d ** 2 / rx ** 2 + c ** 2 / ry ** 2) / detT2;
+		const B = -((d * b) / rx ** 2 + (c * a) / ry ** 2) / detT2;
+		const D = (b ** 2 / rx ** 2 + a ** 2 / ry ** 2) / detT2;
+		const DA = D - A;
+		if (detT < 0) {
+			sweep = !sweep;
+		}
+	}
+
+	return [rx, ry, phi, sweep ? 1 : 0];
+}
+
+function arcToCubic(self: IArc) {
+	const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = self;
+	return arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
 }

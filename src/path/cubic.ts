@@ -122,12 +122,12 @@ function splitAtScalar(
 		[t, z * z * end - 2 * z * (z - 1) * b + (z - 1) * (z - 1) * a, z * end - (z - 1) * b, end],
 	];
 }
-interface ICubic {
-	c1: Vec;
-	c2: Vec;
-	start: Vec;
-	end: Vec;
-}
+// interface ICubic {
+// 	c1: Vec;
+// 	c2: Vec;
+// 	start: Vec;
+// 	end: Vec;
+// }
 function cubicBox([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Vec[]) {
 	const [xmin, xmax] = cubic_extrema(sx, x1, x2, ex);
 	const [ymin, ymax] = cubic_extrema(sy, y1, y2, ey);
@@ -227,15 +227,15 @@ function cubicLength(_cpts: Vec[]): number {
 		return end.sub(start).abs();
 	}
 }
-function cubicLengthAt(_cpts: Vec[], t = 1) {
-	const curves = cubicMakeFlat(t >= 1 ? _cpts : cubicSplitAt(_cpts, t)[0], t);
-	let length = 0;
-	for (let i = 0, len = curves.length; i < len; ++i) {
-		const [start, , , end] = curves[i];
-		length += end.sub(start).abs();
-	}
-	return length;
-}
+// function cubicLengthAt(_cpts: Vec[], t = 1) {
+// 	const curves = cubicMakeFlat(t >= 1 ? _cpts : cubicSplitAt(_cpts, t)[0], t);
+// 	let length = 0;
+// 	for (let i = 0, len = curves.length; i < len; ++i) {
+// 		const [start, , , end] = curves[i];
+// 		length += end.sub(start).abs();
+// 	}
+// 	return length;
+// }
 
 import { PathLS } from './linked.js';
 
