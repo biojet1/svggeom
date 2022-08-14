@@ -130,42 +130,38 @@ export abstract class SegmentLS extends Segment {
 	}
 	S(...args: Vec[] | number[]): CubicLS {
 		const [p2, pE] = pickPos(args);
-		const { _prev } = this;
-		if (_prev instanceof CubicLS) {
-			const { c2, end } = _prev;
-			return new CubicLS(this, c2.reflectAt(end), p2, pE);
+		const { end } = this;
+		if (this instanceof CubicLS) {
+			return new CubicLS(this, this.c2.reflectAt(end), p2, pE);
 		} else {
-			return new CubicLS(this, _prev?.end ?? this.end, p2, pE);
+			return new CubicLS(this, end, p2, pE);
 		}
 	}
 	s(...args: Vec[] | number[]): CubicLS {
 		const [p2, pE] = pickPos(args);
-		const { _prev, end: rel } = this;
-		if (_prev instanceof CubicLS) {
-			const { c2, end } = _prev;
-			return new CubicLS(this, c2.reflectAt(end), rel.add(p2), rel.add(pE));
+		const { end } = this;
+		if (this instanceof CubicLS) {
+			return new CubicLS(this, this.c2.reflectAt(end), end.add(p2), end.add(pE));
 		} else {
-			return new CubicLS(this, _prev?.end ?? this.end, rel.add(p2), rel.add(pE));
+			return new CubicLS(this, end, end.add(p2), end.add(pE));
 		}
 	}
 	T(...args: Vec[] | number[]): QuadLS {
 		const [pE] = pickPos(args);
-		const { _prev } = this;
-		if (_prev instanceof QuadLS) {
-			const { p, end } = _prev;
-			return new QuadLS(this, p.reflectAt(end), pE);
+		const { end } = this;
+		if (this instanceof QuadLS) {
+			return new QuadLS(this, this.p.reflectAt(end), pE);
 		} else {
-			return new QuadLS(this, _prev?.end ?? this.end, pE);
+			return new QuadLS(this, end, pE);
 		}
 	}
 	t(...args: Vec[] | number[]): QuadLS {
 		const [pE] = pickPos(args);
-		const { _prev, end: rel } = this;
-		if (_prev instanceof QuadLS) {
-			const { p, end } = _prev;
-			return new QuadLS(this, p.reflectAt(end), rel.add(pE));
+		const { end } = this;
+		if (this instanceof QuadLS) {
+			return new QuadLS(this, this.p.reflectAt(end), end.add(pE));
 		} else {
-			return new QuadLS(this, _prev?.end ?? this.end, rel.add(pE));
+			return new QuadLS(this, end, end.add(pE));
 		}
 	}
 
@@ -254,7 +250,7 @@ function* pickPos(args: Vec[] | number[]) {
 }
 const { min, max } = Math;
 export class LineLS extends SegmentLS {
-	bbox() {
+	override bbox() {
 		const {
 			start: [x1, y1],
 			end: [x2, y2],
@@ -263,28 +259,31 @@ export class LineLS extends SegmentLS {
 		const [ymin, ymax] = [min(y1, y2), max(y1, y2)];
 		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
-	get length() {
+	override get length() {
 		const { start, end } = this;
 		return end.sub(start).abs();
 	}
-	pointAt(t: number) {
+	override pointAt(t: number) {
 		const { start, end } = this;
 		return end.sub(start).mul(t).postAdd(start);
 	}
-	slopeAt(t: number) {
+	override slopeAt(t: number) {
 		const { start, end } = this;
 		const vec = end.sub(start);
 		return vec.div(vec.abs());
 	}
 
-	d() {
+	override d() {
 		const {
 			_prev,
 			end: [x, y],
 		} = this;
 		return `${_prev?.d() ?? ''}L${fmtN(x)},${fmtN(y)}`;
 	}
-	_descs() {
+	// override reversed() {
+	// 	// throw new Error('NOTIMPL');
+	// }
+	override _descs() {
 		const {
 			end: [x, y],
 		} = this;
@@ -363,8 +362,8 @@ export class CubicLS extends SegmentLS {
 	readonly c2: Vec;
 	constructor(prev: SegmentLS | undefined, c1: Vec, c2: Vec, end: Vec) {
 		super(prev, end);
-		this.c1 = Vec.new(c1);
-		this.c2 = Vec.new(c2);
+		this.c1 = c1;
+		this.c2 = c2;
 	}
 	private get _cpts(): Vec[] {
 		const { start, c1, c2, end } = this;
@@ -403,7 +402,7 @@ export class CubicLS extends SegmentLS {
 			end.transform(M),
 		);
 	}
-	d() {
+	override d() {
 		const {
 			_prev,
 			c1: { x: x1, y: y1 },
@@ -414,7 +413,7 @@ export class CubicLS extends SegmentLS {
 			ey,
 		)}`;
 	}
-	_descs() {
+	override _descs() {
 		const {
 			c1: { x: x1, y: y1 },
 			c2: { x: x2, y: y2 },
@@ -489,6 +488,6 @@ export class ArcLS extends SegmentLS {
 			arc,
 			end: [x, y],
 		} = this;
-		return ['Q', rx, ry, phi, sweep ? 1 : 0, arc ? 1 : 0, x, y];
+		return ['A', rx, ry, phi, arc ? 1 : 0, sweep ? 1 : 0, x, y];
 	}
 }
