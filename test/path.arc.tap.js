@@ -86,14 +86,10 @@ for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
                 item,
                 deltp,
             );
-            // testSegment(
-            //     t,
-            //     PathLS.parse(
-            //         `m ${sx},${sy} a ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex - sx},${ey - sy}`,
-            //     ),
-            //     item,
-            //     deltp,
-            // );
+            const rel = PathLS.parse(
+                `m ${sx},${sy} a ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex - sx},${ey - sy}`,
+            );
+            testSegment(t, rel, item, deltp);
         }
         t.end();
     });

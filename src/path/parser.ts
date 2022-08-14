@@ -375,7 +375,7 @@ export function parseLS(d: string) {
 				cur = cur.A(num(), num(), num(), num(), num(), vec());
 				break;
 			case 'a':
-				cur = cur.A(num(), num(), num(), num(), num(), vec());
+				cur = cur.a(num(), num(), num(), num(), num(), vec());
 				break;
 			default:
 				if (command && /^-?\.?\d/.test(command)) {

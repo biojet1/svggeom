@@ -94,6 +94,7 @@ export function testSegment(t, seg, item, opt = {}) {
         test_descs = true,
         test_tangents = true,
     } = opt;
+    const tan_opt = { delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon };
     t.almostEqual(item.start[0], seg.start.x);
     t.almostEqual(item.start[1], seg.start.y);
     t.almostEqual(item.end[0], seg.end.x);
@@ -111,5 +112,10 @@ export function testSegment(t, seg, item, opt = {}) {
             pv,
             px,
         ]);
+
+        pv = seg.slopeAt(T).toArray();
+        px = [tx, ty];
+        // t.almostEqual(pv, px, 1e-11, `tangentAt(${T})`, [item, seg, pv, px]);
+        test_tangents && t.sameTangent(pv, px, tan_opt, `tangentAt(${T})`, [item, seg]);
     }
 }
