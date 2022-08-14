@@ -57,11 +57,11 @@ export abstract class SegmentLS extends Segment {
 			yield cur;
 		}
 	}
-	moveTo(pos: Vec) {
-		return this.M(pos);
+	moveTo(...args: Vec[] | number[]) {
+		return this.M(...args);
 	}
-	lineTo(pos: Vec) {
-		return this.L(pos);
+	lineTo(...args: Vec[] | number[]) {
+		return this.L(...args);
 	}
 	closePath(): SegmentLS {
 		return this.Z();
@@ -111,67 +111,106 @@ export abstract class SegmentLS extends Segment {
 		return new LineLS(this, this.end.shiftY(n));
 	}
 	Q(...args: Vec[] | number[]) {
-		const [p, end] = pickPos(args);
-		return new QuadLS(this, p, end);
+		const [p, pE] = pickPos(args);
+		return new QuadLS(this, p, pE);
 	}
 	q(...args: Vec[] | number[]) {
-		const [p, end] = pickPos(args);
+		const [p, pE] = pickPos(args);
 		const { end: rel } = this;
-		return new QuadLS(this, rel.add(p), rel.add(end));
+		return new QuadLS(this, rel.add(p), rel.add(pE));
 	}
 	C(...args: Vec[] | number[]) {
-		const [c1, c2, end] = pickPos(args);
-		return new CubicLS(this, c1, c2, end);
+		const [c1, c2, pE] = pickPos(args);
+		return new CubicLS(this, c1, c2, pE);
 	}
 	c(...args: Vec[] | number[]) {
-		const [c1, c2, end] = pickPos(args);
+		const [c1, c2, pE] = pickPos(args);
 		const { end: rel } = this;
-		return new CubicLS(this, rel.add(c1), rel.add(c2), rel.add(end));
+		return new CubicLS(this, rel.add(c1), rel.add(c2), rel.add(pE));
 	}
 	S(...args: Vec[] | number[]): CubicLS {
 		const [p2, pE] = pickPos(args);
-		const { prev } = this;
-		if (prev instanceof CubicLS) {
-			const { c2, end } = prev;
+		const { _prev } = this;
+		if (_prev instanceof CubicLS) {
+			const { c2, end } = _prev;
 			return new CubicLS(this, c2.reflectAt(end), p2, pE);
 		} else {
-			return new CubicLS(this, prev.end, p2, pE);
+			return new CubicLS(this, _prev?.end ?? this.end, p2, pE);
 		}
 	}
 	s(...args: Vec[] | number[]): CubicLS {
 		const [p2, pE] = pickPos(args);
-		const { prev, end: rel } = this;
-		if (prev instanceof CubicLS) {
-			const { c2, end } = prev;
+		const { _prev, end: rel } = this;
+		if (_prev instanceof CubicLS) {
+			const { c2, end } = _prev;
 			return new CubicLS(this, c2.reflectAt(end), rel.add(p2), rel.add(pE));
 		} else {
-			return new CubicLS(this, prev.end, rel.add(p2), rel.add(pE));
+			return new CubicLS(this, _prev?.end ?? this.end, rel.add(p2), rel.add(pE));
 		}
 	}
 	T(...args: Vec[] | number[]): QuadLS {
 		const [pE] = pickPos(args);
-		const { prev } = this;
-		if (prev instanceof QuadLS) {
-			const { p, end } = prev;
+		const { _prev } = this;
+		if (_prev instanceof QuadLS) {
+			const { p, end } = _prev;
 			return new QuadLS(this, p.reflectAt(end), pE);
 		} else {
-			return new QuadLS(this, prev.end, pE);
+			return new QuadLS(this, _prev?.end ?? this.end, pE);
 		}
 	}
 	t(...args: Vec[] | number[]): QuadLS {
 		const [pE] = pickPos(args);
-		const { prev, end: rel } = this;
-		if (prev instanceof QuadLS) {
-			const { p, end } = prev;
+		const { _prev, end: rel } = this;
+		if (_prev instanceof QuadLS) {
+			const { p, end } = _prev;
 			return new QuadLS(this, p.reflectAt(end), rel.add(pE));
 		} else {
-			return new QuadLS(this, prev.end, rel.add(pE));
+			return new QuadLS(this, _prev?.end ?? this.end, rel.add(pE));
 		}
 	}
+
+	A(
+		rx: number,
+		ry: number,
+		φ: number,
+		arc: boolean | number,
+		sweep: boolean | number,
+		...args: Vec[] | number[]
+	) {
+		const [pE] = pickPos(args);
+		return new ArcLS(this, rx, ry, φ, arc, sweep, pE);
+	}
+
+	a(
+		rx: number,
+		ry: number,
+		φ: number,
+		arc: boolean | number,
+		sweep: boolean | number,
+		...args: Vec[] | number[]
+	) {
+		const [pE] = pickPos(args);
+		const { end: rel } = this;
+		return new ArcLS(this, rx, ry, φ, arc, sweep, rel.add(pE));
+	}
+
 	toString() {
 		return this.d();
 	}
+
+	descArray(): (number | string)[] {
+		const { _prev } = this;
+		if (_prev) {
+			const a = _prev.descArray();
+			a.push(...this._descs());
+			return a;
+		} else {
+			return [...this._descs()];
+		}
+	}
+	abstract _descs(): (number | string)[];
 	abstract d(): string;
+	// abstract *_enumd(): Generator<number | string>;
 	// private *enumDesc() {}
 	static moveTo(...args: Vec[] | number[]) {
 		const [pos] = pickPos(args);
@@ -237,12 +276,19 @@ export class LineLS extends SegmentLS {
 		const vec = end.sub(start);
 		return vec.div(vec.abs());
 	}
+
 	d() {
 		const {
 			_prev,
-			end: { x, y },
+			end: [x, y],
 		} = this;
 		return `${_prev?.d() ?? ''}L${fmtN(x)},${fmtN(y)}`;
+	}
+	_descs() {
+		const {
+			end: [x, y],
+		} = this;
+		return ['L', x, y];
 	}
 }
 export class MoveLS extends LineLS {
@@ -253,6 +299,12 @@ export class MoveLS extends LineLS {
 		} = this;
 		return `${_prev?.d() ?? ''}M${fmtN(x)},${fmtN(y)}`;
 	}
+	_descs() {
+		const {
+			end: [x, y],
+		} = this;
+		return ['M', x, y];
+	}
 }
 export class CloseLS extends LineLS {
 	d() {
@@ -261,6 +313,9 @@ export class CloseLS extends LineLS {
 			end: { x, y },
 		} = this;
 		return `${_prev?.d() ?? ''}Z`;
+	}
+	_descs() {
+		return ['Z'];
 	}
 }
 import { quadLength, quadSlopeAt, quadPointAt, quadBBox } from './quadratic.js';
@@ -293,6 +348,13 @@ export class QuadLS extends SegmentLS {
 			end: { x: ex, y: ey },
 		} = this;
 		return `${_prev?.d() ?? ''}Q${fmtN(x1)},${fmtN(y1)} ${fmtN(ex)},${fmtN(ey)}`;
+	}
+	_descs() {
+		const {
+			p: { x: x1, y: y1 },
+			end: { x: ex, y: ey },
+		} = this;
+		return ['Q', x1, y1, ex, ey];
 	}
 }
 import { cubicLength, cubicSlopeAt, cubicPointAt, cubicBox, cubicSplitAt } from './cubic.js';
@@ -352,6 +414,14 @@ export class CubicLS extends SegmentLS {
 			ey,
 		)}`;
 	}
+	_descs() {
+		const {
+			c1: { x: x1, y: y1 },
+			c2: { x: x2, y: y2 },
+			end: [ex, ey],
+		} = this;
+		return ['C', x1, y1, x2, y2, ex, ey];
+	}
 }
 import { arcBBox, arcLength, arcPointAt, arcSlopeAt } from './arc.js';
 import { arcParams } from '../util.js';
@@ -368,7 +438,7 @@ export class ArcLS extends SegmentLS {
 	readonly rdelta: number;
 	readonly cx: number;
 	readonly cy: number;
-	protected constructor(
+	constructor(
 		prev: SegmentLS | undefined,
 		rx: number,
 		ry: number,
@@ -409,5 +479,16 @@ export class ArcLS extends SegmentLS {
 		return `${_prev?.d() ?? ''}A${fmtN(rx)},${fmtN(ry)} ${fmtN(phi)},${arc ? 1 : 0},${
 			sweep ? 1 : 0
 		} ${fmtN(x)},${fmtN(y)}`;
+	}
+	_descs() {
+		const {
+			rx,
+			ry,
+			phi,
+			sweep,
+			arc,
+			end: [x, y],
+		} = this;
+		return ['Q', rx, ry, phi, sweep ? 1 : 0, arc ? 1 : 0, x, y];
 	}
 }

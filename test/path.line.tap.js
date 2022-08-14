@@ -13,13 +13,15 @@ for await (const item of enum_path_data({ SEGMENTS: 'Line' })) {
         t.end();
     });
     test.test(`PathLS<${item.d}>`, { bail: CI }, function (t) {
+        const [[x1, y1], [x2, y2]] = [item.start, item.end];
         {
             const cur = PathLS.moveTo(item.start).lineTo(item.end);
             testSegment(t, cur, item);
+            const cur2 = PathLS.moveTo(x1, y1).lineTo(x2, y2);
+            t.same(cur.toString(), cur2.toString());
         }
-
-        if (CI) {
-            const [[x1, y1], [x2, y2]] = [item.start, item.end];
+        // if (CI)
+        {
             testSegment(t, PathLS.parse(`M ${x1},${y1} L ${x2},${y2}`), item);
             testSegment(t, PathLS.parse(`m ${x1},${y1} l ${x2 - x1},${y2 - y1}`), item);
         }

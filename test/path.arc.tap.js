@@ -79,10 +79,26 @@ for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
         }
         t.end();
     });
-    // test.test(`PathLS<${item.d}>`, { bail: CI }, function (t) {
-    //     const cur = PathLS.moveTo(item.start).arcTo(item.end);
-    //     testSegment(t, cur, item);
-    //     t.end();
-    // });    
+    test.test(`PathLS<${item.d}>`, { bail: CI }, function (t) {
+        // const cur = PathLS.moveTo(item.start).arcTo(item.end);
+        // testSegment(t, cur, item);
+        // {
+        //     testSegment(
+        //         t,
+        //         PathLS.parse(`M ${sx},${sy} C ${x1},${y1} ${x2},${y2} ${ex},${ey}`),
+        //         item,
+        //         deltp,
+        //     );
+        //     testSegment(
+        //         t,
+        //         PathLS.parse(
+        //             `m ${sx},${sy} c ${x1 - sx},${y1 - sy} ${x2 - sx},${y2 - sy} ${ex - sx},${ey - sy}`,
+        //         ),
+        //         item,
+        //         deltp,
+        //     );
+        // }
+        t.end();
+    });
 }
 console.error(`${I} arcs, ${as_cubic} as_cubic`);

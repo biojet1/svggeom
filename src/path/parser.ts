@@ -358,6 +358,7 @@ export function parseLS(d: string) {
 				break;
 			case 'c':
 				cur = cur.c(vec(), vec(), vec());
+				break;
 			case 'S':
 				cur = cur.S(vec(), vec());
 				break;
@@ -365,10 +366,16 @@ export function parseLS(d: string) {
 				cur = cur.s(vec(), vec());
 				break;
 			case 'T':
-				cur = cur.T(vec(), vec());
+				cur = cur.T(vec());
 				break;
 			case 't':
-				cur = cur.t(vec(), vec());
+				cur = cur.t(vec());
+				break;
+			case 'A':
+				cur = cur.A(num(), num(), num(), num(), num(), vec());
+				break;
+			case 'a':
+				cur = cur.A(num(), num(), num(), num(), num(), vec());
 				break;
 			default:
 				if (command && /^-?\.?\d/.test(command)) {

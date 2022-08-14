@@ -22,8 +22,30 @@ for await (const item of enum_path_data({ SEGMENTS: 'CubicBezier' })) {
     });
     test.test(`PathLS<${item.d}>`, { bail: CI }, function (t) {
         const [start, c1, c2, end] = item.points;
-        const cur = PathLS.moveTo(start).bezierCurveTo(c1, c2, end);
-        testSegment(t, cur, item, deltp);
+        const [[sx, sy], [x1, y1], [x2, y2], [ex, ey]] = [start, c1, c2, end];
+        {
+            const cur = PathLS.moveTo(start).bezierCurveTo(c1, c2, end);
+            testSegment(t, cur, item, deltp);
+            const cur2 = PathLS.moveTo(sx, sy).bezierCurveTo(x1, y1, x2, y2, ex, ey);
+            t.same(cur.toString(), cur2.toString());
+        }
+        // if (CI)
+        {
+            testSegment(
+                t,
+                PathLS.parse(`M ${sx},${sy} C ${x1},${y1} ${x2},${y2} ${ex},${ey}`),
+                item,
+                deltp,
+            );
+            testSegment(
+                t,
+                PathLS.parse(
+                    `m ${sx},${sy} c ${x1 - sx},${y1 - sy} ${x2 - sx},${y2 - sy} ${ex - sx},${ey - sy}`,
+                ),
+                item,
+                deltp,
+            );
+        }
         t.end();
     });
 }
