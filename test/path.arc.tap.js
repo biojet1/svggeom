@@ -77,8 +77,12 @@ for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
                 test_segment(t, cubic_segs, item, opt);
                 ++as_cubic;
         }
-
         t.end();
     });
+    // test.test(`PathLS<${item.d}>`, { bail: CI }, function (t) {
+    //     const cur = PathLS.moveTo(item.start).arcTo(item.end);
+    //     testSegment(t, cur, item);
+    //     t.end();
+    // });    
 }
 console.error(`${I} arcs, ${as_cubic} as_cubic`);

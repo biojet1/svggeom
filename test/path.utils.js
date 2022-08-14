@@ -94,10 +94,10 @@ export function testSegment(t, seg, item, opt = {}) {
         test_descs = true,
         test_tangents = true,
     } = opt;
-    t.same(item.start[0], seg.start.x);
-    t.same(item.start[1], seg.start.y);
-    t.same(item.end[0], seg.end.x);
-    t.same(item.end[1], seg.end.y);
+    t.almostEqual(item.start[0], seg.start.x);
+    t.almostEqual(item.start[1], seg.start.y);
+    t.almostEqual(item.end[0], seg.end.x);
+    t.almostEqual(item.end[1], seg.end.y);
     t.almostEqual(item.length, seg.length, len_epsilon, 'LEN', [item, seg]);
     t.sameBox(item.bbox, seg.bbox());
     let pv, px, a, b;
