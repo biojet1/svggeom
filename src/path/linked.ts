@@ -1,6 +1,7 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
 import { Segment } from './index.js';
+import { parseLS } from './parser.js';
 
 export abstract class SegmentLS extends Segment {
 	protected _prev?: SegmentLS;
@@ -76,10 +77,106 @@ export abstract class SegmentLS extends Segment {
 		return new CubicLS(this, c1, c2, end);
 	}
 	quadraticCurveTo(...args: Vec[] | number[]) {
-		const [c, end] = pickPos(args);
-		return new QuadLS(this, c, end);
+		const [p, end] = pickPos(args);
+		return new QuadLS(this, p, end);
 	}
 
+	M(...args: Vec[] | number[]) {
+		const [pos] = pickPos(args);
+		return new MoveLS(this, pos);
+	}
+	m(...args: Vec[] | number[]) {
+		const [pos] = pickPos(args);
+		return new MoveLS(this, this.end.add(pos));
+	}
+	Z(): SegmentLS {
+		const end = this.prevMove?.end;
+		if (end) {
+			return new CloseLS(this, end);
+		}
+		return this;
+	}
+	z(): SegmentLS {
+		return this.Z();
+	}
+	L(...args: Vec[] | number[]) {
+		const [pos] = pickPos(args);
+		return new LineLS(this, pos);
+	}
+	l(...args: Vec[] | number[]) {
+		const [pos] = pickPos(args);
+		return new LineLS(this, this.end.add(pos));
+	}
+	H(n: number) {
+		return new LineLS(this, Vec.pos(n, 0));
+	}
+	h(n: number) {
+		return new LineLS(this, this.end.shiftX(n));
+	}
+	V(n: number) {
+		return new LineLS(this, Vec.pos(0, n));
+	}
+	v(n: number) {
+		return new LineLS(this, this.end.shiftY(n));
+	}
+	Q(...args: Vec[] | number[]) {
+		const [p, end] = pickPos(args);
+		return new QuadLS(this, p, end);
+	}
+	q(...args: Vec[] | number[]) {
+		const [p, end] = pickPos(args);
+		const { end: rel } = this;
+		return new QuadLS(this, rel.add(p), rel.add(end));
+	}
+	C(...args: Vec[] | number[]) {
+		const [c1, c2, end] = pickPos(args);
+		return new CubicLS(this, c1, c2, end);
+	}
+	c(...args: Vec[] | number[]) {
+		const [c1, c2, end] = pickPos(args);
+		const { end: rel } = this;
+		return new CubicLS(this, rel.add(c1), rel.add(c2), rel.add(end));
+	}
+	S(...args: Vec[] | number[]): CubicLS {
+		const [p2, pE] = pickPos(args);
+		const { prev } = this;
+		if (prev instanceof CubicLS) {
+			const { c2, end } = prev;
+			return new CubicLS(this, c2.reflectAt(end), p2, pE);
+		} else {
+			return new CubicLS(this, prev.end, p2, pE);
+		}
+	}
+	s(...args: Vec[] | number[]): CubicLS {
+		const [p2, pE] = pickPos(args);
+		const { prev, end: rel } = this;
+		if (prev instanceof CubicLS) {
+			const { c2, end } = prev;
+			return new CubicLS(this, c2.reflectAt(end), rel.add(p2), rel.add(pE));
+		} else {
+			return new CubicLS(this, prev.end, rel.add(p2), rel.add(pE));
+		}
+	}
+	T(...args: Vec[] | number[]): QuadLS {
+		const [pE] = pickPos(args);
+		const { prev } = this;
+		if (prev instanceof QuadLS) {
+			const { p, end } = prev;
+			return new QuadLS(this, p.reflectAt(end), pE);
+		} else {
+			return new QuadLS(this, prev.end, pE);
+		}
+	}
+	t(...args: Vec[] | number[]): QuadLS {
+		const [pE] = pickPos(args);
+		const { prev, end: rel } = this;
+		if (prev instanceof QuadLS) {
+			const { p, end } = prev;
+			return new QuadLS(this, p.reflectAt(end), rel.add(pE));
+		} else {
+			return new QuadLS(this, prev.end, rel.add(pE));
+		}
+	}
 	toString() {
 		return this.d();
 	}
@@ -95,6 +192,20 @@ export abstract class SegmentLS extends Segment {
 		const [pos] = pickPos(args);
 		return this.moveTo(Vec.pos(0, 0)).lineTo(pos);
 	}
+
+	static bezierCurveTo(...args: Vec[] | number[]) {
+		const [c1, c2, end] = pickPos(args);
+		return this.moveTo(Vec.pos(0, 0)).bezierCurveTo(c1, c2, end);
+	}
+
+	static quadraticCurveTo(...args: Vec[] | number[]) {
+		const [p, end] = pickPos(args);
+		return this.moveTo(Vec.pos(0, 0)).quadraticCurveTo(p, end);
+	}
+	static parse(d:string) {
+		return parseLS(d);
+	}
+
 }
 
 function* pickPos(args: Vec[] | number[]) {
@@ -174,15 +285,15 @@ export class CloseLS extends LineLS {
 
 import { quadLength, quadSlopeAt, quadPointAt, quadBBox } from './quadratic.js';
 export class QuadLS extends SegmentLS {
-	readonly c: Vec;
-	constructor(prev: SegmentLS | undefined, c: Vec, end: Vec) {
+	readonly p: Vec;
+	constructor(prev: SegmentLS | undefined, p: Vec, end: Vec) {
 		super(prev, end);
-		this.c = c;
+		this.p = p;
 	}
 
 	private get _qpts(): Vec[] {
-		const { start, c, end } = this;
-		return [start, c, end];
+		const { start, p, end } = this;
+		return [start, p, end];
 	}
 	override get length() {
 		return quadLength(this._qpts);
@@ -201,7 +312,7 @@ export class QuadLS extends SegmentLS {
 	override d() {
 		const {
 			_prev,
-			c: { x: x1, y: y1 },
+			p: { x: x1, y: y1 },
 			end: { x: ex, y: ey },
 		} = this;
 		return `${_prev?.d() ?? ''}Q${x1},${y1} ${ex},${ey}`;

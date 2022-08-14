@@ -269,9 +269,9 @@ export function parseDesc(d: string) {
 	return segments;
 }
 
-import { SegmentLS } from './linked.js';
+import { SegmentLS, MoveLS, CubicLS, QuadLS } from './linked.js';
 
-export function parseDesc2(d: string) {
+export function parseLS(d: string) {
 	// prepare for parsing
 	const array = d
 		.replace(numbersWithDots, pathRegReplace) // convert 45.123.123 to 45.123 .123
@@ -287,78 +287,112 @@ export function parseDesc2(d: string) {
 		}
 		return parseFloat(v);
 	};
-	let moved: SegmentLS | undefined;
-	let cur: SegmentLS | undefined;
+	const vec = function () {
+		return Vec.pos(num(), num());
+	};
+	const init = Vec.pos(0, 0);
+	const last = function () {
+		return cur ?? (cur = SegmentLS.moveTo(init));
+	};
+	const vecr = function () {
+		return cur.end.add(vec());
+	};
 
+	let moved: SegmentLS | undefined;
+	const first = SegmentLS.moveTo(init);
+	let cur = first;
+	let last_command;
 	while (array.length > 0) {
 		let absolute = false;
 		const command = array.pop();
 		// const start = pos;
 		switch (command) {
 			case 'M':
-				absolute = true;
+				if (cur === first) {
+					cur = SegmentLS.moveTo(vec());
+				} else {
+					cur = cur.M(vec());
+				}
+				break;
 			case 'm':
-				{
-					const x = num();
-					const y = num();
-					if (!cur) {
-						cur = moved = SegmentLS.moveTo(x, y);
-					} else if (absolute) {
-						cur = cur.moveTo(Vec.pos(x, y));
-					} else {
-						cur = cur.moveTo(cur.end.add(Vec.pos(x, y)));
-					}
+				if (cur === first) {
+					cur = SegmentLS.moveTo(vec());
+				} else {
+					cur = cur.m(vec());
 				}
 				break;
 			case 'Z':
-				absolute = true;
 			case 'z':
-				{
-					if (cur) {
-						cur = cur.closePath();
-					}
+				if (cur === first) {
+					// pass
+				} else {
+					cur = cur.Z();
 				}
 				break;
 			case 'L':
-				absolute = true;
+				cur = cur.L(vec());
+				break;
 			case 'l':
-				{
-					const to = Vec.pos(num(), num());
-					if (!cur) {
-						cur = SegmentLS.lineTo(to);
-					} else if (absolute) {
-						cur = cur.lineTo(to);
-					} else {
-						cur = cur.lineTo(cur.end.add(to));
-					}
-				}
+				cur = cur.l(vec());
 				break;
 			case 'H':
-				absolute = true;
+				cur = cur.H(num());
+				break;
 			case 'h':
-			// 	{
-			// 		const v = num();
-			// 		if (absolute) {
-			// 			pos = Vec.at(v, pos.y);
-			// 		} else {
-			// 			pos = Vec.at(pos.x + v, pos.y);
-			// 		}
-			// 		segments.push(new Horizontal(start, pos));
-			// 	}
-			// 	break;
-			// case 'V':
-			// 	absolute = true;
-			// case 'v':
-			// 	{
-			// 		const v = num();
-			// 		if (absolute) {
-			// 			pos = Vec.at(pos.x, v);
-			// 		} else {
-			// 			pos = Vec.at(pos.x, pos.y + v);
-			// 		}
-			// 		segments.push(new Vertical(start, pos));
-			// 	}
-			// 	break;
+				cur = cur.h(num());
+				break;
+			case 'V':
+				cur = cur.V(num());
+				break;
+			case 'v':
+				cur = cur.v(num());
+				break;
+			case 'Q':
+				cur = cur.Q(vec(), vec());
+				break;
+			case 'q':
+				cur = cur.q(vec(), vec());
+				break;
+			case 'C':
+				cur = cur.C(vec(), vec(), vec());
+				break;
+			case 'c':
+				cur = cur.c(vec(), vec(), vec());
+			case 'S':
+				cur = cur.S(vec(), vec());
+				break;
+			case 's':
+				cur = cur.s(vec(), vec());
+				break;
+			case 'T':
+				cur = cur.T(vec(), vec());
+				break;
+			case 't':
+				cur = cur.t(vec(), vec());
+				break;
+			default:
+				if (command && /^-?\.?\d/.test(command)) {
+					array.push(command);
+
+					switch (last_command) {
+						case 'm':
+							array.push('l');
+							break;
+						case 'M':
+							array.push('L');
+							break;
+						default:
+							if (last_command) {
+								array.push(last_command);
+							} else {
+								array.push('L');
+							}
+					}
+					continue;
+				}
+				throw new Error(`Invalid command ${command} from "${d}" : ${array.reverse()}`);
 		}
+		last_command = command;
 	}
+	return cur;
 }

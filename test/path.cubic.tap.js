@@ -14,7 +14,7 @@ for await (const item of enum_path_data({ SEGMENTS: 'CubicBezier' })) {
         seg = PathLS.moveTo(...s).bezierCurveTo(a, b, e);
         // test_segment(t, seg, item, { len_epsilon: 0.189, point_epsilon: 1e-10, slope_epsilon: 1e-8 });
         // console.dir(seg, {depth: null});
-        console.log(s, a, b, e, seg.d());
+        // console.log(s, a, b, e, seg.d());
 
         t.end();
     });
