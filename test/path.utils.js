@@ -1,25 +1,25 @@
 'uses strict';
-import {spawn} from 'child_process';
+import { spawn } from 'child_process';
 export async function* enum_path_data(env) {
     const pyproc = spawn('python', ['test/path.py'], {
         stdio: ['ignore', 'pipe', 'inherit'],
-        env: {...process.env, ...env},
+        env: { ...process.env, ...env },
     });
     let last;
     for await (const chunk of pyproc.stdout) {
         const lines = ((last ?? '') + chunk.toString()).split(/\r?\n/);
         last = lines.pop();
-        for (const item of lines.map(value => JSON.parse(value))) {
+        for (const item of lines.map((value) => JSON.parse(value))) {
             // console.log(item.points);
             yield item;
         }
     }
 }
-import {Cubic, Path} from 'svggeom';
+import { Cubic, Path } from 'svggeom';
 Path.digits = 16;
 
 export function test_segment(t, seg, item, opt = {}) {
-    const {epsilon = 1e-11} = opt;
+    const { epsilon = 1e-11 } = opt;
     const {
         delta_epsilon = epsilon,
         len_epsilon = epsilon,
@@ -28,17 +28,22 @@ export function test_segment(t, seg, item, opt = {}) {
         test_descs = true,
         test_tangents = true,
     } = opt;
-    const tan_opt = {delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon};
+    const tan_opt = { delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon };
 
     t.sameBox(seg, item.bbox, epsilon, 'BOX', [item, seg]);
     t.almostEqual(seg.length, item.length, len_epsilon, 'LEN', [item, seg]);
 
     let pv, px, a, b;
-    for (const [T, {x, y, tx, ty, pathA, pathB}] of Object.entries(item.at)) {
+    for (const [T, { x, y, tx, ty, pathA, pathB }] of Object.entries(item.at)) {
         pv = seg.pointAt(T).toArray();
         px = [x, y, 0];
         // console.error(pv, px);
-        t.almostEqual(pv, px, {epsilon: point_epsilon, on_fail: opt?.on_fail}, `pointAt(${T})`, [item, seg, pv, px]);
+        t.almostEqual(pv, px, { epsilon: point_epsilon, on_fail: opt?.on_fail }, `pointAt(${T})`, [
+            item,
+            seg,
+            pv,
+            px,
+        ]);
 
         pv = seg.slopeAt(T).toArray();
         px = [tx, ty];
@@ -56,7 +61,7 @@ export function test_segment(t, seg, item, opt = {}) {
                 t.sameDescs(descArray(seg.cropAt(T, 1)), pathB, point_epsilon, `cropAt(${T}, 1)`, seg);
             } catch (err) {
                 console.error('Err splitAt', T);
-                console.dir(seg, {depth: null});
+                console.dir(seg, { depth: null });
                 throw err;
             }
         }
@@ -73,8 +78,38 @@ export function test_segment(t, seg, item, opt = {}) {
 }
 function descArray(x) {
     if (x instanceof Path) {
-        return x.descArray({close: null});
+        return x.descArray({ close: null });
     } else {
-        return new Path([x]).descArray({close: null});
+        return new Path([x]).descArray({ close: null });
+    }
+}
+
+export function testSegment(t, seg, item, opt = {}) {
+    const { epsilon = 1e-11 } = opt;
+    const {
+        delta_epsilon = epsilon,
+        len_epsilon = epsilon,
+        slope_epsilon = epsilon,
+        point_epsilon = epsilon,
+        test_descs = true,
+        test_tangents = true,
+    } = opt;
+    t.same(item.start[0], seg.start.x);
+    t.same(item.start[1], seg.start.y);
+    t.same(item.end[0], seg.end.x);
+    t.same(item.end[1], seg.end.y);
+    t.almostEqual(item.length, seg.length, len_epsilon, 'LEN', [item, seg]);
+    t.sameBox(item.bbox, seg.bbox());
+    let pv, px, a, b;
+    for (const [T, { x, y, tx, ty, pathA, pathB }] of Object.entries(item.at)) {
+        pv = seg.pointAt(T).toArray();
+        px = [x, y, 0];
+        // console.error(pv, px);
+        t.almostEqual(pv, px, { epsilon: point_epsilon, on_fail: opt?.on_fail }, `pointAt(${T})`, [
+            item,
+            seg,
+            pv,
+            px,
+        ]);
     }
 }

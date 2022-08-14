@@ -3,10 +3,14 @@ import { Box } from '../box.js';
 import { Segment } from './index.js';
 import { parseLS } from './parser.js';
 
+function fmtN(n: number) {
+	const v = n.toFixed(SegmentLS.digits);
+	return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
+}
 export abstract class SegmentLS extends Segment {
 	protected _prev?: SegmentLS;
 	private readonly _end: Vec;
-
+	static digits = 5;
 	constructor(prev: SegmentLS | undefined, end: Vec) {
 		super();
 		this._prev = prev;
@@ -26,11 +30,9 @@ export abstract class SegmentLS extends Segment {
 		}
 		throw new Error('No prev');
 	}
-
 	get end() {
 		return this._end;
 	}
-
 	get first(): SegmentLS | undefined {
 		let cur: SegmentLS | undefined = this;
 		while (cur) {
@@ -55,32 +57,21 @@ export abstract class SegmentLS extends Segment {
 			yield cur;
 		}
 	}
-
 	moveTo(pos: Vec) {
-		return new MoveLS(this, pos);
+		return this.M(pos);
 	}
-
 	lineTo(pos: Vec) {
-		return new LineLS(this, pos);
+		return this.L(pos);
 	}
-
 	closePath(): SegmentLS {
-		const end = this.prevMove?.end;
-		if (end) {
-			return new CloseLS(this, end);
-		}
-		return this;
+		return this.Z();
 	}
-
 	bezierCurveTo(...args: Vec[] | number[]) {
-		const [c1, c2, end] = pickPos(args);
-		return new CubicLS(this, c1, c2, end);
+		return this.C(...args);
 	}
 	quadraticCurveTo(...args: Vec[] | number[]) {
-		const [p, end] = pickPos(args);
-		return new QuadLS(this, p, end);
+		return this.Q(...args);
 	}
-
 	M(...args: Vec[] | number[]) {
 		const [pos] = pickPos(args);
 		return new MoveLS(this, pos);
@@ -182,30 +173,25 @@ export abstract class SegmentLS extends Segment {
 	}
 	abstract d(): string;
 	// private *enumDesc() {}
-
 	static moveTo(...args: Vec[] | number[]) {
 		const [pos] = pickPos(args);
 		return new MoveLS(undefined, pos);
 	}
-
 	static lineTo(...args: Vec[] | number[]) {
 		const [pos] = pickPos(args);
 		return this.moveTo(Vec.pos(0, 0)).lineTo(pos);
 	}
-
 	static bezierCurveTo(...args: Vec[] | number[]) {
 		const [c1, c2, end] = pickPos(args);
 		return this.moveTo(Vec.pos(0, 0)).bezierCurveTo(c1, c2, end);
 	}
-
 	static quadraticCurveTo(...args: Vec[] | number[]) {
 		const [p, end] = pickPos(args);
 		return this.moveTo(Vec.pos(0, 0)).quadraticCurveTo(p, end);
 	}
-	static parse(d:string) {
+	static parse(d: string) {
 		return parseLS(d);
 	}
-
 }
 
 function* pickPos(args: Vec[] | number[]) {
@@ -238,7 +224,6 @@ export class LineLS extends SegmentLS {
 		const [ymin, ymax] = [min(y1, y2), max(y1, y2)];
 		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
-
 	get length() {
 		const { start, end } = this;
 		return end.sub(start).abs();
@@ -247,32 +232,28 @@ export class LineLS extends SegmentLS {
 		const { start, end } = this;
 		return end.sub(start).mul(t).postAdd(start);
 	}
-
 	slopeAt(t: number) {
 		const { start, end } = this;
 		const vec = end.sub(start);
 		return vec.div(vec.abs());
 	}
-
 	d() {
 		const {
 			_prev,
 			end: { x, y },
 		} = this;
-		return `${_prev?.d() ?? ''}L${x},${y}`;
+		return `${_prev?.d() ?? ''}L${fmtN(x)},${fmtN(y)}`;
 	}
 }
-
 export class MoveLS extends LineLS {
 	d() {
 		const {
 			_prev,
 			end: { x, y },
 		} = this;
-		return `${_prev?.d() ?? ''}M${x},${y}`;
+		return `${_prev?.d() ?? ''}M${fmtN(x)},${fmtN(y)}`;
 	}
 }
-
 export class CloseLS extends LineLS {
 	d() {
 		const {
@@ -282,7 +263,6 @@ export class CloseLS extends LineLS {
 		return `${_prev?.d() ?? ''}Z`;
 	}
 }
-
 import { quadLength, quadSlopeAt, quadPointAt, quadBBox } from './quadratic.js';
 export class QuadLS extends SegmentLS {
 	readonly p: Vec;
@@ -290,7 +270,6 @@ export class QuadLS extends SegmentLS {
 		super(prev, end);
 		this.p = p;
 	}
-
 	private get _qpts(): Vec[] {
 		const { start, p, end } = this;
 		return [start, p, end];
@@ -301,11 +280,9 @@ export class QuadLS extends SegmentLS {
 	override slopeAt(t: number): Vec {
 		return quadSlopeAt(this._qpts, t);
 	}
-
 	override pointAt(t: number) {
 		return quadPointAt(this._qpts, t);
 	}
-
 	override bbox() {
 		return quadBBox(this._qpts);
 	}
@@ -315,16 +292,13 @@ export class QuadLS extends SegmentLS {
 			p: { x: x1, y: y1 },
 			end: { x: ex, y: ey },
 		} = this;
-		return `${_prev?.d() ?? ''}Q${x1},${y1} ${ex},${ey}`;
+		return `${_prev?.d() ?? ''}Q${fmtN(x1)},${fmtN(y1)} ${fmtN(ex)},${fmtN(ey)}`;
 	}
 }
-
 import { cubicLength, cubicSlopeAt, cubicPointAt, cubicBox, cubicSplitAt } from './cubic.js';
-
 export class CubicLS extends SegmentLS {
 	readonly c1: Vec;
 	readonly c2: Vec;
-
 	constructor(prev: SegmentLS | undefined, c1: Vec, c2: Vec, end: Vec) {
 		super(prev, end);
 		this.c1 = Vec.new(c1);
@@ -334,7 +308,6 @@ export class CubicLS extends SegmentLS {
 		const { start, c1, c2, end } = this;
 		return [start, c1, c2, end];
 	}
-
 	/////
 	override pointAt(t: number) {
 		return cubicPointAt(this._cpts, t);
@@ -345,7 +318,6 @@ export class CubicLS extends SegmentLS {
 	override slopeAt(t: number): Vec {
 		return cubicSlopeAt(this._cpts, t);
 	}
-
 	override splitAt(t: number) {
 		const [x, y] = cubicSplitAt(this._cpts, t);
 		return [
@@ -376,13 +348,13 @@ export class CubicLS extends SegmentLS {
 			c2: { x: x2, y: y2 },
 			end: { x: ex, y: ey },
 		} = this;
-		return `${_prev?.d() ?? ''}C${x1},${y1} ${x2},${y2} ${ex},${ey}`;
+		return `${_prev?.d() ?? ''}C${fmtN(x1)},${fmtN(y1)} ${fmtN(x2)},${fmtN(y2)} ${fmtN(ex)},${fmtN(
+			ey,
+		)}`;
 	}
 }
-
 import { arcBBox, arcLength, arcPointAt, arcSlopeAt } from './arc.js';
 import { arcParams } from '../util.js';
-
 export class ArcLS extends SegmentLS {
 	readonly rx: number;
 	readonly ry: number;
@@ -407,10 +379,8 @@ export class ArcLS extends SegmentLS {
 	) {
 		if (!(isFinite(φ) && isFinite(rx) && isFinite(ry))) throw Error(`${JSON.stringify(arguments)}`);
 		super(prev, end);
-
 		const { x: x1, y: y1 } = this.start;
 		const { x: x2, y: y2 } = this.end;
-
 		[this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] =
 			arcParams(x1, y1, rx, ry, φ, (this.arc = !!arc), (this.sweep = !!sweep), x2, y2);
 	}
@@ -436,6 +406,8 @@ export class ArcLS extends SegmentLS {
 			arc,
 			end: [x, y],
 		} = this;
-		return `${_prev?.d() ?? ''}A${rx},${ry} ${phi},${arc ? 1 : 0},${sweep ? 1 : 0} ${x},${y}`;
+		return `${_prev?.d() ?? ''}A${fmtN(rx)},${fmtN(ry)} ${fmtN(phi)},${arc ? 1 : 0},${
+			sweep ? 1 : 0
+		} ${fmtN(x)},${fmtN(y)}`;
 	}
 }

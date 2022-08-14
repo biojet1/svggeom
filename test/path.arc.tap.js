@@ -1,7 +1,7 @@
 'uses strict';
-import {enum_path_data, test_segment} from './path.utils.js';
+import { enum_path_data, test_segment } from './path.utils.js';
 import './utils.js';
-import {Arc, Cubic, Path} from 'svggeom';
+import { Arc, Cubic, Path, PathLS } from 'svggeom';
 import test from 'tap';
 import os from 'os';
 import fs from 'fs';
@@ -24,9 +24,9 @@ function dbgwrite(name, pC, pX) {
 }
 let I = 0,
     as_cubic = 0;
-for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
+for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
     ++I;
-    test.test(item.d, {bail: !CI}, function (t) {
+    test.test(item.d, { bail: !CI }, function (t) {
         let seg = Arc.fromEndPoint(
             item.start,
             item.radius[0],
@@ -34,7 +34,7 @@ for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
             item.rotation,
             item.large_arc,
             item.sweep,
-            item.end
+            item.end,
         );
 
         test_segment(t, seg, item, {
