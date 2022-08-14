@@ -302,7 +302,7 @@ export function parseLS(d: string) {
 	const first = SegmentLS.moveTo(init);
 	let cur = first;
 	let last_command;
-	while (array.length > 0) {
+	L1: while (array.length > 0) {
 		let absolute = false;
 		const command = array.pop();
 		// const start = pos;
@@ -379,21 +379,13 @@ export function parseLS(d: string) {
 				break;
 			default:
 				if (command && /^-?\.?\d/.test(command)) {
-					array.push(command);
-
 					switch (last_command) {
 						case 'm':
-							array.push('l');
-							break;
+							cur = cur.l(parseFloat(command), num());
+							continue L1;
 						case 'M':
-							array.push('L');
-							break;
-						default:
-							if (last_command) {
-								array.push(last_command);
-							} else {
-								array.push('L');
-							}
+							cur = cur.L(parseFloat(command), num());
+							continue L1;
 					}
 					continue;
 				}

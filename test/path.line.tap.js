@@ -4,7 +4,27 @@ import './utils.js';
 import { Line, PathLS } from 'svggeom';
 import test from 'tap';
 const CI = !!process.env.CI;
+test.test(`PathLS.parse`, { bail: CI }, function (t) {
+    let cur = PathLS.parse('M 10,10            90,90            V 10            H 50');
+    t.same(cur.descArray(), ['M', 10, 10, 'L', 90, 90, 'L', 90, 10, 'L', 50, 10]);
+    cur = PathLS.parse(' m 110,10            80,80           v -80           h -40');
+    t.same(cur.descArray(), [
+        'M',
+        100 + 10,
+        10,
+        'L',
+        100 + 90,
+        90,
+        'L',
+        100 + 90,
+        10,
+        'L',
+        100 + 50,
+        10,
+    ]);
 
+    t.end();
+});
 for await (const item of enum_path_data({ SEGMENTS: 'Line' })) {
     test.test(`<${item.d}>`, { bail: CI }, function (t) {
         let seg = new Line(item.start, item.end);

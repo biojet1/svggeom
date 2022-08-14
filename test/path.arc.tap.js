@@ -1,5 +1,5 @@
 'uses strict';
-import { enum_path_data, test_segment } from './path.utils.js';
+import { enum_path_data, test_segment, testSegment } from './path.utils.js';
 import './utils.js';
 import { Arc, Cubic, Path, PathLS } from 'svggeom';
 import test from 'tap';
@@ -24,24 +24,21 @@ function dbgwrite(name, pC, pX) {
 }
 let I = 0,
     as_cubic = 0;
+const deltp = {
+    len_epsilon: 1e-5,
+    slope_epsilon: 5e-5,
+    point_epsilon: 1.5e-6,
+};
+
 for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
     ++I;
-    test.test(item.d, { bail: !CI }, function (t) {
-        let seg = Arc.fromEndPoint(
-            item.start,
-            item.radius[0],
-            item.radius[1],
-            item.rotation,
-            item.large_arc,
-            item.sweep,
-            item.end,
-        );
+    const { start, radius, rotation, large_arc, sweep, end } = item;
+    const [[sx, sy], [rx, ry], [ex, ey]] = [start, radius, end];
 
-        test_segment(t, seg, item, {
-            len_epsilon: 1e-5,
-            slope_epsilon: 5e-5,
-            point_epsilon: 1.5e-6,
-        });
+    test.test(item.d, { bail: !CI }, function (t) {
+        let seg = Arc.fromEndPoint(start, radius[0], radius[1], rotation, large_arc, sweep, end);
+
+        test_segment(t, seg, item, deltp);
 
         const cubic_segs = new Path(seg.asCubic());
         const sp = seg.toPath();
@@ -80,24 +77,24 @@ for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
         t.end();
     });
     test.test(`PathLS<${item.d}>`, { bail: CI }, function (t) {
-        // const cur = PathLS.moveTo(item.start).arcTo(item.end);
-        // testSegment(t, cur, item);
-        // {
-        //     testSegment(
-        //         t,
-        //         PathLS.parse(`M ${sx},${sy} C ${x1},${y1} ${x2},${y2} ${ex},${ey}`),
-        //         item,
-        //         deltp,
-        //     );
-        //     testSegment(
-        //         t,
-        //         PathLS.parse(
-        //             `m ${sx},${sy} c ${x1 - sx},${y1 - sy} ${x2 - sx},${y2 - sy} ${ex - sx},${ey - sy}`,
-        //         ),
-        //         item,
-        //         deltp,
-        //     );
-        // }
+        const cur = PathLS.moveTo(start).A(radius[0], radius[1], rotation, large_arc, sweep, end);
+        testSegment(t, cur, item, deltp);
+        {
+            testSegment(
+                t,
+                PathLS.parse(`M ${sx},${sy} A ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex},${ey}`),
+                item,
+                deltp,
+            );
+            // testSegment(
+            //     t,
+            //     PathLS.parse(
+            //         `m ${sx},${sy} a ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex - sx},${ey - sy}`,
+            //     ),
+            //     item,
+            //     deltp,
+            // );
+        }
         t.end();
     });
 }

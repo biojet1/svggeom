@@ -99,13 +99,13 @@ export abstract class SegmentLS extends Segment {
 		return new LineLS(this, this.end.add(pos));
 	}
 	H(n: number) {
-		return new LineLS(this, Vec.pos(n, 0));
+		return new LineLS(this, this.end.withX(n));
 	}
 	h(n: number) {
 		return new LineLS(this, this.end.shiftX(n));
 	}
 	V(n: number) {
-		return new LineLS(this, Vec.pos(0, n));
+		return new LineLS(this, this.end.withY(n));
 	}
 	v(n: number) {
 		return new LineLS(this, this.end.shiftY(n));
