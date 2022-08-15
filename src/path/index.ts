@@ -1,6 +1,13 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
 
+export interface DescParams {
+	relative?: boolean;
+	smooth?: boolean;
+	short?: boolean;
+	dfix?: number;
+}
+
 export abstract class Segment {
 	abstract get start(): Vec;
 	abstract get end(): Vec;
@@ -21,7 +28,7 @@ export abstract class Segment {
 		const { x, y } = this.start;
 		return ['M', x, y].concat(this.toPathFragment()).join(' ');
 	}
-	descArray(): (string | number)[] {
+	descArray(opt?: DescParams): (string | number)[] {
 		const { x, y } = this.start;
 		return ['M', x, y].concat(this.toPathFragment());
 	}
