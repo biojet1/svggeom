@@ -312,6 +312,16 @@ export class LineLS extends SegmentLS {
 		const {
 			end: [x, y],
 		} = this;
+		if (opt?.relative) {
+			const { _prev } = this;
+			if (_prev) {
+				const {
+					end: [sx, sy],
+				} = _prev;
+				return ['l', x - sx, y - sy];
+			}
+		}
+
 		return ['L', x, y];
 	}
 	// reversed() {
@@ -335,6 +345,16 @@ export class MoveLS extends LineLS {
 		const {
 			end: [x, y],
 		} = this;
+
+		if (opt?.relative) {
+			const { _prev } = this;
+			if (_prev) {
+				const [sx, sy] = _prev.end;
+				return ['m', x - sx, y - sy];
+			}
+			return ['m', x, y];
+		}
+
 		return ['M', x, y];
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
@@ -358,7 +378,7 @@ export class CloseLS extends LineLS {
 		return new CloseLS(_prev?.transform(M), end.transform(M));
 	}
 	override _descs(opt?: DescParams) {
-		return ['Z'];
+		return [opt?.relative ? 'z' : 'Z'];
 	}
 }
 import { quadLength, quadSplitAt, quadSlopeAt, quadPointAt, quadBBox } from './quadratic.js';
@@ -392,7 +412,7 @@ export class QuadLS extends SegmentLS {
 		return quadBBox(this._qpts);
 	}
 	override _descs(opt?: DescParams) {
-		let {
+		const {
 			p: { x: x1, y: y1 },
 			end: { x: ex, y: ey },
 		} = this;
@@ -403,20 +423,18 @@ export class QuadLS extends SegmentLS {
 				_prev,
 				start: [sx, sy],
 			} = this;
-			if (relative) {
-				ex -= sx;
-				ey -= sy;
-			}
-			if (
-				smooth &&
-				_prev &&
-				(_prev instanceof QuadLS ? _prev.p.reflectAt(_prev.end).closeTo(p) : _prev.end.closeTo(p))
-			) {
-				return [relative ? 't' : 'T', ex, ey];
-			}
-			if (relative) {
-				x1 -= sx;
-				y1 -= sy;
+			if (_prev) {
+				if (
+					smooth &&
+					(_prev instanceof QuadLS ? _prev.p.reflectAt(_prev.end).closeTo(p) : _prev.end.closeTo(p))
+				) {
+					if (relative) {
+						return ['t', ex - sx, ey - sy];
+					}
+					return ['T', ex, ey];
+				} else if (relative) {
+					return ['q', x1 - sx, y1 - sy, ex - sx, ey - sy];
+				}
 			}
 		}
 		return ['Q', x1, y1, ex, ey];
@@ -483,18 +501,25 @@ export class CubicLS extends SegmentLS {
 			end: [ex, ey],
 		} = this;
 
-		if (opt?.smooth) {
-			const { c1, c2, _prev } = this;
-			if (
-				_prev &&
-				(_prev instanceof CubicLS
-					? _prev.c2.reflectAt(_prev.end).closeTo(c1)
-					: _prev.end.closeTo(c1))
-			) {
-				return ['S', x2, y2, ex, ey];
+		if (opt) {
+			const { smooth, relative } = opt;
+			const { c1, _prev } = this;
+			if (_prev) {
+				const { end: start } = _prev;
+				const [sx, sy] = start;
+				if (
+					smooth &&
+					(_prev instanceof CubicLS ? _prev.c2.reflectAt(start).closeTo(c1) : start.closeTo(c1))
+				) {
+					if (relative) {
+						return ['s', x2 - sx, y2 - sy, ex - sx, ey - sy];
+					}
+					return ['S', x2, y2, ex, ey];
+				} else if (relative) {
+					return ['c', x1 - sx, y1 - sy, x2 - sx, y2 - sy, ex - sx, ey - sy];
+				}
 			}
 		}
-
 		return ['C', x1, y1, x2, y2, ex, ey];
 	}
 }
@@ -564,6 +589,16 @@ export class ArcLS extends SegmentLS {
 			arc,
 			end: [x, y],
 		} = this;
+		if (opt?.relative) {
+			const { _prev } = this;
+			if (_prev) {
+				const {
+					end: [sx, sy],
+				} = _prev;
+				return ['a', rx, ry, phi, arc ? 1 : 0, sweep ? 1 : 0, x - sx, y - sy];
+			}
+		}
+
 		return ['A', rx, ry, phi, arc ? 1 : 0, sweep ? 1 : 0, x, y];
 	}
 }
