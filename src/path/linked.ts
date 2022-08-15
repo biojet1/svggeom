@@ -191,7 +191,8 @@ export abstract class SegmentLS extends Segment {
 	}
 
 	toString() {
-		return this.d();
+		return this.descArray().join(' ');
+		// return this.d();
 	}
 
 	descArray(): (number | string)[] {
@@ -248,7 +249,7 @@ function* pickPos(args: Vec[] | number[]) {
 		}
 	}
 }
-const { min, max } = Math;
+const { min, max, abs, PI } = Math;
 export class LineLS extends SegmentLS {
 	override bbox() {
 		const {
@@ -272,6 +273,11 @@ export class LineLS extends SegmentLS {
 		const vec = end.sub(start);
 		return vec.div(vec.abs());
 	}
+	// override splitAt(t: number) {
+	// 	const { end } = this;
+	// 	const c = this.pointAt(t);
+	// 	return [new LineLS(this._prev, c), new LineLS(new MoveLS(undefined, c), end)];
+	// }
 
 	override d() {
 		const {
@@ -317,7 +323,7 @@ export class CloseLS extends LineLS {
 		return ['Z'];
 	}
 }
-import { quadLength, quadSlopeAt, quadPointAt, quadBBox } from './quadratic.js';
+import { quadLength, quadSplitAt, quadSlopeAt, quadPointAt, quadBBox } from './quadratic.js';
 export class QuadLS extends SegmentLS {
 	readonly p: Vec;
 	constructor(prev: SegmentLS | undefined, p: Vec, end: Vec) {
@@ -336,6 +342,13 @@ export class QuadLS extends SegmentLS {
 	}
 	override pointAt(t: number) {
 		return quadPointAt(this._qpts, t);
+	}
+	override splitAt(t: number) {
+		const [a, b] = quadSplitAt(this._qpts, t);
+		return [
+			new QuadLS(this._prev, a[1], a[2]),
+			new QuadLS(new MoveLS(undefined, b[0]), b[1], b[2]),
+		];
 	}
 	override bbox() {
 		return quadBBox(this._qpts);
@@ -380,10 +393,10 @@ export class CubicLS extends SegmentLS {
 		return cubicSlopeAt(this._cpts, t);
 	}
 	override splitAt(t: number) {
-		const [x, y] = cubicSplitAt(this._cpts, t);
+		const [a, b] = cubicSplitAt(this._cpts, t);
 		return [
-			new CubicLS(this._prev, x[1], x[2], x[3]),
-			new CubicLS(new MoveLS(undefined, y[0]), y[1], y[2], y[3]),
+			new CubicLS(this._prev, a[1], a[2], a[3]),
+			new CubicLS(new MoveLS(undefined, b[0]), b[1], b[2], b[3]),
 		];
 	}
 	override get length() {
@@ -465,6 +478,16 @@ export class ArcLS extends SegmentLS {
 	override slopeAt(t: number): Vec {
 		return arcSlopeAt(this, t);
 	}
+	override splitAt(t: number) {
+		const { rx, ry, phi, sweep, rdelta, start, end, _prev } = this;
+		const deltaA = abs(rdelta);
+		const mid = arcPointAt(this, t);
+		return [
+			new ArcLS(_prev, rx, ry, phi, deltaA * t > PI, sweep, mid),
+			new ArcLS(new MoveLS(undefined, mid), rx, ry, phi, deltaA * (1 - t) > PI, sweep, end),
+		];
+	}
+
 	override d() {
 		const {
 			_prev,

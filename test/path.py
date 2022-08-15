@@ -295,7 +295,14 @@ elif DATA.startswith("QuadraticBezier"):
         for seg in p:
             if isinstance(seg, QuadraticBezier):
                 pts = tuple(brpt(im) for im in (seg.start, seg.control, seg.end))
-                d = dict(points=pts, bbox=seg.bbox(), length=seg.length(), d=d)
+                d = dict(
+                    points=pts,
+                    bbox=seg.bbox(),
+                    length=seg.length(),
+                    d=d,
+                    start=pts[0],
+                    end=pts[-1],
+                )
 
                 pts = d["at"] = {}
                 for t in k:
