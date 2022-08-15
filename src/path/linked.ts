@@ -238,7 +238,9 @@ export abstract class SegmentLS extends Segment {
 	abstract _descs(opt?: DescParams): (number | string)[];
 	abstract splitAt(t: number): [SegmentLS, SegmentLS];
 	abstract transform(M: any): SegmentLS;
-	// abstract reversed(): SegmentLS | undefined;
+	reversed(next?: SegmentLS): SegmentLS | undefined {
+		throw new Error(`Not Implemented`);
+	}
 	static moveTo(...args: Vec[] | number[]) {
 		const [pos] = pickPos(args);
 		return new MoveLS(undefined, pos);
@@ -324,17 +326,20 @@ export class LineLS extends SegmentLS {
 
 		return ['L', x, y];
 	}
-	// reversed() {
-	// 	const { start, end } = this;
-	// 	const { _prev } = this;
-	// 	if (_prev) {
-	// 		const rev = _prev.reversed(this);
-	// 		if (rev) {
-	// 			return new LineLS(rev, rev.end);
-	// 		}
-	// 	}
-	// 	return new LineLS(new MoveLS(undefined, end), start);
-	// }
+	override reversed(next?: SegmentLS): SegmentLS | undefined {
+		const { end, _prev } = this;
+		next || (next = new MoveLS(undefined, end));
+		if (_prev) {
+			const rev = new LineLS(next, _prev.end);
+			return _prev.reversed(rev) ?? rev;
+		} else {
+			if (next) {
+				return next;
+			} else {
+				throw new Error(`No prev`);
+			}
+		}
+	}
 	override transform(M: any) {
 		const { end, _prev } = this;
 		return new LineLS(_prev?.transform(M), end.transform(M));
@@ -365,6 +370,26 @@ export class MoveLS extends LineLS {
 	override transform(M: any) {
 		const { end, _prev } = this;
 		return new MoveLS(_prev?.transform(M), end.transform(M));
+	}
+	override reversed(next?: SegmentLS): SegmentLS | undefined {
+		const { end, _prev } = this;
+
+		if (_prev) {
+			const seg = new MoveLS(next, _prev.end);
+			return _prev.reversed(seg) ?? seg;
+		} else {
+			return next;
+
+			// throw new Error(`No prev`);
+			// if (next) {
+			// 	return next;
+			// } else {
+			// 	throw new Error(`No prev`);
+			// 	// return new LineLS(new MoveLS(undefined, end));
+			// }
+			// return next;
+			// return new LineLS(next, Vec.pos(0, 0));
+		}
 	}
 }
 export class CloseLS extends LineLS {
