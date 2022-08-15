@@ -191,7 +191,9 @@ export abstract class SegmentLS extends Segment {
 	}
 
 	toString() {
-		return this.descArray().join(' ');
+		return this.descArray()
+			.filter((v) => (typeof v == 'number' ? fmtN(v) : v))
+			.join(' ');
 		// return this.d();
 	}
 
@@ -206,9 +208,6 @@ export abstract class SegmentLS extends Segment {
 		}
 	}
 	abstract _descs(): (number | string)[];
-	abstract d(): string;
-	// abstract *_enumd(): Generator<number | string>;
-	// private *enumDesc() {}
 	static moveTo(...args: Vec[] | number[]) {
 		const [pos] = pickPos(args);
 		return new MoveLS(undefined, pos);
@@ -279,13 +278,13 @@ export class LineLS extends SegmentLS {
 	// 	return [new LineLS(this._prev, c), new LineLS(new MoveLS(undefined, c), end)];
 	// }
 
-	override d() {
-		const {
-			_prev,
-			end: [x, y],
-		} = this;
-		return `${_prev?.d() ?? ''}L${fmtN(x)},${fmtN(y)}`;
-	}
+	// override d() {
+	// 	const {
+	// 		_prev,
+	// 		end: [x, y],
+	// 	} = this;
+	// 	return `${_prev?.d() ?? ''}L${fmtN(x)},${fmtN(y)}`;
+	// }
 	// override reversed() {
 	// 	// throw new Error('NOTIMPL');
 	// }
@@ -297,13 +296,13 @@ export class LineLS extends SegmentLS {
 	}
 }
 export class MoveLS extends LineLS {
-	d() {
-		const {
-			_prev,
-			end: { x, y },
-		} = this;
-		return `${_prev?.d() ?? ''}M${fmtN(x)},${fmtN(y)}`;
-	}
+	// d() {
+	// 	const {
+	// 		_prev,
+	// 		end: { x, y },
+	// 	} = this;
+	// 	return `${_prev?.d() ?? ''}M${fmtN(x)},${fmtN(y)}`;
+	// }
 	_descs() {
 		const {
 			end: [x, y],
@@ -312,13 +311,13 @@ export class MoveLS extends LineLS {
 	}
 }
 export class CloseLS extends LineLS {
-	d() {
-		const {
-			_prev,
-			end: { x, y },
-		} = this;
-		return `${_prev?.d() ?? ''}Z`;
-	}
+	// d() {
+	// 	const {
+	// 		_prev,
+	// 		end: { x, y },
+	// 	} = this;
+	// 	return `${_prev?.d() ?? ''}Z`;
+	// }
 	_descs() {
 		return ['Z'];
 	}
@@ -353,15 +352,15 @@ export class QuadLS extends SegmentLS {
 	override bbox() {
 		return quadBBox(this._qpts);
 	}
-	override d() {
-		const {
-			_prev,
-			p: { x: x1, y: y1 },
-			end: { x: ex, y: ey },
-		} = this;
-		return `${_prev?.d() ?? ''}Q${fmtN(x1)},${fmtN(y1)} ${fmtN(ex)},${fmtN(ey)}`;
-	}
-	_descs() {
+	// override d() {
+	// 	const {
+	// 		_prev,
+	// 		p: { x: x1, y: y1 },
+	// 		end: { x: ex, y: ey },
+	// 	} = this;
+	// 	return `${_prev?.d() ?? ''}Q${fmtN(x1)},${fmtN(y1)} ${fmtN(ex)},${fmtN(ey)}`;
+	// }
+	override _descs() {
 		const {
 			p: { x: x1, y: y1 },
 			end: { x: ex, y: ey },
@@ -415,17 +414,17 @@ export class CubicLS extends SegmentLS {
 			end.transform(M),
 		);
 	}
-	override d() {
-		const {
-			_prev,
-			c1: { x: x1, y: y1 },
-			c2: { x: x2, y: y2 },
-			end: { x: ex, y: ey },
-		} = this;
-		return `${_prev?.d() ?? ''}C${fmtN(x1)},${fmtN(y1)} ${fmtN(x2)},${fmtN(y2)} ${fmtN(ex)},${fmtN(
-			ey,
-		)}`;
-	}
+	// override d() {
+	// 	const {
+	// 		_prev,
+	// 		c1: { x: x1, y: y1 },
+	// 		c2: { x: x2, y: y2 },
+	// 		end: { x: ex, y: ey },
+	// 	} = this;
+	// 	return `${_prev?.d() ?? ''}C${fmtN(x1)},${fmtN(y1)} ${fmtN(x2)},${fmtN(y2)} ${fmtN(ex)},${fmtN(
+	// 		ey,
+	// 	)}`;
+	// }
 	override _descs() {
 		const {
 			c1: { x: x1, y: y1 },
@@ -488,20 +487,20 @@ export class ArcLS extends SegmentLS {
 		];
 	}
 
-	override d() {
-		const {
-			_prev,
-			rx,
-			ry,
-			phi,
-			sweep,
-			arc,
-			end: [x, y],
-		} = this;
-		return `${_prev?.d() ?? ''}A${fmtN(rx)},${fmtN(ry)} ${fmtN(phi)},${arc ? 1 : 0},${
-			sweep ? 1 : 0
-		} ${fmtN(x)},${fmtN(y)}`;
-	}
+	// override d() {
+	// 	const {
+	// 		_prev,
+	// 		rx,
+	// 		ry,
+	// 		phi,
+	// 		sweep,
+	// 		arc,
+	// 		end: [x, y],
+	// 	} = this;
+	// 	return `${_prev?.d() ?? ''}A${fmtN(rx)},${fmtN(ry)} ${fmtN(phi)},${arc ? 1 : 0},${
+	// 		sweep ? 1 : 0
+	// 	} ${fmtN(x)},${fmtN(y)}`;
+	// }
 	_descs() {
 		const {
 			rx,

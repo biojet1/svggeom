@@ -23,17 +23,18 @@ for await (const item of enum_path_data({ SEGMENTS: 'QuadraticBezier' })) {
             const cur2 = PathLS.moveTo(sx, sy).quadraticCurveTo(x1, y1, ex, ey);
             t.same(cur.toString(), cur2.toString());
         }
-        if (CI) {
+        // if (CI) 
+        {
             testSegment(
                 t,
-                PathLS.parse(`M ${sx},${sy} Q ${x1},${y1} ${x2},${y2} ${ex},${ey}`),
+                PathLS.parse(`M ${sx},${sy} Q ${x1},${y1} ${ex},${ey}`),
                 item,
                 deltp,
             );
             testSegment(
                 t,
                 PathLS.parse(
-                    `m ${sx},${sy} c ${x1 - sx},${y1 - sy} ${x2 - sx},${y2 - sy} ${ex - sx},${ey - sy}`,
+                    `m ${sx},${sy} q ${x1 - sx},${y1 - sy} ${ex - sx},${ey - sy}`,
                 ),
                 item,
                 deltp,
