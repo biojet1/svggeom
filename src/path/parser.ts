@@ -1,5 +1,5 @@
 import { Vec } from '../point.js';
-import { Segment } from './index.js';
+import { SegmentSE } from './index.js';
 import { Arc } from './arc.js';
 import { Cubic } from './cubic.js';
 import { Line, Close, Vertical, Horizontal } from './line.js';
@@ -34,7 +34,7 @@ function pathRegReplace(a: any, b: any, c: any, d: any) {
 
 export function parseDesc(d: string) {
 	// prepare for parsing
-	const segments = new Array<Segment>();
+	const segments = new Array<SegmentSE>();
 	const array = d
 		.replace(numbersWithDots, pathRegReplace) // convert 45.123.123 to 45.123 .123
 		.replace(pathLetters, ' $& ') // put some room between letters and numbers
@@ -269,7 +269,7 @@ export function parseDesc(d: string) {
 	return segments;
 }
 
-import { SegmentLS, MoveLS, CubicLS, QuadLS } from './linked.js';
+import { SegmentLS} from './linked.js';
 
 export function parseLS(d: string) {
 	// prepare for parsing
@@ -291,19 +291,19 @@ export function parseLS(d: string) {
 		return Vec.pos(num(), num());
 	};
 	const init = Vec.pos(0, 0);
-	const last = function () {
-		return cur ?? (cur = SegmentLS.moveTo(init));
-	};
-	const vecr = function () {
-		return cur.end.add(vec());
-	};
+	// const last = function () {
+	// 	return cur ?? (cur = SegmentLS.moveTo(init));
+	// };
+	// const vecr = function () {
+	// 	return cur.end.add(vec());
+	// };
 
 	let moved: SegmentLS | undefined;
 	const first = SegmentLS.moveTo(init);
 	let cur = first;
 	let last_command;
 	L1: while (array.length > 0) {
-		let absolute = false;
+		// let absolute = false;
 		const command = array.pop();
 		// const start = pos;
 		switch (command) {

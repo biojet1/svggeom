@@ -1,7 +1,7 @@
 'uses strict';
 import test from 'tap';
 import {enum_path_data} from './path.utils.js';
-import {Path, PathLS} from 'svggeom';
+import {Path, SegmentLS} from 'svggeom';
 import './utils.js';
 
 for await (const item of enum_path_data({SEGMENTS: 'Parsed'})) {
@@ -64,8 +64,8 @@ for await (const item of enum_path_data({SEGMENTS: 'SEPaths'})) {
 
         t.end();
     });
-    test.test(`PathLS:SEPaths<${d}>`, {bail: 1}, function (t) {
-        const cur = PathLS.parse(item.d);
+    test.test(`SegmentLS:SEPaths<${d}>`, {bail: 1}, function (t) {
+        const cur = SegmentLS.parse(item.d);
         // t.same(item.abs, cur.descArray(), [`${cur.toString()}`, item.abs]);
         t.sameDescs(cur.descArray(), item.abs, eps, `ABS`, cur);
         t.end();

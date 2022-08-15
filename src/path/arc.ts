@@ -102,7 +102,7 @@ export class Arc extends SegmentSE {
 		return arcSlopeAt(this, t);
 	}
 
-	override splitAt(t: number) {
+	override splitAt(t: number):[SegmentSE,SegmentSE] {
 		const { rx, ry, phi, sweep, rdelta, start, end } = this;
 		const deltaA = abs(rdelta);
 		const mid = arcPointAt(this, t);

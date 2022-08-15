@@ -24,7 +24,7 @@ export class Quadratic extends SegmentSE {
 		return quadPointAt(this._qpts, t);
 	}
 
-	override splitAt(t: number) {
+	override splitAt(t: number): [SegmentSE, SegmentSE] {
 		const [a, b] = quadSplitAt(this._qpts, t);
 		return [new Quadratic(a[0], a[1], a[2]), new Quadratic(b[0], b[1], b[2])];
 	}

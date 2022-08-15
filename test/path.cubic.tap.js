@@ -1,7 +1,7 @@
 'uses strict';
-import { enum_path_data, test_segment, testSegment } from './path.utils.js';
+import { enum_path_data, test_segment, SegmentLS } from './path.utils.js';
 import './utils.js';
-import { Cubic, PathLS } from 'svggeom';
+import { Cubic, SegmentLS } from 'svggeom';
 import test from 'tap';
 const CI = !!process.env.CI;
 
@@ -13,33 +13,33 @@ for await (const item of enum_path_data({ SEGMENTS: 'CubicBezier' })) {
         test_segment(t, seg, item, deltp);
 
         // const [s, a, b, e] = item.points;
-        // seg = PathLS.moveTo(...s).bezierCurveTo(a, b, e);
+        // seg = SegmentLS.moveTo(...s).bezierCurveTo(a, b, e);
         // // test_segment(t, seg, item, { len_epsilon: 0.189, point_epsilon: 1e-10, slope_epsilon: 1e-8 });
         // // console.dir(seg, {depth: null});
         // // console.log(s, a, b, e, seg.d());
-        testSegment(t, seg, item, deltp);
+        SegmentLS(t, seg, item, deltp);
         t.end();
     });
-    test.test(`PathLS<${item.d}>`, { bail: CI }, function (t) {
+    test.test(`SegmentLS<${item.d}>`, { bail: CI }, function (t) {
         const [start, c1, c2, end] = item.points;
         const [[sx, sy], [x1, y1], [x2, y2], [ex, ey]] = [start, c1, c2, end];
         {
-            const cur = PathLS.moveTo(start).bezierCurveTo(c1, c2, end);
-            testSegment(t, cur, item, deltp);
-            const cur2 = PathLS.moveTo(sx, sy).bezierCurveTo(x1, y1, x2, y2, ex, ey);
+            const cur = SegmentLS.moveTo(start).bezierCurveTo(c1, c2, end);
+            SegmentLS(t, cur, item, deltp);
+            const cur2 = SegmentLS.moveTo(sx, sy).bezierCurveTo(x1, y1, x2, y2, ex, ey);
             t.same(cur.toString(), cur2.toString());
         }
         // if (CI)
         {
-            testSegment(
+            SegmentLS(
                 t,
-                PathLS.parse(`M ${sx},${sy} C ${x1},${y1} ${x2},${y2} ${ex},${ey}`),
+                SegmentLS.parse(`M ${sx},${sy} C ${x1},${y1} ${x2},${y2} ${ex},${ey}`),
                 item,
                 deltp,
             );
-            testSegment(
+            SegmentLS(
                 t,
-                PathLS.parse(
+                SegmentLS.parse(
                     `m ${sx},${sy} c ${x1 - sx},${y1 - sy} ${x2 - sx},${y2 - sy} ${ex - sx},${ey - sy}`,
                 ),
                 item,

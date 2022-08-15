@@ -1,7 +1,7 @@
 'uses strict';
 import { enum_path_data, test_segment, testSegment } from './path.utils.js';
 import './utils.js';
-import { Arc, Cubic, Path, PathLS } from 'svggeom';
+import { Arc, Cubic, Path, SegmentLS } from 'svggeom';
 import test from 'tap';
 import os from 'os';
 import fs from 'fs';
@@ -76,17 +76,17 @@ for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
         }
         t.end();
     });
-    test.test(`PathLS<${item.d}>`, { bail: CI }, function (t) {
-        const cur = PathLS.moveTo(start).A(radius[0], radius[1], rotation, large_arc, sweep, end);
+    test.test(`SegmentLS<${item.d}>`, { bail: CI }, function (t) {
+        const cur = SegmentLS.moveTo(start).A(radius[0], radius[1], rotation, large_arc, sweep, end);
         testSegment(t, cur, item, deltp);
         {
             testSegment(
                 t,
-                PathLS.parse(`M ${sx},${sy} A ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex},${ey}`),
+                SegmentLS.parse(`M ${sx},${sy} A ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex},${ey}`),
                 item,
                 deltp,
             );
-            const rel = PathLS.parse(
+            const rel = SegmentLS.parse(
                 `m ${sx},${sy} a ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex - sx},${ey - sy}`,
             );
             testSegment(t, rel, item, deltp);

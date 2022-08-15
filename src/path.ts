@@ -1,5 +1,5 @@
 import { parseDesc } from './path/parser.js';
-import { Segment } from './path/index.js';
+import { SegmentSE } from './path/index.js';
 import { Box } from './box.js';
 interface IDescOpt {
 	relative?: boolean;
@@ -11,11 +11,11 @@ interface IDescOpt {
 
 export class Path {
 	static digits = 5;
-	private _segs: Segment[];
+	private _segs: SegmentSE[];
 	private _length?: number;
 	private _lengths?: Array<number>;
 
-	private constructor(segs: Segment[]) {
+	private constructor(segs: SegmentSE[]) {
 		this._segs = segs;
 	}
 
@@ -28,30 +28,30 @@ export class Path {
 	}
 
 	tangentAt(T: number) {
-		// Segment method
+		// SegmentSE method
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.tangentAt(t);
 	}
 
 	slopeAt(T: number) {
-		// Segment method
+		// SegmentSE method
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.slopeAt(t);
 	}
 
 	pointAt(T: number) {
-		// Segment method
+		// SegmentSE method
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.pointAt(t);
 	}
 
 	bbox() {
-		// Segment method
+		// SegmentSE method
 		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
 	}
 
 	splitAt(T: number) {
-		// Segment method
+		// SegmentSE method
 		const [seg, t, i] = this.segmentAt(T);
 		if (seg) {
 			const { _segs: segs } = this;
@@ -65,7 +65,7 @@ export class Path {
 	}
 
 	cutAt(T: number): Path {
-		// Segment method
+		// SegmentSE method
 		const [seg, t, i] = this.segmentAt(T < 0 ? -T : T);
 		if (seg) {
 			const { _segs: segs } = this;
@@ -85,7 +85,7 @@ export class Path {
 	}
 
 	cropAt(T0: number, T1: number = 1): Path {
-		// Segment method
+		// SegmentSE method
 		if (T0 <= 0) {
 			if (T1 >= 1) {
 				return this; // TODO: use clone
@@ -108,17 +108,17 @@ export class Path {
 	}
 
 	transform(M: any) {
-		// Segment method
+		// SegmentSE method
 		return new Path(this._segs.map((seg) => seg.transform(M)));
 	}
 
 	reversed() {
-		// Segment method
+		// SegmentSE method
 		return new Path(this._segs.map((seg) => seg.reversed()).reverse());
 	}
 
 	get length() {
-		// Segment method
+		// SegmentSE method
 		return this.calcLength();
 	}
 
@@ -139,7 +139,7 @@ export class Path {
 		if (this._lengths) {
 			return this._length;
 		}
-		const lens = this._segs.map((c: Segment) => c.length);
+		const lens = this._segs.map((c: SegmentSE) => c.length);
 		const len = (this._length = lens.reduce((a, b) => a + b, 0));
 		this._lengths = lens.map((v) => v / len);
 		return len;
@@ -156,7 +156,7 @@ export class Path {
 		}
 	}
 
-	get firstSegment() {
+	get firstSegmentSE() {
 		const { _segs: segs } = this;
 		for (const seg of segs) {
 			return seg;
@@ -171,7 +171,7 @@ export class Path {
 		}
 	}
 
-	get lastSegment() {
+	get lastSegmentSE() {
 		const { _segs: segs } = this;
 		const { length } = segs;
 		if (length > 0) {
@@ -179,7 +179,7 @@ export class Path {
 		}
 	}
 
-	segmentAt(T: number): [Segment | undefined, number, number] {
+	segmentAt(T: number): [SegmentSE | undefined, number, number] {
 		const { _segs: segs } = this;
 		if (segs.length > 0) {
 			this.calcLength();
@@ -430,14 +430,14 @@ export class Path {
 		return new Path(parseDesc(d));
 	}
 
-	static new(v?: Segment[] | string | Segment | Path): Path {
+	static new(v?: SegmentSE[] | string | SegmentSE | Path): Path {
 		if (Array.isArray(v)) {
 			return new Path(v);
 		} else if (!v) {
 			return new Path([]);
 		} else if (v instanceof Path) {
 			return v;
-		} else if (v instanceof Segment) {
+		} else if (v instanceof SegmentSE) {
 			return new Path([v]);
 		} else {
 			return Path.parse(v);
@@ -453,6 +453,5 @@ import { Quadratic } from './path/quadratic.js';
 export * from './path/describe.js';
 export * from './path/cubic.js';
 import { SegmentLS } from './path/linked.js';
-export { SegmentLS, SegmentLS as PathLS} ;
-
+export { SegmentLS} ;
 export { Arc, Quadratic, Line };
