@@ -207,6 +207,29 @@ export abstract class SegmentLS extends Segment {
 			return [...this._descs()];
 		}
 	}
+	cutAt(t: number) {
+		return t < 0 ? this.splitAt(-t)[1] : this.splitAt(t)[0];
+	}
+	cropAt(t0: number, t1: number): SegmentLS | undefined {
+		if (t0 <= 0) {
+			if (t1 >= 1) {
+				return this;
+			} else if (t1 > 0) {
+				return this.cutAt(t1); // t1 < 1
+			}
+		} else if (t0 < 1) {
+			if (t1 >= 1) {
+				return this.cutAt(-t0);
+			} else if (t0 < t1) {
+				return this.cutAt(-t0).cutAt((t1 - t0) / (1 - t0));
+			} else if (t0 > t1) {
+				return this.cropAt(t1, t0); // t1 < 1
+			}
+		} else if (t1 < 1) {
+			return this.cropAt(t1, t0); // t0 >= 1
+		}
+	}
+
 	abstract _descs(): (number | string)[];
 	abstract splitAt(t: number): [SegmentLS, SegmentLS];
 	static moveTo(...args: Vec[] | number[]) {

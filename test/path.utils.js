@@ -126,10 +126,10 @@ export function testSegment(t, seg, item, opt = {}) {
 
                 t.sameDescs(a.descArray(), pathA, point_epsilon, `splitAt(0, ${T})`, [item, seg, a]);
                 t.sameDescs(b.descArray(), pathB, point_epsilon, `splitAt(${T}, 1)`, seg);
-                // t.sameDescs(descArray(seg.cutAt(T)), pathA, point_epsilon, `cutAt(${T})`, seg);
-                // t.sameDescs(descArray(seg.cutAt(-T)), pathB, point_epsilon, `cutAt(${T})`, seg);
-                // t.sameDescs(descArray(seg.cropAt(0, T)), pathA, point_epsilon, `cropAt(0, ${T})`, seg);
-                // t.sameDescs(descArray(seg.cropAt(T, 1)), pathB, point_epsilon, `cropAt(${T}, 1)`, seg);
+                t.sameDescs(seg.cutAt(T).descArray(), pathA, point_epsilon, `cutAt(${T})`, seg);
+                t.sameDescs(seg.cutAt(-T).descArray(), pathB, point_epsilon, `cutAt(${T})`, seg);
+                t.sameDescs(seg.cropAt(0, T).descArray(), pathA, point_epsilon, `cropAt(0, ${T})`, seg);
+                t.sameDescs(seg.cropAt(T, 1).descArray(), pathB, point_epsilon, `cropAt(${T}, 1)`, seg);
             } catch (err) {
                 console.error('Err splitAt', T);
                 console.dir(seg, { depth: null });
