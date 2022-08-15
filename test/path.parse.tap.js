@@ -83,3 +83,12 @@ for await (const item of enum_path_data({ SEGMENTS: 'SEPaths' })) {
         t.end();
     });
 }
+
+test.test(`SegmentLS Extra`, { bail: 1 }, function (t) {
+    const cur = SegmentLS.moveTo(3, 4).lineTo(5, 6).moveTo(7, 8).closePath();
+    t.same([...cur.first.end], [3, 4, 0]);
+    t.same([...cur.prev.end], [7, 8, 0]);
+    t.same(cur.first.constructor.name, 'MoveLS');
+    t.same(cur.prev.constructor.name, 'MoveLS');
+    t.end();
+});

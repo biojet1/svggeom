@@ -1,5 +1,4 @@
 'uses strict';
-import {spawn} from 'child_process';
 import test from 'tap';
 import {Matrix, Path, Cubic, Arc, Line, SegmentLS} from 'svggeom';
 import {enum_path_data} from './path.utils.js';

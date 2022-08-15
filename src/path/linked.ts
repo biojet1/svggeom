@@ -46,10 +46,10 @@ export abstract class SegmentLS extends Segment {
 		}
 		return cur;
 	}
-	get ensurePrev(): SegmentLS {
-		const { _prev } = this;
-		return _prev ?? new MoveLS(undefined, Vec.pos());
-	}
+	// get ensurePrev(): SegmentLS {
+	// 	const { _prev } = this;
+	// 	return _prev ?? new MoveLS(undefined, Vec.pos());
+	// }
 	get prevMove(): MoveLS | undefined {
 		for (let cur: SegmentLS | undefined = this._prev; cur; cur = cur._prev) {
 			if (cur instanceof MoveLS) {
