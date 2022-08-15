@@ -103,6 +103,7 @@ export function testSegment(t, seg, item, opt = {}) {
     t.sameBox(item.bbox, seg.bbox());
     let pv, px, a, b;
     for (const [T, { x, y, tx, ty, pathA, pathB }] of Object.entries(item.at)) {
+        // pointAt
         pv = seg.pointAt(T).toArray();
         px = [x, y, 0];
         // console.error(pv, px);
@@ -112,10 +113,28 @@ export function testSegment(t, seg, item, opt = {}) {
             pv,
             px,
         ]);
-
+        // slopeAt
         pv = seg.slopeAt(T).toArray();
         px = [tx, ty];
-        // t.almostEqual(pv, px, 1e-11, `tangentAt(${T})`, [item, seg, pv, px]);
+        // t.almostEqual(pv, px, 1e-11, `slopeAt(${T})`, [item, seg, pv, px]);
+        // tangentAt
         test_tangents && t.sameTangent(pv, px, tan_opt, `tangentAt(${T})`, [item, seg]);
+        // splitAt
+        if (test_descs && pathA) {
+            try {
+                [a, b] = seg.splitAt(T);
+
+                t.sameDescs(a.descArray(), pathA, point_epsilon, `splitAt(0, ${T})`, [item, seg, a]);
+                t.sameDescs(b.descArray(), pathB, point_epsilon, `splitAt(${T}, 1)`, seg);
+                // t.sameDescs(descArray(seg.cutAt(T)), pathA, point_epsilon, `cutAt(${T})`, seg);
+                // t.sameDescs(descArray(seg.cutAt(-T)), pathB, point_epsilon, `cutAt(${T})`, seg);
+                // t.sameDescs(descArray(seg.cropAt(0, T)), pathA, point_epsilon, `cropAt(0, ${T})`, seg);
+                // t.sameDescs(descArray(seg.cropAt(T, 1)), pathB, point_epsilon, `cropAt(${T}, 1)`, seg);
+            } catch (err) {
+                console.error('Err splitAt', T);
+                console.dir(seg, { depth: null });
+                throw err;
+            }
+        }
     }
 }

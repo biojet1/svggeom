@@ -62,7 +62,7 @@ export class Line extends LineSegment {
 		super(start, end);
 	}
 
-	newFromTo(a: Vec, b: Vec) {
+	override newFromTo(a: Vec, b: Vec) {
 		return new Line(a, b);
 	}
 }

@@ -21,7 +21,10 @@ export abstract class Segment {
 		const { x, y } = this.start;
 		return ['M', x, y].concat(this.toPathFragment()).join(' ');
 	}
-
+	descArray(): (string | number)[] {
+		const { x, y } = this.start;
+		return ['M', x, y].concat(this.toPathFragment());
+	}
 	tangentAt(t: number) {
 		const vec = this.slopeAt(t);
 		return vec.div(vec.abs());

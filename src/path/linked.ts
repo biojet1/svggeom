@@ -289,7 +289,7 @@ export class LineLS extends SegmentLS {
 	}
 }
 export class MoveLS extends LineLS {
-	_descs() {
+	override _descs() {
 		const {
 			end: [x, y],
 		} = this;
