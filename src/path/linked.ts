@@ -45,6 +45,10 @@ export abstract class SegmentLS extends Segment {
 		}
 		return cur;
 	}
+	get ensurePrev(): SegmentLS {
+		const { _prev } = this;
+		return _prev ?? new MoveLS(undefined, Vec.pos());
+	}
 	get prevMove(): MoveLS | undefined {
 		for (let cur: SegmentLS | undefined = this._prev; cur; cur = cur._prev) {
 			if (cur instanceof MoveLS) {
@@ -197,7 +201,7 @@ export abstract class SegmentLS extends Segment {
 		// return this.d();
 	}
 
-	descArray(): (number | string)[] {
+	override descArray(): (number | string)[] {
 		const { _prev } = this;
 		if (_prev) {
 			const a = _prev.descArray();
@@ -232,6 +236,8 @@ export abstract class SegmentLS extends Segment {
 
 	abstract _descs(): (number | string)[];
 	abstract splitAt(t: number): [SegmentLS, SegmentLS];
+	abstract transform(M: any): SegmentLS;
+	// abstract reversed(): SegmentLS | undefined;
 	static moveTo(...args: Vec[] | number[]) {
 		const [pos] = pickPos(args);
 		return new MoveLS(undefined, pos);
@@ -301,14 +307,26 @@ export class LineLS extends SegmentLS {
 		const c = this.pointAt(t);
 		return [new LineLS(this._prev, c), new LineLS(new MoveLS(undefined, c), end)];
 	}
-	// override reversed() {
-	// 	// throw new Error('NOTIMPL');
-	// }
 	override _descs() {
 		const {
 			end: [x, y],
 		} = this;
 		return ['L', x, y];
+	}
+	// reversed() {
+	// 	const { start, end } = this;
+	// 	const { _prev } = this;
+	// 	if (_prev) {
+	// 		const rev = _prev.reversed(this);
+	// 		if (rev) {
+	// 			return new LineLS(rev, rev.end);
+	// 		}
+	// 	}
+	// 	return new LineLS(new MoveLS(undefined, end), start);
+	// }
+	override transform(M: any) {
+		const { end, ensurePrev } = this;
+		return new LineLS(ensurePrev.transform(M), end.transform(M));
 	}
 }
 export class MoveLS extends LineLS {
@@ -323,6 +341,10 @@ export class MoveLS extends LineLS {
 		const c = this.pointAt(t);
 		return [new MoveLS(this._prev, c), new MoveLS(new MoveLS(undefined, c), end)];
 	}
+	override transform(M: any) {
+		const { end, _prev } = this;
+		return new MoveLS(_prev, end.transform(M));
+	}
 }
 export class CloseLS extends LineLS {
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
@@ -330,7 +352,10 @@ export class CloseLS extends LineLS {
 		const c = this.pointAt(t);
 		return [new LineLS(this._prev, c), new CloseLS(new MoveLS(undefined, c), end)];
 	}
-
+	override transform(M: any) {
+		const { end, ensurePrev } = this;
+		return new CloseLS(ensurePrev.transform(M), end.transform(M));
+	}
 	override _descs() {
 		return ['Z'];
 	}
@@ -372,6 +397,10 @@ export class QuadLS extends SegmentLS {
 		} = this;
 		return ['Q', x1, y1, ex, ey];
 	}
+	override transform(M: any) {
+		const { start, p, end, ensurePrev: prev } = this;
+		return new QuadLS(prev.transform(M), p.transform(M), end.transform(M));
+	}
 }
 import { cubicLength, cubicSlopeAt, cubicPointAt, cubicBox, cubicSplitAt } from './cubic.js';
 export class CubicLS extends SegmentLS {
@@ -406,19 +435,22 @@ export class CubicLS extends SegmentLS {
 	override get length() {
 		return cubicLength(this._cpts);
 	}
-	// override reversed() {
+	// reversed() {
 	// 	const { start, c1, c2, end } = this;
+	// 	// return new CubicLS(new MoveLS(undefined, end), c2, c1, start);
+	// 	const { _prev } = this;
+	// 	if (_prev) {
+	// 		const rev = _prev.reversed();
+	// 		if (rev) {
+	// 			return new CubicLS(rev, c2, c1, rev.end);
+	// 		}
+	// 	}
 	// 	return new CubicLS(new MoveLS(undefined, end), c2, c1, start);
 	// }
-	// override transform(M: any) {
-	// 	const { start, c1, c2, end } = this;
-	// 	return new CubicLS(
-	// 		new MoveLS(undefined, start.transform(M)),
-	// 		c1.transform(M),
-	// 		c2.transform(M),
-	// 		end.transform(M),
-	// 	);
-	// }
+	override transform(M: any) {
+		const { start, c1, c2, end, ensurePrev: prev } = this;
+		return new CubicLS(prev.transform(M), c1.transform(M), c2.transform(M), end.transform(M));
+	}
 	override _descs() {
 		const {
 			c1: { x: x1, y: y1 },
@@ -428,7 +460,7 @@ export class CubicLS extends SegmentLS {
 		return ['C', x1, y1, x2, y2, ex, ey];
 	}
 }
-import { arcBBox, arcLength, arcPointAt, arcSlopeAt } from './arc.js';
+import { arcBBox, arcLength, arcPointAt, arcSlopeAt, arcTransform } from './arc.js';
 import { arcParams } from '../util.js';
 export class ArcLS extends SegmentLS {
 	readonly rx: number;
@@ -472,13 +504,18 @@ export class ArcLS extends SegmentLS {
 		return arcSlopeAt(this, t);
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
-		const { rx, ry, phi, sweep, rdelta, start, end, _prev } = this;
+		const { rx, ry, phi, sweep, rdelta, end, _prev } = this;
 		const deltaA = abs(rdelta);
 		const mid = arcPointAt(this, t);
 		return [
 			new ArcLS(_prev, rx, ry, phi, deltaA * t > PI, sweep, mid),
 			new ArcLS(new MoveLS(undefined, mid), rx, ry, phi, deltaA * (1 - t) > PI, sweep, end),
 		];
+	}
+	override transform(M: any) {
+		const { arc, end, start, ensurePrev: prev } = this;
+		const [rx, ry, phi, sweep] = arcTransform(this, M);
+		return new ArcLS(prev.transform(M), rx, ry, phi, arc, sweep, end.transform(M));
 	}
 	override _descs() {
 		const {
