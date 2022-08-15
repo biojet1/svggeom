@@ -379,16 +379,6 @@ export class MoveLS extends LineLS {
 			return _prev.reversed(seg) ?? seg;
 		} else {
 			return next;
-
-			// throw new Error(`No prev`);
-			// if (next) {
-			// 	return next;
-			// } else {
-			// 	throw new Error(`No prev`);
-			// 	// return new LineLS(new MoveLS(undefined, end));
-			// }
-			// return next;
-			// return new LineLS(next, Vec.pos(0, 0));
 		}
 	}
 }
@@ -464,7 +454,20 @@ export class QuadLS extends SegmentLS {
 		}
 		return ['Q', x1, y1, ex, ey];
 	}
-
+	override reversed(next?: SegmentLS): SegmentLS | undefined {
+		const { end, p, _prev } = this;
+		next || (next = new MoveLS(undefined, end));
+		if (_prev) {
+			const rev = new QuadLS(next, p, _prev.end);
+			return _prev.reversed(rev) ?? rev;
+		} else {
+			if (next) {
+				return next;
+			} else {
+				throw new Error(`No prev`);
+			}
+		}
+	}
 	override transform(M: any) {
 		const { p, end, _prev } = this;
 		return new QuadLS(_prev?.transform(M), p.transform(M), end.transform(M));
@@ -503,18 +506,20 @@ export class CubicLS extends SegmentLS {
 	override get length() {
 		return cubicLength(this._cpts);
 	}
-	// reversed() {
-	// 	const { start, c1, c2, end } = this;
-	// 	// return new CubicLS(new MoveLS(undefined, end), c2, c1, start);
-	// 	const { _prev } = this;
-	// 	if (_prev) {
-	// 		const rev = _prev.reversed();
-	// 		if (rev) {
-	// 			return new CubicLS(rev, c2, c1, rev.end);
-	// 		}
-	// 	}
-	// 	return new CubicLS(new MoveLS(undefined, end), c2, c1, start);
-	// }
+	override reversed(next?: SegmentLS): SegmentLS | undefined {
+		const { end, c1, c2, _prev } = this;
+		next || (next = new MoveLS(undefined, end));
+		if (_prev) {
+			const rev = new CubicLS(next, c2, c1, _prev.end);
+			return _prev.reversed(rev) ?? rev;
+		} else {
+			if (next) {
+				return next;
+			} else {
+				throw new Error(`No prev`);
+			}
+		}
+	}
 	override transform(M: any) {
 		const { c1, c2, end, _prev } = this;
 		return new CubicLS(_prev?.transform(M), c1.transform(M), c2.transform(M), end.transform(M));
@@ -605,6 +610,21 @@ export class ArcLS extends SegmentLS {
 		const [rx, ry, phi, sweep] = arcTransform(this, M);
 		return new ArcLS(_prev?.transform(M), rx, ry, phi, arc, sweep, end.transform(M));
 	}
+	override reversed(next?: SegmentLS): SegmentLS | undefined {
+		const { rx, ry, phi, arc, sweep, rdelta, end, _prev } = this;
+		next || (next = new MoveLS(undefined, end));
+		if (_prev) {
+			const rev = new ArcLS(next, rx, ry, phi, arc, !sweep, _prev.end);
+			return _prev.reversed(rev) ?? rev;
+		} else {
+			if (next) {
+				return next;
+			} else {
+				throw new Error(`No prev`);
+			}
+		}
+	}
+
 	override _descs(opt?: DescParams) {
 		const {
 			rx,

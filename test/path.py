@@ -452,6 +452,12 @@ elif DATA.startswith("Parsed"):
             rel = str(p.to_non_shorthand().to_relative())
         abs = list(_tokenize_path(abs))
         rel = list(_tokenize_path(rel))
+        rev = list(
+            _tokenize_path(SPTPath(d).reversed().d(use_closed_attrib=False, rel=False))
+        )
+        revr = list(
+            _tokenize_path(SPTPath(d).reversed().d(use_closed_attrib=False, rel=True))
+        )
         # if "Q" in D:
         #     skip += 1
         #     continue
@@ -461,6 +467,8 @@ elif DATA.startswith("Parsed"):
         d = dict(
             abs=abs,
             rel=rel,
+            rev=rev,
+            revr=revr,
             d=d,
             D=D,
         )
@@ -476,6 +484,7 @@ elif DATA.startswith("SEPaths"):
         # p = Path(d)
         rel = p.d(relative=True, smooth=False)
         abs = p.d(relative=False, smooth=False)
+        # rev = p.reversed()
         # rel = p.d(use_closed_attrib=False, rel=True)
         # abs = p.d(use_closed_attrib=False, rel=False)
         abs = list(_tokenize_path(abs))

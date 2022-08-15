@@ -17,10 +17,10 @@ test.test(`SegmentLS Extra`, { bail: 1 }, function (t) {
     const rev = seg.reversed();
 
     // console.dir();
-    console.log(seg.toString(), "-->", rev.toString());
+    console.log(seg.toString(), '-->', rev.toString());
     t.end();
 });
-process.exit();
+// process.exit();
 
 for await (const item of enum_path_data({ SEGMENTS: 'Parsed' })) {
     const { d } = item;
@@ -60,10 +60,13 @@ for await (const item of enum_path_data({ SEGMENTS: 'Parsed' })) {
     test.test(`SPTPaths<${d}>`, { bail: 1 }, function (t) {
         const p = SegmentLS.parse(d);
         const abs = p.descArray({ relative: false, short: false });
+        const rev = p.reversed();
 
         t.sameDescs(abs, item.abs, 5e-5, `ABS`, p);
         const rel = p.descArray({ relative: true, short: false });
         t.sameDescs(rel, item.rel, 5e-5, `REL`, p);
+        t.sameDescs(rev.descArray(), item.rev, 5e-5, `REV`, p);
+        t.sameDescs(rev.descArray({ relative: true, short: false }), item.revr, 5e-5, `REV-REL`, p);
 
         t.end();
     });
@@ -85,7 +88,6 @@ for await (const item of enum_path_data({ SEGMENTS: 'SEPaths' })) {
     test.test(`SEPaths<${d}>`, { bail: 1 }, function (t) {
         const p = Path.parse(item.d);
         const abs = p.descArray({ relative: false, close: true });
-
         t.sameDescs(abs, item.abs, eps, `ABS`, p);
         const rel = p.descArray({ relative: true });
         t.sameDescs(rel, item.rel, eps, `REL`, p);
@@ -96,8 +98,8 @@ for await (const item of enum_path_data({ SEGMENTS: 'SEPaths' })) {
         const cur = SegmentLS.parse(item.d);
         // t.same(item.abs, cur.descArray(), [`${cur.toString()}`, item.abs]);
         t.sameDescs(cur.descArray(), item.abs, eps, `ABS`, cur);
-
         t.sameDescs(cur.descArray({ relative: true, smooth: false }), item.rel, eps, `REL`, cur);
+
         t.end();
     });
 }
