@@ -65,8 +65,8 @@ export function test_segment(t, seg, item, opt = {}) {
                 throw err;
             }
         }
-        let rev = seg.reversed();
-        let bak = rev.reversed();
+        const rev = seg.reversed();
+        const bak = rev.reversed();
         if (seg instanceof Path) {
             t.notSame(seg._segs, rev._segs);
             t.same(bak._segs, seg._segs);
@@ -74,6 +74,11 @@ export function test_segment(t, seg, item, opt = {}) {
             t.notSame(seg, rev);
             t.same(bak, seg);
         }
+        const sega = seg.descArray();
+        const reva = rev.descArray();
+        const baka = bak.descArray();
+        t.notSame(sega, reva);
+        t.same(baka, sega);
     }
 }
 function descArray(x) {
@@ -136,5 +141,13 @@ export function testSegment(t, seg, item, opt = {}) {
                 throw err;
             }
         }
+        // reversed
+        const rev = seg.reversed();
+        const bak = rev.reversed();
+        const sega = seg.descArray();
+        const reva = rev.descArray();
+        const baka = bak.descArray();
+        t.notSame(sega, reva);
+        t.same(baka, sega);
     }
 }

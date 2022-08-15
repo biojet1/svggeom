@@ -238,9 +238,7 @@ export abstract class SegmentLS extends Segment {
 	abstract _descs(opt?: DescParams): (number | string)[];
 	abstract splitAt(t: number): [SegmentLS, SegmentLS];
 	abstract transform(M: any): SegmentLS;
-	reversed(next?: SegmentLS): SegmentLS | undefined {
-		throw new Error(`Not Implemented`);
-	}
+	abstract reversed(next?: SegmentLS): SegmentLS | undefined;
 	static moveTo(...args: Vec[] | number[]) {
 		const [pos] = pickPos(args);
 		return new MoveLS(undefined, pos);
@@ -372,8 +370,7 @@ export class MoveLS extends LineLS {
 		return new MoveLS(_prev?.transform(M), end.transform(M));
 	}
 	override reversed(next?: SegmentLS): SegmentLS | undefined {
-		const { end, _prev } = this;
-
+		const { _prev } = this;
 		if (_prev) {
 			const seg = new MoveLS(next, _prev.end);
 			return _prev.reversed(seg) ?? seg;
@@ -611,7 +608,7 @@ export class ArcLS extends SegmentLS {
 		return new ArcLS(_prev?.transform(M), rx, ry, phi, arc, sweep, end.transform(M));
 	}
 	override reversed(next?: SegmentLS): SegmentLS | undefined {
-		const { rx, ry, phi, arc, sweep, rdelta, end, _prev } = this;
+		const { rx, ry, phi, arc, sweep, end, _prev } = this;
 		next || (next = new MoveLS(undefined, end));
 		if (_prev) {
 			const rev = new ArcLS(next, rx, ry, phi, arc, !sweep, _prev.end);
