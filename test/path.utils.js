@@ -54,7 +54,7 @@ export function test_segment(t, seg, item, opt = {}) {
                 [a, b] = seg.splitAt(T);
 
                 t.sameDescs(a.descArray(), pathA, point_epsilon, `splitAt(0, ${T})`, [item, seg]);
-                t.sameDescs(b, pathB, point_epsilon, `splitAt(${T}, 1)`, seg);
+                t.sameDescs(b.descArray(), pathB, point_epsilon, `splitAt(${T}, 1)`, seg);
                 t.sameDescs(seg.cutAt(T).descArray(), pathA, point_epsilon, `cutAt(${T})`, seg);
                 t.sameDescs(seg.cutAt(-T).descArray(), pathB, point_epsilon, `cutAt(${T})`, seg);
                 t.sameDescs(seg.cropAt(0, T).descArray(), pathA, point_epsilon, `cropAt(0, ${T})`, seg);
