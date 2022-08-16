@@ -450,7 +450,6 @@ import { Line, Close, Vertical, Horizontal } from './path/line.js';
 import { Arc } from './path/arc.js';
 import { Cubic } from './path/cubic.js';
 import { Quadratic } from './path/quadratic.js';
-export * from './path/describe.js';
 export * from './path/cubic.js';
 import { SegmentLS } from './path/linked.js';
 export { SegmentLS} ;

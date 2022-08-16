@@ -30,13 +30,13 @@ export abstract class Segment {
 	}
 	descArray(opt?: DescParams): (string | number)[] {
 		const { x, y } = this.start;
-		return ['M', x, y].concat(this.toPathFragment());
+		return ['M', x, y].concat(this.toPathFragment(opt));
 	}
 	tangentAt(t: number) {
 		const vec = this.slopeAt(t);
 		return vec.div(vec.abs());
 	}
-	toPathFragment(): (string | number)[] {
+	toPathFragment(opt?: DescParams): (string | number)[] {
 		throw new Error('NOTIMPL');
 	}
 }

@@ -17,15 +17,15 @@ const tau = 2 * pi,
 	epsilon = 1e-6,
 	tauEpsilon = tau - epsilon;
 
-export class Draw {
-	_: string;
+export class PathDraw {
 	_x0?: number;
 	_y0?: number;
 	_x1?: number;
 	_y1?: number;
+	_ = '';
 
-	constructor() {
-		this._ = '';
+	beginPath() {
+		// this._ = '';
 	}
 
 	moveTo(...args: Vec[] | number[]) {
@@ -137,7 +137,7 @@ export class Draw {
 		if (r < 0) throw new Error('negative radius: ' + r);
 
 		// Is this path empty? Move to (x0,y0).
-		if (typeof _x1 === 'undefined') {
+		if (_x1 == null) {
 			this._ += 'M' + x0 + ',' + y0;
 		}
 
@@ -147,12 +147,12 @@ export class Draw {
 		}
 
 		// Is this arc empty? We’re done.
-		if (!r) return;
+		if (!r) return this;
 
 		// Does the angle go the wrong way? Flip the direction.
 		if (da < 0) da = (da % tau) + tau;
 
-		// Is this a complete circle? Draw two arcs to complete the circle.
+		// Is this a complete circle? PathDraw two arcs to complete the circle.
 		if (da > tauEpsilon) {
 			this._ +=
 				'A' +
@@ -177,7 +177,7 @@ export class Draw {
 				(this._y1 = y0);
 		}
 
-		// Is this arc non-empty? Draw an arc!
+		// Is this arc non-empty? PathDraw an arc!
 		else if (da > epsilon) {
 			this._ +=
 				'A' +
@@ -251,25 +251,26 @@ export class Draw {
 		//   const letterSpacing = 'letterSpacing' in options ? options.letterSpacing : false;
 		// const tracking = 'tracking' in options ? options.tracking : false;
 		// const metrics = this.getMetrics(text, options);
-		const path = font.getPath(text, 0, 0, fontSize, {
-			kerning,
-			letterSpacing,
-			tracking,
-		});
-		this._ += path.toPathData(1);
+		font
+			.getPath(text, x ?? 0, y ?? 0, fontSize, {
+				kerning,
+				letterSpacing,
+				tracking,
+			})
+			.draw(this);
 		return this;
 	}
 
 	static new() {
-		return new Draw();
+		return new PathDraw();
 	}
 
 	static moveTo() {
-		return Draw.new().moveTo(...arguments);
+		return PathDraw.new().moveTo(...arguments);
 	}
 
 	static lineTo() {
-		return Draw.new().lineTo(...arguments);
+		return PathDraw.new().lineTo(...arguments);
 	}
 }
 

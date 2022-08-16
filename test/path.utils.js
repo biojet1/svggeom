@@ -53,12 +53,12 @@ export function test_segment(t, seg, item, opt = {}) {
             try {
                 [a, b] = seg.splitAt(T);
 
-                t.sameDescs(descArray(a), pathA, point_epsilon, `splitAt(0, ${T})`, [item, seg]);
-                t.sameDescs(descArray(b), pathB, point_epsilon, `splitAt(${T}, 1)`, seg);
-                t.sameDescs(descArray(seg.cutAt(T)), pathA, point_epsilon, `cutAt(${T})`, seg);
-                t.sameDescs(descArray(seg.cutAt(-T)), pathB, point_epsilon, `cutAt(${T})`, seg);
-                t.sameDescs(descArray(seg.cropAt(0, T)), pathA, point_epsilon, `cropAt(0, ${T})`, seg);
-                t.sameDescs(descArray(seg.cropAt(T, 1)), pathB, point_epsilon, `cropAt(${T}, 1)`, seg);
+                t.sameDescs(a.descArray(), pathA, point_epsilon, `splitAt(0, ${T})`, [item, seg]);
+                t.sameDescs(b, pathB, point_epsilon, `splitAt(${T}, 1)`, seg);
+                t.sameDescs(seg.cutAt(T).descArray(), pathA, point_epsilon, `cutAt(${T})`, seg);
+                t.sameDescs(seg.cutAt(-T).descArray(), pathB, point_epsilon, `cutAt(${T})`, seg);
+                t.sameDescs(seg.cropAt(0, T).descArray(), pathA, point_epsilon, `cropAt(0, ${T})`, seg);
+                t.sameDescs(seg.cropAt(T, 1).descArray(), pathB, point_epsilon, `cropAt(${T}, 1)`, seg);
             } catch (err) {
                 console.error('Err splitAt', T);
                 console.dir(seg, { depth: null });
@@ -81,13 +81,13 @@ export function test_segment(t, seg, item, opt = {}) {
         t.same(baka, sega);
     }
 }
-function descArray(x) {
-    if (x instanceof Path) {
-        return x.descArray({ close: null });
-    } else {
-        return new Path([x]).descArray({ close: null });
-    }
-}
+// function descArray(x) {
+//     if (x instanceof Path) {
+//         return x.descArray({ close: null });
+//     } else {
+//         return new Path([x]).descArray({ close: null });
+//     }
+// }
 
 export function testSegment(t, seg, item, opt = {}) {
     const { epsilon = 1e-11 } = opt;

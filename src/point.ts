@@ -1,4 +1,4 @@
-const {sqrt, abs, cos, sin, atan2, PI} = Math;
+const { sqrt, abs, cos, sin, atan2, PI } = Math;
 const TAU = PI * 2;
 
 export class Vec {
@@ -21,7 +21,7 @@ export class Vec {
 	}
 
 	get radians() {
-		const {x, y} = this;
+		const { x, y } = this;
 		let r = atan2(y, x);
 		return r < 0 ? r + TAU : r;
 	}
@@ -35,7 +35,7 @@ export class Vec {
 	}
 
 	absQuad() {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return x * x + y * y + z * z;
 	}
 
@@ -80,54 +80,54 @@ export class Vec {
 	}
 
 	toString() {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return z ? `${x}, ${y}, ${z}` : `${x}, ${y}`;
 	}
 
 	toArray() {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return [x, y, z];
 	}
 
 	// Methods returning new Vec
 
 	normal() {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return new Vec(y, -x, z);
 	}
 
 	onlyX() {
-		const {x} = this;
+		const { x } = this;
 		return new Vec(x, 0, 0);
 	}
 
 	onlyY() {
-		const {y} = this;
+		const { y } = this;
 		return new Vec(0, y, 0);
 	}
 
 	onlyZ() {
-		const {z} = this;
+		const { z } = this;
 		return new Vec(0, 0, z);
 	}
 
 	withX(x: number) {
-		const {y, z} = this;
+		const { y, z } = this;
 		return new Vec(x, y, z);
 	}
 
 	withY(y: number) {
-		const {x, z} = this;
+		const { x, z } = this;
 		return new Vec(x, y, z);
 	}
 
 	withZ(z: number) {
-		const {y, x} = this;
+		const { y, x } = this;
 		return new Vec(x, y, z);
 	}
 
 	div(factor: number) {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return new Vec(x / factor, y / factor, z / factor);
 	}
 
@@ -158,7 +158,7 @@ export class Vec {
 	}
 
 	mul(factor: number) {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return new Vec(x * factor, y * factor, z * factor);
 	}
 
@@ -183,44 +183,44 @@ export class Vec {
 	}
 
 	transform(matrix: any) {
-		const {x, y} = this;
-		const {a, b, c, d, e, f} = matrix;
+		const { x, y } = this;
+		const { a, b, c, d, e, f } = matrix;
 
 		return new Vec(a * x + c * y + e, b * x + d * y + f);
 	}
 
 	flipX() {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return new Vec(-x, y, z);
 	}
 
 	flipY() {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return new Vec(x, -y, z);
 	}
 
 	flipZ() {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return new Vec(x, y, -z);
 	}
 
 	shiftX(d: number) {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return new Vec(x + d, y, z);
 	}
 
 	shiftY(d: number) {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return new Vec(x, y + d, z);
 	}
 
 	shiftZ(d: number) {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return new Vec(x, y, z + d);
 	}
 
 	rotated(rad: number) {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		const [cs, sn] = [cos(rad), sin(rad)];
 		return new Vec(x * cs - y * sn, x * sn + y * cs, z);
 	}
@@ -249,7 +249,7 @@ export class Vec {
 	// Misc methods
 
 	*[Symbol.iterator](): Iterator<number> {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		yield x;
 		yield y;
 		yield z;
@@ -282,8 +282,16 @@ export class Vec {
 		return new this(x, y, z);
 	}
 
-	static polar(radius: number = 1, theta: number = 0, phi: number = 0) {
-		return radius ? new this(radius * cos(theta), radius * sin(theta)) : new this();
+	static polar(radius: number = 1, ϕ: number = 0, ϴ?: number) {
+		if (ϴ == null) {
+			return radius ? new this(radius * cos(ϕ), radius * sin(ϕ)) : new this();
+		} else {
+			// http://www.kwon3d.com/theory/crdsys/polar.html
+			const sinϴ = sin(ϴ);
+			return radius
+				? new this(radius * cos(ϕ) * sinϴ, radius * sin(ϕ) * sinϴ, radius * cos(ϴ))
+				: new this();
+		}
 	}
 
 	static radians(n: number) {
@@ -324,4 +332,4 @@ export class Vec {
 	}
 }
 
-export {Vec as Point};
+export { Vec as Point };
