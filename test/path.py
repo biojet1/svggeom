@@ -260,7 +260,14 @@ elif DATA.startswith("CubicBezier"):
                 pts = tuple(
                     brpt(im) for im in (seg.start, seg.control1, seg.control2, seg.end)
                 )
-                d = dict(points=pts, bbox=seg.bbox(), length=seg.length(), d=d)
+                d = dict(
+                    points=pts,
+                    bbox=seg.bbox(),
+                    length=seg.length(),
+                    d=d,
+                    start=pts[0],
+                    end=pts[-1],
+                )
 
                 pts = d["at"] = {}
                 for t in k:
@@ -288,7 +295,14 @@ elif DATA.startswith("QuadraticBezier"):
         for seg in p:
             if isinstance(seg, QuadraticBezier):
                 pts = tuple(brpt(im) for im in (seg.start, seg.control, seg.end))
-                d = dict(points=pts, bbox=seg.bbox(), length=seg.length(), d=d)
+                d = dict(
+                    points=pts,
+                    bbox=seg.bbox(),
+                    length=seg.length(),
+                    d=d,
+                    start=pts[0],
+                    end=pts[-1],
+                )
 
                 pts = d["at"] = {}
                 for t in k:
@@ -311,7 +325,9 @@ elif DATA.startswith("QuadraticBezier"):
                 print(dumps(d))
 elif DATA.startswith("Arc"):
     seen = {}
-    dataA1 = ["m 182.94048,133.3363 a 71.059525,34.395832 0 0 1 -57.74432,33.78659 71.059525,34.395832 0 0 1 -79.384695,-21.12465 71.059525,34.395832 0 0 1 27.993926,-41.70331 71.059525,34.395832 0 0 1 89.875769,5.49583"]
+    dataA1 = [
+        "m 182.94048,133.3363 a 71.059525,34.395832 0 0 1 -57.74432,33.78659 71.059525,34.395832 0 0 1 -79.384695,-21.12465 71.059525,34.395832 0 0 1 27.993926,-41.70331 71.059525,34.395832 0 0 1 89.875769,5.49583"
+    ]
     r = int(environ.get("POINTS", 10))
     k = [i / r for i in range(r)] + [1]
     for i, (p, d) in enumerate(paths(data1, data3, dataA1)):
@@ -368,7 +384,7 @@ elif DATA.startswith("Arc"):
 elif DATA.startswith("Line"):
     r = int(environ.get("POINTS", 10))
     k = [i / r for i in range(r)] + [1]
-    for i, (p, d) in enumerate(paths(data1)):
+    for i, (p, _d) in enumerate(paths(data1)):
         for seg in p:
             if isinstance(seg, Line):
                 d = dict(
@@ -376,7 +392,7 @@ elif DATA.startswith("Line"):
                     end=brpt(seg.end),
                     bbox=seg.bbox(),
                     length=seg.length(),
-                    d=d,
+                    d=_d,
                 )
                 d["repr"] = repr(seg)
                 pts = d["at"] = {}
@@ -410,10 +426,12 @@ elif DATA.startswith("Parsed"):
     from sys import path
     from os.path import exists
     from svgelements import Path as PathSE
+
     d = "/usr/share/inkscape/extensions"
     exists(d) and path.append(d)
     from inkex import Path as PathIX, Line
     from inkex.paths import PathCommand
+
     PathCommand.number_template = "{}"
 
     skip = 0
@@ -434,6 +452,12 @@ elif DATA.startswith("Parsed"):
             rel = str(p.to_non_shorthand().to_relative())
         abs = list(_tokenize_path(abs))
         rel = list(_tokenize_path(rel))
+        rev = list(
+            _tokenize_path(SPTPath(d).reversed().d(use_closed_attrib=False, rel=False))
+        )
+        revr = list(
+            _tokenize_path(SPTPath(d).reversed().d(use_closed_attrib=False, rel=True))
+        )
         # if "Q" in D:
         #     skip += 1
         #     continue
@@ -443,6 +467,8 @@ elif DATA.startswith("Parsed"):
         d = dict(
             abs=abs,
             rel=rel,
+            rev=rev,
+            revr=revr,
             d=d,
             D=D,
         )
@@ -458,6 +484,7 @@ elif DATA.startswith("SEPaths"):
         # p = Path(d)
         rel = p.d(relative=True, smooth=False)
         abs = p.d(relative=False, smooth=False)
+        # rev = p.reversed()
         # rel = p.d(use_closed_attrib=False, rel=True)
         # abs = p.d(use_closed_attrib=False, rel=False)
         abs = list(_tokenize_path(abs))

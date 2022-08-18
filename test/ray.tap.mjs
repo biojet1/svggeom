@@ -1,5 +1,5 @@
 'uses strict';
-import {Ray, Point, Draw} from 'svggeom';
+import {Ray, Point, PathDraw} from 'svggeom';
 import './utils.js';
 import test from 'tap';
 const CI = !!process.env.CI;
@@ -371,15 +371,15 @@ test.test(`draw`, {bail: !CI}, function (t) {
     const {PI, E, LN10, LOG2E, sqrt} = Math;
     let d;
 
-    d = new Draw();
+    d = new PathDraw();
     d.quadraticCurveTo(3, 4, 5, 6);
 
     console.log(d);
     const s = 'M1,2Q3,4,5,6';
-    t.equal(Draw.moveTo(1, 2).quadraticCurveTo(3, 4, 5, 6) + '', s);
-    t.equal(Draw.moveTo(Point.at(1, 2)).quadraticCurveTo(3, 4, 5, 6) + '', s);
-    t.equal(Draw.moveTo(Point.at(1, 2)).quadraticCurveTo(3, 4, Point.at(5, 6)) + '', s);
-    t.equal(Draw.moveTo(Point.at(1, 2)).quadraticCurveTo(Point.at(3, 4), Point.at(5, 6)) + '', s);
+    t.equal(PathDraw.moveTo(1, 2).quadraticCurveTo(3, 4, 5, 6) + '', s);
+    t.equal(PathDraw.moveTo(Point.at(1, 2)).quadraticCurveTo(3, 4, 5, 6) + '', s);
+    t.equal(PathDraw.moveTo(Point.at(1, 2)).quadraticCurveTo(3, 4, Point.at(5, 6)) + '', s);
+    t.equal(PathDraw.moveTo(Point.at(1, 2)).quadraticCurveTo(Point.at(3, 4), Point.at(5, 6)) + '', s);
 
     t.end();
 });

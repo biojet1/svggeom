@@ -32,7 +32,7 @@ export class Cubic extends SegmentSE {
 	override pointAt(t: number) {
 		return cubicPointAt(this._cpts, t);
 	}
-	override splitAt(z: number) {
+	override splitAt(z: number) :[SegmentSE,SegmentSE] {
 		const [x, y] = cubicSplitAt(this._cpts, z);
 		return [this.new(x[0], x[1], x[2], x[3]), this.new(y[0], y[1], y[2], y[3])];
 	}

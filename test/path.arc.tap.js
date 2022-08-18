@@ -1,7 +1,7 @@
 'uses strict';
-import {enum_path_data, test_segment} from './path.utils.js';
+import { enum_path_data, test_segment, testSegment } from './path.utils.js';
 import './utils.js';
-import {Arc, Cubic, Path} from 'svggeom';
+import { Arc, Cubic, Path, SegmentLS } from 'svggeom';
 import test from 'tap';
 import os from 'os';
 import fs from 'fs';
@@ -24,24 +24,21 @@ function dbgwrite(name, pC, pX) {
 }
 let I = 0,
     as_cubic = 0;
-for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
-    ++I;
-    test.test(item.d, {bail: !CI}, function (t) {
-        let seg = Arc.fromEndPoint(
-            item.start,
-            item.radius[0],
-            item.radius[1],
-            item.rotation,
-            item.large_arc,
-            item.sweep,
-            item.end
-        );
+const deltp = {
+    len_epsilon: 1e-5,
+    slope_epsilon: 5e-5,
+    point_epsilon: 1.5e-6,
+};
 
-        test_segment(t, seg, item, {
-            len_epsilon: 1e-5,
-            slope_epsilon: 5e-5,
-            point_epsilon: 1.5e-6,
-        });
+for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
+    ++I;
+    const { start, radius, rotation, large_arc, sweep, end } = item;
+    const [[sx, sy], [rx, ry], [ex, ey]] = [start, radius, end];
+
+    test.test(item.d, { bail: !CI }, function (t) {
+        let seg = Arc.fromEndPoint(start, radius[0], radius[1], rotation, large_arc, sweep, end);
+
+        test_segment(t, seg, item, deltp);
 
         const cubic_segs = new Path(seg.asCubic());
         const sp = seg.toPath();
@@ -77,7 +74,23 @@ for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
                 test_segment(t, cubic_segs, item, opt);
                 ++as_cubic;
         }
-
+        t.end();
+    });
+    test.test(`SegmentLS<${item.d}>`, { bail: CI }, function (t) {
+        const cur = SegmentLS.moveTo(start).A(radius[0], radius[1], rotation, large_arc, sweep, end);
+        testSegment(t, cur, item, deltp);
+        {
+            testSegment(
+                t,
+                SegmentLS.parse(`M ${sx},${sy} A ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex},${ey}`),
+                item,
+                deltp,
+            );
+            const rel = SegmentLS.parse(
+                `m ${sx},${sy} a ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex - sx},${ey - sy}`,
+            );
+            testSegment(t, rel, item, deltp);
+        }
         t.end();
     });
 }

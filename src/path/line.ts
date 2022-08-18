@@ -1,8 +1,8 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
-import { Segment } from './index.js';
+import { SegmentSE } from './index.js';
 
-abstract class LineSegment extends Segment {
+abstract class LineSegment extends SegmentSE {
 	override bbox() {
 		const {
 			start: { x: p1x, y: p1y },
@@ -28,7 +28,7 @@ abstract class LineSegment extends Segment {
 		return vec.div(vec.abs());
 	}
 
-	override splitAt(t: number): Segment[] {
+	override splitAt(t: number): [SegmentSE, SegmentSE] {
 		const { start, end } = this;
 		const c = this.pointAt(t);
 		return [this.newFromTo(start, c), this.newFromTo(c, end)];
@@ -57,23 +57,12 @@ abstract class LineSegment extends Segment {
 }
 
 export class Line extends LineSegment {
-	private readonly _start: Vec;
-	private readonly _end: Vec;
 
 	constructor(start: Iterable<number>, end: Iterable<number>) {
-		super();
-		this._start = Vec.new(start);
-		this._end = Vec.new(end);
+		super(start, end);
 	}
 
-	get start() {
-		return this._start;
-	}
-
-	get end() {
-		return this._end;
-	}
-	newFromTo(a: Vec, b: Vec) {
+	override newFromTo(a: Vec, b: Vec) {
 		return new Line(a, b);
 	}
 }
@@ -96,20 +85,3 @@ export class Horizontal extends Line {}
 export class Vertical extends Line {}
 export { Line as LineSegment };
 
-// declare module './index.js' {
-// 	interface SegmentLS {
-// 		moveTo(pos: Vec): SegmentLS;
-// 		moveTo: (pos: Vec) => SegmentLS;
-// 	}
-// }
-
-// // declare interface SegmentLS {
-// // 	moveTo(pos: Vec): SegmentLS;
-// // }
-
-// SegmentLS.prototype.moveTo = function (pos: Vec) {
-// 	return new MoveLS(this, pos);
-// };
-// SegmentLS.moveTo = function (pos: Vec) {
-// 	return new MoveLS(undefined, pos);
-// };

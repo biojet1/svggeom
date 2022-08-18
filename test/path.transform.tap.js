@@ -1,7 +1,6 @@
 'uses strict';
-import {spawn} from 'child_process';
 import test from 'tap';
-import {Path, Matrix, Cubic, Arc, Line} from 'svggeom';
+import {Path, Matrix, Cubic, Arc, Line, SegmentLS} from 'svggeom';
 import {enum_path_data} from './path.utils.js';
 import './utils.js';
 const CI = !!process.env.CI;
@@ -31,11 +30,30 @@ for await (const item of enum_path_data({DATA: 'transforms', ARCS: 'no'})) {
                 console.error(m, T);
                 throw err;
             }
-
             const a = p2.descArray({smooth: true});
             t.sameDescs(a, A, 5.1e-8, `${i}, ${T}`, p2);
         }
 
         t.end();
     });
+    test.test(`SegmentLS<${d}>`, {bail: !CI, timeout: 30000}, function (t) {
+        const p = SegmentLS.parse(item.d);
+        for (const [i, [T, A]] of item.transforms.entries()) {
+            const m = Matrix.parse(T);
+            let p2;
+            try {
+                p2 = p.transform(m);
+            } catch (err) {
+                console.error(p.segs, A);
+                console.error(m, T);
+                throw err;
+            }
+            const a = p2.descArray({smooth: true});
+            t.sameDescs(a, A, 5.1e-8, `${i}, ${T}`, p2);
+        }
+
+        t.end();
+    });
+
+    
 }

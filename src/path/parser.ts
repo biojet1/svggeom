@@ -1,5 +1,5 @@
 import { Vec } from '../point.js';
-import { Segment } from './index.js';
+import { SegmentSE } from './index.js';
 import { Arc } from './arc.js';
 import { Cubic } from './cubic.js';
 import { Line, Close, Vertical, Horizontal } from './line.js';
@@ -34,7 +34,7 @@ function pathRegReplace(a: any, b: any, c: any, d: any) {
 
 export function parseDesc(d: string) {
 	// prepare for parsing
-	const segments = new Array<Segment>();
+	const segments = new Array<SegmentSE>();
 	const array = d
 		.replace(numbersWithDots, pathRegReplace) // convert 45.123.123 to 45.123 .123
 		.replace(pathLetters, ' $& ') // put some room between letters and numbers
@@ -269,9 +269,9 @@ export function parseDesc(d: string) {
 	return segments;
 }
 
-import { SegmentLS } from './linked.js';
+import { SegmentLS} from './linked.js';
 
-export function parseDesc2(d: string) {
+export function parseLS(d: string) {
 	// prepare for parsing
 	const array = d
 		.replace(numbersWithDots, pathRegReplace) // convert 45.123.123 to 45.123 .123
@@ -287,29 +287,111 @@ export function parseDesc2(d: string) {
 		}
 		return parseFloat(v);
 	};
-	let moved: SegmentLS | undefined;
-	let cur: SegmentLS | undefined;
+	const vec = function () {
+		return Vec.pos(num(), num());
+	};
+	const init = Vec.pos(0, 0);
+	// const last = function () {
+	// 	return cur ?? (cur = SegmentLS.moveTo(init));
+	// };
+	// const vecr = function () {
+	// 	return cur.end.add(vec());
+	// };
 
-	while (array.length > 0) {
-		let absolute = false;
+	let moved: SegmentLS | undefined;
+	const first = SegmentLS.moveTo(init);
+	let cur = first;
+	let last_command;
+	L1: while (array.length > 0) {
+		// let absolute = false;
 		const command = array.pop();
 		// const start = pos;
 		switch (command) {
 			case 'M':
-				absolute = true;
-			case 'm':
-				{
-					const x = num();
-					const y = num();
-					if (!cur) {
-						cur = moved = SegmentLS.moveTo(x, y);
-					} else if (absolute) {
-						cur = cur.moveTo(Vec.pos(x, y));
-					} else {
-						cur = cur.moveTo(cur.end.add(Vec.pos(x, y)));
-					}
+				if (cur === first) {
+					cur = SegmentLS.moveTo(vec());
+				} else {
+					cur = cur.M(vec());
 				}
 				break;
+			case 'm':
+				if (cur === first) {
+					cur = SegmentLS.moveTo(vec());
+				} else {
+					cur = cur.m(vec());
+				}
+				break;
+			case 'Z':
+			case 'z':
+				if (cur === first) {
+					// pass
+				} else {
+					cur = cur.Z();
+				}
+				break;
+			case 'L':
+				cur = cur.L(vec());
+				break;
+			case 'l':
+				cur = cur.l(vec());
+				break;
+			case 'H':
+				cur = cur.H(num());
+				break;
+			case 'h':
+				cur = cur.h(num());
+				break;
+			case 'V':
+				cur = cur.V(num());
+				break;
+			case 'v':
+				cur = cur.v(num());
+				break;
+			case 'Q':
+				cur = cur.Q(vec(), vec());
+				break;
+			case 'q':
+				cur = cur.q(vec(), vec());
+				break;
+			case 'C':
+				cur = cur.C(vec(), vec(), vec());
+				break;
+			case 'c':
+				cur = cur.c(vec(), vec(), vec());
+				break;
+			case 'S':
+				cur = cur.S(vec(), vec());
+				break;
+			case 's':
+				cur = cur.s(vec(), vec());
+				break;
+			case 'T':
+				cur = cur.T(vec());
+				break;
+			case 't':
+				cur = cur.t(vec());
+				break;
+			case 'A':
+				cur = cur.A(num(), num(), num(), num(), num(), vec());
+				break;
+			case 'a':
+				cur = cur.a(num(), num(), num(), num(), num(), vec());
+				break;
+			default:
+				if (command && /^-?\.?\d/.test(command)) {
+					switch (last_command) {
+						case 'm':
+							cur = cur.l(parseFloat(command), num());
+							continue L1;
+						case 'M':
+							cur = cur.L(parseFloat(command), num());
+							continue L1;
+					}
+					continue;
+				}
+				throw new Error(`Invalid command ${command} from "${d}" : ${array.reverse()}`);
 		}
+		last_command = command;
 	}
+	return cur;
 }
