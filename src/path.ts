@@ -1,7 +1,8 @@
-import { parseDesc } from './path/parser.js';
+import { parseDesc, dSplit } from './path/parser.js';
 import { SegmentSE } from './path/index.js';
 import { Box } from './box.js';
-interface IDescOpt {
+
+export interface DParams {
 	relative?: boolean;
 	close?: boolean | null;
 	smooth?: boolean;
@@ -240,7 +241,7 @@ export class Path {
 		return false;
 	}
 
-	private *enumDesc(params: IDescOpt) {
+	private *enumDesc(params: DParams) {
 		const {
 			relative: rel = false,
 			close = true,
@@ -400,11 +401,11 @@ export class Path {
 		}
 	}
 
-	descArray(params: IDescOpt = {}) {
+	descArray(params: DParams = {}) {
 		return Array.from(this.enumDesc(params));
 	}
 
-	describe(params: IDescOpt = {}) {
+	describe(params: DParams = {}) {
 		return this.descArray(params).join(' ');
 	}
 
@@ -452,4 +453,4 @@ import { Quadratic } from './path/quadratic.js';
 export * from './path/cubic.js';
 import { SegmentLS } from './path/linked.js';
 export { SegmentLS} ;
-export { Arc, Quadratic, Line };
+export { Arc, Quadratic, Line, dSplit };

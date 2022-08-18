@@ -35,9 +35,11 @@ export class PathDraw {
 	_x1?: number;
 	_y1?: number;
 	_ = '';
-
-	beginPath() {
-		// this._ = '';
+	static get digits() {
+		return digits;
+	}
+	static set digits(n: number) {
+		digits = n;
 	}
 
 	moveTo(...args: Vec[] | number[]) {
@@ -62,14 +64,15 @@ export class PathDraw {
 
 	quadraticCurveTo(...args: Vec[] | number[]) {
 		const [x1, y1, x, y] = pick(args);
-		this._ += 'Q' + +x1 + ',' + +y1 + ',' + (this._x1 = +x) + ',' + (this._y1 = +y);
+		this._ += `Q${fmtN(x1)},${fmtN(y1)},${fmtN((this._x1 = +x))},${fmtN((this._y1 = +y))}`;
 		return this;
 	}
 
 	bezierCurveTo(...args: Vec[] | number[]) {
 		const [x1, y1, x2, y2, x, y] = pick(args);
-		this._ +=
-			'C' + +x1 + ',' + +y1 + ',' + +x2 + ',' + +y2 + ',' + (this._x1 = +x) + ',' + (this._y1 = +y);
+		this._ += `C${fmtN(x1)},${fmtN(y1)},${fmtN(x2)},${fmtN(y2)},${fmtN((this._x1 = +x))},${fmtN(
+			(this._y1 = +y),
+		)}`;
 		return this;
 	}
 
@@ -172,18 +175,9 @@ export class PathDraw {
 
 	rect(...args: Vec[] | number[]) {
 		const [x, y, w, h] = pick(args);
-		this._ +=
-			'M' +
-			(this._x0 = this._x1 = +x) +
-			',' +
-			(this._y0 = this._y1 = +y) +
-			'h' +
-			+w +
-			'v' +
-			+h +
-			'h' +
-			-w +
-			'Z';
+		this._ += `M${fmtN((this._x0 = this._x1 = +x))},${fmtN(
+			(this._y0 = this._y1 = +y),
+		)}h${+w}v${+h}h${-w}Z`;
 		return this;
 	}
 
@@ -204,8 +198,6 @@ export class PathDraw {
 			letterSpacing?: number;
 		},
 		text: string,
-		x?: number,
-		y?: number,
 		maxWidth?: number,
 	) {
 		const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
@@ -214,14 +206,25 @@ export class PathDraw {
 		//   const letterSpacing = 'letterSpacing' in options ? options.letterSpacing : false;
 		// const tracking = 'tracking' in options ? options.tracking : false;
 		// const metrics = this.getMetrics(text, options);
+		const { _x1, _y1 } = this;
 		font
-			.getPath(text, x ?? 0, y ?? 0, fontSize, {
+			.getPath(text, _x1 ?? 0, _y1 ?? 0, fontSize, {
 				kerning,
 				letterSpacing,
 				tracking,
 			})
 			.draw(this);
 		return this;
+	}
+	// CanvasRenderingContext2D compat
+
+	set fillStyle(x: any) {}
+	get fillStyle() {
+		return 'red';
+	}
+	fill() {}
+	beginPath() {
+		// this._ = '';
 	}
 
 	static new() {
@@ -239,15 +242,14 @@ export class PathDraw {
 
 import { Font /*, load, loadSync*/ } from 'opentype.js';
 import { SegmentLS } from './path/linked.js';
+import { DParams } from './path.js';
 
 export class PathLS {
 	_tail: SegmentLS;
 	constructor(tail: SegmentLS) {
 		this._tail = tail;
 	}
-	beginPath() {
-		return this;
-	}
+
 	moveTo(...args: Vec[] | number[]) {
 		const { _tail } = this;
 		this._tail = (_tail ?? SegmentLS).moveTo(...args);
@@ -296,10 +298,56 @@ export class PathLS {
 	toString() {
 		return this._tail?.toString() || '';
 	}
+	describe(opt: DParams) {
+		return this._tail?.describe(opt) || '';
+	}
+	text(
+		options: {
+			fontSize: number;
+			font: Font;
+			kerning?: boolean;
+			tracking?: number;
+			letterSpacing?: number;
+		},
+		text: string,
+		maxWidth?: number,
+	) {
+		const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
+		const [_x1, _y1] = this?._tail?.end ?? [0, 0];
+		font
+			.getPath(text, _x1, _y1, fontSize, {
+				kerning,
+				letterSpacing,
+				tracking,
+			})
+			.draw(this);
+		return this;
+	}
+
+	// CanvasRenderingContext2D compat
+
+	set fillStyle(x: any) {}
+	get fillStyle() {
+		return 'red';
+	}
+	fill() {
+		return this;
+	}
+	beginPath() {
+		return this;
+	}
+
 	static moveTo(...args: Vec[] | number[]) {
 		return new PathLS(SegmentLS.moveTo(...args));
 	}
 	static parse(d: string) {
 		return SegmentLS.parse(d);
+	}
+
+	static get digits() {
+		return SegmentLS.digits;
+	}
+	static set digits(n: number) {
+		SegmentLS.digits = n;
 	}
 }

@@ -1,19 +1,16 @@
 'uses strict';
 import test from 'tap';
-import { Path, PathDraw, PathLS } from 'svggeom';
+import { Path, PathDraw, PathLS, dSplit } from 'svggeom';
 import './utils.js';
 const CI = !!process.env.CI;
 // https://github.com/d3/d3-path/blob/main/test/path-test.js
 function D(p) {
     return p.toString();
-
-    // .replace(/(\d+)\s+(\d+)/g, '$1,$2')
-    // .replace(/([A-Za-z])\s+(\d)/g, '$1$2')
-    // .replace(/(\d)\s+([A-Za-z])/g, '$1$2')
-    // .replace(/([A-Za-z])\s+([A-Za-z])/g, '$1$2')
-    // .replace(/(\d+)\s+(\d+)/g, '$1,$2');
-    // .toString().split(/([MmZzLlHhVvCcSsQqTtAa])/).reduce(()=>{}, [])
 }
+function descSplit(p) {
+    return dSplit(p); //.map((v) => (isNaN(+v) ? v : +v));
+}
+
 test.Test.prototype.addAssert('samePath', 2, function (p, s) {
     const d = typeof p === 'string' ? p : D(p);
     if (d == s) {
@@ -28,13 +25,6 @@ function testPath(test, PathClass) {
     const path = function () {
         return new PathClass();
     };
-    // const p = path();
-    // p.moveTo(150, 50);
-    // console.dir(p);
-    // p.closePath();
-    // console.dir(p);
-    // p.closePath();
-    // console.dir(p);
 
     test.test(`Path=${PathClass.name}`, { bail: 1 }, function (t) {
         const it = t.test;
@@ -518,14 +508,37 @@ function testPath(test, PathClass) {
             p.moveTo(150, 100), p.rect(100, 200, 50, 25);
             if (p.constructor.name == 'PathLS') {
                 t.samePath(p, 'M150,100M100,200L150,200L150,225L100,225Z');
-                // t.samePath(p._tail._describe({relative:true}), 'm100,200l50,0l0,25l-50,0l0,-25');
+                t.samePath(p.describe({ relative: true }), 'm150,100m-50,100l50,0l0,25l-50,0z');
+                t.samePath(p.describe({ relative: true, short: true }), 'm150,100m-50,100h50v25h-50z');
+                t.samePath(p.describe({ short: true }), 'M150,100M100,200H150V225H100Z');
             } else {
                 t.samePath(p, 'M150,100M100,200h50v25h-50Z');
             }
             t.end();
         });
+
         t.end();
     });
+    test.test(`Path<${PathClass.name}>:Font`, { bail: 1 }, async (t) =>
+        import('opentype.js')
+            .then((mod) => mod.loadSync('test/CaviarDreams.ttf'))
+            .then((font) => {
+                let s = '!';
+                PathClass.digits = 2;
+                const par = { font, fontSize: 42 };
+                const d1 = par.font.getPath(s, 0, 0, par.fontSize).toPathData(PathClass.digits);
+                const d2 = `M3,4` + par.font.getPath(s, 3, 4, par.fontSize).toPathData(PathClass.digits);
+                // console.log(d1);
+                // console.log(d2);
+                const p1 = path().text(par, s).toString();
+                const p2 = path().moveTo(3, 4).text(par, s).toString();
+                t.notSame(d1, d2);
+                t.same(descSplit(p1), descSplit(d1));
+                t.notSame(descSplit(p1), descSplit(d2));
+                t.notSame(descSplit(p2), descSplit(d1));
+                t.same(descSplit(p2), descSplit(d2));
+            }),
+    );
 }
 
 testPath(test, PathDraw);

@@ -57,8 +57,10 @@ function fmtN(n: number) {
 export abstract class SegmentLS extends Segment {
 	protected _prev?: SegmentLS;
 	private readonly _end: Vec;
-	// static digits = 5;
-	set digits(n: number) {
+	static get digits() {
+		return digits;
+	}
+	static set digits(n: number) {
 		digits = n;
 	}
 	constructor(prev: SegmentLS | undefined, end: Vec) {
@@ -248,14 +250,14 @@ export abstract class SegmentLS extends Segment {
 		// return this.descArray()
 		// 	.filter((v) => (typeof v == 'number' ? fmtN(v) : v))
 		// 	.join(' ');
-		return this._describe();
+		return this.describe();
 	}
 
-	_describe(opt?: DescParams): string {
+	describe(opt?: DescParams): string {
 		const { _prev } = this;
 		const [cmd, ...args] = this._descs(opt);
 		const d = `${cmd}${args.map((v) => fmtN(v as number)).join(',')}`;
-		return _prev ? _prev._describe(opt) + d : d;
+		return _prev ? _prev.describe(opt) + d : d;
 	}
 
 	override descArray(opt?: DescParams): (number | string)[] {
@@ -389,9 +391,9 @@ export class LineLS extends SegmentLS {
 					return ['l', x - sx, y - sy];
 				} else if (short) {
 					if (sx === x) {
-						return ['V', y - sy];
+						return ['V', y];
 					} else if (sy === y) {
-						return ['H', x - sx];
+						return ['H', x];
 					}
 				}
 			}
