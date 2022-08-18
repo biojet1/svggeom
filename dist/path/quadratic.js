@@ -54,10 +54,10 @@ function quadratic_extrema(a, b, c) {
     return [cmin, cmax];
 }
 const { pow } = Math;
-function quadFlatness([[sx, sy], [cx, cy], [ex, ey]]) {
+export function quadFlatness([[sx, sy], [cx, cy], [ex, ey]]) {
     return pow(2 * cx - ex - sx, 2) + pow(2 * cy - ey - sy, 2);
 }
-function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]], t) {
+export function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]], t) {
     const mx1 = (1 - t) * x1 + t * cx;
     const mx2 = (1 - t) * cx + t * x2;
     const mxt = (1 - t) * mx1 + t * mx2;
@@ -69,11 +69,11 @@ function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]], t) {
         [Vec.pos(mxt, myt), Vec.pos(mx2, my2), Vec.pos(x2, y2)],
     ];
 }
-function quadPointAt([[x1, y1], [cx, cy], [x2, y2]], t) {
+export function quadPointAt([[x1, y1], [cx, cy], [x2, y2]], t) {
     const v = 1 - t;
     return Vec.pos(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
 }
-function quadSlopeAt([start, c, end], t) {
+export function quadSlopeAt([start, c, end], t) {
     if (t >= 1) {
         return end.sub(c);
     }
@@ -88,12 +88,12 @@ function quadSlopeAt([start, c, end], t) {
     const b = end.sub(c).mul(t);
     return a.add(b).mul(2);
 }
-function quadBBox([[x1, y1], [x2, y2], [x3, y3]]) {
+export function quadBBox([[x1, y1], [x2, y2], [x3, y3]]) {
     const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
     const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
     return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 }
-function quadLength([[x0, y0], [x1, y1], [x2, y2]], t = 1) {
+export function quadLength([[x0, y0], [x1, y1], [x2, y2]], t = 1) {
     const ax = x0 - 2 * x1 + x2;
     const ay = y0 - 2 * y1 + y2;
     const bx = 2 * x1 - 2 * x0;

@@ -1,13 +1,76 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
 import { Segment } from './index.js';
-export class PathLS extends Segment {
+import { parseLS } from './parser.js';
+const { min, max, abs, PI, cos, sin, sqrt, acos, tan } = Math;
+const tau = 2 * PI, epsilon = 1e-6, tauEpsilon = tau - epsilon;
+function* pickPos(args) {
+    let n = undefined;
+    for (const v of args) {
+        if (typeof v == 'number') {
+            if (n == undefined) {
+                n = v;
+            }
+            else {
+                yield Vec.pos(n, v);
+                n = undefined;
+            }
+        }
+        else if (n != undefined) {
+            throw new Error(`n == ${n}`);
+        }
+        else if (v instanceof Vec) {
+            yield v;
+        }
+        else {
+            yield Vec.new(v);
+        }
+    }
+}
+function* pickNum(args) {
+    for (const v of args) {
+        switch (typeof v) {
+            case 'number':
+                yield v;
+                break;
+            case 'boolean':
+            case 'string':
+                yield v ? 1 : 0;
+                break;
+            default:
+                if (v) {
+                    const [x, y] = v;
+                    yield x;
+                    yield y;
+                }
+                else {
+                    yield 0;
+                }
+        }
+    }
+}
+let digits = 6;
+function fmtN(n) {
+    const v = n.toFixed(digits);
+    return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
+}
+export class SegmentLS extends Segment {
     _prev;
     _end;
+    set digits(n) {
+        digits = n;
+    }
     constructor(prev, end) {
         super();
         this._prev = prev;
-        this._end = Vec.new(end);
+        this._end = end;
+    }
+    get prev() {
+        const { _prev } = this;
+        if (_prev) {
+            return _prev;
+        }
+        throw new Error('No prev');
     }
     get start() {
         const { _prev } = this;
@@ -32,8 +95,8 @@ export class PathLS extends Segment {
         }
         return cur;
     }
-    get prevMove() {
-        for (let cur = this._prev; cur; cur = cur._prev) {
+    get lastMove() {
+        for (let cur = this; cur; cur = cur._prev) {
             if (cur instanceof MoveLS) {
                 return cur;
             }
@@ -44,39 +107,218 @@ export class PathLS extends Segment {
             yield cur;
         }
     }
-    moveTo(pos) {
-        return new MoveLS(this, pos);
+    moveTo(...args) {
+        return this.M(...args);
     }
-    lineTo(pos) {
-        return new LineLS(this, pos);
+    lineTo(...args) {
+        return this.L(...args);
     }
     closePath() {
-        const end = this.prevMove?.end;
+        return this.Z();
+    }
+    bezierCurveTo(...args) {
+        return this.C(...args);
+    }
+    quadraticCurveTo(...args) {
+        return this.Q(...args);
+    }
+    M(...args) {
+        const [pos] = pickPos(args);
+        return new MoveLS(this, pos);
+    }
+    m(...args) {
+        const [pos] = pickPos(args);
+        return new MoveLS(this, this.end.add(pos));
+    }
+    Z() {
+        const end = this.lastMove?.end;
         if (end) {
             return new CloseLS(this, end);
         }
         return this;
     }
-    bezierCurveTo(...args) {
-        const [c1, c2, end] = pickPos(args);
-        return new CubicLS(this, c1, c2, end);
+    z() {
+        return this.Z();
+    }
+    L(...args) {
+        const [pos] = pickPos(args);
+        return new LineLS(this, pos);
+    }
+    l(...args) {
+        const [pos] = pickPos(args);
+        return new LineLS(this, this.end.add(pos));
+    }
+    H(n) {
+        return new LineLS(this, this.end.withX(n));
+    }
+    h(n) {
+        return new LineLS(this, this.end.shiftX(n));
+    }
+    V(n) {
+        return new LineLS(this, this.end.withY(n));
+    }
+    v(n) {
+        return new LineLS(this, this.end.shiftY(n));
+    }
+    Q(...args) {
+        const [p, pE] = pickPos(args);
+        return new QuadLS(this, p, pE);
+    }
+    q(...args) {
+        const [p, pE] = pickPos(args);
+        const { end: rel } = this;
+        return new QuadLS(this, rel.add(p), rel.add(pE));
+    }
+    C(...args) {
+        const [c1, c2, pE] = pickPos(args);
+        return new CubicLS(this, c1, c2, pE);
+    }
+    c(...args) {
+        const [c1, c2, pE] = pickPos(args);
+        const { end: rel } = this;
+        return new CubicLS(this, rel.add(c1), rel.add(c2), rel.add(pE));
+    }
+    S(...args) {
+        const [p2, pE] = pickPos(args);
+        const { end } = this;
+        if (this instanceof CubicLS) {
+            return new CubicLS(this, this.c2.reflectAt(end), p2, pE);
+        }
+        else {
+            return new CubicLS(this, end, p2, pE);
+        }
+    }
+    s(...args) {
+        const [p2, pE] = pickPos(args);
+        const { end } = this;
+        if (this instanceof CubicLS) {
+            return new CubicLS(this, this.c2.reflectAt(end), end.add(p2), end.add(pE));
+        }
+        else {
+            return new CubicLS(this, end, end.add(p2), end.add(pE));
+        }
+    }
+    T(...args) {
+        const [pE] = pickPos(args);
+        const { end } = this;
+        if (this instanceof QuadLS) {
+            return new QuadLS(this, this.p.reflectAt(end), pE);
+        }
+        else {
+            return new QuadLS(this, end, pE);
+        }
+    }
+    t(...args) {
+        const [pE] = pickPos(args);
+        const { end } = this;
+        if (this instanceof QuadLS) {
+            return new QuadLS(this, this.p.reflectAt(end), end.add(pE));
+        }
+        else {
+            return new QuadLS(this, end, end.add(pE));
+        }
+    }
+    A(rx, ry, φ, bigArc, sweep, ...args) {
+        const [pE] = pickPos(args);
+        return new ArcLS(this, rx, ry, φ, bigArc, sweep, pE);
+    }
+    a(rx, ry, φ, bigArc, sweep, ...args) {
+        const [pE] = pickPos(args);
+        const { end: rel } = this;
+        return new ArcLS(this, rx, ry, φ, bigArc, sweep, rel.add(pE));
     }
     toString() {
-        return this.d();
+        return this.describe();
     }
-    *enumDesc() { }
-    static moveTo(pos) {
+    describe(opt) {
+        const { _prev } = this;
+        const [cmd, ...args] = this._descs(opt);
+        const d = `${cmd}${args.map((v) => fmtN(v)).join(',')}`;
+        return _prev ? _prev.describe(opt) + d : d;
+    }
+    descArray(opt) {
+        const { _prev } = this;
+        if (_prev) {
+            const a = _prev.descArray(opt);
+            a.push(...this._descs(opt));
+            return a;
+        }
+        else {
+            return [...this._descs(opt)];
+        }
+    }
+    cutAt(t) {
+        return t < 0 ? this.splitAt(-t)[1] : this.splitAt(t)[0];
+    }
+    cropAt(t0, t1) {
+        if (t0 <= 0) {
+            if (t1 >= 1) {
+                return this;
+            }
+            else if (t1 > 0) {
+                return this.cutAt(t1);
+            }
+        }
+        else if (t0 < 1) {
+            if (t1 >= 1) {
+                return this.cutAt(-t0);
+            }
+            else if (t0 < t1) {
+                return this.cutAt(-t0).cutAt((t1 - t0) / (1 - t0));
+            }
+            else if (t0 > t1) {
+                return this.cropAt(t1, t0);
+            }
+        }
+        else if (t1 < 1) {
+            return this.cropAt(t1, t0);
+        }
+    }
+    rect(...args) {
+        const [xy, [w, h]] = pickPos(args);
+        return this.M(xy).h(w).v(h).h(-w).z();
+    }
+    arc(...args) {
+        const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
+        return arcHelp(this, x, y, r, a0, a1, ccw);
+    }
+    arcTo(...args) {
+        const [x1, y1, x2, y2, r] = pickNum(args);
+        return arcToHelp(this, x1, y1, x2, y2, r);
+    }
+    static moveTo(...args) {
+        const [pos] = pickPos(args);
         return new MoveLS(undefined, pos);
     }
-    static lineTo(pos) {
+    static lineTo(...args) {
+        const [pos] = pickPos(args);
         return this.moveTo(Vec.pos(0, 0)).lineTo(pos);
     }
+    static bezierCurveTo(...args) {
+        const [c1, c2, end] = pickPos(args);
+        return this.moveTo(Vec.pos(0, 0)).bezierCurveTo(c1, c2, end);
+    }
+    static quadraticCurveTo(...args) {
+        const [p, end] = pickPos(args);
+        return this.moveTo(Vec.pos(0, 0)).quadraticCurveTo(p, end);
+    }
+    static parse(d) {
+        return parseLS(d);
+    }
+    static arc(...args) {
+        const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
+        return arcHelp(undefined, x, y, r, a0, a1, ccw);
+    }
+    static arcTo(...args) {
+        const [x1, y1, x2, y2, r] = pickNum(args);
+        return arcToHelp(undefined, x1, y1, x2, y2, r);
+    }
 }
-export class LineLS extends PathLS {
+export class LineLS extends SegmentLS {
     bbox() {
-        const { start: { x: p1x, y: p1y }, end: { x: p2x, y: p2y }, } = this;
-        const [xmin, xmax] = [Math.min(p1x, p2x), Math.max(p1x, p2x)];
-        const [ymin, ymax] = [Math.min(p1y, p2y), Math.max(p1y, p2y)];
+        const { start: [x1, y1], end: [x2, y2], } = this;
+        const [xmin, xmax] = [min(x1, x2), max(x1, x2)];
+        const [ymin, ymax] = [min(y1, y2), max(y1, y2)];
         return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
     }
     get length() {
@@ -87,43 +329,386 @@ export class LineLS extends PathLS {
         const { start, end } = this;
         return end.sub(start).mul(t).postAdd(start);
     }
-    slopeAt(t) {
+    slopeAt(_) {
         const { start, end } = this;
         const vec = end.sub(start);
         return vec.div(vec.abs());
     }
-    d() {
-        const { _prev, end: { x, y }, } = this;
-        return `${_prev?.d() ?? ''}L${x},${y}`;
+    splitAt(t) {
+        const { end } = this;
+        const c = this.pointAt(t);
+        return [new LineLS(this._prev, c), new LineLS(new MoveLS(undefined, c), end)];
+    }
+    _descs(opt) {
+        const { end: [x, y], } = this;
+        if (opt) {
+            const { relative, short } = opt;
+            const { _prev } = this;
+            if (_prev) {
+                const { end: [sx, sy], } = _prev;
+                if (relative) {
+                    if (short) {
+                        if (sx === x) {
+                            return ['v', y - sy];
+                        }
+                        else if (sy === y) {
+                            return ['h', x - sx];
+                        }
+                    }
+                    return ['l', x - sx, y - sy];
+                }
+                else if (short) {
+                    if (sx === x) {
+                        return ['V', y];
+                    }
+                    else if (sy === y) {
+                        return ['H', x];
+                    }
+                }
+            }
+        }
+        return ['L', x, y];
+    }
+    reversed(next) {
+        const { end, _prev } = this;
+        next || (next = new MoveLS(undefined, end));
+        if (_prev) {
+            const rev = new LineLS(next, _prev.end);
+            return _prev.reversed(rev) ?? rev;
+        }
+        else {
+            if (next) {
+                return next;
+            }
+            else {
+                throw new Error(`No prev`);
+            }
+        }
+    }
+    transform(M) {
+        const { end, _prev } = this;
+        return new LineLS(_prev?.transform(M), end.transform(M));
     }
 }
 export class MoveLS extends LineLS {
-    d() {
-        const { _prev, end: { x, y }, } = this;
-        return `${_prev?.d() ?? ''}M${x},${y}`;
+    _descs(opt) {
+        const { end: [x, y], } = this;
+        if (opt?.relative) {
+            const { _prev } = this;
+            if (_prev) {
+                const [sx, sy] = _prev.end;
+                return ['m', x - sx, y - sy];
+            }
+            return ['m', x, y];
+        }
+        return ['M', x, y];
+    }
+    splitAt(t) {
+        const { end } = this;
+        const c = this.pointAt(t);
+        return [new MoveLS(this._prev, c), new MoveLS(new MoveLS(undefined, c), end)];
+    }
+    transform(M) {
+        const { end, _prev } = this;
+        return new MoveLS(_prev?.transform(M), end.transform(M));
+    }
+    reversed(next) {
+        const { _prev } = this;
+        if (_prev) {
+            const seg = new MoveLS(next, _prev.end);
+            return _prev.reversed(seg) ?? seg;
+        }
+        else {
+            return next;
+        }
     }
 }
 export class CloseLS extends LineLS {
-    d() {
-        const { _prev, end: { x, y }, } = this;
-        return `${_prev?.d() ?? ''}Z`;
+    splitAt(t) {
+        const { end } = this;
+        const c = this.pointAt(t);
+        return [new LineLS(this._prev, c), new CloseLS(new MoveLS(undefined, c), end)];
+    }
+    transform(M) {
+        const { end, _prev } = this;
+        return new CloseLS(_prev?.transform(M), end.transform(M));
+    }
+    _descs(opt) {
+        return [opt?.relative ? 'z' : 'Z'];
     }
 }
-function* pickPos(args) {
-    let n = undefined;
-    for (const v of args) {
-        if (typeof v == 'number') {
-            if (n == null) {
-                n = v;
+import { quadLength, quadSplitAt, quadSlopeAt, quadPointAt, quadBBox } from './quadratic.js';
+export class QuadLS extends SegmentLS {
+    p;
+    constructor(prev, p, end) {
+        super(prev, end);
+        this.p = p;
+    }
+    get _qpts() {
+        const { start, p, end } = this;
+        return [start, p, end];
+    }
+    get length() {
+        return quadLength(this._qpts);
+    }
+    slopeAt(t) {
+        return quadSlopeAt(this._qpts, t);
+    }
+    pointAt(t) {
+        return quadPointAt(this._qpts, t);
+    }
+    splitAt(t) {
+        const [a, b] = quadSplitAt(this._qpts, t);
+        return [
+            new QuadLS(this._prev, a[1], a[2]),
+            new QuadLS(new MoveLS(undefined, b[0]), b[1], b[2]),
+        ];
+    }
+    bbox() {
+        return quadBBox(this._qpts);
+    }
+    _descs(opt) {
+        const { p: { x: x1, y: y1 }, end: { x: ex, y: ey }, } = this;
+        if (opt) {
+            const { relative, smooth } = opt;
+            const { p, _prev, start: [sx, sy], } = this;
+            if (_prev) {
+                if (smooth &&
+                    (_prev instanceof QuadLS ? _prev.p.reflectAt(_prev.end).closeTo(p) : _prev.end.closeTo(p))) {
+                    return relative ? ['t', ex - sx, ey - sy] : ['T', ex, ey];
+                }
+                else if (relative) {
+                    return ['q', x1 - sx, y1 - sy, ex - sx, ey - sy];
+                }
             }
-            else {
-                yield Vec.pos(n, v);
-            }
+        }
+        return ['Q', x1, y1, ex, ey];
+    }
+    reversed(next) {
+        const { end, p, _prev } = this;
+        next || (next = new MoveLS(undefined, end));
+        if (_prev) {
+            const rev = new QuadLS(next, p, _prev.end);
+            return _prev.reversed(rev) ?? rev;
         }
         else {
-            yield v;
+            if (next) {
+                return next;
+            }
+            else {
+                throw new Error(`No prev`);
+            }
         }
     }
+    transform(M) {
+        const { p, end, _prev } = this;
+        return new QuadLS(_prev?.transform(M), p.transform(M), end.transform(M));
+    }
 }
-import { CubicLS } from './cubic.js';
+import { cubicLength, cubicSlopeAt, cubicPointAt, cubicBox, cubicSplitAt } from './cubic.js';
+export class CubicLS extends SegmentLS {
+    c1;
+    c2;
+    constructor(prev, c1, c2, end) {
+        super(prev, end);
+        this.c1 = c1;
+        this.c2 = c2;
+    }
+    get _cpts() {
+        const { start, c1, c2, end } = this;
+        return [start, c1, c2, end];
+    }
+    pointAt(t) {
+        return cubicPointAt(this._cpts, t);
+    }
+    bbox() {
+        return cubicBox(this._cpts);
+    }
+    slopeAt(t) {
+        return cubicSlopeAt(this._cpts, t);
+    }
+    splitAt(t) {
+        const [a, b] = cubicSplitAt(this._cpts, t);
+        return [
+            new CubicLS(this._prev, a[1], a[2], a[3]),
+            new CubicLS(new MoveLS(undefined, b[0]), b[1], b[2], b[3]),
+        ];
+    }
+    get length() {
+        return cubicLength(this._cpts);
+    }
+    reversed(next) {
+        const { end, c1, c2, _prev } = this;
+        next || (next = new MoveLS(undefined, end));
+        if (_prev) {
+            const rev = new CubicLS(next, c2, c1, _prev.end);
+            return _prev.reversed(rev) ?? rev;
+        }
+        else {
+            if (next) {
+                return next;
+            }
+            else {
+                throw new Error(`No prev`);
+            }
+        }
+    }
+    transform(M) {
+        const { c1, c2, end, _prev } = this;
+        return new CubicLS(_prev?.transform(M), c1.transform(M), c2.transform(M), end.transform(M));
+    }
+    _descs(opt) {
+        const { c1: { x: x1, y: y1 }, c2: { x: x2, y: y2 }, end: [ex, ey], } = this;
+        if (opt) {
+            const { smooth, relative } = opt;
+            const { c1, _prev } = this;
+            if (_prev) {
+                const { end: start } = _prev;
+                const [sx, sy] = start;
+                if (smooth &&
+                    (_prev instanceof CubicLS ? _prev.c2.reflectAt(start).closeTo(c1) : start.closeTo(c1))) {
+                    return relative ? ['s', x2 - sx, y2 - sy, ex - sx, ey - sy] : ['S', x2, y2, ex, ey];
+                }
+                else if (relative) {
+                    return ['c', x1 - sx, y1 - sy, x2 - sx, y2 - sy, ex - sx, ey - sy];
+                }
+            }
+        }
+        return ['C', x1, y1, x2, y2, ex, ey];
+    }
+}
+import { arcBBox, arcLength, arcPointAt, arcSlopeAt, arcTransform } from './arc.js';
+import { arcParams } from '../util.js';
+export class ArcLS extends SegmentLS {
+    rx;
+    ry;
+    phi;
+    bigArc;
+    sweep;
+    cosφ;
+    sinφ;
+    rtheta;
+    rdelta;
+    cx;
+    cy;
+    constructor(prev, rx, ry, φ, bigArc, sweep, end) {
+        if (!(isFinite(φ) && isFinite(rx) && isFinite(ry)))
+            throw Error(`${JSON.stringify(arguments)}`);
+        super(prev, end);
+        const { x: x1, y: y1 } = this.start;
+        const { x: x2, y: y2 } = this.end;
+        [this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] =
+            arcParams(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
+    }
+    bbox() {
+        return arcBBox(this);
+    }
+    get length() {
+        return arcLength(this);
+    }
+    pointAt(t) {
+        return arcPointAt(this, t);
+    }
+    slopeAt(t) {
+        return arcSlopeAt(this, t);
+    }
+    splitAt(t) {
+        const { rx, ry, phi, sweep, rdelta, end, _prev } = this;
+        const deltaA = abs(rdelta);
+        const mid = arcPointAt(this, t);
+        return [
+            new ArcLS(_prev, rx, ry, phi, deltaA * t > PI, sweep, mid),
+            new ArcLS(new MoveLS(undefined, mid), rx, ry, phi, deltaA * (1 - t) > PI, sweep, end),
+        ];
+    }
+    transform(M) {
+        const { bigArc, end, _prev } = this;
+        const [rx, ry, phi, sweep] = arcTransform(this, M);
+        return new ArcLS(_prev?.transform(M), rx, ry, phi, bigArc, sweep, end.transform(M));
+    }
+    reversed(next) {
+        const { rx, ry, phi, bigArc, sweep, end, _prev } = this;
+        next || (next = new MoveLS(undefined, end));
+        if (_prev) {
+            const rev = new ArcLS(next, rx, ry, phi, bigArc, !sweep, _prev.end);
+            return _prev.reversed(rev) ?? rev;
+        }
+        else {
+            if (next) {
+                return next;
+            }
+            else {
+                throw new Error(`No prev`);
+            }
+        }
+    }
+    _descs(opt) {
+        const { rx, ry, phi, sweep, bigArc, end: [x, y], } = this;
+        if (opt?.relative) {
+            const { _prev } = this;
+            if (_prev) {
+                const { end: [sx, sy], } = _prev;
+                return ['a', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x - sx, y - sy];
+            }
+        }
+        return ['A', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x, y];
+    }
+}
+function arcHelp(cur, x, y, r, a0, a1, ccw) {
+    const cw = ccw ? 0 : 1;
+    const dx = r * cos(a0);
+    const dy = r * sin(a0);
+    const x0 = x + dx;
+    const y0 = y + dy;
+    if (r < 0) {
+        throw new Error('negative radius: ' + r);
+    }
+    else if (!cur) {
+        cur = new MoveLS(undefined, Vec.pos(x0, y0));
+    }
+    else if (!cur.end.closeTo(Vec.pos(x0, y0), epsilon)) {
+        cur = cur.L(Vec.pos(x0, y0));
+    }
+    let da = cw ? a1 - a0 : a0 - a1;
+    if (!r) {
+        return cur;
+    }
+    else if (da < 0) {
+        da = (da % tau) + tau;
+    }
+    if (da > tauEpsilon) {
+        return cur.A(r, r, 0, 1, cw, x - dx, y - dy).A(r, r, 0, 1, cw, x0, y0);
+    }
+    else if (da > epsilon) {
+        return cur.A(r, r, 0, da >= PI, cw, x + r * cos(a1), y + r * sin(a1));
+    }
+    return cur;
+}
+function arcToHelp(cur, x1, y1, x2, y2, r) {
+    const [x0, y0] = cur ? cur.end : [0, 0];
+    const x21 = x2 - x1;
+    const y21 = y2 - y1;
+    const x01 = x0 - x1;
+    const y01 = y0 - y1;
+    const l01_2 = x01 * x01 + y01 * y01;
+    if (r < 0) {
+        throw new Error('negative radius: ' + r);
+    }
+    else if (!cur) {
+        cur = new MoveLS(undefined, Vec.pos(x1, y1));
+    }
+    else if (!(l01_2 > epsilon)) {
+    }
+    else if (!(abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
+        cur = cur.L(Vec.pos(x1, y1));
+    }
+    else {
+        const x20 = x2 - x0, y20 = y2 - y0, l21_2 = x21 * x21 + y21 * y21, l20_2 = x20 * x20 + y20 * y20, l21 = sqrt(l21_2), l01 = sqrt(l01_2), l = r * tan((PI - acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2), t01 = l / l01, t21 = l / l21;
+        if (abs(t01 - 1) > epsilon) {
+            cur = cur.L(Vec.pos(x1 + t01 * x01, y1 + t01 * y01));
+        }
+        cur = cur.A(r, r, 0, 0, y01 * x20 > x01 * y20 ? 1 : 0, x1 + t21 * x21, y1 + t21 * y21);
+    }
+    return cur;
+}
 //# sourceMappingURL=linked.js.map

@@ -1,6 +1,6 @@
-import { Segment } from './path/index.js';
+import { SegmentSE } from './path/index.js';
 import { Box } from './box.js';
-interface IDescOpt {
+export interface DParams {
     relative?: boolean;
     close?: boolean | null;
     smooth?: boolean;
@@ -27,28 +27,28 @@ export declare class Path {
     get length(): number | undefined;
     get totalLength(): number | undefined;
     pointAtLength(L: number): 0 | import("./point.js").Vec | undefined;
-    [Symbol.iterator](): IterableIterator<Segment>;
+    [Symbol.iterator](): IterableIterator<SegmentSE>;
     private calcLength;
     private get lengths();
     get firstPoint(): import("./point.js").Vec | undefined;
-    get firstSegment(): Segment | undefined;
+    get firstSegmentSE(): SegmentSE | undefined;
     get lastPoint(): import("./point.js").Vec | undefined;
-    get lastSegment(): Segment | undefined;
-    segmentAt(T: number): [Segment | undefined, number, number];
+    get lastSegmentSE(): SegmentSE | undefined;
+    segmentAt(T: number): [SegmentSE | undefined, number, number];
     isContinuous(): boolean;
     isClosed(): boolean;
     private enumDesc;
-    descArray(params?: IDescOpt): (string | 0 | 1)[];
-    describe(params?: IDescOpt): string;
+    descArray(params?: DParams): (string | 0 | 1)[];
+    describe(params?: DParams): string;
     toString(): string;
     enumSubPaths(): Generator<Path, void, unknown>;
     static parse(d: string): Path;
-    static new(v?: Segment[] | string | Segment | Path): Path;
+    static new(v?: SegmentSE[] | string | SegmentSE | Path): Path;
 }
 import { Line } from './path/line.js';
 import { Arc } from './path/arc.js';
 import { Quadratic } from './path/quadratic.js';
-export * from './path/describe.js';
 export * from './path/cubic.js';
-export * from './path/linked.js';
+import { SegmentLS } from './path/linked.js';
+export { SegmentLS };
 export { Arc, Quadratic, Line };

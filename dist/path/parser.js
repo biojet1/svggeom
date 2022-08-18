@@ -239,4 +239,121 @@ export function parseDesc(d) {
     }
     return segments;
 }
+import { SegmentLS } from './linked.js';
+export function parseLS(d) {
+    const array = d
+        .replace(numbersWithDots, pathRegReplace)
+        .replace(pathLetters, ' $& ')
+        .replace(hyphen, '$1 -')
+        .trim()
+        .split(delimiter)
+        .reverse();
+    const num = function () {
+        const v = array.pop();
+        if (!v) {
+            throw new Error(`Number expected '${v}' '${d}'`);
+        }
+        return parseFloat(v);
+    };
+    const vec = function () {
+        return Vec.pos(num(), num());
+    };
+    const init = Vec.pos(0, 0);
+    let moved;
+    const first = SegmentLS.moveTo(init);
+    let cur = first;
+    let last_command;
+    L1: while (array.length > 0) {
+        const command = array.pop();
+        switch (command) {
+            case 'M':
+                if (cur === first) {
+                    cur = SegmentLS.moveTo(vec());
+                }
+                else {
+                    cur = cur.M(vec());
+                }
+                break;
+            case 'm':
+                if (cur === first) {
+                    cur = SegmentLS.moveTo(vec());
+                }
+                else {
+                    cur = cur.m(vec());
+                }
+                break;
+            case 'Z':
+            case 'z':
+                if (cur === first) {
+                }
+                else {
+                    cur = cur.Z();
+                }
+                break;
+            case 'L':
+                cur = cur.L(vec());
+                break;
+            case 'l':
+                cur = cur.l(vec());
+                break;
+            case 'H':
+                cur = cur.H(num());
+                break;
+            case 'h':
+                cur = cur.h(num());
+                break;
+            case 'V':
+                cur = cur.V(num());
+                break;
+            case 'v':
+                cur = cur.v(num());
+                break;
+            case 'Q':
+                cur = cur.Q(vec(), vec());
+                break;
+            case 'q':
+                cur = cur.q(vec(), vec());
+                break;
+            case 'C':
+                cur = cur.C(vec(), vec(), vec());
+                break;
+            case 'c':
+                cur = cur.c(vec(), vec(), vec());
+                break;
+            case 'S':
+                cur = cur.S(vec(), vec());
+                break;
+            case 's':
+                cur = cur.s(vec(), vec());
+                break;
+            case 'T':
+                cur = cur.T(vec());
+                break;
+            case 't':
+                cur = cur.t(vec());
+                break;
+            case 'A':
+                cur = cur.A(num(), num(), num(), num(), num(), vec());
+                break;
+            case 'a':
+                cur = cur.a(num(), num(), num(), num(), num(), vec());
+                break;
+            default:
+                if (command && /^-?\.?\d/.test(command)) {
+                    switch (last_command) {
+                        case 'm':
+                            cur = cur.l(parseFloat(command), num());
+                            continue L1;
+                        case 'M':
+                            cur = cur.L(parseFloat(command), num());
+                            continue L1;
+                    }
+                    continue;
+                }
+                throw new Error(`Invalid command ${command} from "${d}" : ${array.reverse()}`);
+        }
+        last_command = command;
+    }
+    return cur;
+}
 //# sourceMappingURL=parser.js.map

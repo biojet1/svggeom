@@ -3,11 +3,27 @@ import { Box } from '../box.js';
 import { SegmentSE } from './index.js';
 import { Line } from './line.js';
 import { Cubic } from './cubic.js';
+interface IArc {
+    readonly start: Vec;
+    readonly end: Vec;
+    readonly rx: number;
+    readonly ry: number;
+    readonly phi: number;
+    readonly bigArc: boolean;
+    readonly sweep: boolean;
+    readonly cosφ: number;
+    readonly sinφ: number;
+    readonly rtheta: number;
+    readonly rdelta: number;
+    readonly cx: number;
+    readonly cy: number;
+    pointAt(f: number): Vec;
+}
 export declare class Arc extends SegmentSE {
     readonly rx: number;
     readonly ry: number;
     readonly phi: number;
-    readonly arc: boolean;
+    readonly bigArc: boolean;
     readonly sweep: boolean;
     readonly cosφ: number;
     readonly sinφ: number;
@@ -16,16 +32,22 @@ export declare class Arc extends SegmentSE {
     readonly cx: number;
     readonly cy: number;
     private constructor();
-    static fromEndPoint(start: Iterable<number>, rx: number, ry: number, φ: number, arc: boolean | number, sweep: boolean | number, end: Iterable<number>): Line | Arc;
+    static fromEndPoint(start: Iterable<number>, rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, end: Iterable<number>): Line | Arc;
     static fromCenterForm(c: Vec, rx: number, ry: number, φ: number, θ: number, Δθ: number): Arc;
     clone(): Arc;
     bbox(): Box;
     get length(): number;
     pointAt(t: number): Vec;
-    splitAt(t: number): Arc[];
-    toPathFragment(): (string | number)[];
     slopeAt(t: number): Vec;
+    splitAt(t: number): [SegmentSE, SegmentSE];
+    toPathFragment(): (string | number)[];
     transform(matrix: any): Arc;
     reversed(): Arc;
     asCubic(): Cubic[] | Line[];
 }
+export declare function arcPointAt(arc: IArc, t: number): Vec;
+export declare function arcBBox(arc: IArc): Box;
+export declare function arcLength(arc: IArc): number;
+export declare function arcSlopeAt(arc: IArc, t: number): Vec;
+export declare function arcTransform(self: IArc, matrix: any): number[];
+export {};

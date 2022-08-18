@@ -1,7 +1,6 @@
-import { Segment } from './index.js';
-import { Vec } from '../point.js';
 import { Box } from '../box.js';
-class LineSegment extends Segment {
+import { SegmentSE } from './index.js';
+class LineSegment extends SegmentSE {
     bbox() {
         const { start: { x: p1x, y: p1y }, end: { x: p2x, y: p2y }, } = this;
         const [xmin, xmax] = [Math.min(p1x, p2x), Math.max(p1x, p2x)];
@@ -40,18 +39,8 @@ class LineSegment extends Segment {
     }
 }
 export class Line extends LineSegment {
-    _start;
-    _end;
     constructor(start, end) {
-        super();
-        this._start = Vec.new(start);
-        this._end = Vec.new(end);
-    }
-    get start() {
-        return this._start;
-    }
-    get end() {
-        return this._end;
+        super(start, end);
     }
     newFromTo(a, b) {
         return new Line(a, b);

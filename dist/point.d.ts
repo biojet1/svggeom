@@ -48,7 +48,7 @@ export declare class Vec {
     static new(x?: number[] | Iterable<number> | number, y?: number, z?: number): Vec;
     static at(x?: number, y?: number, z?: number): Vec;
     static pos(x?: number, y?: number, z?: number): Vec;
-    static polar(radius?: number, theta?: number, phi?: number): Vec;
+    static polar(radius?: number, ϕ?: number, ϴ?: number): Vec;
     static radians(n: number): Vec;
     static degrees(n: number): Vec;
     static grade(n: number): Vec;

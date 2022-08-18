@@ -1,6 +1,5 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
-import { SegmentSE } from './index.js';
 export class Cubic extends SegmentSE {
     c1;
     c2;
@@ -89,7 +88,7 @@ function splitAtScalar(z, start, a, b, end) {
         [t, z * z * end - 2 * z * (z - 1) * b + (z - 1) * (z - 1) * a, z * end - (z - 1) * b, end],
     ];
 }
-function cubicBox([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]) {
+export function cubicBox([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]) {
     const [xmin, xmax] = cubic_extrema(sx, x1, x2, ex);
     const [ymin, ymax] = cubic_extrema(sy, y1, y2, ey);
     return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
@@ -108,11 +107,11 @@ function cubicFlatness([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]) {
     }
     return ux + uy;
 }
-function cubicPointAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]], t) {
+export function cubicPointAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]], t) {
     const F = 1 - t;
     return Vec.at(F * F * F * sx + 3 * F * F * t * x1 + 3 * F * t * t * x2 + t * t * t * ex, F * F * F * sy + 3 * F * F * t * y1 + 3 * F * t * t * y2 + t * t * t * ey);
 }
-function cubicSplitAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]], z) {
+export function cubicSplitAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]], z) {
     const x = splitAtScalar(z, sx, x1, x2, ex);
     const y = splitAtScalar(z, sy, y1, y2, ey);
     return [
@@ -130,7 +129,7 @@ function cubicSplitAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]], z) {
         ],
     ];
 }
-function cubicSlopeAt([start, c1, c2, end], t) {
+export function cubicSlopeAt([start, c1, c2, end], t) {
     if (t <= 0) {
         return c1.sub(start);
     }
@@ -162,7 +161,7 @@ function cubicSlopeAt([start, c1, c2, end], t) {
         return a.add(b).add(c);
     }
 }
-function cubicLength(_cpts) {
+export function cubicLength(_cpts) {
     if (cubicFlatness(_cpts) > 0.15) {
         const [a, b] = cubicSplitAt(_cpts, 0.5);
         return cubicLength(a) + cubicLength(b);
@@ -172,50 +171,5 @@ function cubicLength(_cpts) {
         return end.sub(start).abs();
     }
 }
-import { PathLS } from './linked.js';
-export class CubicLS extends PathLS {
-    c1;
-    c2;
-    t_value;
-    constructor(prev, c1, c2, end) {
-        super(prev, end);
-        this.c1 = Vec.new(c1);
-        this.c2 = Vec.new(c2);
-    }
-    get _cpts() {
-        const { start, c1, c2, end } = this;
-        return [start, c1, c2, end];
-    }
-    pointAt(t) {
-        return cubicPointAt(this._cpts, t);
-    }
-    bbox() {
-        return cubicBox(this._cpts);
-    }
-    slopeAt(t) {
-        return cubicSlopeAt(this._cpts, t);
-    }
-    splitAt(t) {
-        const [x, y] = cubicSplitAt(this._cpts, t);
-        return [
-            new CubicLS(this._prev, x[1], x[2], x[3]),
-            new CubicLS(PathLS.moveTo(y[0]), y[1], y[2], y[3]),
-        ];
-    }
-    get length() {
-        return cubicLength(this._cpts);
-    }
-    reversed() {
-        const { start, c1, c2, end } = this;
-        return new CubicLS(PathLS.moveTo(end), c2, c1, start);
-    }
-    transform(M) {
-        const { start, c1, c2, end } = this;
-        return new CubicLS(PathLS.moveTo(start.transform(M)), c1.transform(M), c2.transform(M), end.transform(M));
-    }
-    d() {
-        const { _prev, c1: { x: x1, y: y1 }, c2: { x: x2, y: y2 }, end: { x: ex, y: ey }, } = this;
-        return `${_prev?.d() ?? ''}C${x1},${y1} ${x2},${y2} ${ex},${ey}`;
-    }
-}
+import { SegmentSE } from './index.js';
 //# sourceMappingURL=cubic.js.map

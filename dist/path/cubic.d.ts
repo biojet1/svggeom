@@ -1,6 +1,5 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
-import { SegmentSE } from './index.js';
 export declare class Cubic extends SegmentSE {
     readonly c1: Vec;
     readonly c2: Vec;
@@ -10,7 +9,7 @@ export declare class Cubic extends SegmentSE {
     private get _cpts();
     bbox(): Box;
     pointAt(t: number): Vec;
-    splitAt(z: number): Cubic[];
+    splitAt(z: number): [SegmentSE, SegmentSE];
     get length(): number;
     slopeAt(t: number): Vec;
     toPathFragment(): (string | number)[];
@@ -18,19 +17,9 @@ export declare class Cubic extends SegmentSE {
     reversed(): Cubic;
 }
 export { Cubic as CubicSegment };
-import { PathLS } from './linked.js';
-export declare class CubicLS extends PathLS {
-    readonly c1: Vec;
-    readonly c2: Vec;
-    t_value?: number;
-    constructor(prev: PathLS | undefined, c1: Iterable<number>, c2: Iterable<number>, end: Iterable<number>);
-    private get _cpts();
-    pointAt(t: number): Vec;
-    bbox(): Box;
-    slopeAt(t: number): Vec;
-    splitAt(t: number): CubicLS[];
-    get length(): number;
-    reversed(): CubicLS;
-    transform(M: any): CubicLS;
-    d(): string;
-}
+export declare function cubicBox([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Vec[]): Box;
+export declare function cubicPointAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[], t: number): Vec;
+export declare function cubicSplitAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[], z: number): Vec[][];
+export declare function cubicSlopeAt([start, c1, c2, end]: Vec[], t: number): Vec;
+export declare function cubicLength(_cpts: Vec[]): number;
+import { SegmentSE } from './index.js';

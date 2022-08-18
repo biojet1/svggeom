@@ -209,8 +209,16 @@ export class Vec {
     static pos(x = 0, y = 0, z = 0) {
         return new this(x, y, z);
     }
-    static polar(radius = 1, theta = 0, phi = 0) {
-        return radius ? new this(radius * cos(theta), radius * sin(theta)) : new this();
+    static polar(radius = 1, ϕ = 0, ϴ) {
+        if (ϴ == null) {
+            return radius ? new this(radius * cos(ϕ), radius * sin(ϕ)) : new this();
+        }
+        else {
+            const sinϴ = sin(ϴ);
+            return radius
+                ? new this(radius * cos(ϕ) * sinϴ, radius * sin(ϕ) * sinϴ, radius * cos(ϴ))
+                : new this();
+        }
     }
     static radians(n) {
         return this.polar(1, n);

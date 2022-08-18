@@ -1,5 +1,5 @@
 import { parseDesc } from './path/parser.js';
-import { Segment } from './path/index.js';
+import { SegmentSE } from './path/index.js';
 import { Box } from './box.js';
 export class Path {
     static digits = 5;
@@ -126,7 +126,7 @@ export class Path {
             return seg.start;
         }
     }
-    get firstSegment() {
+    get firstSegmentSE() {
         const { _segs: segs } = this;
         for (const seg of segs) {
             return seg;
@@ -139,7 +139,7 @@ export class Path {
             return segs[length - 1].end;
         }
     }
-    get lastSegment() {
+    get lastSegmentSE() {
         const { _segs: segs } = this;
         const { length } = segs;
         if (length > 0) {
@@ -215,7 +215,7 @@ export class Path {
         let move_pos = null;
         let previous_segment;
         const end = segs.length > 0 ? segs[segs.length - 1].end : undefined;
-        for (const [i, seg] of segs.entries()) {
+        TOP: for (const [i, seg] of segs.entries()) {
             const { start: seg_start } = seg;
             if (!current_pos ||
                 !seg_start.equals(current_pos) ||
@@ -230,8 +230,8 @@ export class Path {
                 OUT: {
                     if (seg instanceof Close) {
                         if (move_pos) {
-                            if (close || close === undefined) {
-                                if (move_pos.equals(seg.end)) {
+                            if (close || close == undefined) {
+                                if (move_pos.closeTo(seg.end)) {
                                     yield rel ? 'z' : 'Z';
                                     break OUT;
                                 }
@@ -261,12 +261,12 @@ export class Path {
             }
             else if (seg instanceof Arc) {
                 const end = rel ? seg.end.sub(seg_start) : seg.end;
-                const { rx, ry, phi, arc, sweep } = seg;
+                const { rx, ry, phi, bigArc, sweep } = seg;
                 yield rel ? 'a' : 'A';
                 yield fixNum(rx);
                 yield fixNum(ry);
                 yield fixNum(phi);
-                yield arc ? 1 : 0;
+                yield bigArc ? 1 : 0;
                 yield sweep ? 1 : 0;
                 yield fixNum(end.x);
                 yield fixNum(end.y);
@@ -369,7 +369,7 @@ export class Path {
         else if (v instanceof Path) {
             return v;
         }
-        else if (v instanceof Segment) {
+        else if (v instanceof SegmentSE) {
             return new Path([v]);
         }
         else {
@@ -381,8 +381,8 @@ import { Line, Close, Vertical, Horizontal } from './path/line.js';
 import { Arc } from './path/arc.js';
 import { Cubic } from './path/cubic.js';
 import { Quadratic } from './path/quadratic.js';
-export * from './path/describe.js';
 export * from './path/cubic.js';
-export * from './path/linked.js';
+import { SegmentLS } from './path/linked.js';
+export { SegmentLS };
 export { Arc, Quadratic, Line };
 //# sourceMappingURL=path.js.map

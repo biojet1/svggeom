@@ -1,23 +1,19 @@
-import { Segment } from './index.js';
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
-declare abstract class LineSegment extends Segment {
+import { SegmentSE } from './index.js';
+declare abstract class LineSegment extends SegmentSE {
     bbox(): Box;
     get length(): number;
     pointAt(t: number): Vec;
     slopeAt(t: number): Vec;
-    splitAt(t: number): Segment[];
+    splitAt(t: number): [SegmentSE, SegmentSE];
     transform(M: any): LineSegment;
     reversed(): LineSegment;
     toPathFragment(): (string | number)[];
     abstract newFromTo(a: Vec, b: Vec): LineSegment;
 }
 export declare class Line extends LineSegment {
-    private readonly _start;
-    private readonly _end;
     constructor(start: Iterable<number>, end: Iterable<number>);
-    get start(): Vec;
-    get end(): Vec;
     newFromTo(a: Vec, b: Vec): Line;
 }
 export declare class Close extends Line {
