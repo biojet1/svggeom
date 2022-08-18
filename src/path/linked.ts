@@ -2,16 +2,65 @@ import { Vec } from '../point.js';
 import { Box } from '../box.js';
 import { Segment, DescParams } from './index.js';
 import { parseLS } from './parser.js';
+const { min, max, abs, PI, cos, sin, sqrt, acos, tan } = Math;
+const tau = 2 * PI,
+	epsilon = 1e-6,
+	tauEpsilon = tau - epsilon;
 
+function* pickPos(args: Vec[] | number[]) {
+	let n: number | undefined = undefined;
+	for (const v of args) {
+		if (typeof v == 'number') {
+			if (n == undefined) {
+				n = v;
+			} else {
+				yield Vec.pos(n, v);
+				n = undefined;
+			}
+		} else if (n != undefined) {
+			throw new Error(`n == ${n}`);
+		} else if (v instanceof Vec) {
+			yield v;
+		} else {
+			yield Vec.new(v);
+		}
+	}
+}
+
+function* pickNum(args: Vec[] | number[]) {
+	for (const v of args) {
+		switch (typeof v) {
+			case 'number':
+				yield v;
+				break;
+			case 'boolean':
+			case 'string':
+				yield v ? 1 : 0;
+				break;
+			default:
+				if (v) {
+					const [x, y] = v;
+					yield x;
+					yield y;
+				} else {
+					yield 0;
+				}
+		}
+	}
+}
+let digits = 6;
 function fmtN(n: number) {
-	const v = n.toFixed(SegmentLS.digits);
+	const v = n.toFixed(digits);
 	return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
 }
 
 export abstract class SegmentLS extends Segment {
 	protected _prev?: SegmentLS;
 	private readonly _end: Vec;
-	static digits = 5;
+	// static digits = 5;
+	set digits(n: number) {
+		digits = n;
+	}
 	constructor(prev: SegmentLS | undefined, end: Vec) {
 		super();
 		this._prev = prev;
@@ -50,8 +99,8 @@ export abstract class SegmentLS extends Segment {
 	// 	const { _prev } = this;
 	// 	return _prev ?? new MoveLS(undefined, Vec.pos());
 	// }
-	get prevMove(): MoveLS | undefined {
-		for (let cur: SegmentLS | undefined = this._prev; cur; cur = cur._prev) {
+	get lastMove(): MoveLS | undefined {
+		for (let cur: SegmentLS | undefined = this; cur; cur = cur._prev) {
 			if (cur instanceof MoveLS) {
 				return cur;
 			}
@@ -86,7 +135,7 @@ export abstract class SegmentLS extends Segment {
 		return new MoveLS(this, this.end.add(pos));
 	}
 	Z(): SegmentLS {
-		const end = this.prevMove?.end;
+		const end = this.lastMove?.end;
 		if (end) {
 			return new CloseLS(this, end);
 		}
@@ -174,32 +223,39 @@ export abstract class SegmentLS extends Segment {
 		rx: number,
 		ry: number,
 		φ: number,
-		arc: boolean | number,
+		bigArc: boolean | number,
 		sweep: boolean | number,
 		...args: Vec[] | number[]
 	) {
 		const [pE] = pickPos(args);
-		return new ArcLS(this, rx, ry, φ, arc, sweep, pE);
+		return new ArcLS(this, rx, ry, φ, bigArc, sweep, pE);
 	}
 
 	a(
 		rx: number,
 		ry: number,
 		φ: number,
-		arc: boolean | number,
+		bigArc: boolean | number,
 		sweep: boolean | number,
 		...args: Vec[] | number[]
 	) {
 		const [pE] = pickPos(args);
 		const { end: rel } = this;
-		return new ArcLS(this, rx, ry, φ, arc, sweep, rel.add(pE));
+		return new ArcLS(this, rx, ry, φ, bigArc, sweep, rel.add(pE));
 	}
 
 	override toString() {
-		return this.descArray()
-			.filter((v) => (typeof v == 'number' ? fmtN(v) : v))
-			.join(' ');
-		// return this.d();
+		// return this.descArray()
+		// 	.filter((v) => (typeof v == 'number' ? fmtN(v) : v))
+		// 	.join(' ');
+		return this._describe();
+	}
+
+	_describe(opt?: DescParams): string {
+		const { _prev } = this;
+		const [cmd, ...args] = this._descs(opt);
+		const d = `${cmd}${args.map((v) => fmtN(v as number)).join(',')}`;
+		return _prev ? _prev._describe(opt) + d : d;
 	}
 
 	override descArray(opt?: DescParams): (number | string)[] {
@@ -234,7 +290,22 @@ export abstract class SegmentLS extends Segment {
 			return this.cropAt(t1, t0); // t0 >= 1
 		}
 	}
-
+	rect(...args: Vec[] | number[]) {
+		const [xy, [w, h]] = pickPos(args);
+		return this.M(xy).h(w).v(h).h(-w).z();
+	}
+	arc(...args: Vec[] | number[]): SegmentLS {
+		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
+		return arcHelp(this, x, y, r, a0, a1, ccw);
+	}
+	arcTo(...args: Vec[] | number[]): SegmentLS {
+		const [x1, y1, x2, y2, r] = pickNum(args);
+		return arcToHelp(this, x1, y1, x2, y2, r);
+	}
+	// segmentAt(T: number) {
+	// 	T%1
+	// 	return this;
+	// }
 	abstract _descs(opt?: DescParams): (number | string)[];
 	abstract splitAt(t: number): [SegmentLS, SegmentLS];
 	abstract transform(M: any): SegmentLS;
@@ -258,28 +329,16 @@ export abstract class SegmentLS extends Segment {
 	static parse(d: string) {
 		return parseLS(d);
 	}
-}
-
-function* pickPos(args: Vec[] | number[]) {
-	let n: number | undefined = undefined;
-	for (const v of args) {
-		if (typeof v == 'number') {
-			if (n == undefined) {
-				n = v;
-			} else {
-				yield Vec.pos(n, v);
-				n = undefined;
-			}
-		} else if (n != undefined) {
-			throw new Error(`n == ${n}`);
-		} else if (v instanceof Vec) {
-			yield v;
-		} else {
-			yield Vec.new(v);
-		}
+	static arc(...args: Vec[] | number[]): SegmentLS {
+		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
+		return arcHelp(undefined, x, y, r, a0, a1, ccw);
+	}
+	static arcTo(...args: Vec[] | number[]): SegmentLS {
+		const [x1, y1, x2, y2, r] = pickNum(args);
+		return arcToHelp(undefined, x1, y1, x2, y2, r);
 	}
 }
-const { min, max, abs, PI } = Math;
+
 export class LineLS extends SegmentLS {
 	override bbox() {
 		const {
@@ -312,13 +371,29 @@ export class LineLS extends SegmentLS {
 		const {
 			end: [x, y],
 		} = this;
-		if (opt?.relative) {
+		if (opt) {
+			const { relative, short } = opt;
 			const { _prev } = this;
 			if (_prev) {
 				const {
 					end: [sx, sy],
 				} = _prev;
-				return ['l', x - sx, y - sy];
+				if (relative) {
+					if (short) {
+						if (sx === x) {
+							return ['v', y - sy];
+						} else if (sy === y) {
+							return ['h', x - sx];
+						}
+					}
+					return ['l', x - sx, y - sy];
+				} else if (short) {
+					if (sx === x) {
+						return ['V', y - sy];
+					} else if (sy === y) {
+						return ['H', x - sx];
+					}
+				}
 			}
 		}
 
@@ -440,10 +515,7 @@ export class QuadLS extends SegmentLS {
 					smooth &&
 					(_prev instanceof QuadLS ? _prev.p.reflectAt(_prev.end).closeTo(p) : _prev.end.closeTo(p))
 				) {
-					if (relative) {
-						return ['t', ex - sx, ey - sy];
-					}
-					return ['T', ex, ey];
+					return relative ? ['t', ex - sx, ey - sy] : ['T', ex, ey];
 				} else if (relative) {
 					return ['q', x1 - sx, y1 - sy, ex - sx, ey - sy];
 				}
@@ -538,10 +610,7 @@ export class CubicLS extends SegmentLS {
 					smooth &&
 					(_prev instanceof CubicLS ? _prev.c2.reflectAt(start).closeTo(c1) : start.closeTo(c1))
 				) {
-					if (relative) {
-						return ['s', x2 - sx, y2 - sy, ex - sx, ey - sy];
-					}
-					return ['S', x2, y2, ex, ey];
+					return relative ? ['s', x2 - sx, y2 - sy, ex - sx, ey - sy] : ['S', x2, y2, ex, ey];
 				} else if (relative) {
 					return ['c', x1 - sx, y1 - sy, x2 - sx, y2 - sy, ex - sx, ey - sy];
 				}
@@ -556,7 +625,7 @@ export class ArcLS extends SegmentLS {
 	readonly rx: number;
 	readonly ry: number;
 	readonly phi: number;
-	readonly arc: boolean;
+	readonly bigArc: boolean;
 	readonly sweep: boolean;
 	//
 	readonly cosφ: number;
@@ -570,7 +639,7 @@ export class ArcLS extends SegmentLS {
 		rx: number,
 		ry: number,
 		φ: number,
-		arc: boolean | number,
+		bigArc: boolean | number,
 		sweep: boolean | number,
 		end: Vec,
 	) {
@@ -579,7 +648,7 @@ export class ArcLS extends SegmentLS {
 		const { x: x1, y: y1 } = this.start;
 		const { x: x2, y: y2 } = this.end;
 		[this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] =
-			arcParams(x1, y1, rx, ry, φ, (this.arc = !!arc), (this.sweep = !!sweep), x2, y2);
+			arcParams(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
 	}
 	override bbox() {
 		return arcBBox(this);
@@ -603,15 +672,15 @@ export class ArcLS extends SegmentLS {
 		];
 	}
 	override transform(M: any) {
-		const { arc, end, _prev } = this;
+		const { bigArc, end, _prev } = this;
 		const [rx, ry, phi, sweep] = arcTransform(this, M);
-		return new ArcLS(_prev?.transform(M), rx, ry, phi, arc, sweep, end.transform(M));
+		return new ArcLS(_prev?.transform(M), rx, ry, phi, bigArc, sweep, end.transform(M));
 	}
 	override reversed(next?: SegmentLS): SegmentLS | undefined {
-		const { rx, ry, phi, arc, sweep, end, _prev } = this;
+		const { rx, ry, phi, bigArc, sweep, end, _prev } = this;
 		next || (next = new MoveLS(undefined, end));
 		if (_prev) {
-			const rev = new ArcLS(next, rx, ry, phi, arc, !sweep, _prev.end);
+			const rev = new ArcLS(next, rx, ry, phi, bigArc, !sweep, _prev.end);
 			return _prev.reversed(rev) ?? rev;
 		} else {
 			if (next) {
@@ -628,7 +697,7 @@ export class ArcLS extends SegmentLS {
 			ry,
 			phi,
 			sweep,
-			arc,
+			bigArc,
 			end: [x, y],
 		} = this;
 		if (opt?.relative) {
@@ -637,10 +706,103 @@ export class ArcLS extends SegmentLS {
 				const {
 					end: [sx, sy],
 				} = _prev;
-				return ['a', rx, ry, phi, arc ? 1 : 0, sweep ? 1 : 0, x - sx, y - sy];
+				return ['a', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x - sx, y - sy];
 			}
 		}
 
-		return ['A', rx, ry, phi, arc ? 1 : 0, sweep ? 1 : 0, x, y];
+		return ['A', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x, y];
 	}
+}
+
+function arcHelp(
+	cur: SegmentLS | undefined,
+	x: number,
+	y: number,
+	r: number,
+	a0: number,
+	a1: number,
+	ccw: number,
+) {
+	const cw = ccw ? 0 : 1;
+	const dx = r * cos(a0);
+	const dy = r * sin(a0);
+	const x0 = x + dx;
+	const y0 = y + dy;
+	if (r < 0) {
+		// Is the radius negative? Error.
+		throw new Error('negative radius: ' + r);
+	} else if (!cur) {
+		cur = new MoveLS(undefined, Vec.pos(x0, y0));
+	} else if (!cur.end.closeTo(Vec.pos(x0, y0), epsilon)) {
+		// Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
+		cur = cur.L(Vec.pos(x0, y0));
+	}
+	let da = cw ? a1 - a0 : a0 - a1;
+	// Is this arc empty? We’re done.
+	if (!r) {
+		return cur;
+	} else if (da < 0) {
+		da = (da % tau) + tau;
+	}
+	if (da > tauEpsilon) {
+		// Is this a complete circle? PathDraw two arcs to complete the circle.
+		return cur.A(r, r, 0, 1, cw, x - dx, y - dy).A(r, r, 0, 1, cw, x0, y0);
+	} else if (da > epsilon) {
+		// Is this arc non-empty? PathDraw an arc!
+		return cur.A(r, r, 0, da >= PI, cw, x + r * cos(a1), y + r * sin(a1));
+	}
+	return cur;
+}
+
+function arcToHelp(
+	cur: SegmentLS | undefined,
+	x1: number,
+	y1: number,
+	x2: number,
+	y2: number,
+	r: number,
+) {
+	// (x1 = +x1), (y1 = +y1), (x2 = +x2), (y2 = +y2), (r = +r);
+	const [x0, y0] = cur ? cur.end : [0, 0];
+	const x21 = x2 - x1;
+	const y21 = y2 - y1;
+	const x01 = x0 - x1;
+	const y01 = y0 - y1;
+	const l01_2 = x01 * x01 + y01 * y01;
+
+	// Is the radius negative? Error.
+	if (r < 0) {
+		throw new Error('negative radius: ' + r);
+	} else if (!cur) {
+		// Is this path empty? Move to (x1,y1).
+		cur = new MoveLS(undefined, Vec.pos(x1, y1));
+	} else if (!(l01_2 > epsilon)) {
+		// Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
+	} else if (!(abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
+		// Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
+		// Equivalently, is (x1,y1) coincident with (x2,y2)?
+		// Or, is the radius zero? Line to (x1,y1).
+		cur = cur.L(Vec.pos(x1, y1));
+	} else {
+		// Otherwise, draw an arc!
+		const x20 = x2 - x0,
+			y20 = y2 - y0,
+			l21_2 = x21 * x21 + y21 * y21,
+			l20_2 = x20 * x20 + y20 * y20,
+			l21 = sqrt(l21_2),
+			l01 = sqrt(l01_2),
+			l = r * tan((PI - acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
+			t01 = l / l01,
+			t21 = l / l21;
+
+		// If the start tangent is not coincident with (x0,y0), line to.
+		if (abs(t01 - 1) > epsilon) {
+			cur = cur.L(Vec.pos(x1 + t01 * x01, y1 + t01 * y01));
+		}
+		cur = cur.A(r, r, 0, 0, y01 * x20 > x01 * y20 ? 1 : 0, x1 + t21 * x21, y1 + t21 * y21);
+		// this._ += `A${fmtN(r)},${fmtN(r)},0,0,${y01 * x20 > x01 * y20 ? 1 : 0},${fmtN(
+		// 	(this._x1 = x1 + t21 * x21),
+		// )},${fmtN((this._y1 = y1 + t21 * y21))}`;
+	}
+	return cur;
 }

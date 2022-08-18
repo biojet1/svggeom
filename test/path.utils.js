@@ -27,6 +27,7 @@ export function test_segment(t, seg, item, opt = {}) {
         point_epsilon = epsilon,
         test_descs = true,
         test_tangents = true,
+        descArrayOpt
     } = opt;
     const tan_opt = { delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon };
 
@@ -53,8 +54,8 @@ export function test_segment(t, seg, item, opt = {}) {
             try {
                 [a, b] = seg.splitAt(T);
 
-                t.sameDescs(a.descArray(), pathA, point_epsilon, `splitAt(0, ${T})`, [item, seg]);
-                t.sameDescs(b.descArray(), pathB, point_epsilon, `splitAt(${T}, 1)`, seg);
+                t.sameDescs(a.descArray(descArrayOpt), pathA, {epsilon:point_epsilon}, `splitAt(0, ${T})`, [item, seg]);
+                t.sameDescs(b.descArray(descArrayOpt), pathB, {epsilon:point_epsilon, write_svg:true, item}, `splitAt(${T}, 1)`, seg);
                 t.sameDescs(seg.cutAt(T).descArray(), pathA, point_epsilon, `cutAt(${T})`, seg);
                 t.sameDescs(seg.cutAt(-T).descArray(), pathB, point_epsilon, `cutAt(${T})`, seg);
                 t.sameDescs(seg.cropAt(0, T).descArray(), pathA, point_epsilon, `cropAt(0, ${T})`, seg);

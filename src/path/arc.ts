@@ -14,7 +14,7 @@ interface IArc {
 	readonly rx: number;
 	readonly ry: number;
 	readonly phi: number;
-	readonly arc: boolean;
+	readonly bigArc: boolean;
 	readonly sweep: boolean;
 	//
 	readonly cosφ: number;
@@ -31,7 +31,7 @@ export class Arc extends SegmentSE {
 	readonly rx: number;
 	readonly ry: number;
 	readonly phi: number;
-	readonly arc: boolean;
+	readonly bigArc: boolean;
 	readonly sweep: boolean;
 	//
 	readonly cosφ: number;
@@ -46,7 +46,7 @@ export class Arc extends SegmentSE {
 		rx: number,
 		ry: number,
 		φ: number,
-		arc: boolean | number,
+		bigArc: boolean | number,
 		sweep: boolean | number,
 	) {
 		if (!(isFinite(φ) && isFinite(rx) && isFinite(ry))) throw Error(`${JSON.stringify(arguments)}`);
@@ -56,21 +56,21 @@ export class Arc extends SegmentSE {
 		const { x: x2, y: y2 } = this.end;
 
 		[this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] =
-			arcParams(x1, y1, rx, ry, φ, (this.arc = !!arc), (this.sweep = !!sweep), x2, y2);
+			arcParams(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
 	}
 	static fromEndPoint(
 		start: Iterable<number>,
 		rx: number,
 		ry: number,
 		φ: number,
-		arc: boolean | number,
+		bigArc: boolean | number,
 		sweep: boolean | number,
 		end: Iterable<number>,
 	) {
 		if (!rx || !ry) {
 			return new Line(start, end);
 		}
-		return new Arc(start, end, rx, ry, φ, arc, sweep);
+		return new Arc(start, end, rx, ry, φ, bigArc, sweep);
 	}
 	static fromCenterForm(c: Vec, rx: number, ry: number, φ: number, θ: number, Δθ: number) {
 		const cosφ = cos((φ / 180) * PI);
@@ -82,12 +82,12 @@ export class Arc extends SegmentSE {
 		const end = Vec.pos(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
 			.transform(m)
 			.add(c);
-		const arc = abs(Δθ) > 180 ? 1 : 0;
+		const bigArc = abs(Δθ) > 180 ? 1 : 0;
 		const sweep = Δθ > 0 ? 1 : 0;
-		return new Arc(start, end, rx, ry, φ, arc, sweep);
+		return new Arc(start, end, rx, ry, φ, bigArc, sweep);
 	}
 	clone() {
-		return new Arc(this.start, this.end, this.rx, this.ry, this.phi, this.arc, this.sweep);
+		return new Arc(this.start, this.end, this.rx, this.ry, this.phi, this.bigArc, this.sweep);
 	}
 	override bbox() {
 		return arcBBox(this);
@@ -102,7 +102,7 @@ export class Arc extends SegmentSE {
 		return arcSlopeAt(this, t);
 	}
 
-	override splitAt(t: number):[SegmentSE,SegmentSE] {
+	override splitAt(t: number): [SegmentSE, SegmentSE] {
 		const { rx, ry, phi, sweep, rdelta, start, end } = this;
 		const deltaA = abs(rdelta);
 		const mid = arcPointAt(this, t);
@@ -118,21 +118,21 @@ export class Arc extends SegmentSE {
 			ry,
 			phi,
 			sweep,
-			arc,
+			bigArc,
 			end: [x, y],
 		} = this;
-		return ['A', rx, ry, phi, arc ? 1 : 0, sweep ? 1 : 0, x, y];
+		return ['A', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x, y];
 	}
 
 	override transform(matrix: any) {
-		const { arc, end, start } = this;
+		const { bigArc, end, start } = this;
 		const [rx, ry, phi, sweep] = arcTransform(this, matrix);
-		return new Arc(start.transform(matrix), end.transform(matrix), rx, ry, phi, arc, sweep);
+		return new Arc(start.transform(matrix), end.transform(matrix), rx, ry, phi, bigArc, sweep);
 	}
 
 	override reversed() {
-		const { arc, end, start, rx, ry, sweep, phi } = this;
-		return new Arc(end, start, rx, ry, phi, arc, sweep ? 0 : 1);
+		const { bigArc, end, start, rx, ry, sweep, phi } = this;
+		return new Arc(end, start, rx, ry, phi, bigArc, sweep ? 0 : 1);
 	}
 
 	asCubic() {

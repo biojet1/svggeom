@@ -267,7 +267,7 @@ export class Path {
 		let move_pos = null;
 		let previous_segment;
 		const end = segs.length > 0 ? segs[segs.length - 1].end : undefined;
-		for (const [i, seg] of segs.entries()) {
+		TOP:for (const [i, seg] of segs.entries()) {
 			const { start: seg_start } = seg;
 			if (
 				!current_pos ||
@@ -286,8 +286,8 @@ export class Path {
 				OUT: {
 					if (seg instanceof Close) {
 						if (move_pos) {
-							if (close || close === undefined) {
-								if (move_pos.equals(seg.end)) {
+							if (close || close == undefined) {
+								if (move_pos.closeTo(seg.end)) {
 									yield rel ? 'z' : 'Z';
 									break OUT;
 								}
@@ -332,12 +332,12 @@ export class Path {
 				}
 			} else if (seg instanceof Arc) {
 				const end = rel ? seg.end.sub(seg_start) : seg.end;
-				const { rx, ry, phi, arc, sweep } = seg;
+				const { rx, ry, phi, bigArc, sweep } = seg;
 				yield rel ? 'a' : 'A';
 				yield fixNum(rx);
 				yield fixNum(ry);
 				yield fixNum(phi);
-				yield arc ? 1 : 0;
+				yield bigArc ? 1 : 0;
 				yield sweep ? 1 : 0;
 				yield fixNum(end.x);
 				yield fixNum(end.y);
@@ -445,7 +445,6 @@ export class Path {
 	}
 }
 
-// export class PathLS {}
 import { Line, Close, Vertical, Horizontal } from './path/line.js';
 import { Arc } from './path/arc.js';
 import { Cubic } from './path/cubic.js';

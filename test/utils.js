@@ -101,7 +101,7 @@ test.Test.prototype.addAssert('almostEqual', 3, function (A, B, opt, message, ex
 
 // <path d="M10 10"/>
 
-function dbgwrite(dbg, pC, pX) {
+function dbgwrite(dbg, pC, pX, d) {
     function* gen() {
         let style;
         yield `<svg xmlns="http://www.w3.org/2000/svg">`;
@@ -115,6 +115,11 @@ function dbgwrite(dbg, pC, pX) {
                 yield `<path id="transformed" d="${dbg.path_source}" transform="${dbg.path_transform}" style="${style}"/>`;
             }
         }
+        if (d) {
+            style = 'fill:orange;stroke:yellow;stroke-width:1;stroke-dasharray:none;opacity:0.6';
+            yield `<path id="d" d="${d}" style="${style}"/>`;
+        }
+
         style = 'fill:firebrick;stroke:red;stroke-width:2;stroke-dasharray:none;opacity:0.6';
 
         yield `<path id="calculated" d="${pC.join(' ')}" style="${style}"/>`;
@@ -148,13 +153,15 @@ test.Test.prototype.addAssert(
         const epsilon = opt?.epsilon || 1e-13;
 
         if (a.length !== b.length) {
-            a = a.filter((v) => !/[Zz]/.test(v));
-            b = b.filter((v) => !/[Zz]/.test(v));
-            if (a.length !== b.length) {
-                extra.desc1 = a.join(' ');
-                extra.desc2 = b.join(' ');
+            const a_ = a.filter((v) => !/[Zz]/.test(v));
+            const b_ = b.filter((v) => !/[Zz]/.test(v));
+            if (a_.length !== b_.length) {
+                extra.descA = a.join(' ');
+                extra.descB = b.join(' ');
+                extra.desc1 = a_.join(' ');
+                extra.desc2 = b_.join(' ');
                 if (opt.write_svg) {
-                    dbgwrite(opt, a, b);
+                    dbgwrite(opt, a, b, opt?.item?.d);
                 }
                 return this.fail(`desc len not same "${message}"`, extra);
             }
