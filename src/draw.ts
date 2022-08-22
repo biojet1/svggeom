@@ -336,18 +336,19 @@ export class PathLS {
 		}).draw(this);
 		return this;
 	}
-	segmentAtLen(T: number): [SegmentLS | undefined, number] {
+	segmentAtLength(T: number): [SegmentLS | undefined, number, number] {
 		let cur: SegmentLS | undefined = this._tail;
 		if (cur) {
-			return segmentAtLen(cur, T, lenPath(cur));
+			return _segmentAtLen(cur, T, lenPath(cur));
 		}
-		return [undefined, NaN];
+		return [undefined, NaN, NaN];
 	}
 	segmentAt(T: number): [SegmentLS | undefined, number] {
 		let cur: SegmentLS | undefined = this._tail;
 		if (cur) {
 			const len = lenPath(cur);
-			return segmentAtLen(cur, T * len, len);
+			const [seg, n, N] = _segmentAtLen(cur, T * len, len);
+			return [seg, n / N];
 		}
 		return [undefined, NaN];
 	}
@@ -373,7 +374,10 @@ export class PathLS {
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.pointAt(t);
 	}
-
+	pointAtLength(L: number) {
+		const [seg, n, N] = this.segmentAtLength(L);
+		if (seg) return seg.pointAt(n / N);
+	}
 	bbox() {
 		let b = Box.new();
 		for (let cur: SegmentLS | undefined = this._tail; cur; cur = cur._prev) {
@@ -431,7 +435,7 @@ export class PathLS {
 	}
 }
 
-function segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [SegmentLS | undefined, number] {
+function _segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [SegmentLS | undefined, number, number] {
 	if (cur) {
 		if (lenP < 0) {
 			lenP = LEN + (lenP % LEN);
@@ -445,10 +449,10 @@ function segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [S
 			if (lenS > 0) {
 				const lenT = lenP - (end -= lenS);
 				if (lenT >= 0) {
-					return [cur, lenT / lenS];
+					return [cur, lenT, lenS];
 				}
 			}
 		} while ((cur = cur._prev));
 	}
-	return [undefined, NaN];
+	return [undefined, NaN, NaN];
 }
