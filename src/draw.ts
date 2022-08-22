@@ -1,4 +1,6 @@
 import {Vec} from './point.js';
+import {Box} from './box.js';
+
 const {PI: pi, abs, sqrt, tan, acos, sin, cos} = Math;
 
 function* pick(args: Vec[] | number[] | boolean[]) {
@@ -252,7 +254,7 @@ function lenPath(seg: SegmentLS) {
 function lenSegm(seg: SegmentLS) {
 	let v = len_segm.get(seg);
 	if (v == null) {
-		len_path.set(seg, (v = seg.length));
+		len_segm.set(seg, (v = seg.segmentLen()));
 	}
 	return v;
 }
@@ -340,13 +342,15 @@ export class PathLS {
 		if (cur) {
 			if (T < 0) {
 				T = 1 + (T % 1);
-			} else {
+			} else if (T != 1) {
+				// 1%1 === 0
 				T = T % 1;
 			}
 			let end = lenPath(cur);
 			const Tlen = T * end;
 			do {
 				const len = lenSegm(cur);
+				// const len = cur.segmentLen();
 				if (len > 0) {
 					const start = end - len;
 					if (Tlen >= start) {
@@ -365,6 +369,35 @@ export class PathLS {
 		}
 		return 0;
 	}
+
+	tangentAt(T: number) {
+		// SegmentSE method
+		const [seg, t] = this.segmentAt(T);
+		if (seg) return seg.tangentAt(t);
+	}
+
+	slopeAt(T: number) {
+		// SegmentSE method
+		const [seg, t] = this.segmentAt(T);
+		if (seg) return seg.slopeAt(t);
+	}
+
+	pointAt(T: number) {
+		// SegmentSE method
+		const [seg, t] = this.segmentAt(T);
+		if (seg) return seg.pointAt(t);
+	}
+
+	bbox() {
+		// SegmentSE method
+		// return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
+		let b = Box.new();
+		for (let cur: SegmentLS | undefined = this._tail; cur; cur = cur._prev) {
+			b = b.merge(cur.bbox());
+		}
+		return b;
+	}
+
 	// CanvasRenderingContext2D compat
 
 	set fillStyle(x: any) {}

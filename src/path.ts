@@ -201,7 +201,7 @@ export class Path {
 				let start = 0;
 				for (const [i, seg] of segs.entries()) {
 					const len = lengths[i];
-					if (len > 0) {
+				 	if (len > 0) {
 						const end = start + len;
 						if (end >= T) {
 							return [seg, (T - start) / (end - start), i];

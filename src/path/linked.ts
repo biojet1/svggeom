@@ -291,9 +291,16 @@ export abstract class SegmentLS extends Segment {
 			return this.cropAt(t1, t0); // t0 >= 1
 		}
 	}
-	pathLen() : number {
-		const {_prev, length} = this;
-		return _prev ? _prev.pathLen() + length : length;
+	pathLen(): number {
+		const {_prev} = this;
+		const len = this.segmentLen();
+		return _prev ? _prev.pathLen() + len : len;
+	}
+	segmentLen() {
+		return this.length;
+	}
+	override bbox() {
+		return Box.new();
 	}
 	abstract _descs(opt?: DescParams): (number | string)[];
 	abstract splitAt(t: number): [SegmentLS, SegmentLS];
@@ -331,12 +338,16 @@ export abstract class SegmentLS extends Segment {
 export class LineLS extends SegmentLS {
 	override bbox() {
 		const {
-			start: [x1, y1],
 			end: [x2, y2],
+			_prev,
 		} = this;
-		const [xmin, xmax] = [min(x1, x2), max(x1, x2)];
-		const [ymin, ymax] = [min(y1, y2), max(y1, y2)];
-		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+		if (_prev) {
+			const [x1, y1] = _prev.end;
+			const [xmin, xmax] = [min(x1, x2), max(x1, x2)];
+			const [ymin, ymax] = [min(y1, y2), max(y1, y2)];
+			return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+		}
+		return Box.new();
 	}
 	override get length() {
 		const {start, end} = this;
@@ -442,8 +453,11 @@ export class MoveLS extends LineLS {
 			return next;
 		}
 	}
-	override pathLen() {
-		return this._prev?.pathLen() ?? 0;
+	// override pathLen() {
+	// 	return this._prev?.pathLen() ?? 0;
+	// }
+	override segmentLen() {
+		return 0;
 	}
 }
 export class CloseLS extends LineLS {
@@ -485,7 +499,8 @@ export class QuadLS extends SegmentLS {
 		return [new QuadLS(this._prev, a[1], a[2]), new QuadLS(new MoveLS(undefined, b[0]), b[1], b[2])];
 	}
 	override bbox() {
-		return quadBBox(this._qpts);
+		const {_prev} = this;
+		return _prev ? quadBBox(this._qpts) : Box.new();
 	}
 	override _descs(opt?: DescParams) {
 		const {
@@ -546,7 +561,8 @@ export class CubicLS extends SegmentLS {
 		return cubicPointAt(this._cpts, t);
 	}
 	override bbox() {
-		return cubicBox(this._cpts);
+		const {_prev} = this;
+		return _prev ? cubicBox(this._cpts) : Box.new();
 	}
 	override slopeAt(t: number): Vec {
 		return cubicSlopeAt(this._cpts, t);
@@ -640,7 +656,8 @@ export class ArcLS extends SegmentLS {
 		);
 	}
 	override bbox() {
-		return arcBBox(this);
+		const {_prev} = this;
+		return _prev ? arcBBox(this) : Box.new();
 	}
 	override get length() {
 		return arcLength(this);
