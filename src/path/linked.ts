@@ -1,8 +1,8 @@
-import { Vec } from '../point.js';
-import { Box } from '../box.js';
-import { Segment, DescParams } from './index.js';
-import { parseLS } from './parser.js';
-const { min, max, abs, PI, cos, sin, sqrt, acos, tan } = Math;
+import {Vec} from '../point.js';
+import {Box} from '../box.js';
+import {Segment, DescParams} from './index.js';
+import {parseLS} from './parser.js';
+const {min, max, abs, PI, cos, sin, sqrt, acos, tan} = Math;
 const tau = 2 * PI,
 	epsilon = 1e-6,
 	tauEpsilon = tau - epsilon;
@@ -55,7 +55,7 @@ function fmtN(n: number) {
 }
 
 export abstract class SegmentLS extends Segment {
-	protected _prev?: SegmentLS;
+	_prev?: SegmentLS;
 	private readonly _end: Vec;
 	static get digits() {
 		return digits;
@@ -69,14 +69,14 @@ export abstract class SegmentLS extends Segment {
 		this._end = end;
 	}
 	get prev() {
-		const { _prev } = this;
+		const {_prev} = this;
 		if (_prev) {
 			return _prev;
 		}
 		throw new Error('No prev');
 	}
 	get start() {
-		const { _prev } = this;
+		const {_prev} = this;
 		if (_prev) {
 			return _prev._end;
 		}
@@ -172,7 +172,7 @@ export abstract class SegmentLS extends Segment {
 	}
 	q(...args: Vec[] | number[]) {
 		const [p, pE] = pickPos(args);
-		const { end: rel } = this;
+		const {end: rel} = this;
 		return new QuadLS(this, rel.add(p), rel.add(pE));
 	}
 	C(...args: Vec[] | number[]) {
@@ -181,12 +181,12 @@ export abstract class SegmentLS extends Segment {
 	}
 	c(...args: Vec[] | number[]) {
 		const [c1, c2, pE] = pickPos(args);
-		const { end: rel } = this;
+		const {end: rel} = this;
 		return new CubicLS(this, rel.add(c1), rel.add(c2), rel.add(pE));
 	}
 	S(...args: Vec[] | number[]): CubicLS {
 		const [p2, pE] = pickPos(args);
-		const { end } = this;
+		const {end} = this;
 		if (this instanceof CubicLS) {
 			return new CubicLS(this, this.c2.reflectAt(end), p2, pE);
 		} else {
@@ -195,7 +195,7 @@ export abstract class SegmentLS extends Segment {
 	}
 	s(...args: Vec[] | number[]): CubicLS {
 		const [p2, pE] = pickPos(args);
-		const { end } = this;
+		const {end} = this;
 		if (this instanceof CubicLS) {
 			return new CubicLS(this, this.c2.reflectAt(end), end.add(p2), end.add(pE));
 		} else {
@@ -204,7 +204,7 @@ export abstract class SegmentLS extends Segment {
 	}
 	T(...args: Vec[] | number[]): QuadLS {
 		const [pE] = pickPos(args);
-		const { end } = this;
+		const {end} = this;
 		if (this instanceof QuadLS) {
 			return new QuadLS(this, this.p.reflectAt(end), pE);
 		} else {
@@ -213,7 +213,7 @@ export abstract class SegmentLS extends Segment {
 	}
 	t(...args: Vec[] | number[]): QuadLS {
 		const [pE] = pickPos(args);
-		const { end } = this;
+		const {end} = this;
 		if (this instanceof QuadLS) {
 			return new QuadLS(this, this.p.reflectAt(end), end.add(pE));
 		} else {
@@ -221,29 +221,28 @@ export abstract class SegmentLS extends Segment {
 		}
 	}
 
-	A(
-		rx: number,
-		ry: number,
-		φ: number,
-		bigArc: boolean | number,
-		sweep: boolean | number,
-		...args: Vec[] | number[]
-	) {
+	A(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, ...args: Vec[] | number[]) {
 		const [pE] = pickPos(args);
 		return new ArcLS(this, rx, ry, φ, bigArc, sweep, pE);
 	}
 
-	a(
-		rx: number,
-		ry: number,
-		φ: number,
-		bigArc: boolean | number,
-		sweep: boolean | number,
-		...args: Vec[] | number[]
-	) {
+	a(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, ...args: Vec[] | number[]) {
 		const [pE] = pickPos(args);
-		const { end: rel } = this;
+		const {end: rel} = this;
 		return new ArcLS(this, rx, ry, φ, bigArc, sweep, rel.add(pE));
+	}
+
+	rect(...args: Vec[] | number[]) {
+		const [xy, [w, h]] = pickPos(args);
+		return this.M(xy).h(w).v(h).h(-w).z();
+	}
+	arc(...args: Vec[] | number[]): SegmentLS {
+		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
+		return arcHelp(this, x, y, r, a0, a1, ccw);
+	}
+	arcTo(...args: Vec[] | number[]): SegmentLS {
+		const [x1, y1, x2, y2, r] = pickNum(args);
+		return arcToHelp(this, x1, y1, x2, y2, r);
 	}
 
 	override toString() {
@@ -254,14 +253,14 @@ export abstract class SegmentLS extends Segment {
 	}
 
 	describe(opt?: DescParams): string {
-		const { _prev } = this;
+		const {_prev} = this;
 		const [cmd, ...args] = this._descs(opt);
-		const d = `${cmd}${args.map((v) => fmtN(v as number)).join(',')}`;
+		const d = `${cmd}${args.map(v => fmtN(v as number)).join(',')}`;
 		return _prev ? _prev.describe(opt) + d : d;
 	}
 
 	override descArray(opt?: DescParams): (number | string)[] {
-		const { _prev } = this;
+		const {_prev} = this;
 		if (_prev) {
 			const a = _prev.descArray(opt);
 			a.push(...this._descs(opt));
@@ -292,22 +291,10 @@ export abstract class SegmentLS extends Segment {
 			return this.cropAt(t1, t0); // t0 >= 1
 		}
 	}
-	rect(...args: Vec[] | number[]) {
-		const [xy, [w, h]] = pickPos(args);
-		return this.M(xy).h(w).v(h).h(-w).z();
+	pathLen() : number {
+		const {_prev, length} = this;
+		return _prev ? _prev.pathLen() + length : length;
 	}
-	arc(...args: Vec[] | number[]): SegmentLS {
-		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
-		return arcHelp(this, x, y, r, a0, a1, ccw);
-	}
-	arcTo(...args: Vec[] | number[]): SegmentLS {
-		const [x1, y1, x2, y2, r] = pickNum(args);
-		return arcToHelp(this, x1, y1, x2, y2, r);
-	}
-	// segmentAt(T: number) {
-	// 	T%1
-	// 	return this;
-	// }
 	abstract _descs(opt?: DescParams): (number | string)[];
 	abstract splitAt(t: number): [SegmentLS, SegmentLS];
 	abstract transform(M: any): SegmentLS;
@@ -352,20 +339,20 @@ export class LineLS extends SegmentLS {
 		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 	override get length() {
-		const { start, end } = this;
+		const {start, end} = this;
 		return end.sub(start).abs();
 	}
 	override pointAt(t: number) {
-		const { start, end } = this;
+		const {start, end} = this;
 		return end.sub(start).mul(t).postAdd(start);
 	}
 	override slopeAt(_: number) {
-		const { start, end } = this;
+		const {start, end} = this;
 		const vec = end.sub(start);
 		return vec.div(vec.abs());
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
-		const { end } = this;
+		const {end} = this;
 		const c = this.pointAt(t);
 		return [new LineLS(this._prev, c), new LineLS(new MoveLS(undefined, c), end)];
 	}
@@ -374,8 +361,8 @@ export class LineLS extends SegmentLS {
 			end: [x, y],
 		} = this;
 		if (opt) {
-			const { relative, short } = opt;
-			const { _prev } = this;
+			const {relative, short} = opt;
+			const {_prev} = this;
 			if (_prev) {
 				const {
 					end: [sx, sy],
@@ -402,7 +389,7 @@ export class LineLS extends SegmentLS {
 		return ['L', x, y];
 	}
 	override reversed(next?: SegmentLS): SegmentLS | undefined {
-		const { end, _prev } = this;
+		const {end, _prev} = this;
 		next || (next = new MoveLS(undefined, end));
 		if (_prev) {
 			const rev = new LineLS(next, _prev.end);
@@ -416,7 +403,7 @@ export class LineLS extends SegmentLS {
 		}
 	}
 	override transform(M: any) {
-		const { end, _prev } = this;
+		const {end, _prev} = this;
 		return new LineLS(_prev?.transform(M), end.transform(M));
 	}
 }
@@ -427,7 +414,7 @@ export class MoveLS extends LineLS {
 		} = this;
 
 		if (opt?.relative) {
-			const { _prev } = this;
+			const {_prev} = this;
 			if (_prev) {
 				const [sx, sy] = _prev.end;
 				return ['m', x - sx, y - sy];
@@ -438,16 +425,16 @@ export class MoveLS extends LineLS {
 		return ['M', x, y];
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
-		const { end } = this;
+		const {end} = this;
 		const c = this.pointAt(t);
 		return [new MoveLS(this._prev, c), new MoveLS(new MoveLS(undefined, c), end)];
 	}
 	override transform(M: any) {
-		const { end, _prev } = this;
+		const {end, _prev} = this;
 		return new MoveLS(_prev?.transform(M), end.transform(M));
 	}
 	override reversed(next?: SegmentLS): SegmentLS | undefined {
-		const { _prev } = this;
+		const {_prev} = this;
 		if (_prev) {
 			const seg = new MoveLS(next, _prev.end);
 			return _prev.reversed(seg) ?? seg;
@@ -455,22 +442,25 @@ export class MoveLS extends LineLS {
 			return next;
 		}
 	}
+	override pathLen() {
+		return this._prev?.pathLen() ?? 0;
+	}
 }
 export class CloseLS extends LineLS {
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
-		const { end } = this;
+		const {end} = this;
 		const c = this.pointAt(t);
 		return [new LineLS(this._prev, c), new CloseLS(new MoveLS(undefined, c), end)];
 	}
 	override transform(M: any) {
-		const { end, _prev } = this;
+		const {end, _prev} = this;
 		return new CloseLS(_prev?.transform(M), end.transform(M));
 	}
 	override _descs(opt?: DescParams) {
 		return [opt?.relative ? 'z' : 'Z'];
 	}
 }
-import { quadLength, quadSplitAt, quadSlopeAt, quadPointAt, quadBBox } from './quadratic.js';
+import {quadLength, quadSplitAt, quadSlopeAt, quadPointAt, quadBBox} from './quadratic.js';
 export class QuadLS extends SegmentLS {
 	readonly p: Vec;
 	constructor(prev: SegmentLS | undefined, p: Vec, end: Vec) {
@@ -478,7 +468,7 @@ export class QuadLS extends SegmentLS {
 		this.p = p;
 	}
 	private get _qpts(): Vec[] {
-		const { start, p, end } = this;
+		const {start, p, end} = this;
 		return [start, p, end];
 	}
 	override get length() {
@@ -492,31 +482,25 @@ export class QuadLS extends SegmentLS {
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
 		const [a, b] = quadSplitAt(this._qpts, t);
-		return [
-			new QuadLS(this._prev, a[1], a[2]),
-			new QuadLS(new MoveLS(undefined, b[0]), b[1], b[2]),
-		];
+		return [new QuadLS(this._prev, a[1], a[2]), new QuadLS(new MoveLS(undefined, b[0]), b[1], b[2])];
 	}
 	override bbox() {
 		return quadBBox(this._qpts);
 	}
 	override _descs(opt?: DescParams) {
 		const {
-			p: { x: x1, y: y1 },
-			end: { x: ex, y: ey },
+			p: {x: x1, y: y1},
+			end: {x: ex, y: ey},
 		} = this;
 		if (opt) {
-			const { relative, smooth } = opt;
+			const {relative, smooth} = opt;
 			const {
 				p,
 				_prev,
 				start: [sx, sy],
 			} = this;
 			if (_prev) {
-				if (
-					smooth &&
-					(_prev instanceof QuadLS ? _prev.p.reflectAt(_prev.end).closeTo(p) : _prev.end.closeTo(p))
-				) {
+				if (smooth && (_prev instanceof QuadLS ? _prev.p.reflectAt(_prev.end).closeTo(p) : _prev.end.closeTo(p))) {
 					return relative ? ['t', ex - sx, ey - sy] : ['T', ex, ey];
 				} else if (relative) {
 					return ['q', x1 - sx, y1 - sy, ex - sx, ey - sy];
@@ -526,7 +510,7 @@ export class QuadLS extends SegmentLS {
 		return ['Q', x1, y1, ex, ey];
 	}
 	override reversed(next?: SegmentLS): SegmentLS | undefined {
-		const { end, p, _prev } = this;
+		const {end, p, _prev} = this;
 		next || (next = new MoveLS(undefined, end));
 		if (_prev) {
 			const rev = new QuadLS(next, p, _prev.end);
@@ -540,11 +524,11 @@ export class QuadLS extends SegmentLS {
 		}
 	}
 	override transform(M: any) {
-		const { p, end, _prev } = this;
+		const {p, end, _prev} = this;
 		return new QuadLS(_prev?.transform(M), p.transform(M), end.transform(M));
 	}
 }
-import { cubicLength, cubicSlopeAt, cubicPointAt, cubicBox, cubicSplitAt } from './cubic.js';
+import {cubicLength, cubicSlopeAt, cubicPointAt, cubicBox, cubicSplitAt} from './cubic.js';
 export class CubicLS extends SegmentLS {
 	readonly c1: Vec;
 	readonly c2: Vec;
@@ -554,7 +538,7 @@ export class CubicLS extends SegmentLS {
 		this.c2 = c2;
 	}
 	private get _cpts(): Vec[] {
-		const { start, c1, c2, end } = this;
+		const {start, c1, c2, end} = this;
 		return [start, c1, c2, end];
 	}
 	/////
@@ -569,16 +553,13 @@ export class CubicLS extends SegmentLS {
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
 		const [a, b] = cubicSplitAt(this._cpts, t);
-		return [
-			new CubicLS(this._prev, a[1], a[2], a[3]),
-			new CubicLS(new MoveLS(undefined, b[0]), b[1], b[2], b[3]),
-		];
+		return [new CubicLS(this._prev, a[1], a[2], a[3]), new CubicLS(new MoveLS(undefined, b[0]), b[1], b[2], b[3])];
 	}
 	override get length() {
 		return cubicLength(this._cpts);
 	}
 	override reversed(next?: SegmentLS): SegmentLS | undefined {
-		const { end, c1, c2, _prev } = this;
+		const {end, c1, c2, _prev} = this;
 		next || (next = new MoveLS(undefined, end));
 		if (_prev) {
 			const rev = new CubicLS(next, c2, c1, _prev.end);
@@ -592,26 +573,23 @@ export class CubicLS extends SegmentLS {
 		}
 	}
 	override transform(M: any) {
-		const { c1, c2, end, _prev } = this;
+		const {c1, c2, end, _prev} = this;
 		return new CubicLS(_prev?.transform(M), c1.transform(M), c2.transform(M), end.transform(M));
 	}
 	override _descs(opt?: DescParams) {
 		const {
-			c1: { x: x1, y: y1 },
-			c2: { x: x2, y: y2 },
+			c1: {x: x1, y: y1},
+			c2: {x: x2, y: y2},
 			end: [ex, ey],
 		} = this;
 
 		if (opt) {
-			const { smooth, relative } = opt;
-			const { c1, _prev } = this;
+			const {smooth, relative} = opt;
+			const {c1, _prev} = this;
 			if (_prev) {
-				const { end: start } = _prev;
+				const {end: start} = _prev;
 				const [sx, sy] = start;
-				if (
-					smooth &&
-					(_prev instanceof CubicLS ? _prev.c2.reflectAt(start).closeTo(c1) : start.closeTo(c1))
-				) {
+				if (smooth && (_prev instanceof CubicLS ? _prev.c2.reflectAt(start).closeTo(c1) : start.closeTo(c1))) {
 					return relative ? ['s', x2 - sx, y2 - sy, ex - sx, ey - sy] : ['S', x2, y2, ex, ey];
 				} else if (relative) {
 					return ['c', x1 - sx, y1 - sy, x2 - sx, y2 - sy, ex - sx, ey - sy];
@@ -621,8 +599,8 @@ export class CubicLS extends SegmentLS {
 		return ['C', x1, y1, x2, y2, ex, ey];
 	}
 }
-import { arcBBox, arcLength, arcPointAt, arcSlopeAt, arcTransform } from './arc.js';
-import { arcParams } from '../util.js';
+import {arcBBox, arcLength, arcPointAt, arcSlopeAt, arcTransform} from './arc.js';
+import {arcParams} from '../util.js';
 export class ArcLS extends SegmentLS {
 	readonly rx: number;
 	readonly ry: number;
@@ -643,14 +621,23 @@ export class ArcLS extends SegmentLS {
 		φ: number,
 		bigArc: boolean | number,
 		sweep: boolean | number,
-		end: Vec,
+		end: Vec
 	) {
 		if (!(isFinite(φ) && isFinite(rx) && isFinite(ry))) throw Error(`${JSON.stringify(arguments)}`);
 		super(prev, end);
-		const { x: x1, y: y1 } = this.start;
-		const { x: x2, y: y2 } = this.end;
-		[this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] =
-			arcParams(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
+		const {x: x1, y: y1} = this.start;
+		const {x: x2, y: y2} = this.end;
+		[this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] = arcParams(
+			x1,
+			y1,
+			rx,
+			ry,
+			φ,
+			(this.bigArc = !!bigArc),
+			(this.sweep = !!sweep),
+			x2,
+			y2
+		);
 	}
 	override bbox() {
 		return arcBBox(this);
@@ -665,7 +652,7 @@ export class ArcLS extends SegmentLS {
 		return arcSlopeAt(this, t);
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
-		const { rx, ry, phi, sweep, rdelta, end, _prev } = this;
+		const {rx, ry, phi, sweep, rdelta, end, _prev} = this;
 		const deltaA = abs(rdelta);
 		const mid = arcPointAt(this, t);
 		return [
@@ -674,12 +661,12 @@ export class ArcLS extends SegmentLS {
 		];
 	}
 	override transform(M: any) {
-		const { bigArc, end, _prev } = this;
+		const {bigArc, end, _prev} = this;
 		const [rx, ry, phi, sweep] = arcTransform(this, M);
 		return new ArcLS(_prev?.transform(M), rx, ry, phi, bigArc, sweep, end.transform(M));
 	}
 	override reversed(next?: SegmentLS): SegmentLS | undefined {
-		const { rx, ry, phi, bigArc, sweep, end, _prev } = this;
+		const {rx, ry, phi, bigArc, sweep, end, _prev} = this;
 		next || (next = new MoveLS(undefined, end));
 		if (_prev) {
 			const rev = new ArcLS(next, rx, ry, phi, bigArc, !sweep, _prev.end);
@@ -703,7 +690,7 @@ export class ArcLS extends SegmentLS {
 			end: [x, y],
 		} = this;
 		if (opt?.relative) {
-			const { _prev } = this;
+			const {_prev} = this;
 			if (_prev) {
 				const {
 					end: [sx, sy],
@@ -716,15 +703,7 @@ export class ArcLS extends SegmentLS {
 	}
 }
 
-function arcHelp(
-	cur: SegmentLS | undefined,
-	x: number,
-	y: number,
-	r: number,
-	a0: number,
-	a1: number,
-	ccw: number,
-) {
+function arcHelp(cur: SegmentLS | undefined, x: number, y: number, r: number, a0: number, a1: number, ccw: number) {
 	const cw = ccw ? 0 : 1;
 	const dx = r * cos(a0);
 	const dy = r * sin(a0);
@@ -756,14 +735,7 @@ function arcHelp(
 	return cur;
 }
 
-function arcToHelp(
-	cur: SegmentLS | undefined,
-	x1: number,
-	y1: number,
-	x2: number,
-	y2: number,
-	r: number,
-) {
+function arcToHelp(cur: SegmentLS | undefined, x1: number, y1: number, x2: number, y2: number, r: number) {
 	// (x1 = +x1), (y1 = +y1), (x2 = +x2), (y2 = +y2), (r = +r);
 	const [x0, y0] = cur ? cur.end : [0, 0];
 	const x21 = x2 - x1;

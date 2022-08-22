@@ -1,5 +1,5 @@
-import { Vec } from './point.js';
-const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
+import {Vec} from './point.js';
+const {PI: pi, abs, sqrt, tan, acos, sin, cos} = Math;
 
 function* pick(args: Vec[] | number[] | boolean[]) {
 	for (const v of args) {
@@ -70,9 +70,7 @@ export class PathDraw {
 
 	bezierCurveTo(...args: Vec[] | number[]) {
 		const [x1, y1, x2, y2, x, y] = pick(args);
-		this._ += `C${fmtN(x1)},${fmtN(y1)},${fmtN(x2)},${fmtN(y2)},${fmtN((this._x1 = +x))},${fmtN(
-			(this._y1 = +y),
-		)}`;
+		this._ += `C${fmtN(x1)},${fmtN(y1)},${fmtN(x2)},${fmtN(y2)},${fmtN((this._x1 = +x))},${fmtN((this._y1 = +y))}`;
 		return this;
 	}
 
@@ -118,9 +116,9 @@ export class PathDraw {
 				this._ += `L${fmtN(x1 + t01 * x01)},${fmtN(y1 + t01 * y01)}`;
 			}
 
-			this._ += `A${fmtN(r)},${fmtN(r)},0,0,${y01 * x20 > x01 * y20 ? 1 : 0},${fmtN(
-				(this._x1 = x1 + t21 * x21),
-			)},${fmtN((this._y1 = y1 + t21 * y21))}`;
+			this._ += `A${fmtN(r)},${fmtN(r)},0,0,${y01 * x20 > x01 * y20 ? 1 : 0},${fmtN((this._x1 = x1 + t21 * x21))},${fmtN(
+				(this._y1 = y1 + t21 * y21)
+			)}`;
 		}
 		return this;
 	}
@@ -131,7 +129,7 @@ export class PathDraw {
 	// qTo()
 	arc(...args: Vec[] | number[]) {
 		const [x, y, r, a0, a1, ccw] = pick(args);
-		const { _x1, _y1 } = this;
+		const {_x1, _y1} = this;
 		const cw = ccw ? 0 : 1;
 		const dx = r * Math.cos(a0);
 		const dy = r * Math.sin(a0);
@@ -166,18 +164,16 @@ export class PathDraw {
 		}
 		// Is this arc non-empty? PathDraw an arc!
 		else if (da > epsilon) {
-			this._ += `A${fmtN(r)},${fmtN(r)},0,${da >= pi ? 1 : 0},${cw},${fmtN(
-				(this._x1 = x + r * cos(a1)),
-			)},${fmtN((this._y1 = y + r * sin(a1)))}`;
+			this._ += `A${fmtN(r)},${fmtN(r)},0,${da >= pi ? 1 : 0},${cw},${fmtN((this._x1 = x + r * cos(a1)))},${fmtN(
+				(this._y1 = y + r * sin(a1))
+			)}`;
 		}
 		return this;
 	}
 
 	rect(...args: Vec[] | number[]) {
 		const [x, y, w, h] = pick(args);
-		this._ += `M${fmtN((this._x0 = this._x1 = +x))},${fmtN(
-			(this._y0 = this._y1 = +y),
-		)}h${+w}v${+h}h${-w}Z`;
+		this._ += `M${fmtN((this._x0 = this._x1 = +x))},${fmtN((this._y0 = this._y1 = +y))}h${+w}v${+h}h${-w}Z`;
 		return this;
 	}
 
@@ -198,22 +194,20 @@ export class PathDraw {
 			letterSpacing?: number;
 		},
 		text: string,
-		maxWidth?: number,
+		maxWidth?: number
 	) {
-		const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
+		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
 		// const fontSize = options.fontSize || 72;
 		//   const kerning = 'kerning' in options ? options.kerning : true;
 		//   const letterSpacing = 'letterSpacing' in options ? options.letterSpacing : false;
 		// const tracking = 'tracking' in options ? options.tracking : false;
 		// const metrics = this.getMetrics(text, options);
-		const { _x1, _y1 } = this;
-		font
-			.getPath(text, _x1 ?? 0, _y1 ?? 0, fontSize, {
-				kerning,
-				letterSpacing,
-				tracking,
-			})
-			.draw(this);
+		const {_x1, _y1} = this;
+		font.getPath(text, _x1 ?? 0, _y1 ?? 0, fontSize, {
+			kerning,
+			letterSpacing,
+			tracking,
+		}).draw(this);
 		return this;
 	}
 	// CanvasRenderingContext2D compat
@@ -240,9 +234,28 @@ export class PathDraw {
 	}
 }
 
-import { Font /*, load, loadSync*/ } from 'opentype.js';
-import { SegmentLS } from './path/linked.js';
-import { DParams } from './path.js';
+import {Font /*, load, loadSync*/} from 'opentype.js';
+import {SegmentLS} from './path/linked.js';
+import {DParams} from './path.js';
+
+const len_segm = new WeakMap<SegmentLS, number>();
+const len_path = new WeakMap<SegmentLS, number>();
+
+function lenPath(seg: SegmentLS) {
+	let v = len_path.get(seg);
+	if (v == null) {
+		len_path.set(seg, (v = seg.pathLen()));
+	}
+	return v;
+}
+
+function lenSegm(seg: SegmentLS) {
+	let v = len_segm.get(seg);
+	if (v == null) {
+		len_path.set(seg, (v = seg.length));
+	}
+	return v;
+}
 
 export class PathLS {
 	_tail: SegmentLS;
@@ -251,37 +264,37 @@ export class PathLS {
 	}
 
 	moveTo(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).moveTo(...args);
 		return this;
 	}
 	lineTo(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).lineTo(...args);
 		return this;
 	}
 	bezierCurveTo(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).bezierCurveTo(...args);
 		return this;
 	}
 	quadraticCurveTo(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).quadraticCurveTo(...args);
 		return this;
 	}
 	arc(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).arc(...args);
 		return this;
 	}
 	arcTo(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).arcTo(...args);
 		return this;
 	}
 	rect(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).rect(...args);
 		return this;
 	}
@@ -289,7 +302,7 @@ export class PathLS {
 	// arc(...args: Vec[] | number[]) : SegmentLS {
 
 	closePath() {
-		const { _tail } = this;
+		const {_tail} = this;
 		if (_tail) {
 			this._tail = _tail.closePath();
 		}
@@ -310,20 +323,48 @@ export class PathLS {
 			letterSpacing?: number;
 		},
 		text: string,
-		maxWidth?: number,
+		maxWidth?: number
 	) {
-		const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
+		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
 		const [_x1, _y1] = this?._tail?.end ?? [0, 0];
-		font
-			.getPath(text, _x1, _y1, fontSize, {
-				kerning,
-				letterSpacing,
-				tracking,
-			})
-			.draw(this);
+		font.getPath(text, _x1, _y1, fontSize, {
+			kerning,
+			letterSpacing,
+			tracking,
+		}).draw(this);
 		return this;
 	}
 
+	segmentAt(T: number): [SegmentLS | undefined, number] {
+		let cur: SegmentLS | undefined = this._tail;
+		if (cur) {
+			if (T < 0) {
+				T = 1 + (T % 1);
+			} else {
+				T = T % 1;
+			}
+			let end = lenPath(cur);
+			const Tlen = T * end;
+			do {
+				const len = lenSegm(cur);
+				if (len > 0) {
+					const start = end - len;
+					if (Tlen >= start) {
+						return [cur, (Tlen - start) / len];
+					}
+					end = start;
+				}
+			} while ((cur = cur._prev));
+		}
+		return [undefined, NaN];
+	}
+	get length() {
+		let cur: SegmentLS | undefined = this._tail;
+		if (cur) {
+			return lenPath(cur);
+		}
+		return 0;
+	}
 	// CanvasRenderingContext2D compat
 
 	set fillStyle(x: any) {}
@@ -341,7 +382,7 @@ export class PathLS {
 		return new PathLS(SegmentLS.moveTo(...args));
 	}
 	static parse(d: string) {
-		return SegmentLS.parse(d);
+		return new PathLS(SegmentLS.parse(d));
 	}
 
 	static get digits() {
