@@ -260,8 +260,8 @@ function lenSegm(seg: SegmentLS) {
 }
 
 export class PathLS {
-	_tail: SegmentLS;
-	constructor(tail: SegmentLS) {
+	_tail: SegmentLS | undefined;
+	constructor(tail: SegmentLS | undefined) {
 		this._tail = tail;
 	}
 
@@ -348,25 +348,6 @@ export class PathLS {
 		if (cur) {
 			const len = lenPath(cur);
 			return segmentAtLen(cur, T * len, len);
-			// if (T < 0) {
-			// 	T = 1 + (T % 1);
-			// } else if (T != 1) {
-			// 	// 1%1 === 0
-			// 	T = T % 1;
-			// }
-			// let end = lenPath(cur);
-			// const Tlen = T * end;
-			// do {
-			// 	const len = lenSegm(cur);
-			// 	// const len = cur.segmentLen();
-			// 	if (len > 0) {
-			// 		const start = end - len;
-			// 		if (Tlen >= start) {
-			// 			return [cur, (Tlen - start) / len];
-			// 		}
-			// 		end = start;
-			// 	}
-			// } while ((cur = cur._prev));
 		}
 		return [undefined, NaN];
 	}
@@ -379,31 +360,45 @@ export class PathLS {
 	}
 
 	tangentAt(T: number) {
-		// SegmentSE method
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.tangentAt(t);
 	}
 
 	slopeAt(T: number) {
-		// SegmentSE method
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.slopeAt(t);
 	}
 
 	pointAt(T: number) {
-		// SegmentSE method
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.pointAt(t);
 	}
 
 	bbox() {
-		// SegmentSE method
-		// return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
 		let b = Box.new();
 		for (let cur: SegmentLS | undefined = this._tail; cur; cur = cur._prev) {
 			b = b.merge(cur.bbox());
 		}
 		return b;
+	}
+	splitAt(T: number) {
+		const {_tail} = this;
+		if (_tail) {
+			const [seg, t] = this.segmentAt(T);
+			if (seg) {
+				let [a, b] = seg.splitAt(t);
+				if (seg === _tail) {
+					return [new PathLS(a), new PathLS(b)];
+				} else {
+					return [new PathLS(a), new PathLS(_tail.withFarPrev(seg, SegmentLS.moveTo(a.end)))];
+				}
+			}
+		}
+		return [new PathLS(undefined), new PathLS(undefined)];
+	}
+	cutAt(T: number): PathLS {
+		const [a, b] = this.splitAt(T);
+		return T < 0 ? b : a;
 	}
 
 	// CanvasRenderingContext2D compat
@@ -425,7 +420,9 @@ export class PathLS {
 	static parse(d: string) {
 		return new PathLS(SegmentLS.parse(d));
 	}
-
+	static rect(...args: Vec[] | number[]) {
+		return new PathLS(SegmentLS.rect(...args));
+	}
 	static get digits() {
 		return SegmentLS.digits;
 	}
@@ -434,7 +431,7 @@ export class PathLS {
 	}
 }
 
-function segmentAtLen(cur: SegmentLS|undefined, lenP: number, LEN: number): [SegmentLS | undefined, number] {
+function segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [SegmentLS | undefined, number] {
 	if (cur) {
 		if (lenP < 0) {
 			lenP = LEN + (lenP % LEN);
@@ -446,12 +443,10 @@ function segmentAtLen(cur: SegmentLS|undefined, lenP: number, LEN: number): [Seg
 		do {
 			const lenS = lenSegm(cur);
 			if (lenS > 0) {
-				const start = end - lenS;
-				const lenT = (lenP - start);
+				const lenT = lenP - (end -= lenS);
 				if (lenT >= 0) {
 					return [cur, lenT / lenS];
 				}
-				end = start;
 			}
 		} while ((cur = cur._prev));
 	}

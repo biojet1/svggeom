@@ -53,19 +53,30 @@ test.test(`PathLS.segmentAt`, {bail: !CI}, function (t) {
         const tangent = p.tangentAt(j).degrees;
         if (j < 50 / 120) {
             t.same(slope, 306.86989764584405, tag);
-        }else if(j < 80 / 120){
+        } else if (j < 80 / 120) {
             t.same(slope, 180, tag);
-        }else if(j < 110 / 120){
+        } else if (j < 110 / 120) {
             t.same(slope, 90, tag);
-        }else if(j <= 1){
+        } else if (j <= 1) {
             t.same(slope, 90, tag);
         } else {
-
         }
     }
-    const b = p.bbox();
-    t.same([b.width, b.height], [30, 40]);
-    t.same([b.x, b.y], [10, -30]);
+    {
+        const b = p.bbox();
+        t.same([b.width, b.height], [30, 40]);
+        t.same([b.x, b.y], [10, -30]);
+    }
+
+    {
+        // M 10 10 L 40 -30 L 10 -30 L 10 0 Z
+        // M 16,2 40,-30 H 10 V 0 l 6,2
+        const [a, b] = p.splitAt(0.08333333333333333);
+        t.same(a.describe(), 'M10,10L16,2');
+        t.same(b.describe({short:true}), 'M16,2L40,-30H10V0Z');
+        t.same(p.cutAt(-0.9166666666666666).describe({short:true}), 'M16,2L40,-30H10V0Z');
+
+    }
 
     t.end();
 });
