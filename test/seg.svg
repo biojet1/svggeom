@@ -21,9 +21,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      showgrid="false"
-     inkscape:zoom="4"
-     inkscape:cx="78.625"
-     inkscape:cy="-12.875"
+     inkscape:zoom="8"
+     inkscape:cx="26.5625"
+     inkscape:cy="-11.6875"
      inkscape:window-width="1366"
      inkscape:window-height="711"
      inkscape:window-x="0"
@@ -44,6 +44,13 @@
   <script
      xlink:href="arc.js"
      id="script28" />
+  <rect
+     style="fill:#0000ff;fill-rule:evenodd"
+     id="rect382"
+     width="30"
+     height="40"
+     x="10"
+     y="-30" />
   <circle
      style="fill:#ff0000;fill-rule:evenodd"
      id="path4823"

@@ -336,29 +336,37 @@ export class PathLS {
 		}).draw(this);
 		return this;
 	}
-
+	segmentAtLen(T: number): [SegmentLS | undefined, number] {
+		let cur: SegmentLS | undefined = this._tail;
+		if (cur) {
+			return segmentAtLen(cur, T, lenPath(cur));
+		}
+		return [undefined, NaN];
+	}
 	segmentAt(T: number): [SegmentLS | undefined, number] {
 		let cur: SegmentLS | undefined = this._tail;
 		if (cur) {
-			if (T < 0) {
-				T = 1 + (T % 1);
-			} else if (T != 1) {
-				// 1%1 === 0
-				T = T % 1;
-			}
-			let end = lenPath(cur);
-			const Tlen = T * end;
-			do {
-				const len = lenSegm(cur);
-				// const len = cur.segmentLen();
-				if (len > 0) {
-					const start = end - len;
-					if (Tlen >= start) {
-						return [cur, (Tlen - start) / len];
-					}
-					end = start;
-				}
-			} while ((cur = cur._prev));
+			const len = lenPath(cur);
+			return segmentAtLen(cur, T * len, len);
+			// if (T < 0) {
+			// 	T = 1 + (T % 1);
+			// } else if (T != 1) {
+			// 	// 1%1 === 0
+			// 	T = T % 1;
+			// }
+			// let end = lenPath(cur);
+			// const Tlen = T * end;
+			// do {
+			// 	const len = lenSegm(cur);
+			// 	// const len = cur.segmentLen();
+			// 	if (len > 0) {
+			// 		const start = end - len;
+			// 		if (Tlen >= start) {
+			// 			return [cur, (Tlen - start) / len];
+			// 		}
+			// 		end = start;
+			// 	}
+			// } while ((cur = cur._prev));
 		}
 		return [undefined, NaN];
 	}
@@ -424,4 +432,28 @@ export class PathLS {
 	static set digits(n: number) {
 		SegmentLS.digits = n;
 	}
+}
+
+function segmentAtLen(cur: SegmentLS|undefined, lenP: number, LEN: number): [SegmentLS | undefined, number] {
+	if (cur) {
+		if (lenP < 0) {
+			lenP = LEN + (lenP % LEN);
+		}
+		if (lenP != LEN) {
+			lenP = lenP % LEN;
+		}
+		let end = LEN;
+		do {
+			const lenS = lenSegm(cur);
+			if (lenS > 0) {
+				const start = end - lenS;
+				const lenT = (lenP - start);
+				if (lenT >= 0) {
+					return [cur, lenT / lenS];
+				}
+				end = start;
+			}
+		} while ((cur = cur._prev));
+	}
+	return [undefined, NaN];
 }
