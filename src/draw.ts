@@ -404,7 +404,28 @@ export class PathLS {
 		const [a, b] = this.splitAt(T);
 		return T < 0 ? b : a;
 	}
-
+	cropAt(T0: number, T1: number = 1): PathLS {
+		// SegmentSE method
+		if (T0 <= 0) {
+			if (T1 >= 1) {
+				return this; // TODO: use clone
+			} else if (T1 > 0) {
+				return this.cutAt(T1);
+			}
+		} else if (T0 < 1) {
+			if (T1 >= 1) {
+				return this.cutAt(-T0);
+			} else if (T0 < T1) {
+				return this.cutAt(-T0).cutAt((T1 - T0) / (1 - T0));
+			} else if (T0 > T1) {
+				return this.cropAt(T1, T0);
+			}
+		} else if (T1 < 1) {
+			// T0 >= 1
+			return this.cropAt(T1, T0);
+		}
+		return new PathLS(undefined);
+	}
 	// CanvasRenderingContext2D compat
 
 	set fillStyle(x: any) {}
@@ -440,8 +461,10 @@ function _segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [
 		if (lenP < 0) {
 			lenP = LEN + (lenP % LEN);
 		}
-		if (lenP != LEN) {
-			lenP = lenP % LEN;
+		if (lenP > LEN) {
+			if (0 == (lenP = lenP % LEN)) {
+				lenP = LEN;
+			}
 		}
 		let end = LEN;
 		do {

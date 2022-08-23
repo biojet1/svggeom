@@ -271,9 +271,11 @@ export abstract class SegmentLS extends Segment {
 		}
 	}
 	cutAt(t: number) {
-		return t < 0 ? this.splitAt(-t)[1] : this.splitAt(t)[0];
+		return t < 0 ? this.splitAt(1 + t)[1] : this.splitAt(t)[0];
 	}
 	cropAt(t0: number, t1: number): SegmentLS | undefined {
+		t0 = tNorm(t0);
+		t1 = tNorm(t1);
 		if (t0 <= 0) {
 			if (t1 >= 1) {
 				return this;
@@ -282,9 +284,9 @@ export abstract class SegmentLS extends Segment {
 			}
 		} else if (t0 < 1) {
 			if (t1 >= 1) {
-				return this.cutAt(-t0);
+				return this.cutAt(t0 - 1);
 			} else if (t0 < t1) {
-				return this.cutAt(-t0).cutAt((t1 - t0) / (1 - t0));
+				return this.cutAt(t0).cutAt((t1 - t0) / (1 - t0));
 			} else if (t0 > t1) {
 				return this.cropAt(t1, t0); // t1 < 1
 			}
@@ -373,7 +375,7 @@ export class LineLS extends SegmentLS {
 	}
 	override pointAt(t: number) {
 		const {start, end} = this;
-		return end.sub(start).mul(t).postAdd(start);
+		return end.sub(start).mul(tCheck(t)).postAdd(start);
 	}
 	override slopeAt(_: number) {
 		const {start, end} = this;
@@ -516,13 +518,13 @@ export class QuadLS extends SegmentLS {
 		return quadLength(this._qpts);
 	}
 	override slopeAt(t: number): Vec {
-		return quadSlopeAt(this._qpts, t);
+		return quadSlopeAt(this._qpts, tCheck(t));
 	}
 	override pointAt(t: number) {
-		return quadPointAt(this._qpts, t);
+		return quadPointAt(this._qpts, tCheck(t));
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
-		const [a, b] = quadSplitAt(this._qpts, t);
+		const [a, b] = quadSplitAt(this._qpts, tCheck(t));
 		return [new QuadLS(this._prev, a[1], a[2]), new QuadLS(new MoveLS(undefined, b[0]), b[1], b[2])];
 	}
 	override bbox() {
@@ -589,18 +591,19 @@ export class CubicLS extends SegmentLS {
 	}
 	/////
 	override pointAt(t: number) {
-		return cubicPointAt(this._cpts, t);
+		return cubicPointAt(this._cpts, tCheck(t));
 	}
 	override bbox() {
 		const {_prev} = this;
 		return _prev ? cubicBox(this._cpts) : Box.new();
 	}
 	override slopeAt(t: number): Vec {
-		return cubicSlopeAt(this._cpts, t);
+		return cubicSlopeAt(this._cpts, tCheck(t));
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
-		const [a, b] = cubicSplitAt(this._cpts, t);
-		return [new CubicLS(this._prev, a[1], a[2], a[3]), new CubicLS(new MoveLS(undefined, b[0]), b[1], b[2], b[3])];
+		const {_prev, _cpts} = this;
+		const [a, b] = cubicSplitAt(_cpts, tCheck(t));
+		return [new CubicLS(_prev, a[1], a[2], a[3]), new CubicLS(new MoveLS(undefined, b[0]), b[1], b[2], b[3])];
 	}
 	override get length() {
 		return cubicLength(this._cpts);
@@ -699,15 +702,15 @@ export class ArcLS extends SegmentLS {
 		return arcLength(this);
 	}
 	override pointAt(t: number) {
-		return arcPointAt(this, t);
+		return arcPointAt(this, tCheck(t));
 	}
 	override slopeAt(t: number): Vec {
-		return arcSlopeAt(this, t);
+		return arcSlopeAt(this, tCheck(t));
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
 		const {rx, ry, phi, sweep, rdelta, end, _prev} = this;
 		const deltaA = abs(rdelta);
-		const mid = arcPointAt(this, t);
+		const mid = arcPointAt(this, tCheck(t));
 		return [
 			new ArcLS(_prev, rx, ry, phi, deltaA * t > PI, sweep, mid),
 			new ArcLS(new MoveLS(undefined, mid), rx, ry, phi, deltaA * (1 - t) > PI, sweep, end),
@@ -836,4 +839,22 @@ function arcToHelp(cur: SegmentLS | undefined, x1: number, y1: number, x2: numbe
 		// )},${fmtN((this._y1 = y1 + t21 * y21))}`;
 	}
 	return cur;
+}
+
+function tCheck(t: number) {
+	if (t < 0 || t > 1) {
+		throw new RangeError(`"t" must be between 0 and 1 (${t})`);
+	}
+	return t;
+}
+
+function tNorm(t: number) {
+	if (t < 0) {
+		t = 1 + (t % 1);
+	} else if (t > 1) {
+		if (0 == (t = t % 1)) {
+			t = 1;
+		}
+	}
+	return t;
 }
