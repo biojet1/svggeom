@@ -178,6 +178,9 @@ test.test(`Box merge`, {bail: !CI}, function (t) {
     }
     t.same(box.toArray(), B.toArray());
     t.ok(box.equals(B));
+    const n1 = Box.not();
+    const n2 = Box.not();
+    t.strictSame(n1.merge(n2), n2);
 
     t.end();
 });
@@ -215,8 +218,43 @@ test.test(`Box mutable`, {bail: !CI}, function (t) {
     // const a = BoxMut.new([0, 0, 100, 100]);
 
     // t.throws(() => {
-    // 	a.freeze().x = 60;
+    //  a.freeze().x = 60;
     // }, TypeError);
     // t.strictSame(a.x, 80);
+    {
+        let b;
+        b = BoxMut.new('-210,-150,80,60');
+        b.inflateSelf(5, 6);
+        t.same(b.toArray(), [-215, -156, 90, 72]);
+        b = BoxMut.new('-210,-150,80,60');
+        b.inflateSelf(6);
+        t.same(b.toArray(), [-216, -156, 92, 72]);
+        b.sizeSelf(10);
+        t.same(b.toArray(), [-216, -156, 10, 72]);
+        b.sizeSelf(6, 4);
+        t.same(b.toArray(), [-216, -156, 6, 4]);
+    }
+    t.end();
+});
+
+test.test(`Box withCenter`, {bail: !CI}, function (t) {
+    let b = D.withCenter([197, 122]);
+    t.same(b.toArray(), [122, 77, 150, 90]);
+    t.same(b.withMinX(197).toArray(), [197, 77, 150, 90]);
+    t.same(b.withMinY(122).toArray(), [122, 122, 150, 90]);
+    t.end();
+});
+test.test(`Box inflated`, {bail: !CI}, function (t) {
+    let b = A.inflated(5, 6);
+    // const A = Box.new('-210,-150,80,60');
+    t.same(A.inflated(5, 6).toArray(), [-210 - 5, -150 - 6, 80 + 5 + 5, 60 + 6 + 6]);
+    t.same(A.inflated(6).toArray(), [-210 - 6, -150 - 6, 80 + 6 + 6, 60 + 6 + 6]);
+    t.end();
+});
+
+test.test(`Box isEmpty`, {bail: !CI}, function (t) {
+    t.same(A.isEmpty(), false);
+    t.same(Box.not().isEmpty(), false);
+    t.same(Box.new('-0,0,0,-0').isEmpty(), true);
     t.end();
 });
