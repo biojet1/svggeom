@@ -1,14 +1,6 @@
 import { parseDesc, dSplit } from './path/parser.js';
-import { SegmentSE } from './path/index.js';
+import { SegmentSE, DescParams } from './path/index.js';
 import { Box } from './box.js';
-
-export interface DParams {
-	relative?: boolean;
-	close?: boolean | null;
-	smooth?: boolean;
-	short?: boolean;
-	dfix?: number;
-}
 
 export class Path {
 	static digits = 5;
@@ -241,7 +233,7 @@ export class Path {
 		return false;
 	}
 
-	private *enumDesc(params: DParams) {
+	private *enumDesc(params: DescParams) {
 		const {
 			relative: rel = false,
 			close = true,
@@ -401,11 +393,11 @@ export class Path {
 		}
 	}
 
-	descArray(params: DParams = {}) {
+	descArray(params: DescParams = {}) {
 		return Array.from(this.enumDesc(params));
 	}
 
-	describe(params: DParams = {}) {
+	describe(params: DescParams = {}) {
 		return this.descArray(params).join(' ');
 	}
 

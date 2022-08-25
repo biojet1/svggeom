@@ -6,6 +6,12 @@ function almostEqual(value, expected, epsilon = 0.0000000000000001) {
     if (value === expected) {
         return 2;
     }
+    if (Math.abs(value) > 1e10 && Math.abs(value) > 1e10) {
+        while (value + epsilon === value && expected + epsilon === expected) {
+            value /= 1000;
+            expected /= 1000;
+        }
+    }
     const d = Math.abs(value - expected);
     if (d <= epsilon) {
         return 1;
@@ -146,13 +152,41 @@ function zip() {
         });
     });
 }
+
 test.Test.prototype.addAssert('sameDescs', 3, function (a, b, opt, message, extra = {}, debug_svg = null) {
     opt = typeof opt == 'number' ? {epsilon: opt} : opt;
     const epsilon = opt?.epsilon || 1e-13;
-
+    function cmpn(a, b) {
+        return Math.abs(a - b) <= epsilon;
+    }
+    function fixmvln(v, i, a) {
+        // if (v == 'L') {
+        //     // M a b L a b --> L a b
+        //     //  -2-1 0 1 2
+        //     if (a[i - 3] == 'M') {
+        //         if (cmpn(a[i + 1], a[i - 2]) && cmpn(a[i + 2], a[i - 1])) {
+        //             a[i - 3] = a[i - 2] = a[i - 1] = undefined;
+        //         }
+        //     }
+        // }
+        if (v == 'M') {
+            // a b M a b X --> a b X
+            //-2-1 0 1 2
+            if (cmpn(a[i + 1], a[i - 2]) && cmpn(a[i + 2], a[i - 1])) {
+                a[i] = a[i + 1] = a[i + 2] = undefined;
+                // a[i - 1] = a[i - 2] = undefined;
+                // return undefined;
+                // return a[i + 3];
+            }
+        }
+        return true;
+    }
     if (a.length !== b.length) {
         const a_ = a.filter(v => !/[Zz]/.test(v));
-        const b_ = b.filter(v => !/[Zz]/.test(v));
+        let b_ = b.filter(v => !/[Zz]/.test(v));
+
+        b_.forEach(fixmvln);
+        b_ = b_.filter(v => v != null);
         if (a_.length !== b_.length) {
             extra.descA = a.join(' ');
             extra.descB = b.join(' ');
@@ -163,29 +197,29 @@ test.Test.prototype.addAssert('sameDescs', 3, function (a, b, opt, message, extr
             }
             return this.fail(`desc len not same "${message}"`, extra);
         }
+        b = b_;
     }
     const n = a.length;
     let c; // last command index
     for (let i = 0; i < n; i++) {
-        let A = a[i];
-        let B = b[i];
+        const A = a[i];
+        const B = b[i];
         if (!isNumber(A)) {
             c = i;
         }
         if (A == B) {
             continue;
         } else if (isNumber(A) && isNumber(B)) {
-            if (A + epsilon === A && B + epsilon === B) {
-                if (Math.abs(A) > 1e10 && Math.abs(A) > 1e10) {
-                    while (A + epsilon === A && B + epsilon === B) {
-                        A /= 1000;
-                        B /= 1000;
-                    }
-                }
-                // throw new Error('Too big');
-            }
-            const d = Math.abs(A - B);
-            if (d <= epsilon) {
+            // if (A + epsilon === A && B + epsilon === B) {
+            //     if (Math.abs(A) > 1e10 && Math.abs(A) > 1e10) {
+            //         while (A + epsilon === A && B + epsilon === B) {
+            //             A /= 1000;
+            //             B /= 1000;
+            //         }
+            //     }
+            //     // throw new Error('Too big');
+            // }
+            if (almostEqual(A, B, epsilon)) {
                 continue;
             } else {
                 if (i - 3 >= 0) {
@@ -209,7 +243,7 @@ test.Test.prototype.addAssert('sameDescs', 3, function (a, b, opt, message, extr
                     dbgwrite(opt, a, b, opt?.item?.d);
                 }
 
-                return this.fail(`item #${i} ${d}Δ [${A}, ${B}] ±${epsilon} "${message}"`, extra);
+                return this.fail(`item #${i} ${Math.abs(A - B)}Δ [${A}, ${B}] ±${epsilon} "${message}"`, extra);
             }
         }
         extra.desc1 = a.join(' ');

@@ -111,8 +111,14 @@ export function testSegment(t, seg, item, opt = {}) {
     let pv, px, a, b, sub;
     for (const [T, {x, y, tx, ty, pathA, pathB}] of Object.entries(item.at)) {
         // pointAt
-        pv = seg.pointAt(T).toArray();
-        px = [x, y, 0];
+        try {
+            pv = seg.pointAt(T).toArray();
+            px = [x, y, 0];
+        } catch (err) {
+            console.error('Err pointAt', T, seg.constructor.name, seg?._tail?.constructor.name, seg?._tail?.end);
+            // console.dir(seg, {depth: null});
+            throw err;
+        }
         // console.error(pv, px);
         t.almostEqual(pv, px, {epsilon: point_epsilon, on_fail: opt?.on_fail}, `pointAt(${T})`, [item, seg, pv, px]);
         // slopeAt
@@ -126,14 +132,13 @@ export function testSegment(t, seg, item, opt = {}) {
             try {
                 [a, b] = seg.splitAt(T);
                 const descs_opt = {epsilon: point_epsilon, write_svg: true, item, pathA, pathB};
-
-                t.sameDescs(a.descArray(), pathA, descs_opt, `splitAt(0, ${T})`, [item, seg, a]);
-                t.sameDescs(b.descArray(), pathB, descs_opt, `splitAt(${T}, 1)`, seg);
+                t.sameDescs(a.descArray(), pathA, descs_opt, `splitAt(0, ${T})`, seg);
+                t.sameDescs(b.descArray({close:false}), pathB, descs_opt, `splitAt(${T}, 1)`, seg);
                 t.sameDescs(seg.cutAt(T).descArray(), pathA, descs_opt, `cutAt(${T})`, seg);
                 t.sameDescs(seg.cropAt(0, T).descArray(), pathA, descs_opt, `cropAt(0, ${T})`, seg);
-                t.sameDescs(seg.cropAt(T, 1).descArray(), pathB, descs_opt, `cropAt(${T}, 1)`, seg);
+                t.sameDescs(seg.cropAt(T, 1).descArray({close:false}), pathB, descs_opt, `cropAt(${T}, 1)`, seg);
                 sub = seg.cutAt(T - 1);
-                t.sameDescs(sub.descArray(), pathB, descs_opt, `cutAt(${T} --> ${T - 1}) ${sub.constructor.name}`, seg);
+                t.sameDescs(sub.descArray({close:false}), pathB, descs_opt, `cutAt(${T} --> ${T - 1}) ${sub.constructor.name}`, seg);
             } catch (err) {
                 console.error('Err splitAt', T);
                 console.dir(seg, {depth: null});
@@ -143,10 +148,10 @@ export function testSegment(t, seg, item, opt = {}) {
         // reversed
         const rev = seg.reversed();
         const bak = rev.reversed();
-        const sega = seg.descArray();
+        const sega = seg.descArray({close:false});
         const reva = rev.descArray();
         const baka = bak.descArray();
         t.notSame(sega, reva);
-        t.same(baka, sega);
+        t.same(baka, sega, [baka, sega, reva].map(v => v.join(' ')));
     }
 }

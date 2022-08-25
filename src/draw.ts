@@ -237,8 +237,8 @@ export class PathDraw {
 }
 
 import {Font /*, load, loadSync*/} from 'opentype.js';
-import {SegmentLS} from './path/linked.js';
-import {DParams} from './path.js';
+import {SegmentLS, MoveLS} from './path/linked.js';
+import {DescParams} from './path/index.js';
 
 const len_segm = new WeakMap<SegmentLS, number>();
 const len_path = new WeakMap<SegmentLS, number>();
@@ -313,7 +313,7 @@ export class PathLS {
 	toString() {
 		return this._tail?.toString() || '';
 	}
-	describe(opt: DParams) {
+	describe(opt: DescParams) {
 		return this._tail?.describe(opt) || '';
 	}
 	text(
@@ -348,7 +348,7 @@ export class PathLS {
 		if (cur) {
 			const len = lenPath(cur);
 			const [seg, n, N] = _segmentAtLen(cur, T * len, len);
-			return [seg, n / N];
+			return [seg, N == 0 ? 0 : n / N];
 		}
 		return [undefined, NaN];
 	}
@@ -359,7 +359,12 @@ export class PathLS {
 		}
 		return 0;
 	}
-
+	get start() {
+		return this._tail?.first?.end;
+	}
+	get end() {
+		return this._tail?.end;
+	}
 	tangentAt(T: number) {
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.tangentAt(t);
@@ -390,22 +395,34 @@ export class PathLS {
 		if (_tail) {
 			const [seg, t] = this.segmentAt(T);
 			if (seg) {
+				if (t == 0) {
+					const {prev} = seg;
+					return [new PathLS(prev), new PathLS(_tail.withFarPrev3(seg, SegmentLS.moveTo(prev?.end)))];
+				} else if (t == 1) {
+					return [new PathLS(seg), new PathLS(_tail.withFarPrev(seg, SegmentLS.moveTo(seg.end)))];
+				}
 				let [a, b] = seg.splitAt(t);
 				if (seg === _tail) {
 					return [new PathLS(a), new PathLS(b)];
 				} else {
-					return [new PathLS(a), new PathLS(_tail.withFarPrev(seg, SegmentLS.moveTo(a.end)))];
+					// if (t == 0) {
+					// 	return [new PathLS(a), new PathLS(_tail.withFarPrev2(seg, SegmentLS.moveTo(a.end)))];
+					// }
+					// if (b.length == 0) {
+					// 	return [new PathLS(a), new PathLS(_tail.withFarPrev2(seg, SegmentLS.moveTo(a.end)))];
+					// }
+					return [new PathLS(a), new PathLS(_tail.withFarPrev(seg, b))];
 				}
 			}
 		}
 		return [new PathLS(undefined), new PathLS(undefined)];
 	}
 	cutAt(T: number): PathLS {
-		const [a, b] = this.splitAt(T);
-		return T < 0 ? b : a;
+		return T < 0 ? this.splitAt(1 + T)[1] : this.splitAt(T)[0];
 	}
 	cropAt(T0: number, T1: number = 1): PathLS {
-		// SegmentSE method
+		T0 = tNorm(T0);
+		T1 = tNorm(T1);
 		if (T0 <= 0) {
 			if (T1 >= 1) {
 				return this; // TODO: use clone
@@ -414,9 +431,9 @@ export class PathLS {
 			}
 		} else if (T0 < 1) {
 			if (T1 >= 1) {
-				return this.cutAt(-T0);
+				return this.cutAt(T0 - 1);
 			} else if (T0 < T1) {
-				return this.cutAt(-T0).cutAt((T1 - T0) / (1 - T0));
+				return this.cutAt(T0).cutAt((T1 - T0) / (1 - T0));
 			} else if (T0 > T1) {
 				return this.cropAt(T1, T0);
 			}
@@ -426,6 +443,21 @@ export class PathLS {
 		}
 		return new PathLS(undefined);
 	}
+	reversed(next?: SegmentLS): PathLS {
+		const {_tail} = this;
+		if (_tail) {
+			return new PathLS(_tail.reversed());
+		}
+		return this;
+	}
+	descArray(opt?: DescParams): (number | string)[] {
+		const {_tail} = this;
+		if (_tail) {
+			return _tail.descArray(opt);
+		}
+		return [];
+	}
+
 	// CanvasRenderingContext2D compat
 
 	set fillStyle(x: any) {}
@@ -457,25 +489,52 @@ export class PathLS {
 }
 
 function _segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [SegmentLS | undefined, number, number] {
-	if (cur) {
+	S1: if (cur) {
 		if (lenP < 0) {
 			lenP = LEN + (lenP % LEN);
 		}
-		if (lenP > LEN) {
+		if (lenP == 0) {
+			let last: SegmentLS | undefined;
+			do {
+				if (!(cur instanceof MoveLS)) {
+					last = cur;
+				}
+			} while ((cur = cur._prev));
+
+			if (last) {
+				return [last, 0, 0];
+			}
+			break S1;
+		} else if (lenP > LEN) {
 			if (0 == (lenP = lenP % LEN)) {
 				lenP = LEN;
 			}
 		}
 		let end = LEN;
 		do {
-			const lenS = lenSegm(cur);
-			if (lenS > 0) {
-				const lenT = lenP - (end -= lenS);
-				if (lenT >= 0) {
-					return [cur, lenT, lenS];
+			if (cur instanceof MoveLS) {
+				// pass
+			} else {
+				const lenS = lenSegm(cur);
+				if (lenS >= 0) {
+					const lenT = lenP - (end -= lenS);
+					if (lenT >= 0) {
+						return [cur, lenT, lenS];
+					}
 				}
 			}
 		} while ((cur = cur._prev));
 	}
 	return [undefined, NaN, NaN];
+}
+
+function tNorm(t: number) {
+	if (t < 0) {
+		t = 1 + (t % 1);
+	} else if (t > 1) {
+		if (0 == (t = t % 1)) {
+			t = 1;
+		}
+	}
+	return t;
 }

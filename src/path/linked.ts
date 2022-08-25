@@ -307,16 +307,42 @@ export abstract class SegmentLS extends Segment {
 	}
 	withFarPrev(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS {
 		const {_prev} = this;
-		if (!_prev || farPrev === this) {
-			throw new Error(`No prev`);
-		} else if (_prev === farPrev) {
-			// return this.withPrev(newPrev);
-			return this.withPrev(_prev.withPrev(newPrev));
-		} else {
+		if (farPrev === this) {
+			return newPrev;
+		} else if (_prev) {
 			return this.withPrev(_prev.withFarPrev(farPrev, newPrev));
+		} else {
+			throw new Error(`No prev`);
+		}
+		// if (!_prev || farPrev === this) {
+		// 	throw new Error(`No prev`);
+		// } else if (_prev === farPrev) {
+		// 	// return this.withPrev(newPrev);
+		// 	return this.withPrev(_prev.withPrev(newPrev));
+		// } else {
+		// 	return this.withPrev(_prev.withFarPrev(farPrev, newPrev));
+		// }
+	}
+	withFarPrev3(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS {
+		const {_prev} = this;
+		if (farPrev === this) {
+			return this.withPrev(newPrev);
+		} else if (_prev) {
+			return this.withPrev(_prev.withFarPrev3(farPrev, newPrev));
+		} else {
+			throw new Error(`No prev`);
 		}
 	}
-
+	withFarPrev2(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS {
+		const {_prev} = this;
+		if (farPrev === _prev) {
+			return this.withPrev(newPrev);
+		} else if (_prev) {
+			return this.withPrev(_prev.withFarPrev(farPrev, newPrev));
+		} else {
+			throw new Error(`No prev`);
+		}
+	}
 	abstract _descs(opt?: DescParams): (number | string)[];
 	abstract splitAt(t: number): [SegmentLS, SegmentLS];
 	abstract transform(M: any): SegmentLS;
@@ -496,7 +522,29 @@ export class CloseLS extends LineLS {
 		return new CloseLS(_prev?.transform(M), end.transform(M));
 	}
 	override _descs(opt?: DescParams) {
-		return [opt?.relative ? 'z' : 'Z'];
+		if (opt) {
+			const {relative, close} = opt;
+			if (close === false) {
+				return super._descs(opt);
+			} else if (relative) {
+				return ['z'];
+			}
+		}
+		return ['Z'];
+	}
+	override reversed(next?: SegmentLS): SegmentLS | undefined {
+		const {end, _prev} = this;
+		next || (next = new MoveLS(undefined, end));
+		if (_prev) {
+			const rev = new LineLS(next, _prev.end);
+			return _prev.reversed(rev) ?? rev;
+		} else {
+			if (next) {
+				return next;
+			} else {
+				throw new Error(`No prev`);
+			}
+		}
 	}
 	withPrev(prev: SegmentLS) {
 		const {end} = this;
@@ -842,9 +890,14 @@ function arcToHelp(cur: SegmentLS | undefined, x1: number, y1: number, x2: numbe
 }
 
 function tCheck(t: number) {
-	if (t < 0 || t > 1) {
-		throw new RangeError(`"t" must be between 0 and 1 (${t})`);
+	if (t > 1) {
+		return 1;
+	} else if (t < 0) {
+		return 0;
 	}
+	// if (t < 0 || t > 1) {
+	// 	throw new RangeError(`"t" must be between 0 and 1 (${t})`);
+	// }
 	return t;
 }
 
