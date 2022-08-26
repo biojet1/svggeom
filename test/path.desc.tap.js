@@ -555,12 +555,23 @@ function testPath(test, PathClass) {
                 t.same(part, 6);
                 t.same(len, 6);
             }
-
+            {
+                const [a, b] = p2.splitAt(0);
+                t.same(b.describe(), 'M3,4L8,4L8,10L3,10Z');
+                t.same(a.describe(), 'M3,4');
+            }
+             {
+                const [a, b] = p2.splitAt(1);
+                t.same(a.describe(), 'M3,4L8,4L8,10L3,10Z');
+                t.same(b.describe(), 'M3,4');
+            }           
             t.same(p2.cropAt(0, 1).describe({relative: true, short: true}), 'm3,4h5v6h-5z');
             t.same(p2.cropAt(0.5, 1).describe({relative: false, short: false}), 'M8,10L3,10Z');
             t.same(p2.cropAt(1, 0.5).describe({relative: false, short: false}), 'M8,10L3,10Z');
             t.same(p2.cropAt(0.5, 0.75).describe({relative: false, short: false}), 'M8,10L3,10L3,9.5');
             t.same(p2.cropAt(0.75, 0.5).describe({relative: false, short: false}), 'M8,10L3,10L3,9.5');
+            t.same(p2.cropAt(-0.5, -0.25).describe({relative: false, short: false}), 'M8,10L3,10L3,9.5');
+
             // M3,4L8,4L8,10L3,10Z
 
             {

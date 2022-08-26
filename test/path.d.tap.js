@@ -88,6 +88,11 @@ test.test(`PathLS empty`, {bail: !CI}, function (t) {
         t.same(p.segmentAt(f), [undefined, NaN]);
         t.same(p.segmentAtLength(f), [undefined, NaN, NaN]);
         t.strictSame(p.pointAtLength(f), undefined);
+        const [a, b] = p.splitAt(f);
+        t.same(a.describe(), '');
+        t.same(b.describe(), '');
+        t.same(a.lineTo(3, 4).describe(), 'M0,0L3,4');
+        t.same(b.lineTo(Vec.pos(3, 4)).describe(), 'M0,0L3,4');
     }
     
     t.strictSame(p.reversed(), p);
