@@ -296,6 +296,12 @@ export class PathLS extends CanvasCompat {
 		this._tail = (_tail ?? SegmentLS).arc(...args);
 		return this;
 	}
+	arcd(...args: Vec[] | number[]) {
+		const {_tail} = this;
+		this._tail = (_tail ?? SegmentLS).arcd(...args);
+		return this;
+	}
+
 	arcTo(...args: Vec[] | number[]) {
 		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).arcTo(...args);
@@ -436,7 +442,7 @@ export class PathLS extends CanvasCompat {
 			if (T1 >= 1) {
 				return this.cutAt(T0 - 1);
 			} else if (T0 < T1) {
-				return this.cutAt(T0).cutAt((T1 - T0) / (1 - T0));
+				return this.cutAt(T0 - 1).cutAt((T1 - T0) / (1 - T0));
 			} else if (T0 > T1) {
 				return this.cropAt(T1, T0);
 			}
@@ -504,7 +510,7 @@ function _segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [
 			} while ((cur = cur._prev));
 
 			if (last) {
-				return [last, 0, 0];
+				return [last, 0, lenSegm(last)];
 			}
 			break S1;
 		} else if (lenP > LEN) {

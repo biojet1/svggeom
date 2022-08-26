@@ -241,6 +241,10 @@ export abstract class SegmentLS extends Segment {
 		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
 		return arcHelp(this, x, y, r, a0, a1, ccw);
 	}
+	arcd(...args: Vec[] | number[]): SegmentLS {
+		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
+		return arcHelp(this, x, y, r, (a0 * PI) / 180, (a1 * PI) / 180, ccw);
+	}
 	arcTo(...args: Vec[] | number[]): SegmentLS {
 		const [x1, y1, x2, y2, r] = pickNum(args);
 		return arcToHelp(this, x1, y1, x2, y2, r);
@@ -370,6 +374,10 @@ export abstract class SegmentLS extends Segment {
 	static arc(...args: Vec[] | number[]): SegmentLS {
 		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
 		return arcHelp(undefined, x, y, r, a0, a1, ccw);
+	}
+	static arcd(...args: Vec[] | number[]): SegmentLS {
+		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
+		return arcHelp(undefined, x, y, r, (a0 * PI) / 180, (a1 * PI) / 180, ccw);
 	}
 	static arcTo(...args: Vec[] | number[]): SegmentLS {
 		const [x1, y1, x2, y2, r] = pickNum(args);

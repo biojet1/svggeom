@@ -478,6 +478,14 @@ function testPath(test, PathClass) {
             t.end();
         });
 
+/////
+        t.test('path.arcd(x, y, radius, startAngle, endAngle) appends two A commands if the angle is greater than τ', t => {
+            const p = path();
+            p.moveTo(150, 100);
+            p.arcd(100, 100, 50, 0, 360);
+            t.samePath(p, 'M150,100A50,50,0,1,1,50,100A50,50,0,1,1,150,100');
+            t.end();
+        });
         t.end();
     });
     test.test(`Path<${PathClass.name}>:Font`, {bail: 1}, async t =>
@@ -508,6 +516,9 @@ function testPath(test, PathClass) {
         if (p.constructor.name == 'PathLS') {
             const p2 = PathClass.rect(Vec.pos(3, 4), 5, 6);
             t.same(p2.describe({relative: true, short: true}), 'm3,4h5v6h-5z');
+            // console.log(p2.describe());
+            t.same(p2.describe({relative: false, short: false}), 'M3,4L8,4L8,10L3,10Z');
+            
             {
                 const [seg, part, len] = p2.segmentAtLength(10);
                 t.same(seg?.constructor.name, 'LineLS');
@@ -520,6 +531,38 @@ function testPath(test, PathClass) {
                 t.same(part, 5);
                 t.same(len, 6);
             }
+            {
+                const [seg, part, len] = p2.segmentAtLength(23);
+                t.same(seg?.constructor.name, 'LineLS');
+                t.same(part, 1);
+                t.same(len, 5);
+            }
+            {
+                const [seg, part, len] = p2.segmentAtLength(-1);
+                t.same(seg?.constructor.name, 'CloseLS');
+                t.same(part, 5);
+                t.same(len, 6);
+            }
+            {
+                const [seg, part, len] = p2.segmentAtLength(0);
+                t.same(seg?.constructor.name, 'LineLS');
+                t.same(part, 0);
+                t.same(len, 5);
+            }
+            {
+                const [seg, part, len] = p2.segmentAtLength(44);
+                t.same(seg?.constructor.name, 'CloseLS');
+                t.same(part, 6);
+                t.same(len, 6);
+            }
+
+            t.same(p2.cropAt(0, 1).describe({relative: true, short: true}), 'm3,4h5v6h-5z');
+            t.same(p2.cropAt(0.5, 1).describe({relative: false, short: false}), 'M8,10L3,10Z');
+            t.same(p2.cropAt(1, 0.5).describe({relative: false, short: false}), 'M8,10L3,10Z');
+            t.same(p2.cropAt(0.5, 0.75).describe({relative: false, short: false}), 'M8,10L3,10L3,9.5');
+            t.same(p2.cropAt(0.75, 0.5).describe({relative: false, short: false}), 'M8,10L3,10L3,9.5');
+            // M3,4L8,4L8,10L3,10Z
+
             {
                 const [seg, part, len] = PathLS.moveTo(0, 0).lineTo(3, 4).segmentAtLength(2.5);
                 t.same(seg?.constructor.name, 'LineLS');
