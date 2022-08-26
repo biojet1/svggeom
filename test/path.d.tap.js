@@ -1,18 +1,18 @@
 'uses strict';
 import test from 'tap';
-import { Path, PathLS, Vec } from 'svggeom';
-import { enum_path_data, test_segment } from './path.utils.js';
+import {Path, PathLS, Vec} from 'svggeom';
+import {enum_path_data, test_segment} from './path.utils.js';
 import './utils.js';
 const CI = !!process.env.CI;
 
-test.test(`path parse`, { bail: !CI }, function (t) {
+test.test(`path parse`, {bail: !CI}, function (t) {
     // let p = Path.parse("M3");
     t.throws(() => Path.parse('M3'));
 
     t.end();
 });
 
-test.test(`PathLS.segmentAt`, { bail: !CI }, function (t) {
+test.test(`PathLS.segmentAt`, {bail: !CI}, function (t) {
     let p = PathLS.parse('M 10,10 l 30, -40 h -30 v 30 z');
     // console.log(p._tail?.pathLen())
     t.same(p._tail.length, 10);
@@ -75,9 +75,23 @@ test.test(`PathLS.segmentAt`, { bail: !CI }, function (t) {
     {
         const [a, b] = p.splitAt(0.08333333333333333);
         t.same(a.describe(), 'M10,10L16,2');
-        t.same(b.describe({ short: true }), 'M16,2L40,-30H10V0Z');
-        t.same(p.cutAt(-0.9166666666666666).describe({ short: true }), 'M16,2L40,-30H10V0Z');
+        t.same(b.describe({short: true}), 'M16,2L40,-30H10V0Z');
+        t.same(p.cutAt(-0.9166666666666666).describe({short: true}), 'M16,2L40,-30H10V0Z');
     }
 
+    t.end();
+});
+
+test.test(`PathLS empty`, {bail: !CI}, function (t) {
+    const p = new PathLS();
+    for (const f of [-2, 0, 0.5, 1, 2]) {
+        t.same(p.segmentAt(f), [undefined, NaN]);
+        t.same(p.segmentAtLength(f), [undefined, NaN, NaN]);
+        t.strictSame(p.pointAtLength(f), undefined);
+    }
+    
+    t.strictSame(p.reversed(), p);
+    t.same(p.descArray(), []);
+    t.same(p.length, 0);
     t.end();
 });

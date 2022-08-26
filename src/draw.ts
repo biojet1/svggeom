@@ -31,7 +31,20 @@ function fmtN(n: number) {
 	return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
 }
 
-export class PathDraw {
+class CanvasCompat {
+	set fillStyle(x: any) {}
+	get fillStyle() {
+		return 'red';
+	}
+	fill() {
+		return this;
+	}
+	beginPath() {
+		return this;
+	}
+}
+
+export class PathDraw extends CanvasCompat {
 	_x0?: number;
 	_y0?: number;
 	_x1?: number;
@@ -212,16 +225,6 @@ export class PathDraw {
 		}).draw(this);
 		return this;
 	}
-	// CanvasRenderingContext2D compat
-
-	set fillStyle(x: any) {}
-	get fillStyle() {
-		return 'red';
-	}
-	fill() {}
-	beginPath() {
-		// this._ = '';
-	}
 
 	static new() {
 		return new PathDraw();
@@ -232,7 +235,9 @@ export class PathDraw {
 	}
 
 	static lineTo() {
-		return PathDraw.new().lineTo(...arguments);
+		return PathDraw.new()
+			.moveTo(0, 0)
+			.lineTo(...arguments);
 	}
 }
 
@@ -259,9 +264,10 @@ function lenSegm(seg: SegmentLS) {
 	return v;
 }
 
-export class PathLS {
+export class PathLS extends CanvasCompat {
 	_tail: SegmentLS | undefined;
 	constructor(tail: SegmentLS | undefined) {
+		super();
 		this._tail = tail;
 	}
 
@@ -310,10 +316,7 @@ export class PathLS {
 		}
 		return this;
 	}
-	toString() {
-		return this._tail?.toString() || '';
-	}
-	describe(opt: DescParams) {
+	describe(opt?: DescParams) {
 		return this._tail?.describe(opt) || '';
 	}
 	text(
@@ -457,20 +460,16 @@ export class PathLS {
 		}
 		return [];
 	}
-
-	// CanvasRenderingContext2D compat
-
-	set fillStyle(x: any) {}
-	get fillStyle() {
-		return 'red';
+	toString() {
+		const {_tail} = this;
+		if (_tail) {
+			return _tail.describe();
+		}
+		return '';
 	}
-	fill() {
-		return this;
+	d() {
+		return this.describe();
 	}
-	beginPath() {
-		return this;
-	}
-
 	static moveTo(...args: Vec[] | number[]) {
 		return new PathLS(SegmentLS.moveTo(...args));
 	}
@@ -485,6 +484,9 @@ export class PathLS {
 	}
 	static set digits(n: number) {
 		SegmentLS.digits = n;
+	}
+	static lineTo() {
+		return PathLS.moveTo(0, 0).lineTo(...arguments);
 	}
 }
 

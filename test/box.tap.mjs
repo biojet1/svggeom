@@ -36,7 +36,6 @@ for await (const [i, item] of enum_box_data({})) {
             case 2:
                 box = Box.new(`${x}, ${y}, ${width}, ${height}`);
                 box2 = Box.new(`${left} ${top} ${width} ${height}`);
-                // box2 = Box.fromExtrema(maxX, minX, minY, maxY);
                 break;
             case 3:
                 box = Box.new({x, y, width, height});
@@ -122,6 +121,7 @@ test.test(`Box overlap`, {bail: !CI}, function (t) {
     t.same(bbox2.overlap(bbox2).toArray(), bbox2.toArray());
     t.strictSame(bbox1.overlap(bbox2), Box.not());
     t.strictSame(bbox2.overlap(bbox1), Box.not());
+    t.strictSame(bbox2.overlap(Box.not()), bbox2);
 
     t.same(Box.not().overlap(bbox1).toArray(), bbox1.toArray());
 
