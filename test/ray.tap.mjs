@@ -463,6 +463,8 @@ test.test(`RayL`, {bail: !CI}, function (t) {
     const r = RayL.new([1, 2], [3, 4]);
     const a = r.shiftX(10);
     const b = a.shiftY(10);
+    const c = b.turn(Vec.degrees(45));
+    const d = c.withX(30).withY(40).before(Vec.pos(0, 0));
     {
         const {x, y, z, h, v} = b.prev();
         t.match([x, y, z, h, v], [11, 2, 0, 3, 4]);
@@ -475,7 +477,21 @@ test.test(`RayL`, {bail: !CI}, function (t) {
         const {x, y, z, h, v} = b;
         t.match([x, y, z, h, v], [11, 12, 0, 3, 4]);
     }
+    {
+        const {x, y, z, h, v} = c;
+        t.almostEqual([x, y, z, h, v], [11, 12, 0, 0.7071067811865476, 0.7071067811865476]);
+    }
+    {
+        const {x, y, dir} = d;
+        t.almostEqual([x, y, dir.degrees], [0, 0, 180 + 53.13010235415598]);
+    }
+
+    t.notStrictSame(c, a);
     t.notStrictSame(b, a);
     t.notStrictSame(r, a);
+    t.strictSame(a.prev(), r);
+    t.strictSame(b.prev(), a);
+    t.strictSame(c.prev(), b);
+    t.strictSame(r.prev(), undefined);
     t.end();
 });
