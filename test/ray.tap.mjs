@@ -454,8 +454,15 @@ test.test(`turn`, {bail: !CI}, function (t) {
 });
 
 test.test(`Ray.dir`, {bail: !CI}, function (t) {
-    const {x, y, z, h, v} = Ray.dir(0.9272952180016122);
-    t.almostEqual([x, y, z, h, v], [0, 0, 0, 3 / 5, 4 / 5]);
+    {
+        const {x, y, z, h, v} = Ray.dir(0.9272952180016122);
+        t.almostEqual([x, y, z, h, v], [0, 0, 0, 3 / 5, 4 / 5]);
+    }
+    {
+        const {x, y, dir} = Ray.dir(Vec.pos(3, 4));
+        t.almostEqual([x, y, dir.degrees], [0, 0, 53.13010235415598]);
+    }
+
     t.end();
 });
 
@@ -493,5 +500,31 @@ test.test(`RayL`, {bail: !CI}, function (t) {
     t.strictSame(b.prev(), a);
     t.strictSame(c.prev(), b);
     t.strictSame(r.prev(), undefined);
+    t.end();
+});
+
+test.test(`intersectOfRay`, {bail: !CI}, function (t) {
+    const r = RayL.new([1, 2], [3, 4]);
+    const a = r.withX(4).withH(0);
+    {
+        const [x, y] = a.intersectOfRay(r);
+        t.almostEqual([x, y], [1 + 3, 2 + 4]);
+    }
+    t.end();
+});
+
+test.test(`normalToLine`, {bail: !CI}, function (t) {
+    const r = RayL.pos([3, 0]).normalToLine([0, 0], [3, 4]);
+    {
+        const {x, y, z, dir} = r;
+        t.almostEqual([x, y, z, dir.degrees], [3, 0, 0, 180 - (90 - 53.13010235415598)]);
+    }
+    t.end();
+});
+
+test.test(`normalToSide`, {bail: !CI}, function (t) {
+    const r = Ray.dir(Vec.pos(3, 4));
+    const b = r.normalToSide(Vec.pos(30, 40));
+    t.strictSame(b, r);
     t.end();
 });

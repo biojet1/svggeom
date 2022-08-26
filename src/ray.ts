@@ -128,24 +128,24 @@ export class VecRay {
 		const dx = [x1 - x2, x3 - x4];
 		const dy = [y1 - y2, y3 - y4];
 		const d = dx[0] * dy[1] - dy[0] * dx[1];
-		if (d === 0) {
-			if (dx[0] === 0) {
-				// x1 == x2
-				if (dx[1] === 0) {
-					// x3 == x4
-					// parallel
-					// return NaN;
-				} else if (dy[0] === 0) {
-					// y1 == y2
-					// return NaN;
-				} else if (dy[1] === 0) {
-					// y3 == y4
-					// perpendicular?
-					// return Vec.pos(x1, y3);
-				}
-			} else if (dy[0] === 0) {
-			}
-		}
+		// if (d === 0) {
+		// 	if (dx[0] === 0) {
+		// 		// x1 == x2
+		// 		if (dx[1] === 0) {
+		// 			// x3 == x4
+		// 			// parallel
+		// 			// return NaN;
+		// 		} else if (dy[0] === 0) {
+		// 			// y1 == y2
+		// 			// return NaN;
+		// 		} else if (dy[1] === 0) {
+		// 			// y3 == y4
+		// 			// perpendicular?
+		// 			// return Vec.pos(x1, y3);
+		// 		}
+		// 	} else if (dy[0] === 0) {
+		// 	}
+		// }
 		return Vec.pos((e1 * dx[1] - dx[0] * e2) / d, (e1 * dy[1] - dy[0] * e2) / d);
 	}
 
