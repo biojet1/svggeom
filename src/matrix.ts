@@ -212,30 +212,18 @@ export class Matrix {
 		return this.skew(0, y);
 	}
 
-	// toHexad() {
-	// 	return [this.a, this.b, this.c, this.d, this.e, this.f];
-	// }
-	// setHexad(a: number, b: number, c: number, d: number, e: number, f: number) {
-	// 	this.a = a;
-	// 	this.b = b;
-	// 	this.c = c;
-	// 	this.d = d;
-	// 	this.e = e;
-	// 	this.f = f;
-	// }
-
 	// Static methods
 
-	public static compose(dec: any) {
-		const { translateX, translateY, rotate, skewX, scaleX, scaleY } = dec;
-		return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${
-			rotate ? `rotate(${rotate})` : ''
-		}${skewX ? `skewX(${skewX})` : ''}${
-			scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`
-		}`;
+	// public static compose(dec: any) {
+	// 	const { translateX, translateY, rotate, skewX, scaleX, scaleY } = dec;
+	// 	return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${
+	// 		rotate ? `rotate(${rotate})` : ''
+	// 	}${skewX ? `skewX(${skewX})` : ''}${
+	// 		scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`
+	// 	}`;
 
-		// return `translate(${dec.translateX}, ${dec.translateY}) rotate(${dec.rotate}) skewX(${dec.skewX}) scale(${dec.scaleX}, ${dec.scaleY})`;
-	}
+	// 	// return `translate(${dec.translateX}, ${dec.translateY}) rotate(${dec.rotate}) skewX(${dec.skewX}) scale(${dec.scaleX}, ${dec.scaleY})`;
+	// }
 
 	public static hexad(
 		a: number = 1,
@@ -357,24 +345,6 @@ export class Matrix {
 	static Identity = new Matrix();
 	static identity() {
 		return this.Identity;
-	}
-	// static cat(args: Array<Matrix>): Matrix {
-	// 	let m;
-	// 	for (const v of args) {
-	// 		if (m) {
-	// 			m = m._cat(v);
-	// 		} else {
-	// 			m = v;
-	// 		}
-	// 	}
-	// 	return m ?? this.identity();
-	// }
-
-	final() {
-		return Object.isFrozen(this) ? this : Object.freeze(this.clone());
-	}
-	mut() {
-		return Object.isFrozen(this) ? this.clone() : this;
 	}
 }
 

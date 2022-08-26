@@ -168,6 +168,7 @@ export function testSegment(t, seg, item, opt = {}) {
         t.same(seg.cropAt(1, 0).describe(), seg.describe());
     }
     t.same(seg.cropAt(0.5, 0.75).describe(), seg.cropAt(-0.5, -0.25).describe());
+    // t.same(seg.cropAt(0.5, 0.75).describe(), seg.cropAt(0.75, 0.25).describe());
 
 
 }
