@@ -1,0 +1,6 @@
+#!/bin/sh
+cd $(dirname "$0")
+[ -d .cache ] || mkdir .cache
+export HISTFILE=$(pwd)/.cache/_history.sh
+xfce4-terminal --tab -e 'bash -c "export HISTFILE='"$HISTFILE"'; exec bash"'
+# x-terminal-emulator

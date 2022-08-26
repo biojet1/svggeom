@@ -1,5 +1,7 @@
-import { Vec } from './point.js';
-const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
+import {Vec} from './point.js';
+import {Box} from './box.js';
+
+const {PI: pi, abs, sqrt, tan, acos, sin, cos} = Math;
 
 function* pick(args: Vec[] | number[] | boolean[]) {
 	for (const v of args) {
@@ -29,15 +31,30 @@ function fmtN(n: number) {
 	return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
 }
 
-export class PathDraw {
+class CanvasCompat {
+	set fillStyle(x: any) {}
+	get fillStyle() {
+		return 'red';
+	}
+	fill() {
+		return this;
+	}
+	beginPath() {
+		return this;
+	}
+}
+
+export class PathDraw extends CanvasCompat {
 	_x0?: number;
 	_y0?: number;
 	_x1?: number;
 	_y1?: number;
 	_ = '';
-
-	beginPath() {
-		// this._ = '';
+	static get digits() {
+		return digits;
+	}
+	static set digits(n: number) {
+		digits = n;
 	}
 
 	moveTo(...args: Vec[] | number[]) {
@@ -62,14 +79,13 @@ export class PathDraw {
 
 	quadraticCurveTo(...args: Vec[] | number[]) {
 		const [x1, y1, x, y] = pick(args);
-		this._ += 'Q' + +x1 + ',' + +y1 + ',' + (this._x1 = +x) + ',' + (this._y1 = +y);
+		this._ += `Q${fmtN(x1)},${fmtN(y1)},${fmtN((this._x1 = +x))},${fmtN((this._y1 = +y))}`;
 		return this;
 	}
 
 	bezierCurveTo(...args: Vec[] | number[]) {
 		const [x1, y1, x2, y2, x, y] = pick(args);
-		this._ +=
-			'C' + +x1 + ',' + +y1 + ',' + +x2 + ',' + +y2 + ',' + (this._x1 = +x) + ',' + (this._y1 = +y);
+		this._ += `C${fmtN(x1)},${fmtN(y1)},${fmtN(x2)},${fmtN(y2)},${fmtN((this._x1 = +x))},${fmtN((this._y1 = +y))}`;
 		return this;
 	}
 
@@ -115,9 +131,9 @@ export class PathDraw {
 				this._ += `L${fmtN(x1 + t01 * x01)},${fmtN(y1 + t01 * y01)}`;
 			}
 
-			this._ += `A${fmtN(r)},${fmtN(r)},0,0,${y01 * x20 > x01 * y20 ? 1 : 0},${fmtN(
-				(this._x1 = x1 + t21 * x21),
-			)},${fmtN((this._y1 = y1 + t21 * y21))}`;
+			this._ += `A${fmtN(r)},${fmtN(r)},0,0,${y01 * x20 > x01 * y20 ? 1 : 0},${fmtN((this._x1 = x1 + t21 * x21))},${fmtN(
+				(this._y1 = y1 + t21 * y21)
+			)}`;
 		}
 		return this;
 	}
@@ -128,7 +144,7 @@ export class PathDraw {
 	// qTo()
 	arc(...args: Vec[] | number[]) {
 		const [x, y, r, a0, a1, ccw] = pick(args);
-		const { _x1, _y1 } = this;
+		const {_x1, _y1} = this;
 		const cw = ccw ? 0 : 1;
 		const dx = r * Math.cos(a0);
 		const dy = r * Math.sin(a0);
@@ -163,27 +179,16 @@ export class PathDraw {
 		}
 		// Is this arc non-empty? PathDraw an arc!
 		else if (da > epsilon) {
-			this._ += `A${fmtN(r)},${fmtN(r)},0,${da >= pi ? 1 : 0},${cw},${fmtN(
-				(this._x1 = x + r * cos(a1)),
-			)},${fmtN((this._y1 = y + r * sin(a1)))}`;
+			this._ += `A${fmtN(r)},${fmtN(r)},0,${da >= pi ? 1 : 0},${cw},${fmtN((this._x1 = x + r * cos(a1)))},${fmtN(
+				(this._y1 = y + r * sin(a1))
+			)}`;
 		}
 		return this;
 	}
 
 	rect(...args: Vec[] | number[]) {
 		const [x, y, w, h] = pick(args);
-		this._ +=
-			'M' +
-			(this._x0 = this._x1 = +x) +
-			',' +
-			(this._y0 = this._y1 = +y) +
-			'h' +
-			+w +
-			'v' +
-			+h +
-			'h' +
-			-w +
-			'Z';
+		this._ += `M${fmtN((this._x0 = this._x1 = +x))},${fmtN((this._y0 = this._y1 = +y))}h${+w}v${+h}h${-w}Z`;
 		return this;
 	}
 
@@ -204,23 +209,20 @@ export class PathDraw {
 			letterSpacing?: number;
 		},
 		text: string,
-		x?: number,
-		y?: number,
-		maxWidth?: number,
+		maxWidth?: number
 	) {
-		const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
+		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
 		// const fontSize = options.fontSize || 72;
 		//   const kerning = 'kerning' in options ? options.kerning : true;
 		//   const letterSpacing = 'letterSpacing' in options ? options.letterSpacing : false;
 		// const tracking = 'tracking' in options ? options.tracking : false;
 		// const metrics = this.getMetrics(text, options);
-		font
-			.getPath(text, x ?? 0, y ?? 0, fontSize, {
-				kerning,
-				letterSpacing,
-				tracking,
-			})
-			.draw(this);
+		const {_x1, _y1} = this;
+		font.getPath(text, _x1 ?? 0, _y1 ?? 0, fontSize, {
+			kerning,
+			letterSpacing,
+			tracking,
+		}).draw(this);
 		return this;
 	}
 
@@ -233,54 +235,74 @@ export class PathDraw {
 	}
 
 	static lineTo() {
-		return PathDraw.new().lineTo(...arguments);
+		return PathDraw.new()
+			.moveTo(0, 0)
+			.lineTo(...arguments);
 	}
 }
 
-import { Font /*, load, loadSync*/ } from 'opentype.js';
-import { SegmentLS } from './path/linked.js';
-import { DParams } from './path.js';
+import {Font /*, load, loadSync*/} from 'opentype.js';
+import {SegmentLS, MoveLS} from './path/linked.js';
+import {DescParams} from './path/index.js';
 
-export class PathLS {
-	_tail: SegmentLS;
-	constructor(tail: SegmentLS) {
+const len_segm = new WeakMap<SegmentLS, number>();
+const len_path = new WeakMap<SegmentLS, number>();
+
+function lenPath(seg: SegmentLS) {
+	let v = len_path.get(seg);
+	if (v == null) {
+		len_path.set(seg, (v = seg.pathLen()));
+	}
+	return v;
+}
+
+function lenSegm(seg: SegmentLS) {
+	let v = len_segm.get(seg);
+	if (v == null) {
+		len_segm.set(seg, (v = seg.segmentLen()));
+	}
+	return v;
+}
+
+export class PathLS extends CanvasCompat {
+	_tail: SegmentLS | undefined;
+	constructor(tail: SegmentLS | undefined) {
+		super();
 		this._tail = tail;
 	}
-	beginPath() {
-		return this;
-	}
+
 	moveTo(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).moveTo(...args);
 		return this;
 	}
 	lineTo(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).lineTo(...args);
 		return this;
 	}
 	bezierCurveTo(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).bezierCurveTo(...args);
 		return this;
 	}
 	quadraticCurveTo(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).quadraticCurveTo(...args);
 		return this;
 	}
 	arc(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).arc(...args);
 		return this;
 	}
 	arcTo(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).arcTo(...args);
 		return this;
 	}
 	rect(...args: Vec[] | number[]) {
-		const { _tail } = this;
+		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).rect(...args);
 		return this;
 	}
@@ -288,24 +310,233 @@ export class PathLS {
 	// arc(...args: Vec[] | number[]) : SegmentLS {
 
 	closePath() {
-		const { _tail } = this;
+		const {_tail} = this;
 		if (_tail) {
 			this._tail = _tail.closePath();
 		}
 		return this;
 	}
-	toString() {
-		return this._tail?.toString() || '';
-	}
-	describe(opt:DParams) {
+	describe(opt?: DescParams) {
 		return this._tail?.describe(opt) || '';
 	}
+	text(
+		options: {
+			fontSize: number;
+			font: Font;
+			kerning?: boolean;
+			tracking?: number;
+			letterSpacing?: number;
+		},
+		text: string,
+		maxWidth?: number
+	) {
+		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
+		const [_x1, _y1] = this?._tail?.end ?? [0, 0];
+		font.getPath(text, _x1, _y1, fontSize, {
+			kerning,
+			letterSpacing,
+			tracking,
+		}).draw(this);
+		return this;
+	}
+	segmentAtLength(T: number): [SegmentLS | undefined, number, number] {
+		let cur: SegmentLS | undefined = this._tail;
+		if (cur) {
+			return _segmentAtLen(cur, T, lenPath(cur));
+		}
+		return [undefined, NaN, NaN];
+	}
+	segmentAt(T: number): [SegmentLS | undefined, number] {
+		let cur: SegmentLS | undefined = this._tail;
+		if (cur) {
+			const len = lenPath(cur);
+			const [seg, n, N] = _segmentAtLen(cur, T * len, len);
+			return [seg, N == 0 ? 0 : n / N];
+		}
+		return [undefined, NaN];
+	}
+	get length() {
+		let cur: SegmentLS | undefined = this._tail;
+		if (cur) {
+			return lenPath(cur);
+		}
+		return 0;
+	}
+	get start() {
+		return this._tail?.first?.end;
+	}
+	get end() {
+		return this._tail?.end;
+	}
+	tangentAt(T: number) {
+		const [seg, t] = this.segmentAt(T);
+		if (seg) return seg.tangentAt(t);
+	}
 
+	slopeAt(T: number) {
+		const [seg, t] = this.segmentAt(T);
+		if (seg) return seg.slopeAt(t);
+	}
 
+	pointAt(T: number) {
+		const [seg, t] = this.segmentAt(T);
+		if (seg) return seg.pointAt(t);
+	}
+	pointAtLength(L: number) {
+		const [seg, n, N] = this.segmentAtLength(L);
+		if (seg) return seg.pointAt(n / N);
+	}
+	bbox() {
+		let b = Box.new();
+		for (let cur: SegmentLS | undefined = this._tail; cur; cur = cur._prev) {
+			b = b.merge(cur.bbox());
+		}
+		return b;
+	}
+	splitAt(T: number) {
+		const {_tail} = this;
+		if (_tail) {
+			const [seg, t] = this.segmentAt(T);
+			if (seg) {
+				if (t == 0) {
+					const {prev} = seg;
+					return [new PathLS(prev), new PathLS(_tail.withFarPrev3(seg, SegmentLS.moveTo(prev?.end)))];
+				} else if (t == 1) {
+					return [new PathLS(seg), new PathLS(_tail.withFarPrev(seg, SegmentLS.moveTo(seg.end)))];
+				}
+				let [a, b] = seg.splitAt(t);
+				if (seg === _tail) {
+					return [new PathLS(a), new PathLS(b)];
+				} else {
+					// if (t == 0) {
+					// 	return [new PathLS(a), new PathLS(_tail.withFarPrev2(seg, SegmentLS.moveTo(a.end)))];
+					// }
+					// if (b.length == 0) {
+					// 	return [new PathLS(a), new PathLS(_tail.withFarPrev2(seg, SegmentLS.moveTo(a.end)))];
+					// }
+					return [new PathLS(a), new PathLS(_tail.withFarPrev(seg, b))];
+				}
+			}
+		}
+		return [new PathLS(undefined), new PathLS(undefined)];
+	}
+	cutAt(T: number): PathLS {
+		return T < 0 ? this.splitAt(1 + T)[1] : this.splitAt(T)[0];
+	}
+	cropAt(T0: number, T1: number = 1): PathLS {
+		T0 = tNorm(T0);
+		T1 = tNorm(T1);
+		if (T0 <= 0) {
+			if (T1 >= 1) {
+				return this; // TODO: use clone
+			} else if (T1 > 0) {
+				return this.cutAt(T1);
+			}
+		} else if (T0 < 1) {
+			if (T1 >= 1) {
+				return this.cutAt(T0 - 1);
+			} else if (T0 < T1) {
+				return this.cutAt(T0).cutAt((T1 - T0) / (1 - T0));
+			} else if (T0 > T1) {
+				return this.cropAt(T1, T0);
+			}
+		} else if (T1 < 1) {
+			// T0 >= 1
+			return this.cropAt(T1, T0);
+		}
+		return new PathLS(undefined);
+	}
+	reversed(next?: SegmentLS): PathLS {
+		const {_tail} = this;
+		if (_tail) {
+			return new PathLS(_tail.reversed());
+		}
+		return this;
+	}
+	descArray(opt?: DescParams): (number | string)[] {
+		const {_tail} = this;
+		if (_tail) {
+			return _tail.descArray(opt);
+		}
+		return [];
+	}
+	toString() {
+		const {_tail} = this;
+		if (_tail) {
+			return _tail.describe();
+		}
+		return '';
+	}
+	d() {
+		return this.describe();
+	}
 	static moveTo(...args: Vec[] | number[]) {
 		return new PathLS(SegmentLS.moveTo(...args));
 	}
 	static parse(d: string) {
-		return SegmentLS.parse(d);
+		return new PathLS(SegmentLS.parse(d));
 	}
+	static rect(...args: Vec[] | number[]) {
+		return new PathLS(SegmentLS.rect(...args));
+	}
+	static get digits() {
+		return SegmentLS.digits;
+	}
+	static set digits(n: number) {
+		SegmentLS.digits = n;
+	}
+	static lineTo() {
+		return PathLS.moveTo(0, 0).lineTo(...arguments);
+	}
+}
+
+function _segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [SegmentLS | undefined, number, number] {
+	S1: if (cur) {
+		if (lenP < 0) {
+			lenP = LEN + (lenP % LEN);
+		}
+		if (lenP == 0) {
+			let last: SegmentLS | undefined;
+			do {
+				if (!(cur instanceof MoveLS)) {
+					last = cur;
+				}
+			} while ((cur = cur._prev));
+
+			if (last) {
+				return [last, 0, 0];
+			}
+			break S1;
+		} else if (lenP > LEN) {
+			if (0 == (lenP = lenP % LEN)) {
+				lenP = LEN;
+			}
+		}
+		let end = LEN;
+		do {
+			if (cur instanceof MoveLS) {
+				// pass
+			} else {
+				const lenS = lenSegm(cur);
+				if (lenS >= 0) {
+					const lenT = lenP - (end -= lenS);
+					if (lenT >= 0) {
+						return [cur, lenT, lenS];
+					}
+				}
+			}
+		} while ((cur = cur._prev));
+	}
+	return [undefined, NaN, NaN];
+}
+
+function tNorm(t: number) {
+	if (t < 0) {
+		t = 1 + (t % 1);
+	} else if (t > 1) {
+		if (0 == (t = t % 1)) {
+			t = 1;
+		}
+	}
+	return t;
 }

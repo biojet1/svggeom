@@ -1,14 +1,6 @@
-import { parseDesc } from './path/parser.js';
-import { SegmentSE } from './path/index.js';
+import { parseDesc, dSplit } from './path/parser.js';
+import { SegmentSE, DescParams } from './path/index.js';
 import { Box } from './box.js';
-
-export interface DParams {
-	relative?: boolean;
-	close?: boolean | null;
-	smooth?: boolean;
-	short?: boolean;
-	dfix?: number;
-}
 
 export class Path {
 	static digits = 5;
@@ -201,7 +193,7 @@ export class Path {
 				let start = 0;
 				for (const [i, seg] of segs.entries()) {
 					const len = lengths[i];
-					if (len > 0) {
+				 	if (len > 0) {
 						const end = start + len;
 						if (end >= T) {
 							return [seg, (T - start) / (end - start), i];
@@ -241,7 +233,7 @@ export class Path {
 		return false;
 	}
 
-	private *enumDesc(params: DParams) {
+	private *enumDesc(params: DescParams) {
 		const {
 			relative: rel = false,
 			close = true,
@@ -401,11 +393,11 @@ export class Path {
 		}
 	}
 
-	descArray(params: DParams = {}) {
+	descArray(params: DescParams = {}) {
 		return Array.from(this.enumDesc(params));
 	}
 
-	describe(params: DParams = {}) {
+	describe(params: DescParams = {}) {
 		return this.descArray(params).join(' ');
 	}
 
@@ -453,4 +445,4 @@ import { Quadratic } from './path/quadratic.js';
 export * from './path/cubic.js';
 import { SegmentLS } from './path/linked.js';
 export { SegmentLS} ;
-export { Arc, Quadratic, Line };
+export { Arc, Quadratic, Line, dSplit };

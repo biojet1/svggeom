@@ -31,17 +31,19 @@ export const dots = /\./g;
 function pathRegReplace(a: any, b: any, c: any, d: any) {
 	return c + d.replace(dots, ' .');
 }
-
-export function parseDesc(d: string) {
-	// prepare for parsing
-	const segments = new Array<SegmentSE>();
-	const array = d
+export function dSplit(d: string) {
+	return d
 		.replace(numbersWithDots, pathRegReplace) // convert 45.123.123 to 45.123 .123
 		.replace(pathLetters, ' $& ') // put some room between letters and numbers
 		.replace(hyphen, '$1 -') // add space before hyphen
 		.trim() // trim
-		.split(delimiter)
-		.reverse(); // split into array
+		.split(delimiter);
+}
+
+export function parseDesc(d: string) {
+	// prepare for parsing
+	const segments = new Array<SegmentSE>();
+	const array = dSplit(d).reverse(); // split into array
 	let pos = Vec.at(0, 0);
 	let moved = Vec.at(0, 0);
 	let last_command;
@@ -269,17 +271,11 @@ export function parseDesc(d: string) {
 	return segments;
 }
 
-import { SegmentLS} from './linked.js';
+import { SegmentLS } from './linked.js';
 
 export function parseLS(d: string) {
 	// prepare for parsing
-	const array = d
-		.replace(numbersWithDots, pathRegReplace) // convert 45.123.123 to 45.123 .123
-		.replace(pathLetters, ' $& ') // put some room between letters and numbers
-		.replace(hyphen, '$1 -') // add space before hyphen
-		.trim() // trim
-		.split(delimiter)
-		.reverse(); // split into array
+	const array = dSplit(d).reverse(); // split into array
 	const num = function () {
 		const v = array.pop();
 		if (!v) {

@@ -6,6 +6,12 @@ function almostEqual(value, expected, epsilon = 0.0000000000000001) {
     if (value === expected) {
         return 2;
     }
+    if (Math.abs(value) > 1e10 && Math.abs(value) > 1e10) {
+        while (value + epsilon === value && expected + epsilon === expected) {
+            value /= 1000;
+            expected /= 1000;
+        }
+    }
     const d = Math.abs(value - expected);
     if (d <= epsilon) {
         return 1;
@@ -32,32 +38,24 @@ function checkClose(t, a, b, epsilon = 0.0000001, message, extra) {
     }
 }
 
-test.Test.prototype.addAssert(
-    'sameBox',
-    3,
-    function (box1, box2, epsilon = 0.0001, message, extra) {
-        if (box1.bbox) {
-            const { left, right, top, bottom } = box1.bbox();
-            box1 = [left, right, top, bottom];
+test.Test.prototype.addAssert('sameBox', 3, function (box1, box2, epsilon = 0.0001, message, extra) {
+    if (box1.bbox) {
+        const {left, right, top, bottom} = box1.bbox();
+        box1 = [left, right, top, bottom];
+    }
+    // console.error(box1, box2);
+    for (const [i, k] of [`left`, `right`, `top`, `bottom`]) {
+        if (!almostEqual(box1[i], box2[i], epsilon)) {
+            this.fail(`Box ${k} ${box1[i]} not close to ${box2[i]} ${box1[i] - box2[i]}Δ ±${epsilon} : ${message}`);
+            // this.end();
+            return;
         }
-        // console.error(box1, box2);
-        for (const [i, k] of [`left`, `right`, `top`, `bottom`]) {
-            if (!almostEqual(box1[i], box2[i], epsilon)) {
-                this.fail(
-                    `Box ${k} ${box1[i]} not close to ${box2[i]} ${
-                        box1[i] - box2[i]
-                    }Δ ±${epsilon} : ${message}`,
-                );
-                // this.end();
-                return;
-            }
-        }
-        this.pass(`Box ${box1} close to ${box2} ±${epsilon}`);
-        // this.end();
-    },
-);
+    }
+    this.pass(`Box ${box1} close to ${box2} ±${epsilon}`);
+    // this.end();
+});
 test.Test.prototype.addAssert('almostEqual', 3, function (A, B, opt, message, extra) {
-    opt = typeof opt == 'number' ? { epsilon: opt } : opt;
+    opt = typeof opt == 'number' ? {epsilon: opt} : opt;
     const epsilon = opt?.epsilon || 1e-13;
     // console.error(Array.from(arguments));
     if (!Array.isArray(A)) {
@@ -119,6 +117,15 @@ function dbgwrite(dbg, pC, pX, d) {
             style = 'fill:orange;stroke:yellow;stroke-width:1;stroke-dasharray:none;opacity:0.6';
             yield `<path id="d" d="${d}" style="${style}"/>`;
         }
+        const {item} = dbg;
+        if (dbg.pathA) {
+            style = 'fill:none;stroke:skyblue;stroke-width:1;stroke-dasharray:none;opacity:0.6';
+            yield `<path id="pathA" d="${dbg.pathA.join(' ')}" style="${style}"/>`;
+        }
+        if (dbg.pathB) {
+            style = 'fill:none;stroke:royalblue;stroke-width:1;stroke-dasharray:none;opacity:0.6';
+            yield `<path id="pathB" d="${dbg.pathB.join(' ')}" style="${style}"/>`;
+        }
 
         style = 'fill:firebrick;stroke:red;stroke-width:2;stroke-dasharray:none;opacity:0.6';
 
@@ -136,7 +143,7 @@ function zip() {
         args.length == 0
             ? []
             : args.reduce(function (a, b) {
-                    return a.length < b.length ? a : b;
+                  return a.length < b.length ? a : b;
               });
 
     return shortest.map(function (_, i) {
@@ -145,82 +152,110 @@ function zip() {
         });
     });
 }
-test.Test.prototype.addAssert(
-    'sameDescs',
-    3,
-    function (a, b, opt, message, extra = {}, debug_svg = null) {
-        opt = typeof opt == 'number' ? { epsilon: opt } : opt;
-        const epsilon = opt?.epsilon || 1e-13;
 
-        if (a.length !== b.length) {
-            const a_ = a.filter((v) => !/[Zz]/.test(v));
-            const b_ = b.filter((v) => !/[Zz]/.test(v));
-            if (a_.length !== b_.length) {
-                extra.descA = a.join(' ');
-                extra.descB = b.join(' ');
-                extra.desc1 = a_.join(' ');
-                extra.desc2 = b_.join(' ');
+test.Test.prototype.addAssert('sameDescs', 3, function (a, b, opt, message, extra = {}, debug_svg = null) {
+    opt = typeof opt == 'number' ? {epsilon: opt} : opt;
+    const epsilon = opt?.epsilon || 1e-13;
+    function cmpn(a, b) {
+        return Math.abs(a - b) <= epsilon;
+    }
+    function fixmvln(v, i, a) {
+        // if (v == 'L') {
+        //     // M a b L a b --> L a b
+        //     //  -2-1 0 1 2
+        //     if (a[i - 3] == 'M') {
+        //         if (cmpn(a[i + 1], a[i - 2]) && cmpn(a[i + 2], a[i - 1])) {
+        //             a[i - 3] = a[i - 2] = a[i - 1] = undefined;
+        //         }
+        //     }
+        // }
+        if (v == 'M') {
+            // a b M a b X --> a b X
+            //-2-1 0 1 2
+            if (cmpn(a[i + 1], a[i - 2]) && cmpn(a[i + 2], a[i - 1])) {
+                a[i] = a[i + 1] = a[i + 2] = undefined;
+                // a[i - 1] = a[i - 2] = undefined;
+                // return undefined;
+                // return a[i + 3];
+            }
+        }
+        return true;
+    }
+    if (a.length !== b.length) {
+        const a_ = a.filter(v => !/[Zz]/.test(v));
+        let b_ = b.filter(v => !/[Zz]/.test(v));
+
+        b_.forEach(fixmvln);
+        b_ = b_.filter(v => v != null);
+        if (a_.length !== b_.length) {
+            extra.descA = a.join(' ');
+            extra.descB = b.join(' ');
+            extra.desc1 = a_.join(' ');
+            extra.desc2 = b_.join(' ');
+            if (opt.write_svg) {
+                dbgwrite(opt, a, b, opt?.item?.d);
+            }
+            return this.fail(`desc len not same "${message}"`, extra);
+        }
+        b = b_;
+    }
+    const n = a.length;
+    let c; // last command index
+    for (let i = 0; i < n; i++) {
+        const A = a[i];
+        const B = b[i];
+        if (!isNumber(A)) {
+            c = i;
+        }
+        if (A == B) {
+            continue;
+        } else if (isNumber(A) && isNumber(B)) {
+            // if (A + epsilon === A && B + epsilon === B) {
+            //     if (Math.abs(A) > 1e10 && Math.abs(A) > 1e10) {
+            //         while (A + epsilon === A && B + epsilon === B) {
+            //             A /= 1000;
+            //             B /= 1000;
+            //         }
+            //     }
+            //     // throw new Error('Too big');
+            // }
+            if (almostEqual(A, B, epsilon)) {
+                continue;
+            } else {
+                if (i - 3 >= 0) {
+                    const x = a[i - 3];
+                    if (x == 'a' || x == 'A') {
+                        if (a[i - 2] === a[i - 1]) {
+                            // phi is irrelevant if rx == ry
+                            continue;
+                        } else if (((A % 360) + 360) % 360 === ((B % 360) + 360) % 360) {
+                            continue;
+                        }
+                    }
+                }
+                extra.desc1 = a.join(' ');
+                extra.desc2 = b.join(' ');
+                extra.descz = zip(a, b).map(v =>
+                    v[0] == v[1] || (isNumber(v[0]) && isNumber(v[1]) && Math.abs(v[0] - v[1]) <= epsilon) ? v[0] : v
+                );
+
                 if (opt.write_svg) {
                     dbgwrite(opt, a, b, opt?.item?.d);
                 }
-                return this.fail(`desc len not same "${message}"`, extra);
+
+                return this.fail(`item #${i} ${Math.abs(A - B)}Δ [${A}, ${B}] ±${epsilon} "${message}"`, extra);
             }
         }
-        const n = a.length;
-        let c; // last command index
-        for (let i = 0; i < n; i++) {
-            const A = a[i];
-            const B = b[i];
-            if (!isNumber(A)) {
-                c = i;
-            }
-            if (A == B) {
-                continue;
-            } else if (isNumber(A) && isNumber(B)) {
-                const d = Math.abs(A - B);
-                if (d <= epsilon) {
-                    continue;
-                } else {
-                    if (i - 3 >= 0) {
-                        const x = a[i - 3];
-                        if (x == 'a' || x == 'A') {
-                            if (a[i - 2] === a[i - 1]) {
-                                // phi is irrelevant if rx == ry
-                                continue;
-                            } else if (((A % 360) + 360) % 360 === ((B % 360) + 360) % 360) {
-                                continue;
-                            }
-                        }
-                    }
-                    extra.desc1 = a.join(' ');
-                    extra.desc2 = b.join(' ');
-                    extra.descz = zip(a, b).map((v) =>
-                        v[0] == v[1] || (isNumber(v[0]) && isNumber(v[1]) && Math.abs(v[0] - v[1]) <= epsilon)
-                            ? v[0]
-                            : v,
-                    );
-
-                    if (opt.write_svg) {
-                        dbgwrite(opt, a, b);
-                    }
-
-                    return this.fail(`item #${i} ${d}Δ [${A}, ${B}] ±${epsilon} "${message}"`, extra);
-                }
-            }
-            extra.desc1 = a.join(' ');
-            extra.desc2 = b.join(' ');
-            if (opt.write_svg) {
-                dbgwrite(opt, a, b);
-            }
-            const d = Math.abs(A - B);
-            return this.fail(
-                `item #${i} ${d}Δ [${A} ${typeof A}, ${B} ${typeof B}] ±${epsilon} "${message}"`,
-                extra,
-            );
+        extra.desc1 = a.join(' ');
+        extra.desc2 = b.join(' ');
+        if (opt.write_svg) {
+            dbgwrite(opt, a, b, opt?.item?.d);
         }
-        return this.pass(`Same descs ${message}`);
-    },
-);
+        const d = Math.abs(A - B);
+        return this.fail(`item #${i} ${d}Δ [${A} ${typeof A}, ${B} ${typeof B}] ±${epsilon} "${message}"`, extra);
+    }
+    return this.pass(`Same descs ${message}`);
+});
 
 test.Test.prototype.addAssert('sameTangent', 3, function (a, b, epsilon, message, extra = {}) {
     let delta_epsilon, slope_epsilon;
@@ -231,7 +266,7 @@ test.Test.prototype.addAssert('sameTangent', 3, function (a, b, epsilon, message
         delta_epsilon = epsilon;
         slope_epsilon = epsilon;
     } else {
-        ({ delta_epsilon = 1e-11, slope_epsilon = 1e-11 } = epsilon);
+        ({delta_epsilon = 1e-11, slope_epsilon = 1e-11} = epsilon);
     }
 
     if (a[0] === b[0]) {
@@ -240,19 +275,13 @@ test.Test.prototype.addAssert('sameTangent', 3, function (a, b, epsilon, message
         } else if (a[0] == 0) {
             return this.pass(`Tangent Horizontal ${a} ${b}`);
         } else if (!almostEqual(a[1], b[1], delta_epsilon)) {
-            return this.fail(
-                `Tangent @y ${a[1]} not close to ${b[1]} ${a[1] - b[1]}Δ ±${delta_epsilon} : ${message}`,
-                extra,
-            );
+            return this.fail(`Tangent @y ${a[1]} not close to ${b[1]} ${a[1] - b[1]}Δ ±${delta_epsilon} : ${message}`, extra);
         }
     } else if (a[1] === b[1]) {
         if (a[1] == 0) {
             return this.pass(`Tangent Vertical ${a} ${b}`);
         } else if (!almostEqual(a[0], b[0], delta_epsilon)) {
-            return this.fail(
-                `Tangent @x ${a[0]} not close to ${b[0]} ${a[0] - b[0]}Δ ±${delta_epsilon} : ${message}`,
-                extra,
-            );
+            return this.fail(`Tangent @x ${a[0]} not close to ${b[0]} ${a[0] - b[0]}Δ ±${delta_epsilon} : ${message}`, extra);
         }
     } else {
         if (almostEqual(a[1], b[1], 1e-12)) {
@@ -279,10 +308,10 @@ test.Test.prototype.addAssert('sameTangent', 3, function (a, b, epsilon, message
 
         if (!almostEqual(A, B, slope_epsilon)) {
             return this.fail(
-                `Tangent / ${A} not close to ${B} ${A - B}Δ ±${slope_epsilon}  [${a}], [${b}], Δ[${
-                    a[0] - b[0]
-                }, ${a[1] - b[1]}] : ${message}`,
-                extra,
+                `Tangent / ${A} not close to ${B} ${A - B}Δ ±${slope_epsilon}  [${a}], [${b}], Δ[${a[0] - b[0]}, ${
+                    a[1] - b[1]
+                }] : ${message}`,
+                extra
             );
         }
     }

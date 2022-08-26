@@ -204,6 +204,8 @@ if not DATA:
 
             v["length"] = p.length()
             v["bbox"] = p.bbox()
+            v["start"] = [p[0].start.real, p[0].start.imag]
+            v["end"] = [p[-1].end.real, p[-1].end.imag]
             # pts = v["points"] = []
             # for t in k:
             #     # stderr.write(f"t={t}\n")

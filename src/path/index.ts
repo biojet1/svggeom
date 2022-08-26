@@ -5,6 +5,7 @@ export interface DescParams {
 	relative?: boolean;
 	smooth?: boolean;
 	short?: boolean;
+	close?: boolean;
 	dfix?: number;
 }
 

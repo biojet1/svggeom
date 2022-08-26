@@ -10,6 +10,7 @@ const deltp = { len_epsilon: 0.189, point_epsilon: 1e-10, slope_epsilon: 1e-8 };
 for await (const item of enum_path_data({ SEGMENTS: 'CubicBezier' })) {
     test.test(`<${item.d}>`, { bail: !CI }, function (t) {
         let seg = new Cubic(...item.points);
+        // testSegment(t, seg, item, deltp);
         test_segment(t, seg, item, deltp);
 
         // const [s, a, b, e] = item.points;
@@ -17,7 +18,6 @@ for await (const item of enum_path_data({ SEGMENTS: 'CubicBezier' })) {
         // // test_segment(t, seg, item, { len_epsilon: 0.189, point_epsilon: 1e-10, slope_epsilon: 1e-8 });
         // // console.dir(seg, {depth: null});
         // // console.log(s, a, b, e, seg.d());
-        testSegment(t, seg, item, deltp);
         t.end();
     });
     test.test(`SegmentLS<${item.d}>`, { bail: CI }, function (t) {
