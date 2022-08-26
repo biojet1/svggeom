@@ -290,7 +290,7 @@ export abstract class SegmentLS extends Segment {
 			if (t1 >= 1) {
 				return this.cutAt(t0 - 1);
 			} else if (t0 < t1) {
-				return this.cutAt(t0).cutAt((t1 - t0) / (1 - t0));
+				return this.cutAt(t0 - 1).cutAt((t1 - t0) / (1 - t0));
 			} else if (t0 > t1) {
 				return this.cropAt(t1, t0); // t1 < 1
 			}

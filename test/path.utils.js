@@ -133,12 +133,18 @@ export function testSegment(t, seg, item, opt = {}) {
                 [a, b] = seg.splitAt(T);
                 const descs_opt = {epsilon: point_epsilon, write_svg: true, item, pathA, pathB};
                 t.sameDescs(a.descArray(), pathA, descs_opt, `splitAt(0, ${T})`, seg);
-                t.sameDescs(b.descArray({close:false}), pathB, descs_opt, `splitAt(${T}, 1)`, seg);
+                t.sameDescs(b.descArray({close: false}), pathB, descs_opt, `splitAt(${T}, 1)`, seg);
                 t.sameDescs(seg.cutAt(T).descArray(), pathA, descs_opt, `cutAt(${T})`, seg);
                 t.sameDescs(seg.cropAt(0, T).descArray(), pathA, descs_opt, `cropAt(0, ${T})`, seg);
-                t.sameDescs(seg.cropAt(T, 1).descArray({close:false}), pathB, descs_opt, `cropAt(${T}, 1)`, seg);
+                t.sameDescs(seg.cropAt(T, 1).descArray({close: false}), pathB, descs_opt, `cropAt(${T}, 1)`, seg);
                 sub = seg.cutAt(T - 1);
-                t.sameDescs(sub.descArray({close:false}), pathB, descs_opt, `cutAt(${T} --> ${T - 1}) ${sub.constructor.name}`, seg);
+                t.sameDescs(
+                    sub.descArray({close: false}),
+                    pathB,
+                    descs_opt,
+                    `cutAt(${T} --> ${T - 1}) ${sub.constructor.name}`,
+                    seg
+                );
             } catch (err) {
                 console.error('Err splitAt', T);
                 console.dir(seg, {depth: null});
@@ -148,10 +154,20 @@ export function testSegment(t, seg, item, opt = {}) {
         // reversed
         const rev = seg.reversed();
         const bak = rev.reversed();
-        const sega = seg.descArray({close:false});
+        const sega = seg.descArray({close: false});
         const reva = rev.descArray();
         const baka = bak.descArray();
         t.notSame(sega, reva);
-        t.same(baka, sega, [baka, sega, reva].map(v => v.join(' ')));
+        t.same(
+            baka,
+            sega,
+            [baka, sega, reva].map(v => v.join(' '))
+        );
+
+        t.same(seg.cropAt(0, 1).describe(), seg.describe());
+        t.same(seg.cropAt(1, 0).describe(), seg.describe());
     }
+    t.same(seg.cropAt(0.5, 0.75).describe(), seg.cropAt(-0.5, -0.25).describe());
+
+
 }
