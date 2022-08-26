@@ -1,5 +1,5 @@
 'uses strict';
-import {Ray, Point, PathDraw} from 'svggeom';
+import {Ray, RayL, Point, Vec, PathDraw} from 'svggeom';
 import './utils.js';
 import test from 'tap';
 const CI = !!process.env.CI;
@@ -402,11 +402,80 @@ test.test(`with*`, {bail: !CI}, function (t) {
         const {x, y, z, h, v} = r.withH(5);
         t.match([x, y, z, h, v], [1, 2, 0, 5, 4]);
     }
-
     {
         const {x, y, z, h, v} = r.withV(5);
         t.match([x, y, z, h, v], [1, 2, 0, 3, 5]);
     }
+    {
+        const {x, y, z, h, v} = r.withX(5);
+        t.match([x, y, z, h, v], [5, 2, 0, 3, 4]);
+    }
+    {
+        const {x, y, z, h, v} = r.withY(5);
+        t.match([x, y, z, h, v], [1, 5, 0, 3, 4]);
+    }
+    {
+        const {x, y, z, h, v} = r.withZ(5);
+        t.match([x, y, z, h, v], [1, 2, 5, 3, 4]);
+    }
+    {
+        const {x, y, z, h, v} = r.shiftX(-11);
+        t.match([x, y, z, h, v], [-10, 2, 0, 3, 4]);
+    }
+    {
+        const {x, y, z, h, v} = r.shiftY(-11);
+        t.match([x, y, z, h, v], [1, -9, 0, 3, 4]);
+    }
+    {
+        const {x, y, z, h, v} = r.shiftZ(-11);
+        t.match([x, y, z, h, v], [1, 2, -11, 3, 4]);
+    }
+    {
+        const {x, y, z, h, v} = r.flipX();
+        t.match([x, y, z, h, v], [-1, 2, 0, 3, 4]);
+    }
+    {
+        const {x, y, z, h, v} = r.flipY();
+        t.match([x, y, z, h, v], [1, -2, 0, 3, 4]);
+    }
+    {
+        const {x, y, z, h, v} = r.shiftZ(-11).flipZ();
+        t.match([x, y, z, h, v], [1, 2, 11, 3, 4]);
+    }
 
+    t.end();
+});
+
+test.test(`turn`, {bail: !CI}, function (t) {
+    let r = Ray.new([1, 2], [3, 4]);
+    const {x, y, z, h, v} = r.turn(Vec.degrees(-53.13010235415598));
+    t.match([x, y, z, h, v], [1, 2, 0, 3 / 5, -4 / 5]);
+    t.end();
+});
+
+test.test(`Ray.dir`, {bail: !CI}, function (t) {
+    const {x, y, z, h, v} = Ray.dir(0.9272952180016122);
+    t.almostEqual([x, y, z, h, v], [0, 0, 0, 3 / 5, 4 / 5]);
+    t.end();
+});
+
+test.test(`RayL`, {bail: !CI}, function (t) {
+    const r = RayL.new([1, 2], [3, 4]);
+    const a = r.shiftX(10);
+    const b = a.shiftY(10);
+    {
+        const {x, y, z, h, v} = b.prev();
+        t.match([x, y, z, h, v], [11, 2, 0, 3, 4]);
+    }
+    {
+        const {x, y, z, h, v} = a.prev();
+        t.match([x, y, z, h, v], [1, 2, 0, 3, 4]);
+    }
+    {
+        const {x, y, z, h, v} = b;
+        t.match([x, y, z, h, v], [11, 12, 0, 3, 4]);
+    }
+    t.notStrictSame(b, a);
+    t.notStrictSame(r, a);
     t.end();
 });

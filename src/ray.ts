@@ -1,6 +1,6 @@
-import { Vec } from './point.js';
+import {Vec} from './point.js';
 
-const { abs, sqrt, PI } = Math;
+const {abs, sqrt, PI} = Math;
 const TAU = PI * 2;
 
 type NumOrVec = number | Iterable<number>;
@@ -64,7 +64,7 @@ export class VecRay {
 	}
 
 	*[Symbol.iterator](): Iterator<number> {
-		const { x, y, z } = this.pos;
+		const {x, y, z} = this.pos;
 		yield x;
 		yield y;
 		yield z;
@@ -79,7 +79,7 @@ export class VecRay {
 	}
 
 	pointAlong(d: number): Vec {
-		const { pos, dir } = this;
+		const {pos, dir} = this;
 		return pos.add(Vec.polar(d, dir.radians));
 	}
 
@@ -88,7 +88,7 @@ export class VecRay {
 	}
 
 	side(x: NumOrVec, y?: number) {
-		const { pos, dir } = this;
+		const {pos, dir} = this;
 		const [Ax, Ay] = pos;
 		const [Bx, By] = pos.add(dir);
 		const [X, Y] = Pt(x, y);
@@ -98,7 +98,7 @@ export class VecRay {
 
 	// Calc
 	distanceFromLine(a: Iterable<number>, b: Iterable<number>): number {
-		const { x, y } = this.pos;
+		const {x, y} = this.pos;
 		const [x1, y1] = a;
 		const [x2, y2] = b;
 		const [dx, dy] = [x2 - x1, y2 - y1];
@@ -118,7 +118,7 @@ export class VecRay {
 	}
 
 	intersectOfLine(a: Iterable<number>, b: Iterable<number>): Vec {
-		const { pos, dir } = this;
+		const {pos, dir} = this;
 		const [x1, y1] = a;
 		const [x2, y2] = b;
 		const [x3, y3] = pos;
@@ -150,27 +150,27 @@ export class VecRay {
 	}
 
 	intersectOfRay(r: Ray): Vec {
-		const { pos, dir } = this;
+		const {pos, dir} = this;
 		return r.intersectOfLine(pos, pos.add(dir));
 	}
 
 	nearestPointFromPoint(p: Iterable<number>): Vec {
-		const { pos, dir } = this;
+		const {pos, dir} = this;
 		return Vec.new(p).nearestPointOfLine(pos, pos.add(dir));
 	}
 }
 
 export class Ray extends VecRay {
 	clone() {
-		const { pos, dir } = this;
+		const {pos, dir} = this;
 		return new Ray(pos, dir);
 	}
-	begin() {
-		return new RayStack(this);
-	}
-	end(): Ray | undefined {
-		return undefined;
-	}
+	// begin() {
+	// 	return new RayStack(this);
+	// }
+	// end(): Ray | undefined {
+	// 	return undefined;
+	// }
 	protected _Pos(v: Vec) {
 		return new Ray(v, this.dir);
 	}
@@ -193,28 +193,28 @@ export class Ray extends VecRay {
 	}
 
 	withH(h = 0) {
-		const { v, pos } = this;
-		return new Ray(pos, Vec.pos(h, v));
+		const {v} = this;
+		return this._Dir(Vec.pos(h, v));
 	}
 
 	withV(v = 0) {
-		const { h, pos } = this;
-		return new Ray(pos, Vec.pos(h, v));
+		const {h} = this;
+		return this._Dir(Vec.pos(h, v));
 	}
 
 	withX(x = 0) {
-		const { pos, dir } = this;
-		return new Ray(pos.withX(x), dir);
+		const {pos} = this;
+		return this._Pos(pos.withX(x));
 	}
 
 	withY(y = 0) {
-		const { pos, dir } = this;
-		return new Ray(pos.withY(y), dir);
+		const {pos} = this;
+		return this._Pos(pos.withY(y));
 	}
 
 	withZ(z = 0) {
-		const { pos, dir } = this;
-		return new Ray(pos.withY(z), dir);
+		const {pos} = this;
+		return this._Pos(pos.withZ(z));
 	}
 	shiftX(d: number) {
 		return this._Pos(this.pos.shiftX(d));
@@ -246,7 +246,7 @@ export class Ray extends VecRay {
 	}
 
 	forward(d: number) {
-		const { pos, dir } = this;
+		const {pos, dir} = this;
 		return this._Pos(dir.normalize().mul(d).postAdd(pos));
 	}
 
@@ -259,12 +259,12 @@ export class Ray extends VecRay {
 	}
 
 	translate(x: NumOrVec, y?: number) {
-		const { pos } = this;
+		const {pos} = this;
 		return this._Pos(Pt(x, y).postAdd(pos));
 	}
 
 	along(t: number, x: NumOrVec, y?: number) {
-		const { pos } = this;
+		const {pos} = this;
 		return this._Pos(Pt(x, y).sub(pos).mul(t).postAdd(pos));
 	}
 
@@ -282,7 +282,7 @@ export class Ray extends VecRay {
 	left(rad?: number) {
 		switch (rad) {
 			case undefined:
-				const { h, v } = this;
+				const {h, v} = this;
 				return this._Dir(Vec.pos(-v, h));
 			default:
 				return this._Dir(this.dir.rotated(rad));
@@ -291,7 +291,7 @@ export class Ray extends VecRay {
 
 	right(rad?: number) {
 		if (rad === undefined) {
-			const { h, v } = this;
+			const {h, v} = this;
 			return this._Dir(Vec.pos(v, -h));
 		} else {
 			return this._Dir(this.dir.rotated(-rad));
@@ -353,7 +353,7 @@ export class Ray extends VecRay {
 	normalToSide(a: Iterable<number>) {
 		const s = this.side(a);
 		const {
-			dir: { x, y },
+			dir: {x, y},
 		} = this;
 		if (s > 0) {
 			return this._Dir(Vec.pos(-y, x));
@@ -374,7 +374,7 @@ export class Ray extends VecRay {
 	}
 
 	toNearestPointFromPoint(p: Iterable<number>) {
-		const { pos, dir } = this;
+		const {pos, dir} = this;
 		return this._Pos(Ray.pos(p).nearestPointOfLine(pos, pos.add(dir)));
 	}
 
@@ -400,8 +400,12 @@ export class Ray extends VecRay {
 		return new this(Pt(x, y), Vec.pos(1, 0));
 	}
 
-	static dir(x: NumOrVec, y?: number) {
-		return new this(Vec.pos(1, 0), Pt(x, y));
+	static dir(rad: NumOrVec) {
+		if (typeof rad === 'object') {
+			return new this(Vec.pos(0, 0), Vec.pos(...rad));
+		} else {
+			return new this(Vec.pos(0, 0), Vec.radians(rad));
+		}
 	}
 
 	static towards(x: NumOrVec, y?: number) {
@@ -420,29 +424,29 @@ export class Ray extends VecRay {
 		return this.new().before(Pt(x, y));
 	}
 
-	static fromLine(a: Iterable<number>, b: Iterable<number>) {
-		return this.pos(a).towards(b);
-	}
+	// static fromLine(a: Iterable<number>, b: Iterable<number>) {
+	// 	return this.pos(a).towards(b);
+	// }
 
 	static get home() {
 		return new this(Vec.pos(0, 0), Vec.pos(1, 0));
 	}
 }
 
-export class RayStack extends VecRay {
-	_prev: Ray;
-	constructor(ray: Ray) {
-		const { pos, dir } = ray;
-		super(pos, dir);
-		this._prev = ray;
-	}
-	end() {
-		return this._prev;
-	}
-}
+// export class RayStack extends VecRay {
+// 	_prev: Ray;
+// 	constructor(ray: Ray) {
+// 		const {pos, dir} = ray;
+// 		super(pos, dir);
+// 		this._prev = ray;
+// 	}
+// 	end() {
+// 		return this._prev;
+// 	}
+// }
 
 export class RayL extends Ray {
-	_prev: Ray|undefined;
+	_prev: Ray | undefined;
 	constructor(pos: Vec, dir: Vec, ray?: Ray) {
 		super(pos, dir);
 		this._prev = ray;
