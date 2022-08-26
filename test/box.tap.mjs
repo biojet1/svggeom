@@ -28,7 +28,7 @@ for await (const [i, item] of enum_box_data({})) {
 
     test.test(`Box(${x},${y},${width},${height})`, {bail: !CI}, function (t) {
         let box2, box;
-        switch (i % 3) {
+        switch (i % 4) {
             case 1:
                 box = Box.new(x, y, width, height);
                 box2 = Box.fromExtrema(minX, maxX, maxY, minY);
@@ -37,6 +37,10 @@ for await (const [i, item] of enum_box_data({})) {
                 box = Box.new(`${x}, ${y}, ${width}, ${height}`);
                 box2 = Box.new(`${left} ${top} ${width} ${height}`);
                 // box2 = Box.fromExtrema(maxX, minX, minY, maxY);
+                break;
+            case 3:
+                box = Box.new({x, y, width, height});
+                box2 = Box.new({left, top, width, height});
                 break;
             default:
                 box = Box.new(x, y, width, height);
@@ -214,6 +218,10 @@ test.test(`Box mutable`, {bail: !CI}, function (t) {
     // t.ok(BoxMut.new().equal(BoxMut.not()));
     t.match(`${BoxMut.not().copy(b)}`.split(/[,s]+/), [-60, -50, 60, 50]);
     t.match(`${BoxMut.not().mergeSelf(b)}`.split(/[,s]+/), [-60, -50, 60, 50]);
+
+    t.match(`${BoxMut.not().mergeSelf(b)}`.split(/[,s]+/), [-60, -50, 60, 50]);
+
+    t.match(BoxMut.not().mergeSelf(C).mergeSelf(BoxMut.not()).mergeSelf(F).toArray(), B.toArray());
 
     // const a = BoxMut.new([0, 0, 100, 100]);
 

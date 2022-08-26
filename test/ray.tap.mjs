@@ -470,7 +470,7 @@ test.test(`RayL`, {bail: !CI}, function (t) {
     const r = RayL.new([1, 2], [3, 4]);
     const a = r.shiftX(10);
     const b = a.shiftY(10);
-    const c = b.turn(Vec.degrees(45));
+    const c = b.withDir(Vec.degrees(45));
     const d = c.withX(30).withY(40).before(Vec.pos(0, 0));
     {
         const {x, y, z, h, v} = b.prev();
@@ -499,6 +499,7 @@ test.test(`RayL`, {bail: !CI}, function (t) {
     t.strictSame(a.prev(), r);
     t.strictSame(b.prev(), a);
     t.strictSame(c.prev(), b);
+    t.strictSame(d.prev().prev().prev(), c);
     t.strictSame(r.prev(), undefined);
     t.end();
 });
@@ -526,5 +527,12 @@ test.test(`normalToSide`, {bail: !CI}, function (t) {
     const r = Ray.dir(Vec.pos(3, 4));
     const b = r.normalToSide(Vec.pos(30, 40));
     t.strictSame(b, r);
+    t.end();
+});
+
+test.test(`depreciated`, {bail: !CI}, function (t) {
+    const r = Ray.pos(Vec.pos(3, 4));
+    const [x, y, z] = r.at();
+    t.same([x, y, z], [3, 4, 0]);
     t.end();
 });

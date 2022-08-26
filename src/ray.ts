@@ -71,7 +71,7 @@ export class VecRay {
 	}
 
 	at() {
-		return this.pos.clone();
+		return this.pos;
 	}
 
 	distance(x: NumOrVec, y?: number): number {
