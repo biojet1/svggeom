@@ -56,7 +56,7 @@ export class VecRay {
         yield z;
     }
     at() {
-        return this.pos.clone();
+        return this.pos;
     }
     distance(x, y) {
         return this.delta(x, y).abs();
@@ -106,18 +106,6 @@ export class VecRay {
         const dx = [x1 - x2, x3 - x4];
         const dy = [y1 - y2, y3 - y4];
         const d = dx[0] * dy[1] - dy[0] * dx[1];
-        if (d === 0) {
-            if (dx[0] === 0) {
-                if (dx[1] === 0) {
-                }
-                else if (dy[0] === 0) {
-                }
-                else if (dy[1] === 0) {
-                }
-            }
-            else if (dy[0] === 0) {
-            }
-        }
         return Vec.pos((e1 * dx[1] - dx[0] * e2) / d, (e1 * dy[1] - dy[0] * e2) / d);
     }
     intersectOfRay(r) {
@@ -133,12 +121,6 @@ export class Ray extends VecRay {
     clone() {
         const { pos, dir } = this;
         return new Ray(pos, dir);
-    }
-    begin() {
-        return new RayStack(this);
-    }
-    end() {
-        return undefined;
     }
     _Pos(v) {
         return new Ray(v, this.dir);
@@ -158,24 +140,24 @@ export class Ray extends VecRay {
         }
     }
     withH(h = 0) {
-        const { v, pos } = this;
-        return new Ray(pos, Vec.pos(h, v));
+        const { v } = this;
+        return this._Dir(Vec.pos(h, v));
     }
     withV(v = 0) {
-        const { h, pos } = this;
-        return new Ray(pos, Vec.pos(h, v));
+        const { h } = this;
+        return this._Dir(Vec.pos(h, v));
     }
     withX(x = 0) {
-        const { pos, dir } = this;
-        return new Ray(pos.withX(x), dir);
+        const { pos } = this;
+        return this._Pos(pos.withX(x));
     }
     withY(y = 0) {
-        const { pos, dir } = this;
-        return new Ray(pos.withY(y), dir);
+        const { pos } = this;
+        return this._Pos(pos.withY(y));
     }
     withZ(z = 0) {
-        const { pos, dir } = this;
-        return new Ray(pos.withY(z), dir);
+        const { pos } = this;
+        return this._Pos(pos.withZ(z));
     }
     shiftX(d) {
         return this._Pos(this.pos.shiftX(d));
@@ -304,8 +286,13 @@ export class Ray extends VecRay {
     static at(x, y) {
         return new this(Pt(x, y), Vec.pos(1, 0));
     }
-    static dir(x, y) {
-        return new this(Vec.pos(1, 0), Pt(x, y));
+    static dir(rad) {
+        if (typeof rad === 'object') {
+            return new this(Vec.pos(0, 0), Vec.pos(...rad));
+        }
+        else {
+            return new this(Vec.pos(0, 0), Vec.radians(rad));
+        }
     }
     static towards(x, y) {
         return this.new().towards(Pt(x, y));
@@ -319,22 +306,8 @@ export class Ray extends VecRay {
     static before(x, y) {
         return this.new().before(Pt(x, y));
     }
-    static fromLine(a, b) {
-        return this.pos(a).towards(b);
-    }
     static get home() {
         return new this(Vec.pos(0, 0), Vec.pos(1, 0));
-    }
-}
-export class RayStack extends VecRay {
-    _prev;
-    constructor(ray) {
-        const { pos, dir } = ray;
-        super(pos, dir);
-        this._prev = ray;
-    }
-    end() {
-        return this._prev;
     }
 }
 export class RayL extends Ray {

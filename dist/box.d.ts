@@ -48,9 +48,6 @@ export declare class Box {
     static parse(s: string): Box;
     static merge(...args: Array<Box>): Box;
     static new(first?: number | number[] | [number[], number[]] | string | Box, y?: number, width?: number, height?: number): Box;
-    final(): Readonly<Box>;
-    mut(): Box;
-    freeze(): Readonly<this>;
 }
 export declare class BoxMut extends Box {
     get x(): number;

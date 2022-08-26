@@ -1,3 +1,4 @@
+import { Box } from './box.js';
 const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
 function* pick(args) {
     for (const v of args) {
@@ -25,13 +26,29 @@ function fmtN(n) {
     const v = n.toFixed(digits);
     return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
 }
-export class PathDraw {
+class CanvasCompat {
+    set fillStyle(x) { }
+    get fillStyle() {
+        return 'red';
+    }
+    fill() {
+        return this;
+    }
+    beginPath() {
+        return this;
+    }
+}
+export class PathDraw extends CanvasCompat {
     _x0;
     _y0;
     _x1;
     _y1;
     _ = '';
-    beginPath() {
+    static get digits() {
+        return digits;
+    }
+    static set digits(n) {
+        digits = n;
     }
     moveTo(...args) {
         const [x, y] = pick(args);
@@ -52,13 +69,12 @@ export class PathDraw {
     }
     quadraticCurveTo(...args) {
         const [x1, y1, x, y] = pick(args);
-        this._ += 'Q' + +x1 + ',' + +y1 + ',' + (this._x1 = +x) + ',' + (this._y1 = +y);
+        this._ += `Q${fmtN(x1)},${fmtN(y1)},${fmtN((this._x1 = +x))},${fmtN((this._y1 = +y))}`;
         return this;
     }
     bezierCurveTo(...args) {
         const [x1, y1, x2, y2, x, y] = pick(args);
-        this._ +=
-            'C' + +x1 + ',' + +y1 + ',' + +x2 + ',' + +y2 + ',' + (this._x1 = +x) + ',' + (this._y1 = +y);
+        this._ += `C${fmtN(x1)},${fmtN(y1)},${fmtN(x2)},${fmtN(y2)},${fmtN((this._x1 = +x))},${fmtN((this._y1 = +y))}`;
         return this;
     }
     arcTo(...args) {
@@ -120,18 +136,7 @@ export class PathDraw {
     }
     rect(...args) {
         const [x, y, w, h] = pick(args);
-        this._ +=
-            'M' +
-                (this._x0 = this._x1 = +x) +
-                ',' +
-                (this._y0 = this._y1 = +y) +
-                'h' +
-                +w +
-                'v' +
-                +h +
-                'h' +
-                -w +
-                'Z';
+        this._ += `M${fmtN((this._x0 = this._x1 = +x))},${fmtN((this._y0 = this._y1 = +y))}h${+w}v${+h}h${-w}Z`;
         return this;
     }
     toString() {
@@ -140,15 +145,14 @@ export class PathDraw {
     d() {
         return this._;
     }
-    text(options, text, x, y, maxWidth) {
+    text(options, text, maxWidth) {
         const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
-        font
-            .getPath(text, x ?? 0, y ?? 0, fontSize, {
+        const { _x1, _y1 } = this;
+        font.getPath(text, _x1 ?? 0, _y1 ?? 0, fontSize, {
             kerning,
             letterSpacing,
             tracking,
-        })
-            .draw(this);
+        }).draw(this);
         return this;
     }
     static new() {
@@ -158,17 +162,33 @@ export class PathDraw {
         return PathDraw.new().moveTo(...arguments);
     }
     static lineTo() {
-        return PathDraw.new().lineTo(...arguments);
+        return PathDraw.new()
+            .moveTo(0, 0)
+            .lineTo(...arguments);
     }
 }
-import { SegmentLS } from './path/linked.js';
-export class PathLS {
+import { SegmentLS, MoveLS } from './path/linked.js';
+const len_segm = new WeakMap();
+const len_path = new WeakMap();
+function lenPath(seg) {
+    let v = len_path.get(seg);
+    if (v == null) {
+        len_path.set(seg, (v = seg.pathLen()));
+    }
+    return v;
+}
+function lenSegm(seg) {
+    let v = len_segm.get(seg);
+    if (v == null) {
+        len_segm.set(seg, (v = seg.segmentLen()));
+    }
+    return v;
+}
+export class PathLS extends CanvasCompat {
     _tail;
     constructor(tail) {
+        super();
         this._tail = tail;
-    }
-    beginPath() {
-        return this;
     }
     moveTo(...args) {
         const { _tail } = this;
@@ -212,17 +232,219 @@ export class PathLS {
         }
         return this;
     }
-    toString() {
-        return this._tail?.toString() || '';
-    }
     describe(opt) {
         return this._tail?.describe(opt) || '';
+    }
+    text(options, text, maxWidth) {
+        const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
+        const [_x1, _y1] = this?._tail?.end ?? [0, 0];
+        font.getPath(text, _x1, _y1, fontSize, {
+            kerning,
+            letterSpacing,
+            tracking,
+        }).draw(this);
+        return this;
+    }
+    segmentAtLength(T) {
+        let cur = this._tail;
+        if (cur) {
+            return _segmentAtLen(cur, T, lenPath(cur));
+        }
+        return [undefined, NaN, NaN];
+    }
+    segmentAt(T) {
+        let cur = this._tail;
+        if (cur) {
+            const len = lenPath(cur);
+            const [seg, n, N] = _segmentAtLen(cur, T * len, len);
+            return [seg, N == 0 ? 0 : n / N];
+        }
+        return [undefined, NaN];
+    }
+    get length() {
+        let cur = this._tail;
+        if (cur) {
+            return lenPath(cur);
+        }
+        return 0;
+    }
+    get start() {
+        return this._tail?.first?.end;
+    }
+    get end() {
+        return this._tail?.end;
+    }
+    tangentAt(T) {
+        const [seg, t] = this.segmentAt(T);
+        if (seg)
+            return seg.tangentAt(t);
+    }
+    slopeAt(T) {
+        const [seg, t] = this.segmentAt(T);
+        if (seg)
+            return seg.slopeAt(t);
+    }
+    pointAt(T) {
+        const [seg, t] = this.segmentAt(T);
+        if (seg)
+            return seg.pointAt(t);
+    }
+    pointAtLength(L) {
+        const [seg, n, N] = this.segmentAtLength(L);
+        if (seg)
+            return seg.pointAt(n / N);
+    }
+    bbox() {
+        let b = Box.new();
+        for (let cur = this._tail; cur; cur = cur._prev) {
+            b = b.merge(cur.bbox());
+        }
+        return b;
+    }
+    splitAt(T) {
+        const { _tail } = this;
+        if (_tail) {
+            const [seg, t] = this.segmentAt(T);
+            if (seg) {
+                if (t == 0) {
+                    const { prev } = seg;
+                    return [new PathLS(prev), new PathLS(_tail.withFarPrev3(seg, SegmentLS.moveTo(prev?.end)))];
+                }
+                else if (t == 1) {
+                    return [new PathLS(seg), new PathLS(_tail.withFarPrev(seg, SegmentLS.moveTo(seg.end)))];
+                }
+                let [a, b] = seg.splitAt(t);
+                if (seg === _tail) {
+                    return [new PathLS(a), new PathLS(b)];
+                }
+                else {
+                    return [new PathLS(a), new PathLS(_tail.withFarPrev(seg, b))];
+                }
+            }
+        }
+        return [new PathLS(undefined), new PathLS(undefined)];
+    }
+    cutAt(T) {
+        return T < 0 ? this.splitAt(1 + T)[1] : this.splitAt(T)[0];
+    }
+    cropAt(T0, T1 = 1) {
+        T0 = tNorm(T0);
+        T1 = tNorm(T1);
+        if (T0 <= 0) {
+            if (T1 >= 1) {
+                return this;
+            }
+            else if (T1 > 0) {
+                return this.cutAt(T1);
+            }
+        }
+        else if (T0 < 1) {
+            if (T1 >= 1) {
+                return this.cutAt(T0 - 1);
+            }
+            else if (T0 < T1) {
+                return this.cutAt(T0).cutAt((T1 - T0) / (1 - T0));
+            }
+            else if (T0 > T1) {
+                return this.cropAt(T1, T0);
+            }
+        }
+        else if (T1 < 1) {
+            return this.cropAt(T1, T0);
+        }
+        return new PathLS(undefined);
+    }
+    reversed(next) {
+        const { _tail } = this;
+        if (_tail) {
+            return new PathLS(_tail.reversed());
+        }
+        return this;
+    }
+    descArray(opt) {
+        const { _tail } = this;
+        if (_tail) {
+            return _tail.descArray(opt);
+        }
+        return [];
+    }
+    toString() {
+        const { _tail } = this;
+        if (_tail) {
+            return _tail.describe();
+        }
+        return '';
+    }
+    d() {
+        return this.describe();
     }
     static moveTo(...args) {
         return new PathLS(SegmentLS.moveTo(...args));
     }
     static parse(d) {
-        return SegmentLS.parse(d);
+        return new PathLS(SegmentLS.parse(d));
     }
+    static rect(...args) {
+        return new PathLS(SegmentLS.rect(...args));
+    }
+    static get digits() {
+        return SegmentLS.digits;
+    }
+    static set digits(n) {
+        SegmentLS.digits = n;
+    }
+    static lineTo() {
+        return PathLS.moveTo(0, 0).lineTo(...arguments);
+    }
+}
+function _segmentAtLen(cur, lenP, LEN) {
+    S1: if (cur) {
+        if (lenP < 0) {
+            lenP = LEN + (lenP % LEN);
+        }
+        if (lenP == 0) {
+            let last;
+            do {
+                if (!(cur instanceof MoveLS)) {
+                    last = cur;
+                }
+            } while ((cur = cur._prev));
+            if (last) {
+                return [last, 0, 0];
+            }
+            break S1;
+        }
+        else if (lenP > LEN) {
+            if (0 == (lenP = lenP % LEN)) {
+                lenP = LEN;
+            }
+        }
+        let end = LEN;
+        do {
+            if (cur instanceof MoveLS) {
+            }
+            else {
+                const lenS = lenSegm(cur);
+                if (lenS >= 0) {
+                    const lenT = lenP - (end -= lenS);
+                    if (lenT >= 0) {
+                        return [cur, lenT, lenS];
+                    }
+                }
+            }
+        } while ((cur = cur._prev));
+    }
+    return [undefined, NaN, NaN];
+}
+function tNorm(t) {
+    if (t < 0) {
+        t = 1 + (t % 1);
+    }
+    else if (t > 1) {
+        if (0 == (t = t % 1)) {
+            t = 1;
+        }
+    }
+    return t;
 }
 //# sourceMappingURL=draw.js.map

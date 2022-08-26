@@ -2,9 +2,10 @@ import { Vec } from '../point.js';
 import { Box } from '../box.js';
 import { Segment, DescParams } from './index.js';
 export declare abstract class SegmentLS extends Segment {
-    protected _prev?: SegmentLS;
+    _prev?: SegmentLS;
     private readonly _end;
-    set digits(n: number);
+    static get digits(): number;
+    static set digits(n: number);
     constructor(prev: SegmentLS | undefined, end: Vec);
     get prev(): SegmentLS;
     get start(): Vec;
@@ -37,18 +38,25 @@ export declare abstract class SegmentLS extends Segment {
     t(...args: Vec[] | number[]): QuadLS;
     A(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, ...args: Vec[] | number[]): ArcLS;
     a(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, ...args: Vec[] | number[]): ArcLS;
+    rect(...args: Vec[] | number[]): SegmentLS;
+    arc(...args: Vec[] | number[]): SegmentLS;
+    arcTo(...args: Vec[] | number[]): SegmentLS;
     toString(): string;
     describe(opt?: DescParams): string;
     descArray(opt?: DescParams): (number | string)[];
     cutAt(t: number): SegmentLS;
     cropAt(t0: number, t1: number): SegmentLS | undefined;
-    rect(...args: Vec[] | number[]): SegmentLS;
-    arc(...args: Vec[] | number[]): SegmentLS;
-    arcTo(...args: Vec[] | number[]): SegmentLS;
+    pathLen(): number;
+    segmentLen(): number;
+    bbox(): Box;
+    withFarPrev(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS;
+    withFarPrev3(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS;
+    withFarPrev2(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS;
     abstract _descs(opt?: DescParams): (number | string)[];
     abstract splitAt(t: number): [SegmentLS, SegmentLS];
     abstract transform(M: any): SegmentLS;
     abstract reversed(next?: SegmentLS): SegmentLS | undefined;
+    abstract withPrev(prev: SegmentLS): SegmentLS;
     static moveTo(...args: Vec[] | number[]): MoveLS;
     static lineTo(...args: Vec[] | number[]): LineLS;
     static bezierCurveTo(...args: Vec[] | number[]): CubicLS;
@@ -56,6 +64,7 @@ export declare abstract class SegmentLS extends Segment {
     static parse(d: string): MoveLS;
     static arc(...args: Vec[] | number[]): SegmentLS;
     static arcTo(...args: Vec[] | number[]): SegmentLS;
+    static rect(...args: Vec[] | number[]): SegmentLS;
 }
 export declare class LineLS extends SegmentLS {
     bbox(): Box;
@@ -66,17 +75,22 @@ export declare class LineLS extends SegmentLS {
     _descs(opt?: DescParams): (string | number)[];
     reversed(next?: SegmentLS): SegmentLS | undefined;
     transform(M: any): LineLS;
+    withPrev(newPrev: SegmentLS): LineLS;
 }
 export declare class MoveLS extends LineLS {
     _descs(opt?: DescParams): (string | number)[];
     splitAt(t: number): [SegmentLS, SegmentLS];
     transform(M: any): MoveLS;
     reversed(next?: SegmentLS): SegmentLS | undefined;
+    withPrev(prev: SegmentLS): MoveLS;
+    segmentLen(): number;
 }
 export declare class CloseLS extends LineLS {
     splitAt(t: number): [SegmentLS, SegmentLS];
     transform(M: any): CloseLS;
-    _descs(opt?: DescParams): string[];
+    _descs(opt?: DescParams): (string | number)[];
+    reversed(next?: SegmentLS): SegmentLS | undefined;
+    withPrev(prev: SegmentLS): CloseLS;
 }
 export declare class QuadLS extends SegmentLS {
     readonly p: Vec;
@@ -90,6 +104,7 @@ export declare class QuadLS extends SegmentLS {
     _descs(opt?: DescParams): (string | number)[];
     reversed(next?: SegmentLS): SegmentLS | undefined;
     transform(M: any): QuadLS;
+    withPrev(prev: SegmentLS): QuadLS;
 }
 export declare class CubicLS extends SegmentLS {
     readonly c1: Vec;
@@ -104,6 +119,7 @@ export declare class CubicLS extends SegmentLS {
     reversed(next?: SegmentLS): SegmentLS | undefined;
     transform(M: any): CubicLS;
     _descs(opt?: DescParams): (string | number)[];
+    withPrev(prev: SegmentLS): CubicLS;
 }
 export declare class ArcLS extends SegmentLS {
     readonly rx: number;
@@ -126,4 +142,5 @@ export declare class ArcLS extends SegmentLS {
     transform(M: any): ArcLS;
     reversed(next?: SegmentLS): SegmentLS | undefined;
     _descs(opt?: DescParams): (string | number)[];
+    withPrev(prev: SegmentLS): ArcLS;
 }

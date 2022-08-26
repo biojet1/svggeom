@@ -1,4 +1,4 @@
-import { parseDesc } from './path/parser.js';
+import { parseDesc, dSplit } from './path/parser.js';
 import { SegmentSE } from './path/index.js';
 import { Box } from './box.js';
 export class Path {
@@ -384,5 +384,5 @@ import { Quadratic } from './path/quadratic.js';
 export * from './path/cubic.js';
 import { SegmentLS } from './path/linked.js';
 export { SegmentLS };
-export { Arc, Quadratic, Line };
+export { Arc, Quadratic, Line, dSplit };
 //# sourceMappingURL=path.js.map

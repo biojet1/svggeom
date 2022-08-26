@@ -1,12 +1,6 @@
-import { SegmentSE } from './path/index.js';
+import { dSplit } from './path/parser.js';
+import { SegmentSE, DescParams } from './path/index.js';
 import { Box } from './box.js';
-export interface DParams {
-    relative?: boolean;
-    close?: boolean | null;
-    smooth?: boolean;
-    short?: boolean;
-    dfix?: number;
-}
 export declare class Path {
     static digits: number;
     private _segs;
@@ -38,8 +32,8 @@ export declare class Path {
     isContinuous(): boolean;
     isClosed(): boolean;
     private enumDesc;
-    descArray(params?: DParams): (string | 0 | 1)[];
-    describe(params?: DParams): string;
+    descArray(params?: DescParams): (string | 0 | 1)[];
+    describe(params?: DescParams): string;
     toString(): string;
     enumSubPaths(): Generator<Path, void, unknown>;
     static parse(d: string): Path;
@@ -51,4 +45,4 @@ import { Quadratic } from './path/quadratic.js';
 export * from './path/cubic.js';
 import { SegmentLS } from './path/linked.js';
 export { SegmentLS };
-export { Arc, Quadratic, Line };
+export { Arc, Quadratic, Line, dSplit };

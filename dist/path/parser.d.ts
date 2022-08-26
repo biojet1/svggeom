@@ -6,5 +6,6 @@ export declare const pathLetters: RegExp;
 export declare const isPathLetter: RegExp;
 export declare const numbersWithDots: RegExp;
 export declare const dots: RegExp;
+export declare function dSplit(d: string): string[];
 export declare function parseDesc(d: string): SegmentSE[];
 export declare function parseLS(d: string): import("./linked.js").MoveLS;

@@ -233,15 +233,6 @@ export class Box {
                 throw new TypeError(`Invalid box argument ${arguments}`);
         }
     }
-    final() {
-        return Object.isFrozen(this) ? this : Object.freeze(this.clone());
-    }
-    mut() {
-        return Object.isFrozen(this) ? this.clone() : this;
-    }
-    freeze() {
-        return Object.freeze(this);
-    }
 }
 export class BoxMut extends Box {
     get x() {

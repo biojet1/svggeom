@@ -13,15 +13,17 @@ export const dots = /\./g;
 function pathRegReplace(a, b, c, d) {
     return c + d.replace(dots, ' .');
 }
-export function parseDesc(d) {
-    const segments = new Array();
-    const array = d
+export function dSplit(d) {
+    return d
         .replace(numbersWithDots, pathRegReplace)
         .replace(pathLetters, ' $& ')
         .replace(hyphen, '$1 -')
         .trim()
-        .split(delimiter)
-        .reverse();
+        .split(delimiter);
+}
+export function parseDesc(d) {
+    const segments = new Array();
+    const array = dSplit(d).reverse();
     let pos = Vec.at(0, 0);
     let moved = Vec.at(0, 0);
     let last_command;
@@ -241,13 +243,7 @@ export function parseDesc(d) {
 }
 import { SegmentLS } from './linked.js';
 export function parseLS(d) {
-    const array = d
-        .replace(numbersWithDots, pathRegReplace)
-        .replace(pathLetters, ' $& ')
-        .replace(hyphen, '$1 -')
-        .trim()
-        .split(delimiter)
-        .reverse();
+    const array = dSplit(d).reverse();
     const num = function () {
         const v = array.pop();
         if (!v) {

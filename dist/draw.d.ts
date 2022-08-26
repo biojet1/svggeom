@@ -1,11 +1,19 @@
 import { Vec } from './point.js';
-export declare class PathDraw {
+import { Box } from './box.js';
+declare class CanvasCompat {
+    set fillStyle(x: any);
+    get fillStyle(): any;
+    fill(): this;
+    beginPath(): this;
+}
+export declare class PathDraw extends CanvasCompat {
     _x0?: number;
     _y0?: number;
     _x1?: number;
     _y1?: number;
     _: string;
-    beginPath(): void;
+    static get digits(): number;
+    static set digits(n: number);
     moveTo(...args: Vec[] | number[]): this;
     lineTo(...args: Vec[] | number[]): this;
     closePath(): this;
@@ -23,18 +31,17 @@ export declare class PathDraw {
         kerning?: boolean;
         tracking?: number;
         letterSpacing?: number;
-    }, text: string, x?: number, y?: number, maxWidth?: number): this;
+    }, text: string, maxWidth?: number): this;
     static new(): PathDraw;
     static moveTo(): PathDraw;
     static lineTo(): PathDraw;
 }
 import { Font } from 'opentype.js';
 import { SegmentLS } from './path/linked.js';
-import { DParams } from './path.js';
-export declare class PathLS {
-    _tail: SegmentLS;
-    constructor(tail: SegmentLS);
-    beginPath(): this;
+import { DescParams } from './path/index.js';
+export declare class PathLS extends CanvasCompat {
+    _tail: SegmentLS | undefined;
+    constructor(tail: SegmentLS | undefined);
     moveTo(...args: Vec[] | number[]): this;
     lineTo(...args: Vec[] | number[]): this;
     bezierCurveTo(...args: Vec[] | number[]): this;
@@ -43,8 +50,36 @@ export declare class PathLS {
     arcTo(...args: Vec[] | number[]): this;
     rect(...args: Vec[] | number[]): this;
     closePath(): this;
+    describe(opt?: DescParams): string;
+    text(options: {
+        fontSize: number;
+        font: Font;
+        kerning?: boolean;
+        tracking?: number;
+        letterSpacing?: number;
+    }, text: string, maxWidth?: number): this;
+    segmentAtLength(T: number): [SegmentLS | undefined, number, number];
+    segmentAt(T: number): [SegmentLS | undefined, number];
+    get length(): number;
+    get start(): Vec | undefined;
+    get end(): Vec | undefined;
+    tangentAt(T: number): Vec | undefined;
+    slopeAt(T: number): Vec | undefined;
+    pointAt(T: number): Vec | undefined;
+    pointAtLength(L: number): Vec | undefined;
+    bbox(): Box;
+    splitAt(T: number): PathLS[];
+    cutAt(T: number): PathLS;
+    cropAt(T0: number, T1?: number): PathLS;
+    reversed(next?: SegmentLS): PathLS;
+    descArray(opt?: DescParams): (number | string)[];
     toString(): string;
-    describe(opt: DParams): string;
+    d(): string;
     static moveTo(...args: Vec[] | number[]): PathLS;
-    static parse(d: string): import("./path/linked.js").MoveLS;
+    static parse(d: string): PathLS;
+    static rect(...args: Vec[] | number[]): PathLS;
+    static get digits(): number;
+    static set digits(n: number);
+    static lineTo(): PathLS;
 }
+export {};
