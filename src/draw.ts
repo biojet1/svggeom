@@ -242,7 +242,7 @@ export class PathDraw extends CanvasCompat {
 }
 
 import {Font /*, load, loadSync*/} from 'opentype.js';
-import {SegmentLS, MoveLS} from './path/linked.js';
+import {SegmentLS, MoveLS, ArcLS} from './path/linked.js';
 import {DescParams} from './path/index.js';
 
 const len_segm = new WeakMap<SegmentLS, number>();
@@ -312,9 +312,6 @@ export class PathLS extends CanvasCompat {
 		this._tail = (_tail ?? SegmentLS).rect(...args);
 		return this;
 	}
-
-	// arc(...args: Vec[] | number[]) : SegmentLS {
-
 	closePath() {
 		const {_tail} = this;
 		if (_tail) {
@@ -414,12 +411,6 @@ export class PathLS extends CanvasCompat {
 				if (seg === _tail) {
 					return [new PathLS(a), new PathLS(b)];
 				} else {
-					// if (t == 0) {
-					// 	return [new PathLS(a), new PathLS(_tail.withFarPrev2(seg, SegmentLS.moveTo(a.end)))];
-					// }
-					// if (b.length == 0) {
-					// 	return [new PathLS(a), new PathLS(_tail.withFarPrev2(seg, SegmentLS.moveTo(a.end)))];
-					// }
 					return [new PathLS(a), new PathLS(_tail.withFarPrev(seg, b))];
 				}
 			}
@@ -460,18 +451,10 @@ export class PathLS extends CanvasCompat {
 		return this;
 	}
 	descArray(opt?: DescParams): (number | string)[] {
-		const {_tail} = this;
-		if (_tail) {
-			return _tail.descArray(opt);
-		}
-		return [];
+		return this?._tail?.descArray(opt) ?? [];
 	}
 	toString() {
-		const {_tail} = this;
-		if (_tail) {
-			return _tail.describe();
-		}
-		return '';
+		return this?._tail?.describe() ?? '';
 	}
 	d() {
 		return this.describe();

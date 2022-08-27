@@ -347,6 +347,30 @@ export abstract class SegmentLS extends Segment {
 			throw new Error(`No prev`);
 		}
 	}
+	_asCubic(): SegmentLS {
+		let {_prev} = this;
+		if (_prev) {
+			const newPrev = _prev._asCubic();
+			if (newPrev !== _prev) {
+				return this.withPrev(newPrev);
+			}
+		}
+		return this;
+	}
+	arcsAsCubics(): SegmentLS {
+		for (let cur: SegmentLS | undefined = this; cur; ) {
+			if (cur instanceof ArcLS) {
+				return cur._asCubic();
+			}
+			const _prev: SegmentLS | undefined = cur._prev;
+			if (_prev) {
+				cur = _prev;
+			} else {
+				break;
+			}
+		}
+		return this;
+	}
 	abstract _descs(opt?: DescParams): (number | string)[];
 	abstract splitAt(t: number): [SegmentLS, SegmentLS];
 	abstract transform(M: any): SegmentLS;
@@ -471,7 +495,7 @@ export class LineLS extends SegmentLS {
 		const {end, _prev} = this;
 		return new LineLS(_prev?.transform(M), end.transform(M));
 	}
-	withPrev(newPrev: SegmentLS) {
+	override withPrev(newPrev: SegmentLS) {
 		const {end, _prev} = this;
 		return new LineLS(newPrev, end);
 	}
@@ -511,7 +535,7 @@ export class MoveLS extends LineLS {
 			return next;
 		}
 	}
-	withPrev(prev: SegmentLS) {
+	override withPrev(prev: SegmentLS) {
 		const {end} = this;
 		return new MoveLS(prev, end);
 	}
@@ -554,7 +578,7 @@ export class CloseLS extends LineLS {
 			}
 		}
 	}
-	withPrev(prev: SegmentLS) {
+	override withPrev(prev: SegmentLS) {
 		const {end} = this;
 		return new CloseLS(prev, end);
 	}
@@ -627,7 +651,7 @@ export class QuadLS extends SegmentLS {
 		const {p, end, _prev} = this;
 		return new QuadLS(_prev?.transform(M), p.transform(M), end.transform(M));
 	}
-	withPrev(prev: SegmentLS) {
+	override withPrev(prev: SegmentLS) {
 		const {p, end} = this;
 		return new QuadLS(prev, p, end);
 	}
@@ -704,14 +728,14 @@ export class CubicLS extends SegmentLS {
 		}
 		return ['C', x1, y1, x2, y2, ex, ey];
 	}
-	withPrev(prev: SegmentLS) {
+	override withPrev(prev: SegmentLS) {
 		const {c1, c2, end} = this;
 		return new CubicLS(prev, c1, c2, end);
 	}
 }
 
 import {arcBBox, arcLength, arcPointAt, arcSlopeAt, arcTransform} from './arc.js';
-import {arcParams} from '../util.js';
+import {arcParams, arcToCurve} from '../util.js';
 export class ArcLS extends SegmentLS {
 	readonly rx: number;
 	readonly ry: number;
@@ -813,7 +837,27 @@ export class ArcLS extends SegmentLS {
 
 		return ['A', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x, y];
 	}
-	withPrev(prev: SegmentLS) {
+	override _asCubic() {
+		let {_prev, end} = this;
+		if (_prev) {
+			const {rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta} = this;
+			const segments = arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
+			_prev = _prev._asCubic();
+			if (segments.length === 0) {
+				// Degenerated arcs can be ignored by renderer, but should not be dropped
+				// to avoid collisions with `S A S` and so on. Replace with empty line.
+				_prev = _prev.lineTo(end);
+			} else {
+				for (const s of segments) {
+					_prev = _prev.bezierCurveTo(Vec.pos(s[2], s[3]), Vec.pos(s[4], s[5]), Vec.pos(s[6], s[7]));
+				}
+			}
+			return _prev;
+		}
+		return SegmentLS.lineTo(end);
+	}
+
+	override withPrev(prev: SegmentLS) {
 		const {rx, ry, phi, sweep, bigArc, end} = this;
 		return new ArcLS(prev, rx, ry, phi, bigArc, sweep, end);
 	}

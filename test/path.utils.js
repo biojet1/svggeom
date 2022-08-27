@@ -98,14 +98,15 @@ export function testSegment(t, seg, item, opt = {}) {
         len_epsilon = epsilon,
         slope_epsilon = epsilon,
         point_epsilon = epsilon,
+        end_point_epsilon = epsilon,
         test_descs = true,
         test_tangents = true,
     } = opt;
     const tan_opt = {delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon};
     t.almostEqual(item.start[0], seg.start.x);
     t.almostEqual(item.start[1], seg.start.y);
-    t.almostEqual(item.end[0], seg.end.x);
-    t.almostEqual(item.end[1], seg.end.y);
+    t.almostEqual(item.end[0], seg.end.x, end_point_epsilon, 'ENDX');
+    t.almostEqual(item.end[1], seg.end.y, end_point_epsilon, 'ENDY');
     t.almostEqual(item.length, seg.length, len_epsilon, 'LEN', [item, seg]);
     t.sameBox(item.bbox, seg.bbox());
     let pv, px, a, b, sub;
@@ -156,7 +157,7 @@ export function testSegment(t, seg, item, opt = {}) {
         const bak = rev.reversed();
         const sega = seg.descArray({close: false});
         const reva = rev.descArray();
-        const baka = bak.descArray();
+        const baka = bak.descArray({close: false});
         t.notSame(sega, reva);
         t.same(
             baka,
@@ -168,7 +169,7 @@ export function testSegment(t, seg, item, opt = {}) {
         t.same(seg.cropAt(1, 0).describe(), seg.describe());
     }
     t.same(seg.cropAt(0.5, 0.75).describe(), seg.cropAt(-0.5, -0.25).describe());
-    // t.same(seg.cropAt(0.5, 0.75).describe(), seg.cropAt(0.75, 0.25).describe());
+    t.same(seg.cropAt(0.5, 0.75).describe(), seg.cropAt(0.75, 0.5).describe());
 
 
 }
