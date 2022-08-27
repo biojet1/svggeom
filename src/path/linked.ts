@@ -337,16 +337,16 @@ export abstract class SegmentLS extends Segment {
 			throw new Error(`No prev`);
 		}
 	}
-	withFarPrev2(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS {
-		const {_prev} = this;
-		if (farPrev === _prev) {
-			return this.withPrev(newPrev);
-		} else if (_prev) {
-			return this.withPrev(_prev.withFarPrev(farPrev, newPrev));
-		} else {
-			throw new Error(`No prev`);
-		}
-	}
+	// withFarPrev2(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS {
+	// 	const {_prev} = this;
+	// 	if (farPrev === _prev) {
+	// 		return this.withPrev(newPrev);
+	// 	} else if (_prev) {
+	// 		return this.withPrev(_prev.withFarPrev(farPrev, newPrev));
+	// 	} else {
+	// 		throw new Error(`No prev`);
+	// 	}
+	// }
 	_asCubic(): SegmentLS {
 		let {_prev} = this;
 		if (_prev) {
@@ -357,20 +357,20 @@ export abstract class SegmentLS extends Segment {
 		}
 		return this;
 	}
-	arcsAsCubics(): SegmentLS {
-		for (let cur: SegmentLS | undefined = this; cur; ) {
-			if (cur instanceof ArcLS) {
-				return cur._asCubic();
-			}
-			const _prev: SegmentLS | undefined = cur._prev;
-			if (_prev) {
-				cur = _prev;
-			} else {
-				break;
-			}
-		}
-		return this;
-	}
+	// arcsAsCubics(): SegmentLS {
+	// 	for (let cur: SegmentLS | undefined = this; cur; ) {
+	// 		if (cur instanceof ArcLS) {
+	// 			return cur._asCubic();
+	// 		}
+	// 		const _prev: SegmentLS | undefined = cur._prev;
+	// 		if (_prev) {
+	// 			cur = _prev;
+	// 		} else {
+	// 			break;
+	// 		}
+	// 	}
+	// 	return this;
+	// }
 	abstract _descs(opt?: DescParams): (number | string)[];
 	abstract splitAt(t: number): [SegmentLS, SegmentLS];
 	abstract transform(M: any): SegmentLS;
@@ -484,11 +484,11 @@ export class LineLS extends SegmentLS {
 			const rev = new LineLS(next, _prev.end);
 			return _prev.reversed(rev) ?? rev;
 		} else {
-			if (next) {
+			// if (next) {
 				return next;
-			} else {
-				throw new Error(`No prev`);
-			}
+			// } else {
+				// throw new Error(`No prev`);
+			// }
 		}
 	}
 	override transform(M: any) {
@@ -571,11 +571,11 @@ export class CloseLS extends LineLS {
 			const rev = new LineLS(next, _prev.end);
 			return _prev.reversed(rev) ?? rev;
 		} else {
-			if (next) {
+			// if (next) {
 				return next;
-			} else {
-				throw new Error(`No prev`);
-			}
+			// } else {
+				// throw new Error(`No prev`);
+			// }
 		}
 	}
 	override withPrev(prev: SegmentLS) {
@@ -640,11 +640,11 @@ export class QuadLS extends SegmentLS {
 			const rev = new QuadLS(next, p, _prev.end);
 			return _prev.reversed(rev) ?? rev;
 		} else {
-			if (next) {
+			// if (next) {
 				return next;
-			} else {
-				throw new Error(`No prev`);
-			}
+			// } else {
+				// throw new Error(`No prev`);
+			// }
 		}
 	}
 	override transform(M: any) {
@@ -695,11 +695,11 @@ export class CubicLS extends SegmentLS {
 			const rev = new CubicLS(next, c2, c1, _prev.end);
 			return _prev.reversed(rev) ?? rev;
 		} else {
-			if (next) {
+			// if (next) {
 				return next;
-			} else {
-				throw new Error(`No prev`);
-			}
+			// } else {
+				// throw new Error(`No prev`);
+			// }
 		}
 	}
 	override transform(M: any) {
@@ -808,11 +808,11 @@ export class ArcLS extends SegmentLS {
 			const rev = new ArcLS(next, rx, ry, phi, bigArc, !sweep, _prev.end);
 			return _prev.reversed(rev) ?? rev;
 		} else {
-			if (next) {
+			// if (next) {
 				return next;
-			} else {
-				throw new Error(`No prev`);
-			}
+			// } else {
+				// throw new Error(`No prev`);
+			// }
 		}
 	}
 

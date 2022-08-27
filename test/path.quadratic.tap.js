@@ -11,7 +11,7 @@ for await (const item of enum_path_data({ SEGMENTS: 'QuadraticBezier' })) {
         let seg = new Quadratic(...item.points);
         test_segment(t, seg, item, deltp);
         // let seg = SegmentLS.moveTo(200, 300).quadraticCurveTo(400, 50, 600, 300);
-        console.log(item.length);
+        // console.log(item.length);
         t.end();
     });
     test.test(`SegmentLS<${item.d}>`, { bail: CI }, function (t) {
@@ -45,7 +45,7 @@ for await (const item of enum_path_data({ SEGMENTS: 'QuadraticBezier' })) {
 }
 test.test('Testing Quadratic Bézier', { bail: !CI }, function (t) {
     let seg = SegmentLS.moveTo(200, 300).quadraticCurveTo(400, 50, 600, 300);
-    console.dir(seg);
+    // console.dir(seg);
     t.almostEqual(seg.length, 487.77, 0.01);
     t.end();
     //         let properties = new SVGPathProperties("M200,300 Q400,50 600,300");

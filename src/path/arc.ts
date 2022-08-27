@@ -266,7 +266,7 @@ export function arcTransform(self: IArc, matrix: any) {
 	return [rx, ry, phi, sweep ? 1 : 0];
 }
 
-function arcToCubic(self: IArc) {
-	const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = self;
-	return arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
-}
+// function arcToCubic(self: IArc) {
+// 	const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = self;
+// 	return arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
+// }

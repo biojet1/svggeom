@@ -209,7 +209,7 @@ export class PathDraw extends CanvasCompat {
 			letterSpacing?: number;
 		},
 		text: string,
-		maxWidth?: number
+		// maxWidth?: number
 	) {
 		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
 		// const fontSize = options.fontSize || 72;
@@ -242,7 +242,7 @@ export class PathDraw extends CanvasCompat {
 }
 
 import {Font /*, load, loadSync*/} from 'opentype.js';
-import {SegmentLS, MoveLS, ArcLS} from './path/linked.js';
+import {SegmentLS, MoveLS} from './path/linked.js';
 import {DescParams} from './path/index.js';
 
 const len_segm = new WeakMap<SegmentLS, number>();
@@ -331,7 +331,7 @@ export class PathLS extends CanvasCompat {
 			letterSpacing?: number;
 		},
 		text: string,
-		maxWidth?: number
+		// maxWidth?: number
 	) {
 		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
 		const [_x1, _y1] = this?._tail?.end ?? [0, 0];
@@ -453,7 +453,7 @@ export class PathLS extends CanvasCompat {
 	descArray(opt?: DescParams): (number | string)[] {
 		return this?._tail?.descArray(opt) ?? [];
 	}
-	toString() {
+	override toString() {
 		return this?._tail?.describe() ?? '';
 	}
 	d() {
