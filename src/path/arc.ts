@@ -86,9 +86,9 @@ export class Arc extends SegmentSE {
 		const sweep = Δθ > 0 ? 1 : 0;
 		return new Arc(start, end, rx, ry, φ, bigArc, sweep);
 	}
-	clone() {
-		return new Arc(this.start, this.end, this.rx, this.ry, this.phi, this.bigArc, this.sweep);
-	}
+	// clone() {
+	// 	return new Arc(this.start, this.end, this.rx, this.ry, this.phi, this.bigArc, this.sweep);
+	// }
 	override bbox() {
 		return arcBBox(this);
 	}

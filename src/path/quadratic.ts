@@ -1,6 +1,6 @@
-import { Vec } from '../point.js';
-import { Box } from '../box.js';
-import { SegmentSE } from './index.js';
+import {Vec} from '../point.js';
+import {Box} from '../box.js';
+import {SegmentSE} from './index.js';
 
 export class Quadratic extends SegmentSE {
 	readonly c: Vec;
@@ -10,7 +10,7 @@ export class Quadratic extends SegmentSE {
 		this.c = Vec.new(control);
 	}
 	private get _qpts(): Vec[] {
-		const { start, c, end } = this;
+		const {start, c, end} = this;
 		return [start, c, end];
 	}
 	override get length() {
@@ -34,17 +34,17 @@ export class Quadratic extends SegmentSE {
 	}
 
 	override toPathFragment() {
-		const { c, end } = this;
+		const {c, end} = this;
 		return ['Q', c.x, c.y, end.x, end.y];
 	}
 
 	override transform(M: any) {
-		const { start, c, end } = this;
+		const {start, c, end} = this;
 		return new Quadratic(start.transform(M), c.transform(M), end.transform(M));
 	}
 
 	override reversed() {
-		const { start, c, end } = this;
+		const {start, c, end} = this;
 		return new Quadratic(end, c, start);
 	}
 }
@@ -64,7 +64,7 @@ function quadratic_extrema(a: number, b: number, c: number) {
 	}
 	return [cmin, cmax];
 }
-const { pow } = Math;
+const {pow} = Math;
 
 export function quadFlatness([[sx, sy], [cx, cy], [ex, ey]]: Iterable<number>[]) {
 	// let ux = pow(3 * x1 - 2 * sx - ex, 2);   // 2cx−ex−sx
@@ -98,23 +98,20 @@ export function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 
 export function quadPointAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	const v = 1 - t;
-	return Vec.pos(
-		v * v * x1 + 2 * v * t * cx + t * t * x2,
-		v * v * y1 + 2 * v * t * cy + t * t * y2,
-	);
+	return Vec.pos(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
 }
 
 export function quadSlopeAt([start, c, end]: Vec[], t: number): Vec {
+	if (c.equals(start) || c.equals(end)) {
+		const vec = end.sub(start);
+		return vec.div(vec.abs());
+	}
 	if (t >= 1) {
 		return end.sub(c);
 	} else if (t <= 0) {
 		return c.sub(start);
 	}
 
-	if (c.equals(start) || c.equals(end)) {
-		const vec = end.sub(start);
-		return vec.div(vec.abs());
-	}
 	const a = c.sub(start).mul(1 - t);
 	const b = end.sub(c).mul(t);
 	return a.add(b).mul(2); // 1st derivative;

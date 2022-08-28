@@ -574,6 +574,7 @@ function testPath(test, PathClass) {
             }
 
             t.same(p2.cropAt(0, 1).describe({relative: true, short: true}), 'm3,4h5v6h-5z');
+            t.same(p2.cropAt(0, 2).describe({relative: true, short: true}), 'm3,4h5v6h-5z');
             t.same(p2.cropAt(0.5, 1).describe({relative: false, short: false}), 'M8,10L3,10Z');
             t.same(p2.cropAt(1, 0.5).describe({relative: false, short: false}), 'M8,10L3,10Z');
             t.same(p2.cropAt(0.5, 0.75).describe({relative: false, short: false}), 'M8,10L3,10L3,9.5');
@@ -586,6 +587,8 @@ function testPath(test, PathClass) {
                 t.same(part, 2.5);
                 t.same(len, 5);
             }
+        }else{
+            
         }
 
         t.end();

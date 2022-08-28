@@ -38,7 +38,7 @@ for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
     test.test(item.d, {bail: !CI}, function (t) {
         let seg = Arc.fromEndPoint(start, radius[0], radius[1], rotation, large_arc, sweep, end);
 
-        test_segment(t, seg, item, deltp);
+        testSegment(t, seg, item, deltp);
 
         const cubic_segs = new Path(seg.asCubic());
         const sp = seg.toPath();
@@ -71,7 +71,7 @@ for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
                         dbgwrite(`fail${I}.svg`, cubic_segs.describe(), seg.toPath());
                     },
                 };
-                test_segment(t, cubic_segs, item, opt);
+                testSegment(t, cubic_segs, item, opt);
                 ++as_cubic;
         }
         t.end();

@@ -8,6 +8,15 @@ const CI = !!process.env.CI;
 test.test(`path parse`, {bail: !CI}, function (t) {
     // let p = Path.parse("M3");
     t.throws(() => Path.parse('M3'));
+    t.end();
+});
+
+test.test(`path parse`, {bail: !CI}, function (t) {
+    let p = Path.parse('M 10,10 l 30, -40 h -30 v 30 z');
+    let kind = p.firstSegment.constructor.name;
+    t.ok(kind.startsWith("Line"), kind);
+    kind = p.lastSegment.constructor.name;
+    t.ok(kind.startsWith("Close"), kind);
 
     t.end();
 });
@@ -114,11 +123,16 @@ test.test(`SegmentLS extra`, {bail: !CI}, function (t) {
         const l = SegmentLS.lineTo(3, 4).withPrev(undefined);
         t.strictSame(l.Z(), l);
         t.notOk(l.bbox().isValid());
+        t.same([...l.lastPoint], [3, 4, 0]);
+    }
+    {
+        t.notOk(SegmentLS.moveTo(3, 4).bbox().isValid());
     }
     {
         const [a, b] = SegmentLS.moveTo(0, 0).moveTo(3, 4).splitAt(0.5);
         t.same([...a.end], [(2.5 * 3) / 5, (2.5 * 4) / 5, 0]);
         t.same([...b.end], [3, 4, 0]);
+        t.same([...b.firstPoint], [1.5, 2, 0]);
     }
     {
         t.same(SegmentLS.moveTo(3, 4).withPrev(SegmentLS.moveTo(5, 6)).describe(), 'M5,6M3,4');

@@ -192,7 +192,7 @@ export class PathDraw extends CanvasCompat {
 		return this;
 	}
 
-	toString() {
+	override toString() {
 		return this._;
 	}
 

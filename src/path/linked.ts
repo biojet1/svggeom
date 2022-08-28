@@ -1,6 +1,6 @@
 import {Vec} from '../point.js';
 import {Box} from '../box.js';
-import {Segment, DescParams} from './index.js';
+import {Segment, DescParams, tNorm, tCheck} from './index.js';
 import {parseLS} from './parser.js';
 const {min, max, abs, PI, cos, sin, sqrt, acos, tan} = Math;
 const tau = 2 * PI,
@@ -484,11 +484,7 @@ export class LineLS extends SegmentLS {
 			const rev = new LineLS(next, _prev.end);
 			return _prev.reversed(rev) ?? rev;
 		} else {
-			// if (next) {
-				return next;
-			// } else {
-				// throw new Error(`No prev`);
-			// }
+			return next;
 		}
 	}
 	override transform(M: any) {
@@ -571,11 +567,7 @@ export class CloseLS extends LineLS {
 			const rev = new LineLS(next, _prev.end);
 			return _prev.reversed(rev) ?? rev;
 		} else {
-			// if (next) {
-				return next;
-			// } else {
-				// throw new Error(`No prev`);
-			// }
+			return next;
 		}
 	}
 	override withPrev(prev: SegmentLS) {
@@ -640,11 +632,7 @@ export class QuadLS extends SegmentLS {
 			const rev = new QuadLS(next, p, _prev.end);
 			return _prev.reversed(rev) ?? rev;
 		} else {
-			// if (next) {
-				return next;
-			// } else {
-				// throw new Error(`No prev`);
-			// }
+			return next;
 		}
 	}
 	override transform(M: any) {
@@ -695,11 +683,7 @@ export class CubicLS extends SegmentLS {
 			const rev = new CubicLS(next, c2, c1, _prev.end);
 			return _prev.reversed(rev) ?? rev;
 		} else {
-			// if (next) {
-				return next;
-			// } else {
-				// throw new Error(`No prev`);
-			// }
+			return next;
 		}
 	}
 	override transform(M: any) {
@@ -808,11 +792,7 @@ export class ArcLS extends SegmentLS {
 			const rev = new ArcLS(next, rx, ry, phi, bigArc, !sweep, _prev.end);
 			return _prev.reversed(rev) ?? rev;
 		} else {
-			// if (next) {
-				return next;
-			// } else {
-				// throw new Error(`No prev`);
-			// }
+			return next;
 		}
 	}
 
@@ -941,25 +921,3 @@ function arcToHelp(cur: SegmentLS | undefined, x1: number, y1: number, x2: numbe
 	return cur;
 }
 
-function tCheck(t: number) {
-	if (t > 1) {
-		return 1;
-	} else if (t < 0) {
-		return 0;
-	}
-	// if (t < 0 || t > 1) {
-	// 	throw new RangeError(`"t" must be between 0 and 1 (${t})`);
-	// }
-	return t;
-}
-
-function tNorm(t: number) {
-	if (t < 0) {
-		t = 1 + (t % 1);
-	} else if (t > 1) {
-		if (0 == (t = t % 1)) {
-			t = 1;
-		}
-	}
-	return t;
-}

@@ -1,5 +1,5 @@
-import { Vec } from '../point.js';
-import { Box } from '../box.js';
+import {Vec} from '../point.js';
+import {Box} from '../box.js';
 
 export interface DescParams {
 	relative?: boolean;
@@ -26,11 +26,11 @@ export abstract class Segment {
 	}
 
 	toPath(): string {
-		const { x, y } = this.start;
+		const {x, y} = this.start;
 		return ['M', x, y].concat(this.toPathFragment()).join(' ');
 	}
 	descArray(opt?: DescParams): (string | number)[] {
-		const { x, y } = this.start;
+		const {x, y} = this.start;
 		return ['M', x, y].concat(this.toPathFragment(opt));
 	}
 	tangentAt(t: number) {
@@ -64,9 +64,11 @@ export abstract class SegmentSE extends Segment {
 	abstract reversed(): SegmentSE;
 	abstract splitAt(t: number): [SegmentSE, SegmentSE];
 	cutAt(t: number): SegmentSE {
-		return t < 0 ? this.splitAt(-t)[1] : this.splitAt(t)[0];
+		return t < 0 ? this.splitAt(1 + t)[1] : this.splitAt(t)[0];
 	}
 	cropAt(t0: number, t1: number): SegmentSE | undefined {
+		t0 = tNorm(t0);
+		t1 = tNorm(t1);
 		if (t0 <= 0) {
 			if (t1 >= 1) {
 				return this;
@@ -75,9 +77,9 @@ export abstract class SegmentSE extends Segment {
 			}
 		} else if (t0 < 1) {
 			if (t1 >= 1) {
-				return this.cutAt(-t0);
+				return this.cutAt(t0 - 1);
 			} else if (t0 < t1) {
-				return this.cutAt(-t0).cutAt((t1 - t0) / (1 - t0));
+				return this.cutAt(t0 - 1).cutAt((t1 - t0) / (1 - t0));
 			} else if (t0 > t1) {
 				return this.cropAt(t1, t0); // t1 < 1
 			}
@@ -85,4 +87,27 @@ export abstract class SegmentSE extends Segment {
 			return this.cropAt(t1, t0); // t0 >= 1
 		}
 	}
+}
+
+export function tCheck(t: number) {
+	if (t > 1) {
+		return 1;
+	} else if (t < 0) {
+		return 0;
+	}
+	// if (t < 0 || t > 1) {
+	// 	throw new RangeError(`"t" must be between 0 and 1 (${t})`);
+	// }
+	return t;
+}
+
+export function tNorm(t: number) {
+	if (t < 0) {
+		t = 1 + (t % 1);
+	} else if (t > 1) {
+		if (0 == (t = t % 1)) {
+			t = 1;
+		}
+	}
+	return t;
 }
