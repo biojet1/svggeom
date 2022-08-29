@@ -33,3 +33,5 @@ export declare abstract class SegmentSE extends Segment {
     cutAt(t: number): SegmentSE;
     cropAt(t0: number, t1: number): SegmentSE | undefined;
 }
+export declare function tCheck(t: number): number;
+export declare function tNorm(t: number): number;

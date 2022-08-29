@@ -74,17 +74,9 @@ function cubic_extrema(s, a, b, e) {
 }
 export { Cubic as CubicSegment };
 function splitAtScalar(z, start, a, b, end) {
-    const t = z * z * z * end -
-        3 * z * z * (z - 1) * b +
-        3 * z * (z - 1) * (z - 1) * a -
-        (z - 1) * (z - 1) * (z - 1) * start;
+    const t = z * z * z * end - 3 * z * z * (z - 1) * b + 3 * z * (z - 1) * (z - 1) * a - (z - 1) * (z - 1) * (z - 1) * start;
     return [
-        [
-            start,
-            z * a - (z - 1) * start,
-            z * z * b - 2 * z * (z - 1) * a + (z - 1) * (z - 1) * start,
-            t,
-        ],
+        [start, z * a - (z - 1) * start, z * z * b - 2 * z * (z - 1) * a + (z - 1) * (z - 1) * start, t],
         [t, z * z * end - 2 * z * (z - 1) * b + (z - 1) * (z - 1) * a, z * end - (z - 1) * b, end],
     ];
 }
@@ -115,22 +107,15 @@ export function cubicSplitAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]], z) {
     const x = splitAtScalar(z, sx, x1, x2, ex);
     const y = splitAtScalar(z, sy, y1, y2, ey);
     return [
-        [
-            Vec.pos(x[0][0], y[0][0]),
-            Vec.pos(x[0][1], y[0][1]),
-            Vec.pos(x[0][2], y[0][2]),
-            Vec.pos(x[0][3], y[0][3]),
-        ],
-        [
-            Vec.pos(x[1][0], y[1][0]),
-            Vec.pos(x[1][1], y[1][1]),
-            Vec.pos(x[1][2], y[1][2]),
-            Vec.pos(x[1][3], y[1][3]),
-        ],
+        [Vec.pos(x[0][0], y[0][0]), Vec.pos(x[0][1], y[0][1]), Vec.pos(x[0][2], y[0][2]), Vec.pos(x[0][3], y[0][3])],
+        [Vec.pos(x[1][0], y[1][0]), Vec.pos(x[1][1], y[1][1]), Vec.pos(x[1][2], y[1][2]), Vec.pos(x[1][3], y[1][3])],
     ];
 }
 export function cubicSlopeAt([start, c1, c2, end], t) {
     if (t <= 0) {
+        if (start.equals(c1)) {
+            return c2.sub(start);
+        }
         return c1.sub(start);
     }
     else if (t >= 1) {

@@ -1,6 +1,6 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
-import { Segment } from './index.js';
+import { Segment, tNorm, tCheck } from './index.js';
 import { parseLS } from './parser.js';
 const { min, max, abs, PI, cos, sin, sqrt, acos, tan } = Math;
 const tau = 2 * PI, epsilon = 1e-6, tauEpsilon = tau - epsilon;
@@ -238,6 +238,10 @@ export class SegmentLS extends Segment {
         const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
         return arcHelp(this, x, y, r, a0, a1, ccw);
     }
+    arcd(...args) {
+        const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
+        return arcHelp(this, x, y, r, (a0 * PI) / 180, (a1 * PI) / 180, ccw);
+    }
     arcTo(...args) {
         const [x1, y1, x2, y2, r] = pickNum(args);
         return arcToHelp(this, x1, y1, x2, y2, r);
@@ -281,7 +285,7 @@ export class SegmentLS extends Segment {
                 return this.cutAt(t0 - 1);
             }
             else if (t0 < t1) {
-                return this.cutAt(t0).cutAt((t1 - t0) / (1 - t0));
+                return this.cutAt(t0 - 1).cutAt((t1 - t0) / (1 - t0));
             }
             else if (t0 > t1) {
                 return this.cropAt(t1, t0);
@@ -326,17 +330,15 @@ export class SegmentLS extends Segment {
             throw new Error(`No prev`);
         }
     }
-    withFarPrev2(farPrev, newPrev) {
-        const { _prev } = this;
-        if (farPrev === _prev) {
-            return this.withPrev(newPrev);
+    _asCubic() {
+        let { _prev } = this;
+        if (_prev) {
+            const newPrev = _prev._asCubic();
+            if (newPrev !== _prev) {
+                return this.withPrev(newPrev);
+            }
         }
-        else if (_prev) {
-            return this.withPrev(_prev.withFarPrev(farPrev, newPrev));
-        }
-        else {
-            throw new Error(`No prev`);
-        }
+        return this;
     }
     static moveTo(...args) {
         const [pos] = pickPos(args);
@@ -360,6 +362,10 @@ export class SegmentLS extends Segment {
     static arc(...args) {
         const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
         return arcHelp(undefined, x, y, r, a0, a1, ccw);
+    }
+    static arcd(...args) {
+        const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
+        return arcHelp(undefined, x, y, r, (a0 * PI) / 180, (a1 * PI) / 180, ccw);
     }
     static arcTo(...args) {
         const [x1, y1, x2, y2, r] = pickNum(args);
@@ -437,12 +443,7 @@ export class LineLS extends SegmentLS {
             return _prev.reversed(rev) ?? rev;
         }
         else {
-            if (next) {
-                return next;
-            }
-            else {
-                throw new Error(`No prev`);
-            }
+            return next;
         }
     }
     transform(M) {
@@ -524,12 +525,7 @@ export class CloseLS extends LineLS {
             return _prev.reversed(rev) ?? rev;
         }
         else {
-            if (next) {
-                return next;
-            }
-            else {
-                throw new Error(`No prev`);
-            }
+            return next;
         }
     }
     withPrev(prev) {
@@ -589,12 +585,7 @@ export class QuadLS extends SegmentLS {
             return _prev.reversed(rev) ?? rev;
         }
         else {
-            if (next) {
-                return next;
-            }
-            else {
-                throw new Error(`No prev`);
-            }
+            return next;
         }
     }
     transform(M) {
@@ -645,12 +636,7 @@ export class CubicLS extends SegmentLS {
             return _prev.reversed(rev) ?? rev;
         }
         else {
-            if (next) {
-                return next;
-            }
-            else {
-                throw new Error(`No prev`);
-            }
+            return next;
         }
     }
     transform(M) {
@@ -681,7 +667,7 @@ export class CubicLS extends SegmentLS {
     }
 }
 import { arcBBox, arcLength, arcPointAt, arcSlopeAt, arcTransform } from './arc.js';
-import { arcParams } from '../util.js';
+import { arcParams, arcToCurve } from '../util.js';
 export class ArcLS extends SegmentLS {
     rx;
     ry;
@@ -737,12 +723,7 @@ export class ArcLS extends SegmentLS {
             return _prev.reversed(rev) ?? rev;
         }
         else {
-            if (next) {
-                return next;
-            }
-            else {
-                throw new Error(`No prev`);
-            }
+            return next;
         }
     }
     _descs(opt) {
@@ -755,6 +736,24 @@ export class ArcLS extends SegmentLS {
             }
         }
         return ['A', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x, y];
+    }
+    _asCubic() {
+        let { _prev, end } = this;
+        if (_prev) {
+            const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = this;
+            const segments = arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
+            _prev = _prev._asCubic();
+            if (segments.length === 0) {
+                _prev = _prev.lineTo(end);
+            }
+            else {
+                for (const s of segments) {
+                    _prev = _prev.bezierCurveTo(Vec.pos(s[2], s[3]), Vec.pos(s[4], s[5]), Vec.pos(s[6], s[7]));
+                }
+            }
+            return _prev;
+        }
+        return SegmentLS.lineTo(end);
     }
     withPrev(prev) {
         const { rx, ry, phi, sweep, bigArc, end } = this;
@@ -817,25 +816,5 @@ function arcToHelp(cur, x1, y1, x2, y2, r) {
         cur = cur.A(r, r, 0, 0, y01 * x20 > x01 * y20 ? 1 : 0, x1 + t21 * x21, y1 + t21 * y21);
     }
     return cur;
-}
-function tCheck(t) {
-    if (t > 1) {
-        return 1;
-    }
-    else if (t < 0) {
-        return 0;
-    }
-    return t;
-}
-function tNorm(t) {
-    if (t < 0) {
-        t = 1 + (t % 1);
-    }
-    else if (t > 1) {
-        if (0 == (t = t % 1)) {
-            t = 1;
-        }
-    }
-    return t;
 }
 //# sourceMappingURL=linked.js.map

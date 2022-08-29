@@ -1,6 +1,6 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
-import { SegmentSE } from './index.js';
+import { SegmentSE, DescParams } from './index.js';
 declare abstract class LineSegment extends SegmentSE {
     bbox(): Box;
     get length(): number;
@@ -9,7 +9,7 @@ declare abstract class LineSegment extends SegmentSE {
     splitAt(t: number): [SegmentSE, SegmentSE];
     transform(M: any): LineSegment;
     reversed(): LineSegment;
-    toPathFragment(): (string | number)[];
+    toPathFragment(opt?: DescParams): (string | number)[];
     abstract newFromTo(a: Vec, b: Vec): LineSegment;
 }
 export declare class Line extends LineSegment {

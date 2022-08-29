@@ -34,7 +34,6 @@ export declare class Arc extends SegmentSE {
     private constructor();
     static fromEndPoint(start: Iterable<number>, rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, end: Iterable<number>): Line | Arc;
     static fromCenterForm(c: Vec, rx: number, ry: number, φ: number, θ: number, Δθ: number): Arc;
-    clone(): Arc;
     bbox(): Box;
     get length(): number;
     pointAt(t: number): Vec;

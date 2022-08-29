@@ -74,15 +74,15 @@ export function quadPointAt([[x1, y1], [cx, cy], [x2, y2]], t) {
     return Vec.pos(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
 }
 export function quadSlopeAt([start, c, end], t) {
+    if (c.equals(start) || c.equals(end)) {
+        const vec = end.sub(start);
+        return vec.div(vec.abs());
+    }
     if (t >= 1) {
         return end.sub(c);
     }
     else if (t <= 0) {
         return c.sub(start);
-    }
-    if (c.equals(start) || c.equals(end)) {
-        const vec = end.sub(start);
-        return vec.div(vec.abs());
     }
     const a = c.sub(start).mul(1 - t);
     const b = end.sub(c).mul(t);

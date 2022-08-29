@@ -31,7 +31,7 @@ export declare class PathDraw extends CanvasCompat {
         kerning?: boolean;
         tracking?: number;
         letterSpacing?: number;
-    }, text: string, maxWidth?: number): this;
+    }, text: string): this;
     static new(): PathDraw;
     static moveTo(): PathDraw;
     static lineTo(): PathDraw;
@@ -47,6 +47,7 @@ export declare class PathLS extends CanvasCompat {
     bezierCurveTo(...args: Vec[] | number[]): this;
     quadraticCurveTo(...args: Vec[] | number[]): this;
     arc(...args: Vec[] | number[]): this;
+    arcd(...args: Vec[] | number[]): this;
     arcTo(...args: Vec[] | number[]): this;
     rect(...args: Vec[] | number[]): this;
     closePath(): this;
@@ -57,7 +58,7 @@ export declare class PathLS extends CanvasCompat {
         kerning?: boolean;
         tracking?: number;
         letterSpacing?: number;
-    }, text: string, maxWidth?: number): this;
+    }, text: string): this;
     segmentAtLength(T: number): [SegmentLS | undefined, number, number];
     segmentAt(T: number): [SegmentLS | undefined, number];
     get length(): number;

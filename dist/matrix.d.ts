@@ -37,7 +37,6 @@ export declare class Matrix {
     skew(x: number, y: number): Matrix;
     skewX(x: number): Matrix;
     skewY(y: number): Matrix;
-    static compose(dec: any): string;
     static hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;
     static fromArray(m: number[]): Matrix;
     static parse(d: string): Matrix;
@@ -55,8 +54,6 @@ export declare class Matrix {
     static scale(scaleX: number, scaleY?: number): Matrix;
     static Identity: Matrix;
     static identity(): Matrix;
-    final(): Readonly<Matrix>;
-    mut(): Matrix;
 }
 interface ElementLike {
     nodeType: number;

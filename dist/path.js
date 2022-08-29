@@ -1,5 +1,5 @@
 import { parseDesc, dSplit } from './path/parser.js';
-import { SegmentSE } from './path/index.js';
+import { SegmentSE, tNorm, tCheck } from './path/index.js';
 import { Box } from './box.js';
 export class Path {
     static digits = 5;
@@ -16,17 +16,17 @@ export class Path {
         return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
     }
     tangentAt(T) {
-        const [seg, t] = this.segmentAt(T);
+        const [seg, t] = this.segmentAt(tCheck(T));
         if (seg)
             return seg.tangentAt(t);
     }
     slopeAt(T) {
-        const [seg, t] = this.segmentAt(T);
+        const [seg, t] = this.segmentAt(tCheck(T));
         if (seg)
             return seg.slopeAt(t);
     }
     pointAt(T) {
-        const [seg, t] = this.segmentAt(T);
+        const [seg, t] = this.segmentAt(tCheck(T));
         if (seg)
             return seg.pointAt(t);
     }
@@ -34,7 +34,7 @@ export class Path {
         return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
     }
     splitAt(T) {
-        const [seg, t, i] = this.segmentAt(T);
+        const [seg, t, i] = this.segmentAt(tCheck(T));
         if (seg) {
             const { _segs: segs } = this;
             let s;
@@ -46,7 +46,7 @@ export class Path {
         }
     }
     cutAt(T) {
-        const [seg, t, i] = this.segmentAt(T < 0 ? -T : T);
+        const [seg, t, i] = this.segmentAt(T < 0 ? 1 + T : T);
         if (seg) {
             const { _segs: segs } = this;
             if (T < 0) {
@@ -65,6 +65,8 @@ export class Path {
         return new Path([]);
     }
     cropAt(T0, T1 = 1) {
+        T0 = tNorm(T0);
+        T1 = tNorm(T1);
         if (T0 <= 0) {
             if (T1 >= 1) {
                 return this;
@@ -75,10 +77,10 @@ export class Path {
         }
         else if (T0 < 1) {
             if (T1 >= 1) {
-                return this.cutAt(-T0);
+                return this.cutAt(T0 - 1);
             }
             else if (T0 < T1) {
-                return this.cutAt(-T0).cutAt((T1 - T0) / (1 - T0));
+                return this.cutAt(T0 - 1).cutAt((T1 - T0) / (1 - T0));
             }
             else if (T0 > T1) {
                 return this.cropAt(T1, T0);
@@ -90,10 +92,10 @@ export class Path {
         return new Path([]);
     }
     transform(M) {
-        return new Path(this._segs.map((seg) => seg.transform(M)));
+        return new Path(this._segs.map(seg => seg.transform(M)));
     }
     reversed() {
-        return new Path(this._segs.map((seg) => seg.reversed()).reverse());
+        return new Path(this._segs.map(seg => seg.reversed()).reverse());
     }
     get length() {
         return this.calcLength();
@@ -114,7 +116,7 @@ export class Path {
         }
         const lens = this._segs.map((c) => c.length);
         const len = (this._length = lens.reduce((a, b) => a + b, 0));
-        this._lengths = lens.map((v) => v / len);
+        this._lengths = lens.map(v => v / len);
         return len;
     }
     get lengths() {
@@ -126,7 +128,7 @@ export class Path {
             return seg.start;
         }
     }
-    get firstSegmentSE() {
+    get firstSegment() {
         const { _segs: segs } = this;
         for (const seg of segs) {
             return seg;
@@ -139,7 +141,13 @@ export class Path {
             return segs[length - 1].end;
         }
     }
-    get lastSegmentSE() {
+    get start() {
+        return this.firstPoint;
+    }
+    get end() {
+        return this.lastPoint;
+    }
+    get lastSegment() {
         const { _segs: segs } = this;
         const { length } = segs;
         if (length > 0) {
@@ -203,7 +211,7 @@ export class Path {
         return false;
     }
     *enumDesc(params) {
-        const { relative: rel = false, close = true, smooth = false, short = false, dfix = Path.digits, } = params;
+        const { relative: rel = false, close = true, smooth = false, short = false, dfix = Path.digits } = params;
         let segs = this._segs;
         const n = segs.length;
         let self_closed = false;
@@ -217,9 +225,7 @@ export class Path {
         const end = segs.length > 0 ? segs[segs.length - 1].end : undefined;
         TOP: for (const [i, seg] of segs.entries()) {
             const { start: seg_start } = seg;
-            if (!current_pos ||
-                !seg_start.equals(current_pos) ||
-                (self_closed && end && seg_start.equals(end))) {
+            if (!current_pos || !seg_start.equals(current_pos) || (self_closed && end && seg_start.equals(end))) {
                 move_pos = seg_start;
                 const _seg_start = rel ? (current_pos ? seg_start.sub(current_pos) : seg_start) : seg_start;
                 yield rel ? 'm' : 'M';
@@ -236,9 +242,6 @@ export class Path {
                                     break OUT;
                                 }
                             }
-                        }
-                        if (close === false) {
-                            break OUT;
                         }
                     }
                     const { x, y } = rel ? seg.end.sub(seg_start) : seg.end;
@@ -341,7 +344,7 @@ export class Path {
         return this.descArray(params).join(' ');
     }
     toString() {
-        return this.descArray().join(' ');
+        return this.describe();
     }
     *enumSubPaths() {
         const { _segs: segs } = this;

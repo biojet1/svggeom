@@ -40,6 +40,7 @@ export declare abstract class SegmentLS extends Segment {
     a(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, ...args: Vec[] | number[]): ArcLS;
     rect(...args: Vec[] | number[]): SegmentLS;
     arc(...args: Vec[] | number[]): SegmentLS;
+    arcd(...args: Vec[] | number[]): SegmentLS;
     arcTo(...args: Vec[] | number[]): SegmentLS;
     toString(): string;
     describe(opt?: DescParams): string;
@@ -51,7 +52,7 @@ export declare abstract class SegmentLS extends Segment {
     bbox(): Box;
     withFarPrev(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS;
     withFarPrev3(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS;
-    withFarPrev2(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS;
+    _asCubic(): SegmentLS;
     abstract _descs(opt?: DescParams): (number | string)[];
     abstract splitAt(t: number): [SegmentLS, SegmentLS];
     abstract transform(M: any): SegmentLS;
@@ -63,6 +64,7 @@ export declare abstract class SegmentLS extends Segment {
     static quadraticCurveTo(...args: Vec[] | number[]): QuadLS;
     static parse(d: string): MoveLS;
     static arc(...args: Vec[] | number[]): SegmentLS;
+    static arcd(...args: Vec[] | number[]): SegmentLS;
     static arcTo(...args: Vec[] | number[]): SegmentLS;
     static rect(...args: Vec[] | number[]): SegmentLS;
 }
@@ -142,5 +144,6 @@ export declare class ArcLS extends SegmentLS {
     transform(M: any): ArcLS;
     reversed(next?: SegmentLS): SegmentLS | undefined;
     _descs(opt?: DescParams): (string | number)[];
+    _asCubic(): SegmentLS;
     withPrev(prev: SegmentLS): ArcLS;
 }

@@ -37,9 +37,11 @@ export class SegmentSE extends Segment {
         return this._end;
     }
     cutAt(t) {
-        return t < 0 ? this.splitAt(-t)[1] : this.splitAt(t)[0];
+        return t < 0 ? this.splitAt(1 + t)[1] : this.splitAt(t)[0];
     }
     cropAt(t0, t1) {
+        t0 = tNorm(t0);
+        t1 = tNorm(t1);
         if (t0 <= 0) {
             if (t1 >= 1) {
                 return this;
@@ -50,10 +52,10 @@ export class SegmentSE extends Segment {
         }
         else if (t0 < 1) {
             if (t1 >= 1) {
-                return this.cutAt(-t0);
+                return this.cutAt(t0 - 1);
             }
             else if (t0 < t1) {
-                return this.cutAt(-t0).cutAt((t1 - t0) / (1 - t0));
+                return this.cutAt(t0 - 1).cutAt((t1 - t0) / (1 - t0));
             }
             else if (t0 > t1) {
                 return this.cropAt(t1, t0);
@@ -63,5 +65,25 @@ export class SegmentSE extends Segment {
             return this.cropAt(t1, t0);
         }
     }
+}
+export function tCheck(t) {
+    if (t > 1) {
+        return 1;
+    }
+    else if (t < 0) {
+        return 0;
+    }
+    return t;
+}
+export function tNorm(t) {
+    if (t < 0) {
+        t = 1 + (t % 1);
+    }
+    else if (t > 1) {
+        if (0 == (t = t % 1)) {
+            t = 1;
+        }
+    }
+    return t;
 }
 //# sourceMappingURL=index.js.map

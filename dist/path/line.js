@@ -1,5 +1,5 @@
 import { Box } from '../box.js';
-import { SegmentSE } from './index.js';
+import { SegmentSE, tNorm } from './index.js';
 class LineSegment extends SegmentSE {
     bbox() {
         const { start: { x: p1x, y: p1y }, end: { x: p2x, y: p2y }, } = this;
@@ -13,7 +13,7 @@ class LineSegment extends SegmentSE {
     }
     pointAt(t) {
         const { start, end } = this;
-        return end.sub(start).mul(t).postAdd(start);
+        return end.sub(start).mul(tNorm(t)).postAdd(start);
     }
     slopeAt(t) {
         const { start, end } = this;
@@ -33,7 +33,7 @@ class LineSegment extends SegmentSE {
         const { start, end } = this;
         return this.newFromTo(end, start);
     }
-    toPathFragment() {
+    toPathFragment(opt) {
         const { end: { x, y }, } = this;
         return ['L', x, y];
     }

@@ -25,9 +25,11 @@ export declare class Path {
     private calcLength;
     private get lengths();
     get firstPoint(): import("./point.js").Vec | undefined;
-    get firstSegmentSE(): SegmentSE | undefined;
+    get firstSegment(): SegmentSE | undefined;
     get lastPoint(): import("./point.js").Vec | undefined;
-    get lastSegmentSE(): SegmentSE | undefined;
+    get start(): import("./point.js").Vec | undefined;
+    get end(): import("./point.js").Vec | undefined;
+    get lastSegment(): SegmentSE | undefined;
     segmentAt(T: number): [SegmentSE | undefined, number, number];
     isContinuous(): boolean;
     isClosed(): boolean;

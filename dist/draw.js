@@ -145,7 +145,7 @@ export class PathDraw extends CanvasCompat {
     d() {
         return this._;
     }
-    text(options, text, maxWidth) {
+    text(options, text) {
         const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
         const { _x1, _y1 } = this;
         font.getPath(text, _x1 ?? 0, _y1 ?? 0, fontSize, {
@@ -215,6 +215,11 @@ export class PathLS extends CanvasCompat {
         this._tail = (_tail ?? SegmentLS).arc(...args);
         return this;
     }
+    arcd(...args) {
+        const { _tail } = this;
+        this._tail = (_tail ?? SegmentLS).arcd(...args);
+        return this;
+    }
     arcTo(...args) {
         const { _tail } = this;
         this._tail = (_tail ?? SegmentLS).arcTo(...args);
@@ -235,7 +240,7 @@ export class PathLS extends CanvasCompat {
     describe(opt) {
         return this._tail?.describe(opt) || '';
     }
-    text(options, text, maxWidth) {
+    text(options, text) {
         const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
         const [_x1, _y1] = this?._tail?.end ?? [0, 0];
         font.getPath(text, _x1, _y1, fontSize, {
@@ -343,7 +348,7 @@ export class PathLS extends CanvasCompat {
                 return this.cutAt(T0 - 1);
             }
             else if (T0 < T1) {
-                return this.cutAt(T0).cutAt((T1 - T0) / (1 - T0));
+                return this.cutAt(T0 - 1).cutAt((T1 - T0) / (1 - T0));
             }
             else if (T0 > T1) {
                 return this.cropAt(T1, T0);
@@ -362,18 +367,10 @@ export class PathLS extends CanvasCompat {
         return this;
     }
     descArray(opt) {
-        const { _tail } = this;
-        if (_tail) {
-            return _tail.descArray(opt);
-        }
-        return [];
+        return this?._tail?.descArray(opt) ?? [];
     }
     toString() {
-        const { _tail } = this;
-        if (_tail) {
-            return _tail.describe();
-        }
-        return '';
+        return this?._tail?.describe() ?? '';
     }
     d() {
         return this.describe();
@@ -410,7 +407,7 @@ function _segmentAtLen(cur, lenP, LEN) {
                 }
             } while ((cur = cur._prev));
             if (last) {
-                return [last, 0, 0];
+                return [last, 0, lenSegm(last)];
             }
             break S1;
         }

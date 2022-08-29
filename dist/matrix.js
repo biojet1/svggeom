@@ -153,10 +153,6 @@ export class Matrix {
     skewY(y) {
         return this.skew(0, y);
     }
-    static compose(dec) {
-        const { translateX, translateY, rotate, skewX, scaleX, scaleY } = dec;
-        return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${rotate ? `rotate(${rotate})` : ''}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`}`;
-    }
     static hexad(a = 1, b = 0, c = 0, d = 1, e = 0, f = 0) {
         return new this([a, b, c, d, e, f]);
     }
@@ -245,12 +241,6 @@ export class Matrix {
     static Identity = new Matrix();
     static identity() {
         return this.Identity;
-    }
-    final() {
-        return Object.isFrozen(this) ? this : Object.freeze(this.clone());
-    }
-    mut() {
-        return Object.isFrozen(this) ? this.clone() : this;
     }
 }
 function closeEnough(a, b, threshold = 1e-6) {
