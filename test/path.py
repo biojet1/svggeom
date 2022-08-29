@@ -229,7 +229,7 @@ if not DATA:
                 assert t <= 1
                 pAt = dict(zip(["x", "y"], brpt(p.point(t))))
                 try:
-                    tAt = dict(zip(["tx", "ty"], brpt(p.derivative(t))))
+                    tAt = dict(zip(["tx", "ty"], brpt(p.unit_tangent(t))))
                 except AssertionError:
                     tAt = dict(tx=0, ty=0)
                     stderr.write(f"AssertionError {t} {p!r}\n")
@@ -276,7 +276,8 @@ elif DATA.startswith("CubicBezier"):
                     assert t >= 0
                     assert t <= 1
                     pAt = dict(zip(["x", "y"], brpt(seg.point(t))))
-                    tAt = dict(zip(["tx", "ty"], brpt(seg.derivative(t))))
+                    # tAt = dict(zip(["tx", "ty"], brpt(seg.derivative(t))))
+                    tAt = dict(zip(["tx", "ty"], brpt(seg.unit_tangent(t))))
                     if t < 1 and t > 0:
                         s = SPTPath(seg)
                         a = s.cropped(0, t)
@@ -311,7 +312,7 @@ elif DATA.startswith("QuadraticBezier"):
                     assert t >= 0
                     assert t <= 1
                     pAt = dict(zip(["x", "y"], brpt(seg.point(t))))
-                    tAt = dict(zip(["tx", "ty"], brpt(seg.derivative(t))))
+                    tAt = dict(zip(["tx", "ty"], brpt(seg.unit_tangent(t))))
 
                     if t < 1 and t > 0:
                         s = SPTPath(seg)

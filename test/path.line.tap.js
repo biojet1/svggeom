@@ -28,8 +28,8 @@ test.test(`SegmentLS.parse`, { bail: CI }, function (t) {
 for await (const item of enum_path_data({ SEGMENTS: 'Line' })) {
     test.test(`<${item.d}>`, { bail: CI }, function (t) {
         let seg = new Line(item.start, item.end);
-        test_segment(t, seg, item);
-        // testSegment(t, seg, item);
+        // test_segment(t, seg, item);
+        testSegment(t, seg, item);
         t.end();
     });
     test.test(`SegmentLS<${item.d}>`, { bail: CI }, function (t) {

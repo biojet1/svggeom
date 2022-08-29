@@ -86,9 +86,9 @@ export class Arc extends SegmentSE {
 		const sweep = Δθ > 0 ? 1 : 0;
 		return new Arc(start, end, rx, ry, φ, bigArc, sweep);
 	}
-	clone() {
-		return new Arc(this.start, this.end, this.rx, this.ry, this.phi, this.bigArc, this.sweep);
-	}
+	// clone() {
+	// 	return new Arc(this.start, this.end, this.rx, this.ry, this.phi, this.bigArc, this.sweep);
+	// }
 	override bbox() {
 		return arcBBox(this);
 	}
@@ -266,7 +266,7 @@ export function arcTransform(self: IArc, matrix: any) {
 	return [rx, ry, phi, sweep ? 1 : 0];
 }
 
-function arcToCubic(self: IArc) {
-	const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = self;
-	return arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
-}
+// function arcToCubic(self: IArc) {
+// 	const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = self;
+// 	return arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
+// }

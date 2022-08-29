@@ -6,15 +6,34 @@ function almostEqual(value, expected, epsilon = 0.0000000000000001) {
     if (value === expected) {
         return 2;
     }
-    if (Math.abs(value) > 1e10 && Math.abs(value) > 1e10) {
-        while (value + epsilon === value && expected + epsilon === expected) {
-            value /= 1000;
-            expected /= 1000;
-        }
-    }
     const d = Math.abs(value - expected);
     if (d <= epsilon) {
         return 1;
+    }
+    if (Math.abs(d) > 1e10 && Math.abs(value) > 1e10 && Math.abs(expected) > 1e10 && Math.sign(value) == Math.sign(expected)) {
+        let j = 1;
+        while (value / j + epsilon == value / j && expected / j + epsilon == expected / j) {
+            j *= 10;
+        }
+        if (j > 10) {
+            value /= j;
+            expected /= j;
+            const d2 = Math.abs(value - expected);
+            console.log('almostEqual', value, expected, epsilon, d, d2);
+            if (d2 <= epsilon) {
+                return 1;
+            }
+        }
+
+        // while (value + epsilon == value && expected + epsilon == expected) {
+        //     value /= 10;
+        //     expected /= 10;
+        // }
+        // const d2 = Math.abs(value - expected);
+        // console.log('almostEqual', value, expected, epsilon, d, d2);
+        // if (d2 <= epsilon) {
+        //     return 1;
+        // }
     }
     return 0;
 }
@@ -210,15 +229,6 @@ test.Test.prototype.addAssert('sameDescs', 3, function (a, b, opt, message, extr
         if (A == B) {
             continue;
         } else if (isNumber(A) && isNumber(B)) {
-            // if (A + epsilon === A && B + epsilon === B) {
-            //     if (Math.abs(A) > 1e10 && Math.abs(A) > 1e10) {
-            //         while (A + epsilon === A && B + epsilon === B) {
-            //             A /= 1000;
-            //             B /= 1000;
-            //         }
-            //     }
-            //     // throw new Error('Too big');
-            // }
             if (almostEqual(A, B, epsilon)) {
                 continue;
             } else {

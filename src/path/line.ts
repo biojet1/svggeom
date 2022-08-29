@@ -1,6 +1,6 @@
 import { Vec } from '../point.js';
 import { Box } from '../box.js';
-import { SegmentSE } from './index.js';
+import { SegmentSE, tNorm, DescParams } from './index.js';
 
 abstract class LineSegment extends SegmentSE {
 	override bbox() {
@@ -19,7 +19,7 @@ abstract class LineSegment extends SegmentSE {
 	}
 	override pointAt(t: number) {
 		const { start, end } = this;
-		return end.sub(start).mul(t).postAdd(start);
+		return end.sub(start).mul(tNorm(t)).postAdd(start);
 	}
 
 	override slopeAt(t: number) {
@@ -45,7 +45,7 @@ abstract class LineSegment extends SegmentSE {
 		return this.newFromTo(end, start);
 	}
 
-	override toPathFragment() {
+	override toPathFragment(opt?: DescParams) {
 		const {
 			end: { x, y },
 		} = this;

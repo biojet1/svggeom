@@ -1,6 +1,6 @@
 'uses strict';
 import test from 'tap';
-import {Path, PathLS, Vec} from 'svggeom';
+import {Path, PathLS, SegmentLS, Vec} from 'svggeom';
 import {enum_path_data, test_segment} from './path.utils.js';
 import './utils.js';
 const CI = !!process.env.CI;
@@ -8,6 +8,15 @@ const CI = !!process.env.CI;
 test.test(`path parse`, {bail: !CI}, function (t) {
     // let p = Path.parse("M3");
     t.throws(() => Path.parse('M3'));
+    t.end();
+});
+
+test.test(`path parse`, {bail: !CI}, function (t) {
+    let p = Path.parse('M 10,10 l 30, -40 h -30 v 30 z');
+    let kind = p.firstSegment.constructor.name;
+    t.ok(kind.startsWith("Line"), kind);
+    kind = p.lastSegment.constructor.name;
+    t.ok(kind.startsWith("Close"), kind);
 
     t.end();
 });
@@ -88,10 +97,57 @@ test.test(`PathLS empty`, {bail: !CI}, function (t) {
         t.same(p.segmentAt(f), [undefined, NaN]);
         t.same(p.segmentAtLength(f), [undefined, NaN, NaN]);
         t.strictSame(p.pointAtLength(f), undefined);
+        const [a, b] = p.splitAt(f);
+        t.same(a.describe(), '');
+        t.same(b.describe(), '');
+        t.same(a.lineTo(3, 4).describe(), 'M0,0L3,4');
+        t.same(b.lineTo(Vec.pos(3, 4)).describe(), 'M0,0L3,4');
     }
-    
+
     t.strictSame(p.reversed(), p);
     t.same(p.descArray(), []);
     t.same(p.length, 0);
+    t.end();
+});
+
+test.test(`SegmentLS extra`, {bail: !CI}, function (t) {
+    const p = SegmentLS.moveTo(3, 4);
+    t.throwsRE(function () {
+        p.prev;
+    }, /No prev/);
+    t.throwsRE(function () {
+        p.start;
+    }, /No prev/);
+    t.same(SegmentLS.lineTo(3, 4).withPrev(undefined).reversed().constructor.name, 'MoveLS');
+    {
+        const l = SegmentLS.lineTo(3, 4).withPrev(undefined);
+        t.strictSame(l.Z(), l);
+        t.notOk(l.bbox().isValid());
+        t.same([...l.lastPoint], [3, 4, 0]);
+    }
+    {
+        t.notOk(SegmentLS.moveTo(3, 4).bbox().isValid());
+    }
+    {
+        const [a, b] = SegmentLS.moveTo(0, 0).moveTo(3, 4).splitAt(0.5);
+        t.same([...a.end], [(2.5 * 3) / 5, (2.5 * 4) / 5, 0]);
+        t.same([...b.end], [3, 4, 0]);
+        t.same([...b.firstPoint], [1.5, 2, 0]);
+    }
+    {
+        t.same(SegmentLS.moveTo(3, 4).withPrev(SegmentLS.moveTo(5, 6)).describe(), 'M5,6M3,4');
+    }
+    {
+        const s = SegmentLS.moveTo(3, 4).arc(100, 100, 50, 0, -1e-16, false);
+        const segs = [...s.enum()];
+        const matc = ['ArcLS', 'ArcLS', 'LineLS', 'MoveLS'];
+        segs.forEach((seg, i) => {
+            t.same(seg.constructor.name, matc[i], [i, s.describe()]);
+        });
+    }
+    t.same(SegmentLS.bezierCurveTo(100, 50, 0, 24, 200, 100).describe(), 'M0,0C100,50,0,24,200,100');
+    t.same(SegmentLS.quadraticCurveTo(100, 50, 200, 100).describe(), 'M0,0Q100,50,200,100');
+    t.same(SegmentLS.arcd(0, 0, 50, 0, 360).describe(), 'M50,0A50,50,0,1,1,-50,0A50,50,0,1,1,50,0');
+
     t.end();
 });

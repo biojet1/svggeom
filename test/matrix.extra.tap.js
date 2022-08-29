@@ -1,7 +1,7 @@
 'uses strict';
 import './utils.js';
 import test from 'tap';
-import {Matrix} from 'svggeom';
+import {Matrix, MatrixMut} from 'svggeom';
 
 const CI = !!process.env.CI;
 
@@ -89,8 +89,23 @@ test.test(`Matrix.inverse`, {bail: !CI}, function (t) {
 test.test(`logic`, {bail: !CI}, function (t) {
     const m1 = Matrix.parse('translate(0,60)scale(2)');
     const m2 = Matrix.parse('scale(2)translate(0,60)');
-    console.log(m1.describe(), m1.inverse());
-    console.log(m2.describe(), m2.inverse());
+    // console.log(m1.describe(), m1.inverse());
+    // console.log(m2.describe(), m2.inverse());
     t.notOk(m1.equals(m2), `${m1} ${m2}`);
     t.end();
 });
+
+// test.test(`MatrixMut`, {bail: !CI}, function (t) {
+//     // const m1 = MatrixMut.parse('translate(3,4)');
+//     const a = Matrix.parse('matrix(1 2 3 4 5 6)');
+//     const b = Matrix.parse('matrix(7 8 9 0 1 2)');
+//     const c = Matrix.parse('matrix(3 4 5 6 7 8)');
+//     const d = a.cat(b).cat(c);
+//     const e = c.cat(b).cat(a);
+//     const m = MatrixMut.new('matrix(1 2 3 4 5 6)');
+//      // console.log(m.constructor.name);
+//     m.catSelf(b);
+//     m.catSelf(c);
+//     t.ok(m.equals(d));
+//     t.end();
+// });

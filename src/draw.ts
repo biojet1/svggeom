@@ -192,7 +192,7 @@ export class PathDraw extends CanvasCompat {
 		return this;
 	}
 
-	toString() {
+	override toString() {
 		return this._;
 	}
 
@@ -209,7 +209,7 @@ export class PathDraw extends CanvasCompat {
 			letterSpacing?: number;
 		},
 		text: string,
-		maxWidth?: number
+		// maxWidth?: number
 	) {
 		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
 		// const fontSize = options.fontSize || 72;
@@ -296,6 +296,12 @@ export class PathLS extends CanvasCompat {
 		this._tail = (_tail ?? SegmentLS).arc(...args);
 		return this;
 	}
+	arcd(...args: Vec[] | number[]) {
+		const {_tail} = this;
+		this._tail = (_tail ?? SegmentLS).arcd(...args);
+		return this;
+	}
+
 	arcTo(...args: Vec[] | number[]) {
 		const {_tail} = this;
 		this._tail = (_tail ?? SegmentLS).arcTo(...args);
@@ -306,9 +312,6 @@ export class PathLS extends CanvasCompat {
 		this._tail = (_tail ?? SegmentLS).rect(...args);
 		return this;
 	}
-
-	// arc(...args: Vec[] | number[]) : SegmentLS {
-
 	closePath() {
 		const {_tail} = this;
 		if (_tail) {
@@ -328,7 +331,7 @@ export class PathLS extends CanvasCompat {
 			letterSpacing?: number;
 		},
 		text: string,
-		maxWidth?: number
+		// maxWidth?: number
 	) {
 		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
 		const [_x1, _y1] = this?._tail?.end ?? [0, 0];
@@ -408,12 +411,6 @@ export class PathLS extends CanvasCompat {
 				if (seg === _tail) {
 					return [new PathLS(a), new PathLS(b)];
 				} else {
-					// if (t == 0) {
-					// 	return [new PathLS(a), new PathLS(_tail.withFarPrev2(seg, SegmentLS.moveTo(a.end)))];
-					// }
-					// if (b.length == 0) {
-					// 	return [new PathLS(a), new PathLS(_tail.withFarPrev2(seg, SegmentLS.moveTo(a.end)))];
-					// }
 					return [new PathLS(a), new PathLS(_tail.withFarPrev(seg, b))];
 				}
 			}
@@ -436,7 +433,7 @@ export class PathLS extends CanvasCompat {
 			if (T1 >= 1) {
 				return this.cutAt(T0 - 1);
 			} else if (T0 < T1) {
-				return this.cutAt(T0).cutAt((T1 - T0) / (1 - T0));
+				return this.cutAt(T0 - 1).cutAt((T1 - T0) / (1 - T0));
 			} else if (T0 > T1) {
 				return this.cropAt(T1, T0);
 			}
@@ -454,18 +451,10 @@ export class PathLS extends CanvasCompat {
 		return this;
 	}
 	descArray(opt?: DescParams): (number | string)[] {
-		const {_tail} = this;
-		if (_tail) {
-			return _tail.descArray(opt);
-		}
-		return [];
+		return this?._tail?.descArray(opt) ?? [];
 	}
-	toString() {
-		const {_tail} = this;
-		if (_tail) {
-			return _tail.describe();
-		}
-		return '';
+	override toString() {
+		return this?._tail?.describe() ?? '';
 	}
 	d() {
 		return this.describe();
@@ -504,7 +493,7 @@ function _segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [
 			} while ((cur = cur._prev));
 
 			if (last) {
-				return [last, 0, 0];
+				return [last, 0, lenSegm(last)];
 			}
 			break S1;
 		} else if (lenP > LEN) {
