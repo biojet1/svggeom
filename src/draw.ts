@@ -208,7 +208,7 @@ export class PathDraw extends CanvasCompat {
 			tracking?: number;
 			letterSpacing?: number;
 		},
-		text: string,
+		text: string
 		// maxWidth?: number
 	) {
 		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
@@ -330,7 +330,7 @@ export class PathLS extends CanvasCompat {
 			tracking?: number;
 			letterSpacing?: number;
 		},
-		text: string,
+		text: string
 		// maxWidth?: number
 	) {
 		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
@@ -407,6 +407,9 @@ export class PathLS extends CanvasCompat {
 				} else if (t == 1) {
 					return [new PathLS(seg), new PathLS(_tail.withFarPrev(seg, SegmentLS.moveTo(seg.end)))];
 				}
+				if (t < 0 || t > 1) {
+					throw new Error();
+				}
 				let [a, b] = seg.splitAt(t);
 				if (seg === _tail) {
 					return [new PathLS(a), new PathLS(b)];
@@ -453,6 +456,14 @@ export class PathLS extends CanvasCompat {
 	descArray(opt?: DescParams): (number | string)[] {
 		return this?._tail?.descArray(opt) ?? [];
 	}
+	get firstPoint() {
+		return this.start;
+	}
+
+	get lastPoint() {
+		return this.end;
+	}
+
 	override toString() {
 		return this?._tail?.describe() ?? '';
 	}

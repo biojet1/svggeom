@@ -1,9 +1,9 @@
-import { Vec } from '../point.js';
-import { SegmentSE } from './index.js';
-import { Arc } from './arc.js';
-import { Cubic } from './cubic.js';
-import { Line, Close, Vertical, Horizontal } from './line.js';
-import { Quadratic } from './quadratic.js';
+import {Vec} from '../point.js';
+import {SegmentSE} from './index.js';
+import {Arc} from './arc.js';
+import {Cubic} from './cubic.js';
+import {Line, Close, Vertical, Horizontal} from './line.js';
+import {Quadratic} from './quadratic.js';
 
 // splits a transformation chain
 export const transforms = /\)\s*,?\s*/;
@@ -271,7 +271,7 @@ export function parseDesc(d: string) {
 	return segments;
 }
 
-import { SegmentLS } from './linked.js';
+import {SegmentLS} from './linked.js';
 
 export function parseLS(d: string) {
 	// prepare for parsing
@@ -298,10 +298,9 @@ export function parseLS(d: string) {
 	const first = SegmentLS.moveTo(init);
 	let cur = first;
 	let last_command;
-	L1: while (array.length > 0) {
-		// let absolute = false;
+	const numRE = /^-?\.?\d/;
+	while (array.length > 0) {
 		const command = array.pop();
-		// const start = pos;
 		switch (command) {
 			case 'M':
 				if (cur === first) {
@@ -309,12 +308,18 @@ export function parseLS(d: string) {
 				} else {
 					cur = cur.M(vec());
 				}
+				while (numRE.test(array[array.length - 1])) {
+					cur = cur.L(vec());
+				}
 				break;
 			case 'm':
 				if (cur === first) {
 					cur = SegmentLS.moveTo(vec());
 				} else {
 					cur = cur.m(vec());
+				}
+				while (numRE.test(array[array.length - 1])) {
+					cur = cur.l(vec());
 				}
 				break;
 			case 'Z':
@@ -326,65 +331,105 @@ export function parseLS(d: string) {
 				}
 				break;
 			case 'L':
-				cur = cur.L(vec());
+				do {
+					cur = cur.L(vec());
+				} while (numRE.test(array[array.length - 1]));
+
 				break;
 			case 'l':
-				cur = cur.l(vec());
+				do {
+					cur = cur.l(vec());
+				} while (numRE.test(array[array.length - 1]));
 				break;
 			case 'H':
-				cur = cur.H(num());
+				do {
+					cur = cur.H(num());
+				} while (numRE.test(array[array.length - 1]));
+
 				break;
 			case 'h':
-				cur = cur.h(num());
+				do {
+					cur = cur.h(num());
+				} while (numRE.test(array[array.length - 1]));
+
 				break;
 			case 'V':
-				cur = cur.V(num());
+				do {
+					cur = cur.V(num());
+				} while (numRE.test(array[array.length - 1]));
+
 				break;
 			case 'v':
-				cur = cur.v(num());
+				do {
+					cur = cur.v(num());
+				} while (numRE.test(array[array.length - 1]));
+
 				break;
 			case 'Q':
-				cur = cur.Q(vec(), vec());
+				do {
+					cur = cur.Q(vec(), vec());
+				} while (numRE.test(array[array.length - 1]));
+
 				break;
 			case 'q':
-				cur = cur.q(vec(), vec());
+				do {
+					cur = cur.q(vec(), vec());
+				} while (numRE.test(array[array.length - 1]));
+
 				break;
 			case 'C':
-				cur = cur.C(vec(), vec(), vec());
+				do {
+					cur = cur.C(vec(), vec(), vec());
+				} while (numRE.test(array[array.length - 1]));
 				break;
 			case 'c':
-				cur = cur.c(vec(), vec(), vec());
+				do {
+					cur = cur.c(vec(), vec(), vec());
+				} while (numRE.test(array[array.length - 1]));
 				break;
 			case 'S':
-				cur = cur.S(vec(), vec());
+				do {
+					cur = cur.S(vec(), vec());
+				} while (numRE.test(array[array.length - 1]));
+
 				break;
 			case 's':
-				cur = cur.s(vec(), vec());
+				do {
+					cur = cur.s(vec(), vec());
+				} while (numRE.test(array[array.length - 1]));
 				break;
 			case 'T':
-				cur = cur.T(vec());
+				do {
+					cur = cur.T(vec());
+				} while (numRE.test(array[array.length - 1]));
 				break;
 			case 't':
-				cur = cur.t(vec());
+				do {
+					cur = cur.t(vec());
+				} while (numRE.test(array[array.length - 1]));
 				break;
 			case 'A':
-				cur = cur.A(num(), num(), num(), num(), num(), vec());
+				do {
+					cur = cur.A(num(), num(), num(), num(), num(), vec());
+				} while (numRE.test(array[array.length - 1]));
 				break;
 			case 'a':
-				cur = cur.a(num(), num(), num(), num(), num(), vec());
+				do {
+					cur = cur.a(num(), num(), num(), num(), num(), vec());
+				} while (numRE.test(array[array.length - 1]));
 				break;
 			default:
-				if (command && /^-?\.?\d/.test(command)) {
-					switch (last_command) {
-						case 'm':
-							cur = cur.l(parseFloat(command), num());
-							continue L1;
-						case 'M':
-							cur = cur.L(parseFloat(command), num());
-							continue L1;
-					}
-					continue;
-				}
+				// if (command && /^-?\.?\d/.test(command)) {
+				// 	switch (last_command) {
+				// 		case 'm':
+				// 			cur = cur.l(parseFloat(command), num());
+				// 			continue L1;
+				// 		case 'M':
+				// 			cur = cur.L(parseFloat(command), num());
+				// 			continue L1;
+				// 	}
+				// 	continue;
+				// }
 				throw new Error(`Invalid command ${command} from "${d}" : ${array.reverse()}`);
 		}
 		last_command = command;

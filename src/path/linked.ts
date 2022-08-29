@@ -318,14 +318,6 @@ export abstract class SegmentLS extends Segment {
 		} else {
 			throw new Error(`No prev`);
 		}
-		// if (!_prev || farPrev === this) {
-		// 	throw new Error(`No prev`);
-		// } else if (_prev === farPrev) {
-		// 	// return this.withPrev(newPrev);
-		// 	return this.withPrev(_prev.withPrev(newPrev));
-		// } else {
-		// 	return this.withPrev(_prev.withFarPrev(farPrev, newPrev));
-		// }
 	}
 	withFarPrev3(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS {
 		const {_prev} = this;
@@ -692,8 +684,8 @@ export class CubicLS extends SegmentLS {
 	}
 	override _descs(opt?: DescParams) {
 		const {
-			c1: {x: x1, y: y1},
-			c2: {x: x2, y: y2},
+			c1: [x1, y1],
+			c2: [x2, y2],
 			end: [ex, ey],
 		} = this;
 
@@ -920,4 +912,3 @@ function arcToHelp(cur: SegmentLS | undefined, x1: number, y1: number, x2: numbe
 	}
 	return cur;
 }
-

@@ -26,7 +26,7 @@ for await (const item of enum_path_data({SEGMENTS: ''})) {
         const opt = {
             descArrayOpt: {close: true},
             len_epsilon: 0.32,
-            point_epsilon: 0.4,
+            point_epsilon: 0.06,
             delta_epsilon: 1e-7,
             slope_epsilon: 0.0045,
             write_svg: true,
@@ -41,7 +41,7 @@ for await (const item of enum_path_data({SEGMENTS: ''})) {
             //     slope_epsilon: 0.0045,
             //     write_svg: true,
             // });
-            testSegment(t, seg, item, {...opt, point_epsilon: 0.6});
+            testSegment(t, seg, item, {...opt});
             t.almostEqual(seg.getTotalLength(), item.length, opt.len_epsilon, 'LEN', [item, seg]);
             t.sameBox(seg.getBBox(), item.bbox);
         }
