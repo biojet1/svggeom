@@ -35,3 +35,5 @@ export declare abstract class SegmentSE extends Segment {
 }
 export declare function tCheck(t: number): number;
 export declare function tNorm(t: number): number;
+export declare function pickPos(args: Vec[] | number[]): Generator<Vec, void, unknown>;
+export declare function pickNum(args: Vec[] | number[]): Generator<number, void, unknown>;

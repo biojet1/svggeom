@@ -62,7 +62,7 @@ export declare abstract class SegmentLS extends Segment {
     static lineTo(...args: Vec[] | number[]): LineLS;
     static bezierCurveTo(...args: Vec[] | number[]): CubicLS;
     static quadraticCurveTo(...args: Vec[] | number[]): QuadLS;
-    static parse(d: string): MoveLS;
+    static parse(d: string): SegmentLS;
     static arc(...args: Vec[] | number[]): SegmentLS;
     static arcd(...args: Vec[] | number[]): SegmentLS;
     static arcTo(...args: Vec[] | number[]): SegmentLS;

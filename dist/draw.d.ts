@@ -74,6 +74,8 @@ export declare class PathLS extends CanvasCompat {
     cropAt(T0: number, T1?: number): PathLS;
     reversed(next?: SegmentLS): PathLS;
     descArray(opt?: DescParams): (number | string)[];
+    get firstPoint(): Vec | undefined;
+    get lastPoint(): Vec | undefined;
     toString(): string;
     d(): string;
     static moveTo(...args: Vec[] | number[]): PathLS;

@@ -8,4 +8,5 @@ export declare const numbersWithDots: RegExp;
 export declare const dots: RegExp;
 export declare function dSplit(d: string): string[];
 export declare function parseDesc(d: string): SegmentSE[];
-export declare function parseLS(d: string): import("./linked.js").MoveLS;
+import { SegmentLS } from './linked.js';
+export declare function parseLS(d: string, prev?: SegmentLS): SegmentLS;
