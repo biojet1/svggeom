@@ -587,8 +587,11 @@ function testPath(test, PathClass) {
                 t.same(part, 2.5);
                 t.same(len, 5);
             }
-        }else{
-            
+            {
+                t.notOk(PathClass.parse('Z').bbox().isValid());
+                t.notOk(PathClass.parse('z').bbox().isValid());
+            }
+        } else {
         }
 
         t.end();
