@@ -1,9 +1,9 @@
-import { Vec } from '../point.js';
-import { SegmentSE } from './index.js';
-import { Arc } from './arc.js';
-import { Cubic } from './cubic.js';
-import { Line, Close, Vertical, Horizontal } from './line.js';
-import { Quadratic } from './quadratic.js';
+import {Vec} from '../point.js';
+import {SegmentSE} from './index.js';
+import {Arc} from './arc.js';
+import {Cubic} from './cubic.js';
+import {Line, Close, Vertical, Horizontal} from './line.js';
+import {Quadratic} from './quadratic.js';
 
 // splits a transformation chain
 export const transforms = /\)\s*,?\s*/;
@@ -28,7 +28,7 @@ export const numbersWithDots = /((\d?\.\d+(?:e[+-]?\d+)?)((?:\.\d+(?:e[+-]?\d+)?
 // matches .
 export const dots = /\./g;
 
-function pathRegReplace(a: any, b: any, c: any, d: any) {
+function pathRegReplace(_a: any, _b: any, c: string, d: string) {
 	return c + d.replace(dots, ' .');
 }
 export function dSplit(d: string) {
@@ -271,9 +271,10 @@ export function parseDesc(d: string) {
 	return segments;
 }
 
-import { SegmentLS } from './linked.js';
+import {SegmentLS} from './linked.js';
 
-export function parseLS(d: string) {
+export function parseLS(d: string, prev?: SegmentLS) {
+	const numRE = /^-?\.?\d/;
 	// prepare for parsing
 	const array = dSplit(d).reverse(); // split into array
 	const num = function () {
@@ -283,111 +284,76 @@ export function parseLS(d: string) {
 		}
 		return parseFloat(v);
 	};
-	const vec = function () {
-		return Vec.pos(num(), num());
-	};
-	const init = Vec.pos(0, 0);
-	// const last = function () {
-	// 	return cur ?? (cur = SegmentLS.moveTo(init));
-	// };
-	// const vecr = function () {
-	// 	return cur.end.add(vec());
-	// };
-
-	let moved: SegmentLS | undefined;
-	const first = SegmentLS.moveTo(init);
-	let cur = first;
-	let last_command;
-	L1: while (array.length > 0) {
-		// let absolute = false;
-		const command = array.pop();
-		// const start = pos;
-		switch (command) {
+	const vec = () => Vec.pos(num(), num());
+	const isNum = () => numRE.test(array[array.length - 1]);
+	const first = SegmentLS.moveTo(Vec.pos(0, 0));
+	let cur = prev ?? first;
+	let command;
+	while (array.length > 0) {
+		switch ((command = array.pop())) {
 			case 'M':
-				if (cur === first) {
-					cur = SegmentLS.moveTo(vec());
-				} else {
-					cur = cur.M(vec());
-				}
+				cur = cur === first ? SegmentLS.moveTo(vec()) : cur.M(vec());
+				while (isNum() && (cur = cur.L(vec())));
 				break;
 			case 'm':
-				if (cur === first) {
-					cur = SegmentLS.moveTo(vec());
-				} else {
-					cur = cur.m(vec());
-				}
+				cur = cur === first ? SegmentLS.moveTo(vec()) : cur.m(vec());
+				while (isNum() && (cur = cur.l(vec())));
 				break;
 			case 'Z':
 			case 'z':
-				if (cur === first) {
-					// pass
-				} else {
-					cur = cur.Z();
-				}
+				cur === first || (cur = cur.Z());
 				break;
 			case 'L':
-				cur = cur.L(vec());
+				while ((cur = cur.L(vec())) && isNum());
 				break;
 			case 'l':
-				cur = cur.l(vec());
+				while ((cur = cur.l(vec())) && isNum());
 				break;
 			case 'H':
-				cur = cur.H(num());
+				while ((cur = cur.H(num())) && isNum());
 				break;
 			case 'h':
-				cur = cur.h(num());
+				while ((cur = cur.h(num())) && isNum());
 				break;
 			case 'V':
-				cur = cur.V(num());
+				while ((cur = cur.V(num())) && isNum());
 				break;
 			case 'v':
-				cur = cur.v(num());
+				while ((cur = cur.v(num())) && isNum());
 				break;
 			case 'Q':
-				cur = cur.Q(vec(), vec());
+				while ((cur = cur.Q(vec(), vec())) && isNum());
 				break;
 			case 'q':
-				cur = cur.q(vec(), vec());
+				while ((cur = cur.q(vec(), vec())) && isNum());
 				break;
 			case 'C':
-				cur = cur.C(vec(), vec(), vec());
+				while ((cur = cur.C(vec(), vec(), vec())) && isNum());
 				break;
 			case 'c':
-				cur = cur.c(vec(), vec(), vec());
+				while ((cur = cur.c(vec(), vec(), vec())) && isNum());
 				break;
 			case 'S':
-				cur = cur.S(vec(), vec());
+				while ((cur = cur.S(vec(), vec())) && isNum());
 				break;
 			case 's':
-				cur = cur.s(vec(), vec());
+				while ((cur = cur.s(vec(), vec())) && isNum());
 				break;
 			case 'T':
-				cur = cur.T(vec());
+				while ((cur = cur.T(vec())) && isNum());
 				break;
 			case 't':
-				cur = cur.t(vec());
+				while ((cur = cur.t(vec())) && isNum());
 				break;
 			case 'A':
-				cur = cur.A(num(), num(), num(), num(), num(), vec());
+				while ((cur = cur.A(num(), num(), num(), num(), num(), vec())) && isNum());
 				break;
 			case 'a':
-				cur = cur.a(num(), num(), num(), num(), num(), vec());
+				while ((cur = cur.a(num(), num(), num(), num(), num(), vec())) && isNum());
 				break;
 			default:
-				if (command && /^-?\.?\d/.test(command)) {
-					switch (last_command) {
-						case 'm':
-							cur = cur.l(parseFloat(command), num());
-							continue L1;
-						case 'M':
-							cur = cur.L(parseFloat(command), num());
-							continue L1;
-					}
-					continue;
-				}
-				throw new Error(`Invalid command ${command} from "${d}" : ${array.reverse()}`);
+				throw new Error(`Invalid path command ${command} from "${d}" : ${array.reverse()}`);
 		}
-		last_command = command;
 	}
 	return cur;
 }

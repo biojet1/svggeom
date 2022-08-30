@@ -1,53 +1,13 @@
 import {Vec} from '../point.js';
 import {Box} from '../box.js';
 import {Segment, DescParams, tNorm, tCheck} from './index.js';
+import {pickPos, pickNum} from './index.js';
 import {parseLS} from './parser.js';
 const {min, max, abs, PI, cos, sin, sqrt, acos, tan} = Math;
-const tau = 2 * PI,
-	epsilon = 1e-6,
-	tauEpsilon = tau - epsilon;
+const tau = 2 * PI;
+const epsilon = 1e-6;
+const tauEpsilon = tau - epsilon;
 
-function* pickPos(args: Vec[] | number[]) {
-	let n: number | undefined = undefined;
-	for (const v of args) {
-		if (typeof v == 'number') {
-			if (n == undefined) {
-				n = v;
-			} else {
-				yield Vec.pos(n, v);
-				n = undefined;
-			}
-		} else if (n != undefined) {
-			throw new Error(`n == ${n}`);
-		} else if (v instanceof Vec) {
-			yield v;
-		} else {
-			yield Vec.new(v);
-		}
-	}
-}
-
-function* pickNum(args: Vec[] | number[]) {
-	for (const v of args) {
-		switch (typeof v) {
-			case 'number':
-				yield v;
-				break;
-			case 'boolean':
-			case 'string':
-				yield v ? 1 : 0;
-				break;
-			default:
-				if (v) {
-					const [x, y] = v;
-					yield x;
-					yield y;
-				} else {
-					yield 0;
-				}
-		}
-	}
-}
 let digits = 6;
 function fmtN(n: number) {
 	const v = n.toFixed(digits);
@@ -684,8 +644,8 @@ export class CubicLS extends SegmentLS {
 	}
 	override _descs(opt?: DescParams) {
 		const {
-			c1: {x: x1, y: y1},
-			c2: {x: x2, y: y2},
+			c1: [x1, y1],
+			c2: [x2, y2],
 			end: [ex, ey],
 		} = this;
 

@@ -587,8 +587,16 @@ function testPath(test, PathClass) {
                 t.same(part, 2.5);
                 t.same(len, 5);
             }
-        }else{
-            
+            {
+                t.notOk(PathClass.parse('Z').bbox().isValid());
+                t.notOk(PathClass.parse('z').bbox().isValid());
+                t.same(
+                    PathClass.parse('m 40,60 h 10 10 10 20 v 30 20').describe({relative: true, short: true}),
+                    'm40,60h10h10h10h20v30v20'
+                );
+                t.same(PathClass.parse('m1,2,3,4,5,6,7,8').describe({relative: true, short: true}), 'm1,2l3,4l5,6l7,8');
+            }
+        } else {
         }
 
         t.end();

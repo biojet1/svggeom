@@ -111,3 +111,45 @@ export function tNorm(t: number) {
 	}
 	return t;
 }
+
+export function* pickPos(args: Vec[] | number[]) {
+	let n: number | undefined = undefined;
+	for (const v of args) {
+		if (typeof v == 'number') {
+			if (n == undefined) {
+				n = v;
+			} else {
+				yield Vec.pos(n, v);
+				n = undefined;
+			}
+		} else if (n != undefined) {
+			throw new Error(`n == ${n}`);
+		} else if (v instanceof Vec) {
+			yield v;
+		} else {
+			yield Vec.new(v);
+		}
+	}
+}
+
+export function* pickNum(args: Vec[] | number[]) {
+	for (const v of args) {
+		switch (typeof v) {
+			case 'number':
+				yield v;
+				break;
+			case 'boolean':
+			case 'string':
+				yield v ? 1 : 0;
+				break;
+			default:
+				if (v) {
+					const [x, y] = v;
+					yield x;
+					yield y;
+				} else {
+					yield 0;
+				}
+		}
+	}
+}
