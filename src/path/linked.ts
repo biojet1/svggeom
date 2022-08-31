@@ -447,7 +447,7 @@ export class LineLS extends SegmentLS {
 		return new LineLS(_prev?.transform(M), end.transform(M));
 	}
 	override withPrev(newPrev: SegmentLS) {
-		const {end, _prev} = this;
+		const {end} = this;
 		return new LineLS(newPrev, end);
 	}
 }

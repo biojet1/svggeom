@@ -32,7 +32,7 @@ function fmtN(n: number) {
 }
 
 class CanvasCompat {
-	set fillStyle(x: any) {}
+	set fillStyle(_x: any) {}
 	get fillStyle() {
 		return 'red';
 	}
@@ -446,7 +446,7 @@ export class PathLS extends CanvasCompat {
 		}
 		return new PathLS(undefined);
 	}
-	reversed(next?: SegmentLS): PathLS {
+	reversed(_next?: SegmentLS): PathLS {
 		const {_tail} = this;
 		if (_tail) {
 			return new PathLS(_tail.reversed());

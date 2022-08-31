@@ -50,10 +50,10 @@ export function parseDesc(d: string) {
 
 	const num = function () {
 		const v = array.pop();
-		if (!v) {
-			throw new Error(`Number expected '${v}' '${d}'`);
+		if (v) {
+			return parseFloat(v);
 		}
-		return parseFloat(v);
+		throw new Error(`Number expected '${v}' '${d}'`);
 	};
 	while (array.length > 0) {
 		let absolute = false;
@@ -273,7 +273,7 @@ export function parseDesc(d: string) {
 
 import {SegmentLS} from './linked.js';
 
-export function parseLS(d: string, prev: SegmentLS | undefined): SegmentLS {
+export function parseLS_(d: string, prev: SegmentLS | undefined): SegmentLS {
 	const numRE = /^-?\.?\d/;
 	// prepare for parsing
 	const array = dSplit(d).reverse(); // split into array
@@ -353,6 +353,136 @@ export function parseLS(d: string, prev: SegmentLS | undefined): SegmentLS {
 				break;
 			default:
 				throw new Error(`Invalid path command ${command} from "${d}" : ${array.reverse()}`);
+		}
+	}
+	return cur;
+}
+
+export function parseLS(d: string, prev: SegmentLS | undefined): SegmentLS {
+	const dRE = /[\s,]*(?:([MmZzLlHhVvCcSsQqTtAa])|([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?))/y;
+
+	let mat: RegExpExecArray | null | false;
+	const n = d.length;
+	const peek = function () {
+		// if (mat) {
+		// 	return mat;
+		// } else if (mat === false) {
+		// 	return null;
+		// } else if ((mat = dRE.exec(d))) {
+		// 	return mat;
+		// } else {
+		// 	mat = false;
+		// 	return null;
+		// }
+		const i = dRE.lastIndex;
+		const m = dRE.exec(d);
+		dRE.lastIndex = i;
+		return m;
+
+	};
+	const get = function () {
+		// if (mat) {const v =mat;mat=null;
+		// 	return v;
+		// } else if (mat === false) {
+		// 	return null;
+		// } else if ((mat = dRE.exec(d))) {
+		// 	return mat;
+		// } else {
+		// 	mat = false;
+		// 	return null;
+		// }
+		// const i = dRE.lastIndex;
+		const m = dRE.exec(d);
+		// dRE.lastIndex = i;
+		return m;
+	};
+	const cmd = function () {
+		const m = get();
+		if (m) {
+			const v = m[1];
+			if (!v) {
+				throw new Error(`Command expected '${v}' '${d}'`);
+			}
+			return v;
+		}
+	};
+	const num = function () {
+		const v = get()?.[2];
+		if (!v) {
+			throw new Error(`Number expected '${v}' '${d}'`);
+		}
+		return parseFloat(v);
+	};
+	const isNum = () => peek()?.[2];
+
+	const vec = () => Vec.pos(num(), num());
+	const first = SegmentLS.moveTo(Vec.pos(0, 0));
+	let cur: SegmentLS = prev ?? first;
+	let command;
+	while ((command = cmd())) {
+		switch (command) {
+			case 'M':
+				cur = cur === first ? SegmentLS.moveTo(vec()) : cur.M(vec());
+				while (isNum() && (cur = cur.L(vec())));
+				break;
+			case 'm':
+				cur = cur === first ? SegmentLS.moveTo(vec()) : cur.m(vec());
+				while (isNum() && (cur = cur.l(vec())));
+				break;
+			case 'Z':
+			case 'z':
+				cur === first || (cur = cur.Z());
+				break;
+			case 'L':
+				while ((cur = cur.L(vec())) && isNum());
+				break;
+			case 'l':
+				while ((cur = cur.l(vec())) && isNum());
+				break;
+			case 'H':
+				while ((cur = cur.H(num())) && isNum());
+				break;
+			case 'h':
+				while ((cur = cur.h(num())) && isNum());
+				break;
+			case 'V':
+				while ((cur = cur.V(num())) && isNum());
+				break;
+			case 'v':
+				while ((cur = cur.v(num())) && isNum());
+				break;
+			case 'Q':
+				while ((cur = cur.Q(vec(), vec())) && isNum());
+				break;
+			case 'q':
+				while ((cur = cur.q(vec(), vec())) && isNum());
+				break;
+			case 'C':
+				while ((cur = cur.C(vec(), vec(), vec())) && isNum());
+				break;
+			case 'c':
+				while ((cur = cur.c(vec(), vec(), vec())) && isNum());
+				break;
+			case 'S':
+				while ((cur = cur.S(vec(), vec())) && isNum());
+				break;
+			case 's':
+				while ((cur = cur.s(vec(), vec())) && isNum());
+				break;
+			case 'T':
+				while ((cur = cur.T(vec())) && isNum());
+				break;
+			case 't':
+				while ((cur = cur.t(vec())) && isNum());
+				break;
+			case 'A':
+				while ((cur = cur.A(num(), num(), num(), num(), num(), vec())) && isNum());
+				break;
+			case 'a':
+				while ((cur = cur.a(num(), num(), num(), num(), num(), vec())) && isNum());
+				break;
+			default:
+				throw new Error(`Invalid path command ${command} from "${d}"`);
 		}
 	}
 	return cur;
