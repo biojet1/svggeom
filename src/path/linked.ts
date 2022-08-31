@@ -1,53 +1,13 @@
 import {Vec} from '../point.js';
 import {Box} from '../box.js';
 import {Segment, DescParams, tNorm, tCheck} from './index.js';
+import {pickPos, pickNum} from './index.js';
 import {parseLS} from './parser.js';
 const {min, max, abs, PI, cos, sin, sqrt, acos, tan} = Math;
-const tau = 2 * PI,
-	epsilon = 1e-6,
-	tauEpsilon = tau - epsilon;
+const tau = 2 * PI;
+const epsilon = 1e-6;
+const tauEpsilon = tau - epsilon;
 
-function* pickPos(args: Vec[] | number[]) {
-	let n: number | undefined = undefined;
-	for (const v of args) {
-		if (typeof v == 'number') {
-			if (n == undefined) {
-				n = v;
-			} else {
-				yield Vec.pos(n, v);
-				n = undefined;
-			}
-		} else if (n != undefined) {
-			throw new Error(`n == ${n}`);
-		} else if (v instanceof Vec) {
-			yield v;
-		} else {
-			yield Vec.new(v);
-		}
-	}
-}
-
-function* pickNum(args: Vec[] | number[]) {
-	for (const v of args) {
-		switch (typeof v) {
-			case 'number':
-				yield v;
-				break;
-			case 'boolean':
-			case 'string':
-				yield v ? 1 : 0;
-				break;
-			default:
-				if (v) {
-					const [x, y] = v;
-					yield x;
-					yield y;
-				} else {
-					yield 0;
-				}
-		}
-	}
-}
 let digits = 6;
 function fmtN(n: number) {
 	const v = n.toFixed(digits);
@@ -368,6 +328,9 @@ export abstract class SegmentLS extends Segment {
 	abstract transform(M: any): SegmentLS;
 	abstract reversed(next?: SegmentLS): SegmentLS | undefined;
 	abstract withPrev(prev: SegmentLS): SegmentLS;
+	parse(d: string) {
+		return parseLS(d, this);
+	}
 	static moveTo(...args: Vec[] | number[]) {
 		const [pos] = pickPos(args);
 		return new MoveLS(undefined, pos);
@@ -385,7 +348,7 @@ export abstract class SegmentLS extends Segment {
 		return this.moveTo(Vec.pos(0, 0)).quadraticCurveTo(p, end);
 	}
 	static parse(d: string) {
-		return parseLS(d);
+		return parseLS(d, undefined);
 	}
 	static arc(...args: Vec[] | number[]): SegmentLS {
 		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);

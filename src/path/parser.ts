@@ -28,7 +28,7 @@ export const numbersWithDots = /((\d?\.\d+(?:e[+-]?\d+)?)((?:\.\d+(?:e[+-]?\d+)?
 // matches .
 export const dots = /\./g;
 
-function pathRegReplace(a: any, b: any, c: any, d: any) {
+function pathRegReplace(_a: any, _b: any, c: string, d: string) {
 	return c + d.replace(dots, ' .');
 }
 export function dSplit(d: string) {
@@ -273,7 +273,7 @@ export function parseDesc(d: string) {
 
 import {SegmentLS} from './linked.js';
 
-export function parseLS(d: string, prev?: SegmentLS) {
+export function parseLS(d: string, prev: SegmentLS | undefined): SegmentLS {
 	const numRE = /^-?\.?\d/;
 	// prepare for parsing
 	const array = dSplit(d).reverse(); // split into array
@@ -284,31 +284,19 @@ export function parseLS(d: string, prev?: SegmentLS) {
 		}
 		return parseFloat(v);
 	};
-	const vec = function () {
-		return Vec.pos(num(), num());
-	};
-	const isNum = function () {
-		return numRE.test(array[array.length - 1]);
-	};
+	const vec = () => Vec.pos(num(), num());
+	const isNum = () => numRE.test(array[array.length - 1]);
 	const first = SegmentLS.moveTo(Vec.pos(0, 0));
-	let cur = prev ?? first;
+	let cur: SegmentLS = prev ?? first;
 	let command;
 	while (array.length > 0) {
 		switch ((command = array.pop())) {
 			case 'M':
-				if (cur === first) {
-					cur = SegmentLS.moveTo(vec());
-				} else {
-					cur = cur.M(vec());
-				}
+				cur = cur === first ? SegmentLS.moveTo(vec()) : cur.M(vec());
 				while (isNum() && (cur = cur.L(vec())));
 				break;
 			case 'm':
-				if (cur === first) {
-					cur = SegmentLS.moveTo(vec());
-				} else {
-					cur = cur.m(vec());
-				}
+				cur = cur === first ? SegmentLS.moveTo(vec()) : cur.m(vec());
 				while (isNum() && (cur = cur.l(vec())));
 				break;
 			case 'Z':
@@ -364,7 +352,7 @@ export function parseLS(d: string, prev?: SegmentLS) {
 				while ((cur = cur.a(num(), num(), num(), num(), num(), vec())) && isNum());
 				break;
 			default:
-				throw new Error(`Invalid command ${command} from "${d}" : ${array.reverse()}`);
+				throw new Error(`Invalid path command ${command} from "${d}" : ${array.reverse()}`);
 		}
 	}
 	return cur;
