@@ -31,10 +31,10 @@ export function test_segment(t, seg, item, opt = {}) {
         descArrayOpt,
     } = opt;
     const tan_opt = {delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon};
-    t.almostEqual(item.start[0], seg.start.x);
-    t.almostEqual(item.start[1], seg.start.y);
-    t.almostEqual(item.end[0], seg.end.x, end_point_epsilon, 'ENDX');
-    t.almostEqual(item.end[1], seg.end.y, end_point_epsilon, 'ENDY');
+    t.almostEqual(item.from[0], seg.from.x);
+    t.almostEqual(item.from[1], seg.from.y);
+    t.almostEqual(item.to[0], seg.to.x, end_point_epsilon, 'ENDX');
+    t.almostEqual(item.to[1], seg.to.y, end_point_epsilon, 'ENDY');
     t.sameBox(seg, item.bbox, epsilon, 'BOX', [item, seg]);
     t.almostEqual(seg.length, item.length, len_epsilon, 'LEN', [item, seg]);
 
@@ -99,10 +99,10 @@ export function testSegment(t, seg, item, opt = {}) {
         test_tangents = true,
     } = opt;
     const tan_opt = {delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon};
-    t.almostEqual(item.start[0], seg.start.x);
-    t.almostEqual(item.start[1], seg.start.y);
-    t.almostEqual(item.end[0], seg.end.x, end_point_epsilon, 'ENDX');
-    t.almostEqual(item.end[1], seg.end.y, end_point_epsilon, 'ENDY');
+    t.almostEqual(item.start[0], seg.from.x);
+    t.almostEqual(item.start[1], seg.from.y);
+    t.almostEqual(item.end[0], seg.to.x, end_point_epsilon, 'ENDX');
+    t.almostEqual(item.end[1], seg.to.y, end_point_epsilon, 'ENDY');
     t.almostEqual(item.length, seg.length, len_epsilon, 'LEN', [item, seg]);
     t.sameBox(item.bbox, seg.bbox());
     let pv, px, pt, a, b, sub;
@@ -113,7 +113,7 @@ export function testSegment(t, seg, item, opt = {}) {
             px = [x, y, 0];
             t.almostEqual(pv, px, {epsilon: point_epsilon, on_fail: opt?.on_fail}, `pointAt(${T})`, [item, seg, pv, px]);
         } catch (err) {
-            console.error('Err pointAt', T, seg.constructor.name, seg?._tail?.constructor.name, seg?._tail?.end);
+            console.error('Err pointAt', T, seg.constructor.name, seg?._tail?.constructor.name, seg?._tail?.to);
             // console.dir(seg, {depth: null});
             // console.error(pv, px);
             throw err;

@@ -200,7 +200,7 @@ export function parseDesc(d: string) {
 						// control1 = pos + pos - segments[-1].control2
 						// c1 = last.c2.reflectAt(pos);
 						// c1 = last.c2.reflectAt(start);
-						c1 = last.c2.reflectAt(last.end);
+						c1 = last.c2.reflectAt(last.to);
 						// c1 = start.add(start.sub(last.c2));
 					} else {
 						c1 = start;

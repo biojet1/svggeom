@@ -35,16 +35,6 @@ export abstract class SegmentLS extends Segment {
 		}
 		throw new Error('No prev');
 	}
-	get start() {
-		const {_prev} = this;
-		if (_prev) {
-			return _prev.to;
-		}
-		throw new Error('No prev');
-	}
-	get end() {
-		return this._to;
-	}
 	get from() {
 		const {_prev} = this;
 		if (_prev) {

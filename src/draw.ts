@@ -335,7 +335,7 @@ export class PathLS extends CanvasCompat {
 		// maxWidth?: number
 	) {
 		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
-		const [_x1, _y1] = this?._tail?.end ?? [0, 0];
+		const [_x1, _y1] = this?._tail?.to ?? [0, 0];
 		font.getPath(text, _x1, _y1, fontSize, {
 			kerning,
 			letterSpacing,
@@ -366,11 +366,11 @@ export class PathLS extends CanvasCompat {
 		}
 		return 0;
 	}
-	get start() {
-		return this._tail?.first?.end;
+	get from() {
+		return this._tail?.first?.to;
 	}
-	get end() {
-		return this._tail?.end;
+	get to() {
+		return this._tail?.to;
 	}
 	tangentAt(T: number) {
 		const [seg, t] = this.segmentAt(T);
@@ -404,9 +404,9 @@ export class PathLS extends CanvasCompat {
 			if (seg) {
 				if (t == 0) {
 					const {prev} = seg;
-					return [new PathLS(prev), new PathLS(_tail.withFarPrev3(seg, SegmentLS.moveTo(prev?.end)))];
+					return [new PathLS(prev), new PathLS(_tail.withFarPrev3(seg, SegmentLS.moveTo(prev?.to)))];
 				} else if (t == 1) {
-					return [new PathLS(seg), new PathLS(_tail.withFarPrev(seg, SegmentLS.moveTo(seg.end)))];
+					return [new PathLS(seg), new PathLS(_tail.withFarPrev(seg, SegmentLS.moveTo(seg.to)))];
 				}
 				if (t < 0 || t > 1) {
 					throw new Error();
@@ -465,11 +465,11 @@ export class PathLS extends CanvasCompat {
 	}
 
 	get firstPoint() {
-		return this.start;
+		return this.from;
 	}
 
 	get lastPoint() {
-		return this.end;
+		return this.to;
 	}
 
 	override toString() {
@@ -520,14 +520,14 @@ function _segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [
 				lenP = LEN;
 			}
 		}
-		let end = LEN;
+		let to = LEN;
 		do {
 			if (cur instanceof MoveLS) {
 				// pass
 			} else {
 				const lenS = lenSegm(cur);
 				if (lenS >= 0) {
-					const lenT = lenP - (end -= lenS);
+					const lenT = lenP - (to -= lenS);
 					if (lenT >= 0) {
 						return [cur, lenT, lenS];
 					}

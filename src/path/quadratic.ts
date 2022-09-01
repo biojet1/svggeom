@@ -10,8 +10,8 @@ export class Quadratic extends SegmentSE {
 		this.c = Vec.new(control);
 	}
 	private get _qpts(): Vec[] {
-		const {start, c, end} = this;
-		return [start, c, end];
+		const {from, c, to} = this;
+		return [from, c, to];
 	}
 	override get length() {
 		return quadLength(this._qpts);
@@ -34,18 +34,18 @@ export class Quadratic extends SegmentSE {
 	}
 
 	override toPathFragment() {
-		const {c, end} = this;
-		return ['Q', c.x, c.y, end.x, end.y];
+		const {c, to} = this;
+		return ['Q', c.x, c.y, to.x, to.y];
 	}
 
 	override transform(M: any) {
-		const {start, c, end} = this;
-		return new Quadratic(start.transform(M), c.transform(M), end.transform(M));
+		const {from, c, to} = this;
+		return new Quadratic(from.transform(M), c.transform(M), to.transform(M));
 	}
 
 	override reversed() {
-		const {start, c, end} = this;
-		return new Quadratic(end, c, start);
+		const {from, c, to} = this;
+		return new Quadratic(to, c, from);
 	}
 }
 
@@ -101,19 +101,19 @@ export function quadPointAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	return Vec.pos(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
 }
 
-export function quadSlopeAt([start, c, end]: Vec[], t: number): Vec {
-	if (c.equals(start) || c.equals(end)) {
-		const vec = end.sub(start);
+export function quadSlopeAt([from, c, to]: Vec[], t: number): Vec {
+	if (c.equals(from) || c.equals(to)) {
+		const vec = to.sub(from);
 		return vec.div(vec.abs());
 	}
 	if (t >= 1) {
-		return end.sub(c);
+		return to.sub(c);
 	} else if (t <= 0) {
-		return c.sub(start);
+		return c.sub(from);
 	}
 
-	const a = c.sub(start).mul(1 - t);
-	const b = end.sub(c).mul(t);
+	const a = c.sub(from).mul(1 - t);
+	const b = to.sub(c).mul(t);
 	return a.add(b).mul(2); // 1st derivative;
 }
 
