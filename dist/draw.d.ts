@@ -1,7 +1,7 @@
 import { Vec } from './point.js';
 import { Box } from './box.js';
 declare class CanvasCompat {
-    set fillStyle(x: any);
+    set fillStyle(_x: any);
     get fillStyle(): any;
     fill(): this;
     beginPath(): this;
@@ -72,8 +72,9 @@ export declare class PathLS extends CanvasCompat {
     splitAt(T: number): PathLS[];
     cutAt(T: number): PathLS;
     cropAt(T0: number, T1?: number): PathLS;
-    reversed(next?: SegmentLS): PathLS;
+    reversed(_next?: SegmentLS): PathLS;
     descArray(opt?: DescParams): (number | string)[];
+    enumSubPaths(opt?: DescParams): Generator<SegmentLS | undefined, void, unknown>;
     get firstPoint(): Vec | undefined;
     get lastPoint(): Vec | undefined;
     toString(): string;

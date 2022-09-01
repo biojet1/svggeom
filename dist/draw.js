@@ -1,4 +1,5 @@
 import { Box } from './box.js';
+import { tNorm } from './path/index.js';
 const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
 function* pick(args) {
     for (const v of args) {
@@ -27,7 +28,7 @@ function fmtN(n) {
     return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
 }
 class CanvasCompat {
-    set fillStyle(x) { }
+    set fillStyle(_x) { }
     get fillStyle() {
         return 'red';
     }
@@ -362,7 +363,7 @@ export class PathLS extends CanvasCompat {
         }
         return new PathLS(undefined);
     }
-    reversed(next) {
+    reversed(_next) {
         const { _tail } = this;
         if (_tail) {
             return new PathLS(_tail.reversed());
@@ -371,6 +372,12 @@ export class PathLS extends CanvasCompat {
     }
     descArray(opt) {
         return this?._tail?.descArray(opt) ?? [];
+    }
+    *enumSubPaths(opt) {
+        const { _tail } = this;
+        if (_tail) {
+            yield* _subPaths(_tail);
+        }
     }
     get firstPoint() {
         return this.start;
@@ -442,15 +449,26 @@ function _segmentAtLen(cur, lenP, LEN) {
     }
     return [undefined, NaN, NaN];
 }
-function tNorm(t) {
-    if (t < 0) {
-        t = 1 + (t % 1);
-    }
-    else if (t > 1) {
-        if (0 == (t = t % 1)) {
-            t = 1;
+function* _subPaths(cur) {
+    let tail;
+    for (; cur; cur = cur._prev) {
+        if (cur instanceof MoveLS) {
+            if (tail) {
+                if (tail === cur) {
+                    throw new Error();
+                }
+                else {
+                    yield tail.withFarPrev3(cur, undefined);
+                }
+                tail = undefined;
+            }
+        }
+        else if (!tail) {
+            tail = cur;
         }
     }
-    return t;
+    if (tail) {
+        yield tail;
+    }
 }
 //# sourceMappingURL=draw.js.map

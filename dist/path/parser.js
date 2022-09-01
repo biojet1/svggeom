@@ -29,10 +29,10 @@ export function parseDesc(d) {
     let last_command;
     const num = function () {
         const v = array.pop();
-        if (!v) {
-            throw new Error(`Number expected '${v}' '${d}'`);
+        if (v) {
+            return parseFloat(v);
         }
-        return parseFloat(v);
+        throw new Error(`Number expected '${v}' '${d}'`);
     };
     while (array.length > 0) {
         let absolute = false;
@@ -243,22 +243,42 @@ export function parseDesc(d) {
 }
 import { SegmentLS } from './linked.js';
 export function parseLS(d, prev) {
-    const numRE = /^-?\.?\d/;
-    const array = dSplit(d).reverse();
-    const num = function () {
-        const v = array.pop();
-        if (!v) {
-            throw new Error(`Number expected '${v}' '${d}'`);
-        }
-        return parseFloat(v);
+    let mat;
+    const dRE = /[\s,]*(?:([MmZzLlHhVvCcSsQqTtAa])|([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?))/y;
+    const peek = function () {
+        const i = dRE.lastIndex;
+        const m = dRE.exec(d);
+        dRE.lastIndex = i;
+        return m;
     };
+    const get = function () {
+        const m = dRE.exec(d);
+        return m;
+    };
+    const cmd = function () {
+        const m = get();
+        if (m) {
+            const v = m[1];
+            if (v) {
+                return v;
+            }
+            throw new Error(`Command expected '${v}' '${d}'`);
+        }
+    };
+    const num = function () {
+        const v = get()?.[2];
+        if (v) {
+            return parseFloat(v);
+        }
+        throw new Error(`Number expected '${v}' '${d}'`);
+    };
+    const isNum = () => peek()?.[2];
     const vec = () => Vec.pos(num(), num());
-    const isNum = () => numRE.test(array[array.length - 1]);
     const first = SegmentLS.moveTo(Vec.pos(0, 0));
     let cur = prev ?? first;
     let command;
-    while (array.length > 0) {
-        switch ((command = array.pop())) {
+    while ((command = cmd())) {
+        switch (command) {
             case 'M':
                 cur = cur === first ? SegmentLS.moveTo(vec()) : cur.M(vec());
                 while (isNum() && (cur = cur.L(vec())))
@@ -338,7 +358,7 @@ export function parseLS(d, prev) {
                     ;
                 break;
             default:
-                throw new Error(`Invalid path command ${command} from "${d}" : ${array.reverse()}`);
+                throw new Error(`Invalid path command ${command} from "${d}"`);
         }
     }
     return cur;

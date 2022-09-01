@@ -298,6 +298,9 @@ export class SegmentLS extends Segment {
         }
         return this;
     }
+    parse(d) {
+        return parseLS(d, this);
+    }
     static moveTo(...args) {
         const [pos] = pickPos(args);
         return new MoveLS(undefined, pos);
@@ -315,7 +318,7 @@ export class SegmentLS extends Segment {
         return this.moveTo(Vec.pos(0, 0)).quadraticCurveTo(p, end);
     }
     static parse(d) {
-        return parseLS(d);
+        return parseLS(d, undefined);
     }
     static arc(...args) {
         const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
@@ -409,7 +412,7 @@ export class LineLS extends SegmentLS {
         return new LineLS(_prev?.transform(M), end.transform(M));
     }
     withPrev(newPrev) {
-        const { end, _prev } = this;
+        const { end } = this;
         return new LineLS(newPrev, end);
     }
 }
