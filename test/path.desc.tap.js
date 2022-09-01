@@ -596,12 +596,107 @@ function testPath(test, PathClass) {
                 );
                 t.same(PathClass.parse('m1,2,3,4,5,6,7,8').describe({relative: true, short: true}), 'm1,2l3,4l5,6l7,8');
             }
+            // Test that additional parameters to pathdata commands are treated as additional calls to the most recent command
+            [
+                ['M20 20 H40 H60', 'M20 20 H40 60'],
+                ['M20 40 h20 h20', 'M20 40 h20 20'],
+                ['M120 20 V40 V60', 'M120 20 V40 60'],
+                ['M140 20 v20 v20', 'M140 20 v20 20'],
+                ['M220 20 L 240 20 L260 20', 'M220 20 L 240 20 260 20 '],
+                ['M220 40 l 20 0 l 20 0', 'M220 40 l 20 0 20 0'],
+                [
+                    'M50 150 C50 50 200 50 200 150 C200 50 350 50 350 150',
+                    'M50 150 C50 50 200 50 200 150 200 50 350 50 350 150',
+                ],
+                [
+                    'M50, 200 c0,-100 150,-100 150,0 c0,-100 150,-100 150,0',
+                    'M50, 200 c0,-100 150,-100 150,0 0,-100 150,-100 150,0',
+                ],
+                ['M50 250 S125 200 200 250 S275, 200 350 250', 'M50 250 S125 200 200 250 275, 200 350 250'],
+                ['M50 275 s75 -50 150 0 s75, -50 150 0', 'M50 275 s75 -50 150 0 75, -50 150 0'],
+                ['M50 300 Q 125 275 200 300 Q 275 325 350 300', 'M50 300 Q 125 275 200 300 275 325 350 300'],
+                ['M50 325 q 75 -25 150 0 q 75 25 150 0', 'M50 325 q 75 -25 150 0 75 25 150 0'],
+                ['M425 25 T 425 75 T 425 125', 'M425 25 T 425 75 425 125'],
+                ['M450 25 t 0 50 t 0 50', 'M450 25 t 0 50 0 50'],
+                ['M400,200 A25 25 0 0 0 425 150 A25 25 0 0 0 400 200', 'M400,200 A25 25 0 0 0 425 150 25 25 0 0 0 400 200'],
+                ['M400,300 a25 25 0 0 0 25 -50 a25 25 0 0 0 -25 50', 'M400,300 a25 25 0 0 0 25 -50 25 25 0 0 0 -25 50'],
+            ].forEach(([a, b]) => {
+                t.notSame(a, b);
+                const A = PathClass.parse(a).describe({relative: true, short: true});
+                const B = PathClass.parse(b).describe({relative: true, short: true});
+                t.same(A, B, [
+                    [a, b],
+                    [A, B],
+                ]);
+            });
         } else {
         }
 
         t.end();
     });
 }
+
+//     def test_wc3_examples19(self):
+//         """
+//         W3C_SVG_11_TestSuite Paths
+//         Test that additional parameters to pathdata commands are treated as additional calls to the most recent command.
+//         """
+// parse_path = Path
+// path19a = parse_path("""M20 20 H40 H60""")
+// path19b = parse_path("""M20 20 H40 60""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M20 40 h20 h20""")
+// path19b = parse_path("""M20 40 h20 20""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M120 20 V40 V60""")
+// path19b = parse_path("""M120 20 V40 60""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M140 20 v20 v20""")
+// path19b = parse_path("""M140 20 v20 20""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M220 20 L 240 20 L260 20""")
+// path19b = parse_path("""M220 20 L 240 20 260 20 """)
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M220 40 l 20 0 l 20 0""")
+// path19b = parse_path("""M220 40 l 20 0 20 0""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M50 150 C50 50 200 50 200 150 C200 50 350 50 350 150""")
+// path19b = parse_path("""M50 150 C50 50 200 50 200 150 200 50 350 50 350 150""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path(
+//     """M50, 200 c0,-100 150,-100 150,0 c0,-100 150,-100 150,0"""
+// )
+// path19b = parse_path(
+//     """M50, 200 c0,-100 150,-100 150,0 0,-100 150,-100 150,0"""
+// )
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M50 250 S125 200 200 250 S275, 200 350 250""")
+// path19b = parse_path("""M50 250 S125 200 200 250 275, 200 350 250""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M50 275 s75 -50 150 0 s75, -50 150 0""")
+// path19b = parse_path("""M50 275 s75 -50 150 0 75, -50 150 0""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M50 300 Q 125 275 200 300 Q 275 325 350 300""")
+// path19b = parse_path("""M50 300 Q 125 275 200 300 275 325 350 300""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M50 325 q 75 -25 150 0 q 75 25 150 0""")
+// path19b = parse_path("""M50 325 q 75 -25 150 0 75 25 150 0""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M425 25 T 425 75 T 425 125""")
+// path19b = parse_path("""M425 25 T 425 75 425 125""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M450 25 t 0 50 t 0 50""")
+// path19b = parse_path("""M450 25 t 0 50 0 50""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M400,200 A25 25 0 0 0 425 150 A25 25 0 0 0 400 200""")
+// path19b = parse_path("""M400,200 A25 25 0 0 0 425 150 25 25 0 0 0 400 200""")
+// self.assertEqual(path19a, path19b)
+// path19a = parse_path("""M400,300 a25 25 0 0 0 25 -50 a25 25 0 0 0 -25 50""")
+// path19b = parse_path("""M400,300 a25 25 0 0 0 25 -50 25 25 0 0 0 -25 50""")
+// self.assertEqual(path19a, path19b)
+
+// class O(object):
+//     pass
 
 testPath(test, PathDraw);
 testPath(test, PathLS);

@@ -279,7 +279,7 @@ export abstract class SegmentLS extends Segment {
 			throw new Error(`No prev`);
 		}
 	}
-	withFarPrev3(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS {
+	withFarPrev3(farPrev: SegmentLS, newPrev: SegmentLS | undefined): SegmentLS | undefined {
 		const {_prev} = this;
 		if (farPrev === this) {
 			return this.withPrev(newPrev);
@@ -289,13 +289,16 @@ export abstract class SegmentLS extends Segment {
 			throw new Error(`No prev`);
 		}
 	}
-	// withFarPrev2(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS {
+	// subPaths(): SegmentLS {
+	// 	if(this instanceof MoveLS || !_prev){
+	// 		// push
+	// 		this.withPrev(undefined);
+	// 	}
 	// 	const {_prev} = this;
-	// 	if (farPrev === _prev) {
-	// 		return this.withPrev(newPrev);
-	// 	} else if (_prev) {
-	// 		return this.withPrev(_prev.withFarPrev(farPrev, newPrev));
+	// 	if (_prev) {
+	// 		return this.withPrev(_prev.subPaths());
 	// 	} else {
+	// 		// push
 	// 		throw new Error(`No prev`);
 	// 	}
 	// }
@@ -327,7 +330,10 @@ export abstract class SegmentLS extends Segment {
 	abstract splitAt(t: number): [SegmentLS, SegmentLS];
 	abstract transform(M: any): SegmentLS;
 	abstract reversed(next?: SegmentLS): SegmentLS | undefined;
-	abstract withPrev(prev: SegmentLS): SegmentLS;
+	abstract withPrev(prev: SegmentLS | undefined): SegmentLS;
+	parse(d: string) {
+		return parseLS(d, this);
+	}
 	static moveTo(...args: Vec[] | number[]) {
 		const [pos] = pickPos(args);
 		return new MoveLS(undefined, pos);
@@ -345,7 +351,7 @@ export abstract class SegmentLS extends Segment {
 		return this.moveTo(Vec.pos(0, 0)).quadraticCurveTo(p, end);
 	}
 	static parse(d: string) {
-		return parseLS(d);
+		return parseLS(d, undefined);
 	}
 	static arc(...args: Vec[] | number[]): SegmentLS {
 		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
@@ -443,8 +449,8 @@ export class LineLS extends SegmentLS {
 		const {end, _prev} = this;
 		return new LineLS(_prev?.transform(M), end.transform(M));
 	}
-	override withPrev(newPrev: SegmentLS) {
-		const {end, _prev} = this;
+	override withPrev(newPrev: SegmentLS | undefined) {
+		const {end} = this;
 		return new LineLS(newPrev, end);
 	}
 }
@@ -483,7 +489,7 @@ export class MoveLS extends LineLS {
 			return next;
 		}
 	}
-	override withPrev(prev: SegmentLS) {
+	override withPrev(prev: SegmentLS | undefined) {
 		const {end} = this;
 		return new MoveLS(prev, end);
 	}
@@ -522,7 +528,7 @@ export class CloseLS extends LineLS {
 			return next;
 		}
 	}
-	override withPrev(prev: SegmentLS) {
+	override withPrev(prev: SegmentLS | undefined) {
 		const {end} = this;
 		return new CloseLS(prev, end);
 	}
@@ -591,7 +597,7 @@ export class QuadLS extends SegmentLS {
 		const {p, end, _prev} = this;
 		return new QuadLS(_prev?.transform(M), p.transform(M), end.transform(M));
 	}
-	override withPrev(prev: SegmentLS) {
+	override withPrev(prev: SegmentLS | undefined) {
 		const {p, end} = this;
 		return new QuadLS(prev, p, end);
 	}
@@ -664,7 +670,7 @@ export class CubicLS extends SegmentLS {
 		}
 		return ['C', x1, y1, x2, y2, ex, ey];
 	}
-	override withPrev(prev: SegmentLS) {
+	override withPrev(prev: SegmentLS | undefined) {
 		const {c1, c2, end} = this;
 		return new CubicLS(prev, c1, c2, end);
 	}
@@ -789,7 +795,7 @@ export class ArcLS extends SegmentLS {
 		return SegmentLS.lineTo(end);
 	}
 
-	override withPrev(prev: SegmentLS) {
+	override withPrev(prev: SegmentLS | undefined) {
 		const {rx, ry, phi, sweep, bigArc, end} = this;
 		return new ArcLS(prev, rx, ry, phi, bigArc, sweep, end);
 	}

@@ -1,5 +1,6 @@
 import {Vec} from './point.js';
 import {Box} from './box.js';
+import {tNorm} from './path/index.js';
 
 const {PI: pi, abs, sqrt, tan, acos, sin, cos} = Math;
 
@@ -32,7 +33,7 @@ function fmtN(n: number) {
 }
 
 class CanvasCompat {
-	set fillStyle(x: any) {}
+	set fillStyle(_x: any) {}
 	get fillStyle() {
 		return 'red';
 	}
@@ -446,7 +447,7 @@ export class PathLS extends CanvasCompat {
 		}
 		return new PathLS(undefined);
 	}
-	reversed(next?: SegmentLS): PathLS {
+	reversed(_next?: SegmentLS): PathLS {
 		const {_tail} = this;
 		if (_tail) {
 			return new PathLS(_tail.reversed());
@@ -456,6 +457,13 @@ export class PathLS extends CanvasCompat {
 	descArray(opt?: DescParams): (number | string)[] {
 		return this?._tail?.descArray(opt) ?? [];
 	}
+	*enumSubPaths(opt?: DescParams) {
+		const {_tail} = this;
+		if (_tail) {
+			yield* _subPaths(_tail);
+		}
+	}
+
 	get firstPoint() {
 		return this.start;
 	}
@@ -530,13 +538,23 @@ function _segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [
 	return [undefined, NaN, NaN];
 }
 
-function tNorm(t: number) {
-	if (t < 0) {
-		t = 1 + (t % 1);
-	} else if (t > 1) {
-		if (0 == (t = t % 1)) {
-			t = 1;
+function* _subPaths(cur: SegmentLS | undefined) {
+	let tail: undefined | SegmentLS;
+	for (; cur; cur = cur._prev) {
+		if (cur instanceof MoveLS) {
+			if (tail) {
+				if (tail === cur) {
+					throw new Error();
+				} else {
+					yield tail.withFarPrev3(cur, undefined);
+				}
+				tail = undefined;
+			}
+		} else if (!tail) {
+			tail = cur;
 		}
 	}
-	return t;
+	if (tail) {
+		yield tail;
+	}
 }
