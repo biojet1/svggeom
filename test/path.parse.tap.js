@@ -1,10 +1,10 @@
 'uses strict';
 import test from 'tap';
-import { enum_path_data } from './path.utils.js';
-import { Path, SegmentLS } from 'svggeom';
+import {enum_path_data} from './path.utils.js';
+import {Path, SegmentLS} from 'svggeom';
 import './utils.js';
 
-test.test(`SegmentLS Extra`, { bail: 1 }, function (t) {
+test.test(`SegmentLS Extra`, {bail: 1}, function (t) {
     const cur = SegmentLS.moveTo(3, 4).lineTo(5, 6).moveTo(7, 8).closePath();
     t.same([...cur.first.end], [3, 4, 0]);
     t.same([...cur.prev.end], [7, 8, 0]);
@@ -22,57 +22,40 @@ test.test(`SegmentLS Extra`, { bail: 1 }, function (t) {
 });
 // process.exit();
 
-for await (const item of enum_path_data({ SEGMENTS: 'Parsed' })) {
-    const { d } = item;
+for await (const item of enum_path_data({SEGMENTS: 'Parsed'})) {
+    const {d} = item;
     let close = true;
     switch (d) {
         case 'M0,0L10,0m0,0L10,0':
             continue;
-        // case 'M396 140a176 112 0 1 1 -352 0a176 112 0 1 1 352 0z':
-        // continue;
-        // case 'm0,0h10z':
-        // case 'm0,0h10Z':
-        //  close = null;
-        //  break;
-        default:
-        // if (d.indexOf('ZM') > 0) {
-        //  close = false;
-        // } else if (d.indexOf('Z') > 0 || d.indexOf('z') > 0) {
-        //  close = null;
-        // }
-        // if (d.indexOf('A') > 0 || d.indexOf('a') > 0) {
-        //  if (d.indexOf('Z') > 0 || d.indexOf('z') > 0) {
-        //      close = null;
-        //  }
-        // }
     }
 
-    test.test(`SPTPaths<${d}>`, { bail: 1 }, function (t) {
+    test.test(`SPTPaths<${d}>`, {bail: 1}, function (t) {
         const p = Path.parse(d);
-        const abs = p.descArray({ relative: false, close: close, short: false });
+        const abs = p.descArray({relative: false, close: close, short: false});
 
         t.sameDescs(abs, item.abs, 5e-5, `ABS`, p);
-        const rel = p.descArray({ relative: true, close: close, short: false });
+        const rel = p.descArray({relative: true, close: close, short: false});
         t.sameDescs(rel, item.rel, 5e-5, `REL`, p);
 
         t.end();
     });
-    test.test(`SPTPaths<${d}>`, { bail: 1 }, function (t) {
+    test.test(`SPTPaths<${d}>`, {bail: 1}, function (t) {
         const p = SegmentLS.parse(d);
-        const abs = p.descArray({ relative: false, short: false });
+        const abs = p.descArray({relative: false, short: false});
         const rev = p.reversed();
 
         t.sameDescs(abs, item.abs, 5e-5, `ABS`, p);
-        const rel = p.descArray({ relative: true, short: false });
+        const rel = p.descArray({relative: true, short: false});
         t.sameDescs(rel, item.rel, 5e-5, `REL`, p);
         t.sameDescs(rev.descArray(), item.rev, 5e-5, `REV`, p);
-        t.sameDescs(rev.descArray({ relative: true, short: false }), item.revr, 5e-5, `REV-REL`, p);
+        t.sameDescs(rev.descArray({relative: true, short: false}), item.revr, 5e-5, `REV-REL`, p);
 
         t.end();
     });
 }
-for await (const item of enum_path_data({ SEGMENTS: 'SEPaths' })) {
-    const { d } = item;
+for await (const item of enum_path_data({SEGMENTS: 'SEPaths'})) {
+    const {d} = item;
     switch (d) {
         case 'M0,0L10,0m0,0L10,0':
         // case 'M0,0L10,0M0,0L10,0':
@@ -85,20 +68,20 @@ for await (const item of enum_path_data({ SEGMENTS: 'SEPaths' })) {
             continue;
     }
     const eps = 0.00005;
-    test.test(`SEPaths<${d}>`, { bail: 1 }, function (t) {
+    test.test(`SEPaths<${d}>`, {bail: 1}, function (t) {
         const p = Path.parse(item.d);
-        const abs = p.descArray({ relative: false, close: true });
+        const abs = p.descArray({relative: false, close: true});
         t.sameDescs(abs, item.abs, eps, `ABS`, p);
-        const rel = p.descArray({ relative: true });
+        const rel = p.descArray({relative: true});
         t.sameDescs(rel, item.rel, eps, `REL`, p);
 
         t.end();
     });
-    test.test(`SegmentLS:SEPaths<${d}>`, { bail: 1 }, function (t) {
+    test.test(`SegmentLS:SEPaths<${d}>`, {bail: 1}, function (t) {
         const cur = SegmentLS.parse(item.d);
         // t.same(item.abs, cur.descArray(), [`${cur.toString()}`, item.abs]);
         t.sameDescs(cur.descArray(), item.abs, eps, `ABS`, cur);
-        t.sameDescs(cur.descArray({ relative: true, smooth: false }), item.rel, eps, `REL`, cur);
+        t.sameDescs(cur.descArray({relative: true, smooth: false}), item.rel, eps, `REL`, cur);
 
         t.end();
     });
