@@ -4,7 +4,7 @@ export * from './box.js';
 export * from './matrix.js';
 export * from './matrix-interpolate.js';
 // export * from './path.js';
-export {PathLS, PathDraw} from './draw.js';
+export {PathLS} from './draw.js';
 export {SegmentLS} from './path/linked.js';
 
 export async function loadFont(which: string) {

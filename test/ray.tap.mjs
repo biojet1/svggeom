@@ -1,5 +1,6 @@
 'uses strict';
-import {Ray, RayL, Vec, PathDraw} from 'svggeom';
+import {Ray, RayL, Vec} from 'svggeom';
+import {PathDraw} from '../dist/draw.js';
 import './utils.js';
 import test from 'tap';
 const CI = !!process.env.CI;
@@ -264,7 +265,7 @@ test.test(`RegularPentagon`, {bail: !CI}, function (t) {
     const R = 1;
     const a = (R * 10) / sqrt(50 + 10 * sqrt(5));
     const r = (sqrt(25 + 10 * sqrt(5)) * a) / 10;
-    console.log(c1, s1, c2, s2, r, R);
+    // console.log(c1, s1, c2, s2, r, R);
 
     let A = Ray.after(c1, s1);
     let x, y;
@@ -374,7 +375,7 @@ test.test(`draw`, {bail: !CI}, function (t) {
     d = new PathDraw();
     d.quadraticCurveTo(3, 4, 5, 6);
 
-    console.log(d);
+    // console.log(d);
     const s = 'M1,2Q3,4,5,6';
     t.equal(PathDraw.moveTo(1, 2).quadraticCurveTo(3, 4, 5, 6) + '', s);
     t.equal(PathDraw.moveTo(Vec.at(1, 2)).quadraticCurveTo(3, 4, 5, 6) + '', s);
@@ -493,9 +494,9 @@ test.test(`RayL`, {bail: !CI}, function (t) {
         t.almostEqual([x, y, dir.degrees], [0, 0, 180 + 53.13010235415598]);
     }
 
-    t.notStrictSame(c, a);
-    t.notStrictSame(b, a);
-    t.notStrictSame(r, a);
+    t.strictNotSame(c, a);
+    t.strictNotSame(b, a);
+    t.strictNotSame(r, a);
     t.strictSame(a.prev(), r);
     t.strictSame(b.prev(), a);
     t.strictSame(c.prev(), b);
