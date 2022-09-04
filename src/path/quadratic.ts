@@ -66,20 +66,20 @@ function quadratic_extrema(a: number, b: number, c: number) {
 }
 const {pow} = Math;
 
-export function quadFlatness([[sx, sy], [cx, cy], [ex, ey]]: Iterable<number>[]) {
-	// let ux = pow(3 * x1 - 2 * sx - ex, 2);   // 2cx−ex−sx
-	// let uy = pow(3 * y1 - 2 * sy - ey, 2);   // 2cy−ey−sy
-	// const vx = pow(3 * x2 - 2 * ex - sx, 2); // 2cx−ex−sx
-	// const vy = pow(3 * y2 - 2 * ey - sy, 2); // 2cy−ey−sy
-	// if (ux < vx) {
-	// 	ux = vx;
-	// }
-	// if (uy < vy) {
-	// 	uy = vy;
-	// }
-	// return ux + uy;
-	return pow(2 * cx - ex - sx, 2) + pow(2 * cy - ey - sy, 2);
-}
+// export function quadFlatness([[sx, sy], [cx, cy], [ex, ey]]: Iterable<number>[]) {
+// 	// let ux = pow(3 * x1 - 2 * sx - ex, 2);   // 2cx−ex−sx
+// 	// let uy = pow(3 * y1 - 2 * sy - ey, 2);   // 2cy−ey−sy
+// 	// const vx = pow(3 * x2 - 2 * ex - sx, 2); // 2cx−ex−sx
+// 	// const vy = pow(3 * y2 - 2 * ey - sy, 2); // 2cy−ey−sy
+// 	// if (ux < vx) {
+// 	// 	ux = vx;
+// 	// }
+// 	// if (uy < vy) {
+// 	// 	uy = vy;
+// 	// }
+// 	// return ux + uy;
+// 	return pow(2 * cx - ex - sx, 2) + pow(2 * cy - ey - sy, 2);
+// }
 
 export function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	const mx1 = (1 - t) * x1 + t * cx;

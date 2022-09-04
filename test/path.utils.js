@@ -15,7 +15,8 @@ export async function* enum_path_data(env) {
         }
     }
 }
-import {Cubic, Path} from 'svggeom';
+// import {Cubic} from 'svggeom';
+import {Path} from '../dist/path.js';
 Path.digits = 16;
 
 export function test_segment(t, seg, item, opt = {}) {

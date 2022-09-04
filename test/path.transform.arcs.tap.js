@@ -1,6 +1,7 @@
 'uses strict';
 import test from 'tap';
-import {Matrix, Path, Cubic, Arc, Line, SegmentLS} from 'svggeom';
+import {Matrix, SegmentLS} from 'svggeom';
+import {Path, Cubic, Arc, Line} from '../dist/path.js';
 import {enum_path_data} from './path.utils.js';
 import './utils.js';
 

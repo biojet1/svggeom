@@ -1,7 +1,8 @@
 'uses strict';
 import test from 'tap';
 import {enum_path_data} from './path.utils.js';
-import {Path, SegmentLS} from 'svggeom';
+import {SegmentLS} from 'svggeom';
+import {Path} from '../dist/path.js';
 import './utils.js';
 
 test.test(`SegmentLS Extra`, {bail: 1}, function (t) {

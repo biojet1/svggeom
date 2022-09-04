@@ -463,6 +463,19 @@ export class PathLS extends CanvasCompat {
 			yield* _subPaths(_tail);
 		}
 	}
+	*[Symbol.iterator]() {
+		let {_tail: cur} = this;
+		for (; cur; cur = cur._prev) {
+			yield cur;
+		}
+	}
+	transform(M: any) {
+		const {_tail} = this;
+		if (_tail) {
+			return new PathLS(_tail.transform(M));
+		}
+		return this;
+	}
 
 	get firstPoint() {
 		return this.from;

@@ -1,6 +1,6 @@
 'uses strict';
 import test from 'tap';
-import {Path, PathLS, SegmentLS} from 'svggeom';
+import {PathLS, SegmentLS} from 'svggeom';
 import {enum_path_data, test_segment, testSegment} from './path.utils.js';
 import './utils.js';
 const CI = !!process.env.CI;
