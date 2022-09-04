@@ -3,13 +3,13 @@ import { Box } from '../box.js';
 import { Segment, DescParams } from './index.js';
 export declare abstract class SegmentLS extends Segment {
     _prev?: SegmentLS;
-    private readonly _end;
+    protected readonly _to: Vec;
     static get digits(): number;
     static set digits(n: number);
-    constructor(prev: SegmentLS | undefined, end: Vec);
+    constructor(prev: SegmentLS | undefined, to: Vec);
     get prev(): SegmentLS;
-    get start(): Vec;
-    get end(): Vec;
+    get from(): Vec;
+    get to(): Vec;
     get first(): SegmentLS | undefined;
     get lastMove(): MoveLS | undefined;
     enum(): Generator<SegmentLS, void, unknown>;
@@ -97,7 +97,7 @@ export declare class CloseLS extends LineLS {
 }
 export declare class QuadLS extends SegmentLS {
     readonly p: Vec;
-    constructor(prev: SegmentLS | undefined, p: Vec, end: Vec);
+    constructor(prev: SegmentLS | undefined, p: Vec, _to: Vec);
     private get _qpts();
     get length(): number;
     slopeAt(t: number): Vec;
@@ -112,7 +112,7 @@ export declare class QuadLS extends SegmentLS {
 export declare class CubicLS extends SegmentLS {
     readonly c1: Vec;
     readonly c2: Vec;
-    constructor(prev: SegmentLS | undefined, c1: Vec, c2: Vec, end: Vec);
+    constructor(prev: SegmentLS | undefined, c1: Vec, c2: Vec, _to: Vec);
     private get _cpts();
     pointAt(t: number): Vec;
     bbox(): Box;
@@ -136,7 +136,7 @@ export declare class ArcLS extends SegmentLS {
     readonly rdelta: number;
     readonly cx: number;
     readonly cy: number;
-    constructor(prev: SegmentLS | undefined, rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, end: Vec);
+    constructor(prev: SegmentLS | undefined, rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, _to: Vec);
     bbox(): Box;
     get length(): number;
     pointAt(t: number): Vec;

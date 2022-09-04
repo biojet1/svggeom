@@ -125,7 +125,7 @@ export class Path {
     get firstPoint() {
         const { _segs: segs } = this;
         for (const seg of segs) {
-            return seg.start;
+            return seg.from;
         }
     }
     get firstSegment() {
@@ -138,13 +138,13 @@ export class Path {
         const { _segs: segs } = this;
         const { length } = segs;
         if (length > 0) {
-            return segs[length - 1].end;
+            return segs[length - 1].to;
         }
     }
-    get start() {
+    get from() {
         return this.firstPoint;
     }
-    get end() {
+    get to() {
         return this.lastPoint;
     }
     get lastSegment() {
@@ -174,15 +174,15 @@ export class Path {
                 }
             }
             else {
-                let start = 0;
+                let from = 0;
                 for (const [i, seg] of segs.entries()) {
                     const len = lengths[i];
                     if (len > 0) {
-                        const end = start + len;
-                        if (end >= T) {
-                            return [seg, (T - start) / (end - start), i];
+                        const to = from + len;
+                        if (to >= T) {
+                            return [seg, (T - from) / (to - from), i];
                         }
-                        start = end;
+                        from = to;
                     }
                 }
             }
@@ -194,9 +194,9 @@ export class Path {
         const f = segs.length - 1;
         let i = 0;
         while (i < f) {
-            const { end } = segs[i];
-            const { start } = segs[++i];
-            if (!end.equals(start)) {
+            const { to } = segs[i];
+            const { from } = segs[++i];
+            if (!to.equals(from)) {
                 return false;
             }
         }
@@ -206,7 +206,7 @@ export class Path {
         const { _segs: segs } = this;
         const n = segs.length;
         if (n > 0 && this.isContinuous()) {
-            return segs[0].start.equals(segs[n - 1].end);
+            return segs[0].from.equals(segs[n - 1].to);
         }
         return false;
     }
@@ -222,10 +222,10 @@ export class Path {
         let current_pos = null;
         let move_pos = null;
         let previous_segment;
-        const end = segs.length > 0 ? segs[segs.length - 1].end : undefined;
+        const to = segs.length > 0 ? segs[segs.length - 1].to : undefined;
         TOP: for (const [i, seg] of segs.entries()) {
-            const { start: seg_start } = seg;
-            if (!current_pos || !seg_start.equals(current_pos) || (self_closed && end && seg_start.equals(end))) {
+            const { from: seg_start } = seg;
+            if (!current_pos || !seg_start.equals(current_pos) || (self_closed && to && seg_start.equals(to))) {
                 move_pos = seg_start;
                 const _seg_start = rel ? (current_pos ? seg_start.sub(current_pos) : seg_start) : seg_start;
                 yield rel ? 'm' : 'M';
@@ -237,14 +237,14 @@ export class Path {
                     if (seg instanceof Close) {
                         if (move_pos) {
                             if (close || close == undefined) {
-                                if (move_pos.closeTo(seg.end)) {
+                                if (move_pos.closeTo(seg.to)) {
                                     yield rel ? 'z' : 'Z';
                                     break OUT;
                                 }
                             }
                         }
                     }
-                    const { x, y } = rel ? seg.end.sub(seg_start) : seg.end;
+                    const { x, y } = rel ? seg.to.sub(seg_start) : seg.to;
                     if (short) {
                         if (seg instanceof Horizontal && !y) {
                             yield rel ? 'h' : 'H';
@@ -263,7 +263,7 @@ export class Path {
                 }
             }
             else if (seg instanceof Arc) {
-                const end = rel ? seg.end.sub(seg_start) : seg.end;
+                const to = rel ? seg.to.sub(seg_start) : seg.to;
                 const { rx, ry, phi, bigArc, sweep } = seg;
                 yield rel ? 'a' : 'A';
                 yield fixNum(rx);
@@ -271,15 +271,15 @@ export class Path {
                 yield fixNum(phi);
                 yield bigArc ? 1 : 0;
                 yield sweep ? 1 : 0;
-                yield fixNum(end.x);
-                yield fixNum(end.y);
+                yield fixNum(to.x);
+                yield fixNum(to.y);
             }
             else if (seg instanceof Quadratic) {
-                let { c, end } = seg;
+                let { c, to } = seg;
                 let _smooth = smooth;
                 if (_smooth) {
                     if (previous_segment instanceof Quadratic) {
-                        const { c: cP, end: p2P } = previous_segment;
+                        const { c: cP, to: p2P } = previous_segment;
                         _smooth = seg_start.closeTo(p2P) && c.sub(seg_start).closeTo(p2P.sub(cP));
                     }
                     else {
@@ -288,7 +288,7 @@ export class Path {
                 }
                 if (rel) {
                     c = c.sub(seg_start);
-                    end = end.sub(seg_start);
+                    to = to.sub(seg_start);
                 }
                 if (_smooth) {
                     yield rel ? 't' : 'T';
@@ -298,15 +298,15 @@ export class Path {
                     yield fixNum(c.x);
                     yield fixNum(c.y);
                 }
-                yield fixNum(end.x);
-                yield fixNum(end.y);
+                yield fixNum(to.x);
+                yield fixNum(to.y);
             }
             else if (seg instanceof Cubic) {
-                let { c1, c2, end } = seg;
+                let { c1, c2, to } = seg;
                 let _smooth = smooth;
                 if (_smooth) {
                     if (previous_segment instanceof Cubic) {
-                        const { c2: prev_c2, end: prev_p2 } = previous_segment;
+                        const { c2: prev_c2, to: prev_p2 } = previous_segment;
                         _smooth = seg_start.closeTo(prev_p2) && c1.sub(seg_start).closeTo(prev_p2.sub(prev_c2));
                     }
                     else {
@@ -315,7 +315,7 @@ export class Path {
                 }
                 if (rel) {
                     c2 = c2.sub(seg_start);
-                    end = end.sub(seg_start);
+                    to = to.sub(seg_start);
                 }
                 if (_smooth) {
                     yield rel ? 's' : 'S';
@@ -330,10 +330,10 @@ export class Path {
                 }
                 yield fixNum(c2.x);
                 yield fixNum(c2.y);
-                yield fixNum(end.x);
-                yield fixNum(end.y);
+                yield fixNum(to.x);
+                yield fixNum(to.y);
             }
-            current_pos = seg.end;
+            current_pos = seg.to;
             previous_segment = seg;
         }
     }
@@ -351,7 +351,7 @@ export class Path {
         let prev;
         let subpath_start = 0;
         for (const [i, seg] of segs.entries()) {
-            if (prev && !seg.start.equals(prev.end)) {
+            if (prev && !seg.from.equals(prev.to)) {
                 yield new Path(segs.slice(subpath_start, i));
                 subpath_start = i;
             }

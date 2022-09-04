@@ -18,34 +18,34 @@ export class Arc extends SegmentSE {
     rdelta;
     cx;
     cy;
-    constructor(start, end, rx, ry, φ, bigArc, sweep) {
+    constructor(from, to, rx, ry, φ, bigArc, sweep) {
         if (!(isFinite(φ) && isFinite(rx) && isFinite(ry)))
             throw Error(`${JSON.stringify(arguments)}`);
-        super(start, end);
-        const { x: x1, y: y1 } = this.start;
-        const { x: x2, y: y2 } = this.end;
+        super(from, to);
+        const { x: x1, y: y1 } = this.from;
+        const { x: x2, y: y2 } = this.to;
         [this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] =
             arcParams(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
     }
-    static fromEndPoint(start, rx, ry, φ, bigArc, sweep, end) {
+    static fromEndPoint(from, rx, ry, φ, bigArc, sweep, to) {
         if (!rx || !ry) {
-            return new Line(start, end);
+            return new Line(from, to);
         }
-        return new Arc(start, end, rx, ry, φ, bigArc, sweep);
+        return new Arc(from, to, rx, ry, φ, bigArc, sweep);
     }
     static fromCenterForm(c, rx, ry, φ, θ, Δθ) {
         const cosφ = cos((φ / 180) * PI);
         const sinφ = sin((φ / 180) * PI);
         const m = Matrix.hexad(cosφ, sinφ, -sinφ, cosφ, 0, 0);
-        const start = Vec.pos(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
+        const from = Vec.pos(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
             .transform(m)
             .add(c);
-        const end = Vec.pos(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
+        const to = Vec.pos(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
             .transform(m)
             .add(c);
         const bigArc = abs(Δθ) > 180 ? 1 : 0;
         const sweep = Δθ > 0 ? 1 : 0;
-        return new Arc(start, end, rx, ry, φ, bigArc, sweep);
+        return new Arc(from, to, rx, ry, φ, bigArc, sweep);
     }
     bbox() {
         return arcBBox(this);
@@ -60,33 +60,33 @@ export class Arc extends SegmentSE {
         return arcSlopeAt(this, t);
     }
     splitAt(t) {
-        const { rx, ry, phi, sweep, rdelta, start, end } = this;
+        const { rx, ry, phi, sweep, rdelta, from, to } = this;
         const deltaA = abs(rdelta);
         const mid = arcPointAt(this, t);
         return [
-            new Arc(start, mid, rx, ry, phi, deltaA * t > PI, sweep),
-            new Arc(mid, end, rx, ry, phi, deltaA * (1 - t) > PI, sweep),
+            new Arc(from, mid, rx, ry, phi, deltaA * t > PI, sweep),
+            new Arc(mid, to, rx, ry, phi, deltaA * (1 - t) > PI, sweep),
         ];
     }
     toPathFragment() {
-        const { rx, ry, phi, sweep, bigArc, end: [x, y], } = this;
+        const { rx, ry, phi, sweep, bigArc, to: [x, y], } = this;
         return ['A', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x, y];
     }
     transform(matrix) {
-        const { bigArc, end, start } = this;
+        const { bigArc, to, from } = this;
         const [rx, ry, phi, sweep] = arcTransform(this, matrix);
-        return new Arc(start.transform(matrix), end.transform(matrix), rx, ry, phi, bigArc, sweep);
+        return new Arc(from.transform(matrix), to.transform(matrix), rx, ry, phi, bigArc, sweep);
     }
     reversed() {
-        const { bigArc, end, start, rx, ry, sweep, phi } = this;
-        return new Arc(end, start, rx, ry, phi, bigArc, sweep ? 0 : 1);
+        const { bigArc, to, from, rx, ry, sweep, phi } = this;
+        return new Arc(to, from, rx, ry, phi, bigArc, sweep ? 0 : 1);
     }
     asCubic() {
         const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = this;
         const segments = arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
         if (segments.length === 0) {
-            const { end, start } = this;
-            return [new Line(start, end)];
+            const { to, from } = this;
+            return [new Line(from, to)];
         }
         else {
             return segments.map(function (s) {
@@ -96,15 +96,15 @@ export class Arc extends SegmentSE {
     }
 }
 export function arcPointAt(arc, t) {
-    const { start, end } = arc;
-    if (start.equals(end)) {
-        return start.clone();
+    const { from, to } = arc;
+    if (from.equals(to)) {
+        return from.clone();
     }
     else if (t <= 0) {
-        return start;
+        return from;
     }
     else if (t >= 1) {
-        return end;
+        return to;
     }
     const { rx, ry, cosφ, sinφ, rtheta, rdelta, cx, cy } = arc;
     const θ = rtheta + rdelta * t;
@@ -119,7 +119,7 @@ export function arcPointAt(arc, t) {
     }
 }
 export function arcBBox(arc) {
-    const { rx, ry, cosφ, sinφ, start, end, rdelta, rtheta, phi } = arc;
+    const { rx, ry, cosφ, sinφ, from, to, rdelta, rtheta, phi } = arc;
     let atan_x, atan_y;
     if (cosφ == 0) {
         atan_x = PI / 2;
@@ -134,8 +134,8 @@ export function arcBBox(arc) {
         atan_x = atan(-(ry / rx) * tanφ);
         atan_y = atan(ry / rx / tanφ);
     }
-    const xtrema = [start.x, end.x];
-    const ytrema = [start.y, end.y];
+    const xtrema = [from.x, to.x];
+    const ytrema = [from.y, to.y];
     function angle_inv(ang, k) {
         return (ang + PI * k - rtheta) / rdelta;
     }
@@ -150,10 +150,10 @@ export function arcBBox(arc) {
     return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 }
 export function arcLength(arc) {
-    const { start, end } = arc;
-    if (start.equals(end))
+    const { from, to } = arc;
+    if (from.equals(to))
         return 0;
-    return segment_length(arc, 0, 1, start, end);
+    return segment_length(arc, 0, 1, from, to);
 }
 export function arcSlopeAt(arc, t) {
     const { rx, ry, cosφ, sinφ, rdelta, rtheta } = arc;

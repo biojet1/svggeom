@@ -27,8 +27,8 @@ export declare class Path {
     get firstPoint(): import("./point.js").Vec | undefined;
     get firstSegment(): SegmentSE | undefined;
     get lastPoint(): import("./point.js").Vec | undefined;
-    get start(): import("./point.js").Vec | undefined;
-    get end(): import("./point.js").Vec | undefined;
+    get from(): import("./point.js").Vec | undefined;
+    get to(): import("./point.js").Vec | undefined;
     get lastSegment(): SegmentSE | undefined;
     segmentAt(T: number): [SegmentSE | undefined, number, number];
     isContinuous(): boolean;

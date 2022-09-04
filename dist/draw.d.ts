@@ -62,8 +62,8 @@ export declare class PathLS extends CanvasCompat {
     segmentAtLength(T: number): [SegmentLS | undefined, number, number];
     segmentAt(T: number): [SegmentLS | undefined, number];
     get length(): number;
-    get start(): Vec | undefined;
-    get end(): Vec | undefined;
+    get from(): Vec | undefined;
+    get to(): Vec | undefined;
     tangentAt(T: number): Vec | undefined;
     slopeAt(T: number): Vec | undefined;
     pointAt(T: number): Vec | undefined;
@@ -75,6 +75,8 @@ export declare class PathLS extends CanvasCompat {
     reversed(_next?: SegmentLS): PathLS;
     descArray(opt?: DescParams): (number | string)[];
     enumSubPaths(opt?: DescParams): Generator<SegmentLS | undefined, void, unknown>;
+    [Symbol.iterator](): Generator<SegmentLS, void, unknown>;
+    transform(M: any): PathLS;
     get firstPoint(): Vec | undefined;
     get lastPoint(): Vec | undefined;
     toString(): string;

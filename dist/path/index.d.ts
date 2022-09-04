@@ -8,8 +8,8 @@ export interface DescParams {
     dfix?: number;
 }
 export declare abstract class Segment {
-    abstract get start(): Vec;
-    abstract get end(): Vec;
+    abstract get from(): Vec;
+    abstract get to(): Vec;
     abstract get length(): number;
     abstract bbox(): Box;
     abstract pointAt(t: number): Vec;
@@ -24,9 +24,9 @@ export declare abstract class Segment {
 export declare abstract class SegmentSE extends Segment {
     private readonly _start;
     private readonly _end;
-    constructor(start: Iterable<number>, end: Iterable<number>);
-    get start(): Vec;
-    get end(): Vec;
+    constructor(from: Iterable<number>, to: Iterable<number>);
+    get from(): Vec;
+    get to(): Vec;
     abstract transform(M: any): SegmentSE;
     abstract reversed(): SegmentSE;
     abstract splitAt(t: number): [SegmentSE, SegmentSE];

@@ -4,17 +4,17 @@ export class Cubic extends SegmentSE {
     c1;
     c2;
     t_value;
-    constructor(start, c1, c2, end) {
-        super(start, end);
+    constructor(from, c1, c2, to) {
+        super(from, to);
         this.c1 = Vec.new(c1);
         this.c2 = Vec.new(c2);
     }
-    new(start, c1, c2, end) {
-        return new Cubic(start, c1, c2, end);
+    new(from, c1, c2, to) {
+        return new Cubic(from, c1, c2, to);
     }
     get _cpts() {
-        const { start, c1, c2, end } = this;
-        return [start, c1, c2, end];
+        const { from, c1, c2, to } = this;
+        return [from, c1, c2, to];
     }
     bbox() {
         return cubicBox(this._cpts);
@@ -33,16 +33,16 @@ export class Cubic extends SegmentSE {
         return cubicSlopeAt(this._cpts, t);
     }
     toPathFragment() {
-        const { c1: { x: x1, y: y1 }, c2: { x: x2, y: y2 }, end: { x: x3, y: y3 }, } = this;
+        const { c1: { x: x1, y: y1 }, c2: { x: x2, y: y2 }, to: { x: x3, y: y3 }, } = this;
         return ['C', x1, y1, x2, y2, x3, y3];
     }
     transform(M) {
-        const { start, c1, c2, end } = this;
-        return this.new(start.transform(M), c1.transform(M), c2.transform(M), end.transform(M));
+        const { from, c1, c2, to } = this;
+        return this.new(from.transform(M), c1.transform(M), c2.transform(M), to.transform(M));
     }
     reversed() {
-        const { start, c1, c2, end } = this;
-        return this.new(end, c2, c1, start);
+        const { from, c1, c2, to } = this;
+        return this.new(to, c2, c1, from);
     }
 }
 function cubic_extrema(s, a, b, e) {
@@ -73,11 +73,11 @@ function cubic_extrema(s, a, b, e) {
     return [cmin, cmax];
 }
 export { Cubic as CubicSegment };
-function splitAtScalar(z, start, a, b, end) {
-    const t = z * z * z * end - 3 * z * z * (z - 1) * b + 3 * z * (z - 1) * (z - 1) * a - (z - 1) * (z - 1) * (z - 1) * start;
+function splitAtScalar(z, from, a, b, to) {
+    const t = z * z * z * to - 3 * z * z * (z - 1) * b + 3 * z * (z - 1) * (z - 1) * a - (z - 1) * (z - 1) * (z - 1) * from;
     return [
-        [start, z * a - (z - 1) * start, z * z * b - 2 * z * (z - 1) * a + (z - 1) * (z - 1) * start, t],
-        [t, z * z * end - 2 * z * (z - 1) * b + (z - 1) * (z - 1) * a, z * end - (z - 1) * b, end],
+        [from, z * a - (z - 1) * from, z * z * b - 2 * z * (z - 1) * a + (z - 1) * (z - 1) * from, t],
+        [t, z * z * to - 2 * z * (z - 1) * b + (z - 1) * (z - 1) * a, z * to - (z - 1) * b, to],
     ];
 }
 export function cubicBox([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]) {
@@ -111,38 +111,38 @@ export function cubicSplitAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]], z) {
         [Vec.pos(x[1][0], y[1][0]), Vec.pos(x[1][1], y[1][1]), Vec.pos(x[1][2], y[1][2]), Vec.pos(x[1][3], y[1][3])],
     ];
 }
-export function cubicSlopeAt([start, c1, c2, end], t) {
+export function cubicSlopeAt([from, c1, c2, to], t) {
     if (t <= 0) {
-        if (start.equals(c1)) {
-            return c2.sub(start);
+        if (from.equals(c1)) {
+            return c2.sub(from);
         }
-        return c1.sub(start);
+        return c1.sub(from);
     }
     else if (t >= 1) {
-        return end.sub(c2);
+        return to.sub(c2);
     }
-    if (start.equals(c1)) {
-        if (end.equals(c2)) {
-            return end.sub(start);
+    if (from.equals(c1)) {
+        if (to.equals(c2)) {
+            return to.sub(from);
         }
         if (t <= 0) {
-            return c2.sub(start).mul(2);
+            return c2.sub(from).mul(2);
         }
         else {
-            const a = c2.sub(start).mul(2 * (1 - t));
-            const b = end.sub(c2).mul(t);
+            const a = c2.sub(from).mul(2 * (1 - t));
+            const b = to.sub(c2).mul(t);
             return a.add(b);
         }
     }
-    else if (end.equals(c2)) {
-        const a = c1.sub(start).mul(2 * (1 - t));
-        const b = end.sub(c1).mul(t);
+    else if (to.equals(c2)) {
+        const a = c1.sub(from).mul(2 * (1 - t));
+        const b = to.sub(c1).mul(t);
         return a.add(b);
     }
     else {
-        const a = c1.sub(start).mul(3 * (1 - t) ** 2);
+        const a = c1.sub(from).mul(3 * (1 - t) ** 2);
         const b = c2.sub(c1).mul(6 * (1 - t) * t);
-        const c = end.sub(c2).mul(3 * t ** 2);
+        const c = to.sub(c2).mul(3 * t ** 2);
         return a.add(b).add(c);
     }
 }
@@ -152,8 +152,8 @@ export function cubicLength(_cpts) {
         return cubicLength(a) + cubicLength(b);
     }
     else {
-        const [start, , , end] = _cpts;
-        return end.sub(start).abs();
+        const [from, , , to] = _cpts;
+        return to.sub(from).abs();
     }
 }
 import { SegmentSE } from './index.js';

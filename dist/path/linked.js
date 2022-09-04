@@ -14,17 +14,17 @@ function fmtN(n) {
 }
 export class SegmentLS extends Segment {
     _prev;
-    _end;
+    _to;
     static get digits() {
         return digits;
     }
     static set digits(n) {
         digits = n;
     }
-    constructor(prev, end) {
+    constructor(prev, to) {
         super();
         this._prev = prev;
-        this._end = end;
+        this._to = to;
     }
     get prev() {
         const { _prev } = this;
@@ -33,15 +33,15 @@ export class SegmentLS extends Segment {
         }
         throw new Error('No prev');
     }
-    get start() {
+    get from() {
         const { _prev } = this;
         if (_prev) {
-            return _prev._end;
+            return _prev.to;
         }
         throw new Error('No prev');
     }
-    get end() {
-        return this._end;
+    get to() {
+        return this._to;
     }
     get first() {
         let cur = this;
@@ -89,12 +89,12 @@ export class SegmentLS extends Segment {
     }
     m(...args) {
         const [pos] = pickPos(args);
-        return new MoveLS(this, this.end.add(pos));
+        return new MoveLS(this, this._to.add(pos));
     }
     Z() {
-        const end = this.lastMove?.end;
-        if (end) {
-            return new CloseLS(this, end);
+        const to = this.lastMove?._to;
+        if (to) {
+            return new CloseLS(this, to);
         }
         return this;
     }
@@ -107,19 +107,19 @@ export class SegmentLS extends Segment {
     }
     l(...args) {
         const [pos] = pickPos(args);
-        return new LineLS(this, this.end.add(pos));
+        return new LineLS(this, this._to.add(pos));
     }
     H(n) {
-        return new LineLS(this, this.end.withX(n));
+        return new LineLS(this, this._to.withX(n));
     }
     h(n) {
-        return new LineLS(this, this.end.shiftX(n));
+        return new LineLS(this, this._to.shiftX(n));
     }
     V(n) {
-        return new LineLS(this, this.end.withY(n));
+        return new LineLS(this, this._to.withY(n));
     }
     v(n) {
-        return new LineLS(this, this.end.shiftY(n));
+        return new LineLS(this, this._to.shiftY(n));
     }
     Q(...args) {
         const [p, pE] = pickPos(args);
@@ -127,7 +127,7 @@ export class SegmentLS extends Segment {
     }
     q(...args) {
         const [p, pE] = pickPos(args);
-        const { end: rel } = this;
+        const { _to: rel } = this;
         return new QuadLS(this, rel.add(p), rel.add(pE));
     }
     C(...args) {
@@ -136,47 +136,47 @@ export class SegmentLS extends Segment {
     }
     c(...args) {
         const [c1, c2, pE] = pickPos(args);
-        const { end: rel } = this;
+        const { _to: rel } = this;
         return new CubicLS(this, rel.add(c1), rel.add(c2), rel.add(pE));
     }
     S(...args) {
         const [p2, pE] = pickPos(args);
-        const { end } = this;
+        const { _to } = this;
         if (this instanceof CubicLS) {
-            return new CubicLS(this, this.c2.reflectAt(end), p2, pE);
+            return new CubicLS(this, this.c2.reflectAt(_to), p2, pE);
         }
         else {
-            return new CubicLS(this, end, p2, pE);
+            return new CubicLS(this, _to, p2, pE);
         }
     }
     s(...args) {
         const [p2, pE] = pickPos(args);
-        const { end } = this;
+        const { _to } = this;
         if (this instanceof CubicLS) {
-            return new CubicLS(this, this.c2.reflectAt(end), end.add(p2), end.add(pE));
+            return new CubicLS(this, this.c2.reflectAt(_to), _to.add(p2), _to.add(pE));
         }
         else {
-            return new CubicLS(this, end, end.add(p2), end.add(pE));
+            return new CubicLS(this, _to, _to.add(p2), _to.add(pE));
         }
     }
     T(...args) {
         const [pE] = pickPos(args);
-        const { end } = this;
+        const { _to } = this;
         if (this instanceof QuadLS) {
-            return new QuadLS(this, this.p.reflectAt(end), pE);
+            return new QuadLS(this, this.p.reflectAt(_to), pE);
         }
         else {
-            return new QuadLS(this, end, pE);
+            return new QuadLS(this, _to, pE);
         }
     }
     t(...args) {
         const [pE] = pickPos(args);
-        const { end } = this;
+        const { _to } = this;
         if (this instanceof QuadLS) {
-            return new QuadLS(this, this.p.reflectAt(end), end.add(pE));
+            return new QuadLS(this, this.p.reflectAt(_to), _to.add(pE));
         }
         else {
-            return new QuadLS(this, end, end.add(pE));
+            return new QuadLS(this, _to, _to.add(pE));
         }
     }
     A(rx, ry, φ, bigArc, sweep, ...args) {
@@ -185,7 +185,7 @@ export class SegmentLS extends Segment {
     }
     a(rx, ry, φ, bigArc, sweep, ...args) {
         const [pE] = pickPos(args);
-        const { end: rel } = this;
+        const { _to: rel } = this;
         return new ArcLS(this, rx, ry, φ, bigArc, sweep, rel.add(pE));
     }
     rect(...args) {
@@ -310,12 +310,12 @@ export class SegmentLS extends Segment {
         return this.moveTo(Vec.pos(0, 0)).lineTo(pos);
     }
     static bezierCurveTo(...args) {
-        const [c1, c2, end] = pickPos(args);
-        return this.moveTo(Vec.pos(0, 0)).bezierCurveTo(c1, c2, end);
+        const [c1, c2, _to] = pickPos(args);
+        return this.moveTo(Vec.pos(0, 0)).bezierCurveTo(c1, c2, _to);
     }
     static quadraticCurveTo(...args) {
-        const [p, end] = pickPos(args);
-        return this.moveTo(Vec.pos(0, 0)).quadraticCurveTo(p, end);
+        const [p, _to] = pickPos(args);
+        return this.moveTo(Vec.pos(0, 0)).quadraticCurveTo(p, _to);
     }
     static parse(d) {
         return parseLS(d, undefined);
@@ -339,9 +339,9 @@ export class SegmentLS extends Segment {
 }
 export class LineLS extends SegmentLS {
     bbox() {
-        const { end: [x2, y2], _prev, } = this;
+        const { _to: [x2, y2], _prev, } = this;
         if (_prev) {
-            const [x1, y1] = _prev.end;
+            const [x1, y1] = _prev.to;
             const [xmin, xmax] = [min(x1, x2), max(x1, x2)];
             const [ymin, ymax] = [min(y1, y2), max(y1, y2)];
             return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
@@ -349,30 +349,30 @@ export class LineLS extends SegmentLS {
         return Box.new();
     }
     get length() {
-        const { start, end } = this;
-        return end.sub(start).abs();
+        const { from, _to } = this;
+        return _to.sub(from).abs();
     }
     pointAt(t) {
-        const { start, end } = this;
-        return end.sub(start).mul(tCheck(t)).postAdd(start);
+        const { from, _to } = this;
+        return _to.sub(from).mul(tCheck(t)).postAdd(from);
     }
     slopeAt(_) {
-        const { start, end } = this;
-        const vec = end.sub(start);
+        const { from, _to } = this;
+        const vec = _to.sub(from);
         return vec.div(vec.abs());
     }
     splitAt(t) {
-        const { end } = this;
+        const { _to } = this;
         const c = this.pointAt(t);
-        return [new LineLS(this._prev, c), new LineLS(new MoveLS(undefined, c), end)];
+        return [new LineLS(this._prev, c), new LineLS(new MoveLS(undefined, c), _to)];
     }
     _descs(opt) {
-        const { end: [x, y], } = this;
+        const { _to: [x, y], } = this;
         if (opt) {
             const { relative, short } = opt;
             const { _prev } = this;
             if (_prev) {
-                const { end: [sx, sy], } = _prev;
+                const [sx, sy] = _prev.to;
                 if (relative) {
                     if (short) {
                         if (sx === x) {
@@ -397,10 +397,10 @@ export class LineLS extends SegmentLS {
         return ['L', x, y];
     }
     reversed(next) {
-        const { end, _prev } = this;
-        next || (next = new MoveLS(undefined, end));
+        const { _to, _prev } = this;
+        next || (next = new MoveLS(undefined, _to));
         if (_prev) {
-            const rev = new LineLS(next, _prev.end);
+            const rev = new LineLS(next, _prev.to);
             return _prev.reversed(rev) ?? rev;
         }
         else {
@@ -408,21 +408,21 @@ export class LineLS extends SegmentLS {
         }
     }
     transform(M) {
-        const { end, _prev } = this;
-        return new LineLS(_prev?.transform(M), end.transform(M));
+        const { _to, _prev } = this;
+        return new LineLS(_prev?.transform(M), _to.transform(M));
     }
     withPrev(newPrev) {
-        const { end } = this;
-        return new LineLS(newPrev, end);
+        const { _to } = this;
+        return new LineLS(newPrev, _to);
     }
 }
 export class MoveLS extends LineLS {
     _descs(opt) {
-        const { end: [x, y], } = this;
+        const { _to: [x, y], } = this;
         if (opt?.relative) {
             const { _prev } = this;
             if (_prev) {
-                const [sx, sy] = _prev.end;
+                const [sx, sy] = _prev.to;
                 return ['m', x - sx, y - sy];
             }
             return ['m', x, y];
@@ -430,18 +430,18 @@ export class MoveLS extends LineLS {
         return ['M', x, y];
     }
     splitAt(t) {
-        const { end } = this;
+        const { _to } = this;
         const c = this.pointAt(t);
-        return [new MoveLS(this._prev, c), new MoveLS(new MoveLS(undefined, c), end)];
+        return [new MoveLS(this._prev, c), new MoveLS(new MoveLS(undefined, c), _to)];
     }
     transform(M) {
-        const { end, _prev } = this;
-        return new MoveLS(_prev?.transform(M), end.transform(M));
+        const { _to, _prev } = this;
+        return new MoveLS(_prev?.transform(M), _to.transform(M));
     }
     reversed(next) {
         const { _prev } = this;
         if (_prev) {
-            const seg = new MoveLS(next, _prev.end);
+            const seg = new MoveLS(next, _prev.to);
             return _prev.reversed(seg) ?? seg;
         }
         else {
@@ -449,8 +449,8 @@ export class MoveLS extends LineLS {
         }
     }
     withPrev(prev) {
-        const { end } = this;
-        return new MoveLS(prev, end);
+        const { _to } = this;
+        return new MoveLS(prev, _to);
     }
     segmentLen() {
         return 0;
@@ -458,13 +458,13 @@ export class MoveLS extends LineLS {
 }
 export class CloseLS extends LineLS {
     splitAt(t) {
-        const { end } = this;
+        const { _to } = this;
         const c = this.pointAt(t);
-        return [new LineLS(this._prev, c), new CloseLS(new MoveLS(undefined, c), end)];
+        return [new LineLS(this._prev, c), new CloseLS(new MoveLS(undefined, c), _to)];
     }
     transform(M) {
-        const { end, _prev } = this;
-        return new CloseLS(_prev?.transform(M), end.transform(M));
+        const { _to, _prev } = this;
+        return new CloseLS(_prev?.transform(M), _to.transform(M));
     }
     _descs(opt) {
         if (opt) {
@@ -479,10 +479,10 @@ export class CloseLS extends LineLS {
         return ['Z'];
     }
     reversed(next) {
-        const { end, _prev } = this;
-        next || (next = new MoveLS(undefined, end));
+        const { _to, _prev } = this;
+        next || (next = new MoveLS(undefined, _to));
         if (_prev) {
-            const rev = new LineLS(next, _prev.end);
+            const rev = new LineLS(next, _prev.to);
             return _prev.reversed(rev) ?? rev;
         }
         else {
@@ -490,20 +490,20 @@ export class CloseLS extends LineLS {
         }
     }
     withPrev(prev) {
-        const { end } = this;
-        return new CloseLS(prev, end);
+        const { _to } = this;
+        return new CloseLS(prev, _to);
     }
 }
 import { quadLength, quadSplitAt, quadSlopeAt, quadPointAt, quadBBox } from './quadratic.js';
 export class QuadLS extends SegmentLS {
     p;
-    constructor(prev, p, end) {
-        super(prev, end);
+    constructor(prev, p, _to) {
+        super(prev, _to);
         this.p = p;
     }
     get _qpts() {
-        const { start, p, end } = this;
-        return [start, p, end];
+        const { from, p, _to } = this;
+        return [from, p, _to];
     }
     get length() {
         return quadLength(this._qpts);
@@ -523,12 +523,13 @@ export class QuadLS extends SegmentLS {
         return _prev ? quadBBox(this._qpts) : Box.new();
     }
     _descs(opt) {
-        const { p: { x: x1, y: y1 }, end: { x: ex, y: ey }, } = this;
+        const { p: { x: x1, y: y1 }, _to: { x: ex, y: ey }, } = this;
         if (opt) {
             const { relative, smooth } = opt;
-            const { p, _prev, start: [sx, sy], } = this;
+            const { p, _prev } = this;
             if (_prev) {
-                if (smooth && (_prev instanceof QuadLS ? _prev.p.reflectAt(_prev.end).closeTo(p) : _prev.end.closeTo(p))) {
+                const [sx, sy] = _prev.to;
+                if (smooth && (_prev instanceof QuadLS ? _prev.p.reflectAt(_prev.to).closeTo(p) : _prev.to.closeTo(p))) {
                     return relative ? ['t', ex - sx, ey - sy] : ['T', ex, ey];
                 }
                 else if (relative) {
@@ -539,10 +540,10 @@ export class QuadLS extends SegmentLS {
         return ['Q', x1, y1, ex, ey];
     }
     reversed(next) {
-        const { end, p, _prev } = this;
-        next || (next = new MoveLS(undefined, end));
+        const { _to, p, _prev } = this;
+        next || (next = new MoveLS(undefined, _to));
         if (_prev) {
-            const rev = new QuadLS(next, p, _prev.end);
+            const rev = new QuadLS(next, p, _prev.to);
             return _prev.reversed(rev) ?? rev;
         }
         else {
@@ -550,26 +551,26 @@ export class QuadLS extends SegmentLS {
         }
     }
     transform(M) {
-        const { p, end, _prev } = this;
-        return new QuadLS(_prev?.transform(M), p.transform(M), end.transform(M));
+        const { p, _to, _prev } = this;
+        return new QuadLS(_prev?.transform(M), p.transform(M), _to.transform(M));
     }
     withPrev(prev) {
-        const { p, end } = this;
-        return new QuadLS(prev, p, end);
+        const { p, _to } = this;
+        return new QuadLS(prev, p, _to);
     }
 }
 import { cubicLength, cubicSlopeAt, cubicPointAt, cubicBox, cubicSplitAt } from './cubic.js';
 export class CubicLS extends SegmentLS {
     c1;
     c2;
-    constructor(prev, c1, c2, end) {
-        super(prev, end);
+    constructor(prev, c1, c2, _to) {
+        super(prev, _to);
         this.c1 = c1;
         this.c2 = c2;
     }
     get _cpts() {
-        const { start, c1, c2, end } = this;
-        return [start, c1, c2, end];
+        const { from, c1, c2, _to } = this;
+        return [from, c1, c2, _to];
     }
     pointAt(t) {
         return cubicPointAt(this._cpts, tCheck(t));
@@ -590,10 +591,10 @@ export class CubicLS extends SegmentLS {
         return cubicLength(this._cpts);
     }
     reversed(next) {
-        const { end, c1, c2, _prev } = this;
-        next || (next = new MoveLS(undefined, end));
+        const { _to, c1, c2, _prev } = this;
+        next || (next = new MoveLS(undefined, _to));
         if (_prev) {
-            const rev = new CubicLS(next, c2, c1, _prev.end);
+            const rev = new CubicLS(next, c2, c1, _prev.to);
             return _prev.reversed(rev) ?? rev;
         }
         else {
@@ -601,18 +602,18 @@ export class CubicLS extends SegmentLS {
         }
     }
     transform(M) {
-        const { c1, c2, end, _prev } = this;
-        return new CubicLS(_prev?.transform(M), c1.transform(M), c2.transform(M), end.transform(M));
+        const { c1, c2, _to, _prev } = this;
+        return new CubicLS(_prev?.transform(M), c1.transform(M), c2.transform(M), _to.transform(M));
     }
     _descs(opt) {
-        const { c1: [x1, y1], c2: [x2, y2], end: [ex, ey], } = this;
+        const { c1: [x1, y1], c2: [x2, y2], _to: [ex, ey], } = this;
         if (opt) {
             const { smooth, relative } = opt;
             const { c1, _prev } = this;
             if (_prev) {
-                const { end: start } = _prev;
-                const [sx, sy] = start;
-                if (smooth && (_prev instanceof CubicLS ? _prev.c2.reflectAt(start).closeTo(c1) : start.closeTo(c1))) {
+                const { to: from } = _prev;
+                const [sx, sy] = from;
+                if (smooth && (_prev instanceof CubicLS ? _prev.c2.reflectAt(from).closeTo(c1) : from.closeTo(c1))) {
                     return relative ? ['s', x2 - sx, y2 - sy, ex - sx, ey - sy] : ['S', x2, y2, ex, ey];
                 }
                 else if (relative) {
@@ -623,8 +624,8 @@ export class CubicLS extends SegmentLS {
         return ['C', x1, y1, x2, y2, ex, ey];
     }
     withPrev(prev) {
-        const { c1, c2, end } = this;
-        return new CubicLS(prev, c1, c2, end);
+        const { c1, c2, _to } = this;
+        return new CubicLS(prev, c1, c2, _to);
     }
 }
 import { arcBBox, arcLength, arcPointAt, arcSlopeAt, arcTransform } from './arc.js';
@@ -641,12 +642,12 @@ export class ArcLS extends SegmentLS {
     rdelta;
     cx;
     cy;
-    constructor(prev, rx, ry, φ, bigArc, sweep, end) {
+    constructor(prev, rx, ry, φ, bigArc, sweep, _to) {
         if (!(isFinite(φ) && isFinite(rx) && isFinite(ry)))
             throw Error(`${JSON.stringify(arguments)}`);
-        super(prev, end);
-        const { x: x1, y: y1 } = this.start;
-        const { x: x2, y: y2 } = this.end;
+        super(prev, _to);
+        const { x: x1, y: y1 } = this.from;
+        const { x: x2, y: y2 } = this._to;
         [this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] = arcParams(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
     }
     bbox() {
@@ -663,24 +664,24 @@ export class ArcLS extends SegmentLS {
         return arcSlopeAt(this, tCheck(t));
     }
     splitAt(t) {
-        const { rx, ry, phi, sweep, rdelta, end, _prev } = this;
+        const { rx, ry, phi, sweep, rdelta, _to, _prev } = this;
         const deltaA = abs(rdelta);
         const mid = arcPointAt(this, tCheck(t));
         return [
             new ArcLS(_prev, rx, ry, phi, deltaA * t > PI, sweep, mid),
-            new ArcLS(new MoveLS(undefined, mid), rx, ry, phi, deltaA * (1 - t) > PI, sweep, end),
+            new ArcLS(new MoveLS(undefined, mid), rx, ry, phi, deltaA * (1 - t) > PI, sweep, _to),
         ];
     }
     transform(M) {
-        const { bigArc, end, _prev } = this;
+        const { bigArc, _to, _prev } = this;
         const [rx, ry, phi, sweep] = arcTransform(this, M);
-        return new ArcLS(_prev?.transform(M), rx, ry, phi, bigArc, sweep, end.transform(M));
+        return new ArcLS(_prev?.transform(M), rx, ry, phi, bigArc, sweep, _to.transform(M));
     }
     reversed(next) {
-        const { rx, ry, phi, bigArc, sweep, end, _prev } = this;
-        next || (next = new MoveLS(undefined, end));
+        const { rx, ry, phi, bigArc, sweep, _to, _prev } = this;
+        next || (next = new MoveLS(undefined, _to));
         if (_prev) {
-            const rev = new ArcLS(next, rx, ry, phi, bigArc, !sweep, _prev.end);
+            const rev = new ArcLS(next, rx, ry, phi, bigArc, !sweep, _prev.to);
             return _prev.reversed(rev) ?? rev;
         }
         else {
@@ -688,24 +689,24 @@ export class ArcLS extends SegmentLS {
         }
     }
     _descs(opt) {
-        const { rx, ry, phi, sweep, bigArc, end: [x, y], } = this;
+        const { rx, ry, phi, sweep, bigArc, _to: [x, y], } = this;
         if (opt?.relative) {
             const { _prev } = this;
             if (_prev) {
-                const { end: [sx, sy], } = _prev;
+                const [sx, sy] = _prev.to;
                 return ['a', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x - sx, y - sy];
             }
         }
         return ['A', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x, y];
     }
     _asCubic() {
-        let { _prev, end } = this;
+        let { _prev, _to } = this;
         if (_prev) {
             const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = this;
             const segments = arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
             _prev = _prev._asCubic();
             if (segments.length === 0) {
-                _prev = _prev.lineTo(end);
+                _prev = _prev.lineTo(_to);
             }
             else {
                 for (const s of segments) {
@@ -714,11 +715,11 @@ export class ArcLS extends SegmentLS {
             }
             return _prev;
         }
-        return SegmentLS.lineTo(end);
+        return SegmentLS.lineTo(_to);
     }
     withPrev(prev) {
-        const { rx, ry, phi, sweep, bigArc, end } = this;
-        return new ArcLS(prev, rx, ry, phi, bigArc, sweep, end);
+        const { rx, ry, phi, sweep, bigArc, _to } = this;
+        return new ArcLS(prev, rx, ry, phi, bigArc, sweep, _to);
     }
 }
 function arcHelp(cur, x, y, r, a0, a1, ccw) {
@@ -733,7 +734,7 @@ function arcHelp(cur, x, y, r, a0, a1, ccw) {
     else if (!cur) {
         cur = new MoveLS(undefined, Vec.pos(x0, y0));
     }
-    else if (!cur.end.closeTo(Vec.pos(x0, y0), epsilon)) {
+    else if (!cur.to.closeTo(Vec.pos(x0, y0), epsilon)) {
         cur = cur.L(Vec.pos(x0, y0));
     }
     let da = cw ? a1 - a0 : a0 - a1;
@@ -752,7 +753,7 @@ function arcHelp(cur, x, y, r, a0, a1, ccw) {
     return cur;
 }
 function arcToHelp(cur, x1, y1, x2, y2, r) {
-    const [x0, y0] = cur ? cur.end : [0, 0];
+    const [x0, y0] = cur ? cur.to : [0, 0];
     const x21 = x2 - x1;
     const y21 = y2 - y1;
     const x01 = x0 - x1;

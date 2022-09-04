@@ -4,8 +4,8 @@ import { SegmentSE } from './index.js';
 import { Line } from './line.js';
 import { Cubic } from './cubic.js';
 interface IArc {
-    readonly start: Vec;
-    readonly end: Vec;
+    readonly from: Vec;
+    readonly to: Vec;
     readonly rx: number;
     readonly ry: number;
     readonly phi: number;
@@ -32,7 +32,7 @@ export declare class Arc extends SegmentSE {
     readonly cx: number;
     readonly cy: number;
     private constructor();
-    static fromEndPoint(start: Iterable<number>, rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, end: Iterable<number>): Line | Arc;
+    static fromEndPoint(from: Iterable<number>, rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, to: Iterable<number>): Line | Arc;
     static fromCenterForm(c: Vec, rx: number, ry: number, φ: number, θ: number, Δθ: number): Arc;
     bbox(): Box;
     get length(): number;

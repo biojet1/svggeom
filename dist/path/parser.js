@@ -176,7 +176,7 @@ export function parseDesc(d) {
                     let c1;
                     const last = segments.length > 0 && segments[segments.length - 1];
                     if (last instanceof Cubic) {
-                        c1 = last.c2.reflectAt(last.end);
+                        c1 = last.c2.reflectAt(last.to);
                     }
                     else {
                         c1 = start;

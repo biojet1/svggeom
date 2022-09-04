@@ -55,4 +55,3 @@ export declare class Vec {
     static add(a: Iterable<number>, b: Iterable<number>): Vec;
     static subtract(a: Iterable<number>, b: Iterable<number>): Vec;
 }
-export { Vec as Point };

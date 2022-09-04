@@ -1,17 +1,17 @@
 import { Vec } from '../point.js';
 export class Segment {
     get firstPoint() {
-        return this.start;
+        return this.from;
     }
     get lastPoint() {
-        return this.end;
+        return this.to;
     }
     toPath() {
-        const { x, y } = this.start;
+        const { x, y } = this.from;
         return ['M', x, y].concat(this.toPathFragment()).join(' ');
     }
     descArray(opt) {
-        const { x, y } = this.start;
+        const { x, y } = this.from;
         return ['M', x, y].concat(this.toPathFragment(opt));
     }
     tangentAt(t) {
@@ -25,15 +25,15 @@ export class Segment {
 export class SegmentSE extends Segment {
     _start;
     _end;
-    constructor(start, end) {
+    constructor(from, to) {
         super();
-        this._start = Vec.new(start);
-        this._end = Vec.new(end);
+        this._start = Vec.new(from);
+        this._end = Vec.new(to);
     }
-    get start() {
+    get from() {
         return this._start;
     }
-    get end() {
+    get to() {
         return this._end;
     }
     cutAt(t) {

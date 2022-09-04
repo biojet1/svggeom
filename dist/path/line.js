@@ -2,45 +2,45 @@ import { Box } from '../box.js';
 import { SegmentSE, tNorm } from './index.js';
 class LineSegment extends SegmentSE {
     bbox() {
-        const { start: { x: p1x, y: p1y }, end: { x: p2x, y: p2y }, } = this;
+        const { from: { x: p1x, y: p1y }, to: { x: p2x, y: p2y }, } = this;
         const [xmin, xmax] = [Math.min(p1x, p2x), Math.max(p1x, p2x)];
         const [ymin, ymax] = [Math.min(p1y, p2y), Math.max(p1y, p2y)];
         return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
     }
     get length() {
-        const { start, end } = this;
-        return end.sub(start).abs();
+        const { from, to } = this;
+        return to.sub(from).abs();
     }
     pointAt(t) {
-        const { start, end } = this;
-        return end.sub(start).mul(tNorm(t)).postAdd(start);
+        const { from, to } = this;
+        return to.sub(from).mul(tNorm(t)).postAdd(from);
     }
     slopeAt(t) {
-        const { start, end } = this;
-        const vec = end.sub(start);
+        const { from, to } = this;
+        const vec = to.sub(from);
         return vec.div(vec.abs());
     }
     splitAt(t) {
-        const { start, end } = this;
+        const { from, to } = this;
         const c = this.pointAt(t);
-        return [this.newFromTo(start, c), this.newFromTo(c, end)];
+        return [this.newFromTo(from, c), this.newFromTo(c, to)];
     }
     transform(M) {
-        const { start, end } = this;
-        return this.newFromTo(start.transform(M), end.transform(M));
+        const { from, to } = this;
+        return this.newFromTo(from.transform(M), to.transform(M));
     }
     reversed() {
-        const { start, end } = this;
-        return this.newFromTo(end, start);
+        const { from, to } = this;
+        return this.newFromTo(to, from);
     }
     toPathFragment(opt) {
-        const { end: { x, y }, } = this;
+        const { to: { x, y }, } = this;
         return ['L', x, y];
     }
 }
 export class Line extends LineSegment {
-    constructor(start, end) {
-        super(start, end);
+    constructor(from, to) {
+        super(from, to);
     }
     newFromTo(a, b) {
         return new Line(a, b);

@@ -13,7 +13,7 @@ declare abstract class LineSegment extends SegmentSE {
     abstract newFromTo(a: Vec, b: Vec): LineSegment;
 }
 export declare class Line extends LineSegment {
-    constructor(start: Iterable<number>, end: Iterable<number>);
+    constructor(from: Iterable<number>, to: Iterable<number>);
     newFromTo(a: Vec, b: Vec): Line;
 }
 export declare class Close extends Line {
