@@ -10,27 +10,27 @@ export interface DescParams {
 }
 
 export abstract class Segment {
-	abstract get start(): Vec;
-	abstract get end(): Vec;
+	abstract get from(): Vec;
+	abstract get to(): Vec;
 	abstract get length(): number;
 	abstract bbox(): Box;
 	abstract pointAt(t: number): Vec;
 	abstract slopeAt(t: number): Vec;
 
 	get firstPoint() {
-		return this.start;
+		return this.from;
 	}
 
 	get lastPoint() {
-		return this.end;
+		return this.to;
 	}
 
 	toPath(): string {
-		const {x, y} = this.start;
+		const {x, y} = this.from;
 		return ['M', x, y].concat(this.toPathFragment()).join(' ');
 	}
 	descArray(opt?: DescParams): (string | number)[] {
-		const {x, y} = this.start;
+		const {x, y} = this.from;
 		return ['M', x, y].concat(this.toPathFragment(opt));
 	}
 	tangentAt(t: number) {
@@ -46,17 +46,17 @@ export abstract class SegmentSE extends Segment {
 	private readonly _start: Vec;
 	private readonly _end: Vec;
 
-	constructor(start: Iterable<number>, end: Iterable<number>) {
+	constructor(from: Iterable<number>, to: Iterable<number>) {
 		super();
-		this._start = Vec.new(start);
-		this._end = Vec.new(end);
+		this._start = Vec.new(from);
+		this._end = Vec.new(to);
 	}
 
-	get start() {
+	get from() {
 		return this._start;
 	}
 
-	get end() {
+	get to() {
 		return this._end;
 	}
 

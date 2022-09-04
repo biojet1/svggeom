@@ -5,8 +5,8 @@ import { SegmentSE, tNorm, DescParams } from './index.js';
 abstract class LineSegment extends SegmentSE {
 	override bbox() {
 		const {
-			start: { x: p1x, y: p1y },
-			end: { x: p2x, y: p2y },
+			from: { x: p1x, y: p1y },
+			to: { x: p2x, y: p2y },
 		} = this;
 		const [xmin, xmax] = [Math.min(p1x, p2x), Math.max(p1x, p2x)];
 		const [ymin, ymax] = [Math.min(p1y, p2y), Math.max(p1y, p2y)];
@@ -14,40 +14,40 @@ abstract class LineSegment extends SegmentSE {
 	}
 
 	override get length() {
-		const { start, end } = this;
-		return end.sub(start).abs();
+		const { from, to } = this;
+		return to.sub(from).abs();
 	}
 	override pointAt(t: number) {
-		const { start, end } = this;
-		return end.sub(start).mul(tNorm(t)).postAdd(start);
+		const { from, to } = this;
+		return to.sub(from).mul(tNorm(t)).postAdd(from);
 	}
 
 	override slopeAt(t: number) {
-		const { start, end } = this;
-		const vec = end.sub(start);
+		const { from, to } = this;
+		const vec = to.sub(from);
 		return vec.div(vec.abs());
 	}
 
 	override splitAt(t: number): [SegmentSE, SegmentSE] {
-		const { start, end } = this;
+		const { from, to } = this;
 		const c = this.pointAt(t);
-		return [this.newFromTo(start, c), this.newFromTo(c, end)];
+		return [this.newFromTo(from, c), this.newFromTo(c, to)];
 	}
 
 	override transform(M: any) {
-		const { start, end } = this;
-		// return new Line(start.transform(M), end.transform(M));
-		return this.newFromTo(start.transform(M), end.transform(M));
+		const { from, to } = this;
+		// return new Line(from.transform(M), to.transform(M));
+		return this.newFromTo(from.transform(M), to.transform(M));
 	}
 
 	override reversed() {
-		const { start, end } = this;
-		return this.newFromTo(end, start);
+		const { from, to } = this;
+		return this.newFromTo(to, from);
 	}
 
 	override toPathFragment(opt?: DescParams) {
 		const {
-			end: { x, y },
+			to: { x, y },
 		} = this;
 
 		return ['L', x, y];
@@ -58,8 +58,8 @@ abstract class LineSegment extends SegmentSE {
 
 export class Line extends LineSegment {
 
-	constructor(start: Iterable<number>, end: Iterable<number>) {
-		super(start, end);
+	constructor(from: Iterable<number>, to: Iterable<number>) {
+		super(from, to);
 	}
 
 	override newFromTo(a: Vec, b: Vec) {

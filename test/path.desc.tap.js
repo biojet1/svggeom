@@ -1,6 +1,8 @@
 'uses strict';
 import test from 'tap';
-import {Path, PathDraw, PathLS, dSplit, Vec} from 'svggeom';
+import {PathLS, Vec} from 'svggeom';
+import {PathDraw} from '../dist/draw.js';
+import {dSplit} from '../dist/path.js';
 import './utils.js';
 const CI = !!process.env.CI;
 // https://github.com/d3/d3-path/blob/main/test/path-test.js

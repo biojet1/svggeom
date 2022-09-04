@@ -1,7 +1,8 @@
 'uses strict';
 import './utils.js';
 import {enum_path_data, test_segment, testSegment} from './path.utils.js';
-import {SegmentLS, Quadratic} from 'svggeom';
+import {SegmentLS} from 'svggeom';
+import {Quadratic} from '../dist/path.js';
 import test from 'tap';
 const CI = !!process.env.CI;
 const deltp = {len_epsilon: 0.05};

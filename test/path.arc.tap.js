@@ -1,14 +1,15 @@
 'uses strict';
 import {enum_path_data, test_segment, testSegment} from './path.utils.js';
 import './utils.js';
-import {Arc, Cubic, Path, PathLS, SegmentLS} from 'svggeom';
+import {PathLS, SegmentLS} from 'svggeom';
+import {Arc, Cubic, Path} from '../dist/path.js';
 import test from 'tap';
 import os from 'os';
 import fs from 'fs';
 const CI = !!process.env.CI;
 function dbgwrite(name, pC, pX) {
     function* gen() {
-        const b = Path.parse(pC).bbox().merge(Path.parse(pX).bbox());
+        const b = PathLS.parse(pC).bbox().merge(PathLS.parse(pX).bbox());
 
         let style;
         yield `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${b.left} ${b.top} ${b.width} ${b.height}" width="${b.width}" height="${b.height}">`;
@@ -84,7 +85,7 @@ for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
             test_descs: false,
             slope_epsilon: 0.6,
             len_epsilon: 0.8,
-            end_point_epsilon: 1E-7,
+            end_point_epsilon: 1e-7,
             point_epsilon: 6.5,
         });
         {

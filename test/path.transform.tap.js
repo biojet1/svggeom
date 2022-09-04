@@ -1,6 +1,8 @@
 'uses strict';
 import test from 'tap';
-import {Path, Matrix, Cubic, Arc, Line, SegmentLS} from 'svggeom';
+import {Matrix, SegmentLS} from 'svggeom';
+import {Path, Cubic, Arc, Line} from '../dist/path.js';
+
 import {enum_path_data} from './path.utils.js';
 import './utils.js';
 const CI = !!process.env.CI;
@@ -54,6 +56,4 @@ for await (const item of enum_path_data({DATA: 'transforms', ARCS: 'no'})) {
 
         t.end();
     });
-
-    
 }

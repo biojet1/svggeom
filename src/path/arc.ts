@@ -8,8 +8,8 @@ import { segment_length, arcParams, arcToCurve } from '../util.js';
 const { abs, atan, tan, cos, sin, PI, min, max } = Math;
 
 interface IArc {
-	readonly start: Vec;
-	readonly end: Vec;
+	readonly from: Vec;
+	readonly to: Vec;
 	//
 	readonly rx: number;
 	readonly ry: number;
@@ -41,8 +41,8 @@ export class Arc extends SegmentSE {
 	readonly cx: number;
 	readonly cy: number;
 	private constructor(
-		start: Iterable<number>,
-		end: Iterable<number>,
+		from: Iterable<number>,
+		to: Iterable<number>,
 		rx: number,
 		ry: number,
 		φ: number,
@@ -50,44 +50,44 @@ export class Arc extends SegmentSE {
 		sweep: boolean | number,
 	) {
 		if (!(isFinite(φ) && isFinite(rx) && isFinite(ry))) throw Error(`${JSON.stringify(arguments)}`);
-		super(start, end);
+		super(from, to);
 
-		const { x: x1, y: y1 } = this.start;
-		const { x: x2, y: y2 } = this.end;
+		const { x: x1, y: y1 } = this.from;
+		const { x: x2, y: y2 } = this.to;
 
 		[this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] =
 			arcParams(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
 	}
 	static fromEndPoint(
-		start: Iterable<number>,
+		from: Iterable<number>,
 		rx: number,
 		ry: number,
 		φ: number,
 		bigArc: boolean | number,
 		sweep: boolean | number,
-		end: Iterable<number>,
+		to: Iterable<number>,
 	) {
 		if (!rx || !ry) {
-			return new Line(start, end);
+			return new Line(from, to);
 		}
-		return new Arc(start, end, rx, ry, φ, bigArc, sweep);
+		return new Arc(from, to, rx, ry, φ, bigArc, sweep);
 	}
 	static fromCenterForm(c: Vec, rx: number, ry: number, φ: number, θ: number, Δθ: number) {
 		const cosφ = cos((φ / 180) * PI);
 		const sinφ = sin((φ / 180) * PI);
 		const m = Matrix.hexad(cosφ, sinφ, -sinφ, cosφ, 0, 0);
-		const start = Vec.pos(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
+		const from = Vec.pos(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
 			.transform(m)
 			.add(c);
-		const end = Vec.pos(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
+		const to = Vec.pos(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
 			.transform(m)
 			.add(c);
 		const bigArc = abs(Δθ) > 180 ? 1 : 0;
 		const sweep = Δθ > 0 ? 1 : 0;
-		return new Arc(start, end, rx, ry, φ, bigArc, sweep);
+		return new Arc(from, to, rx, ry, φ, bigArc, sweep);
 	}
 	// clone() {
-	// 	return new Arc(this.start, this.end, this.rx, this.ry, this.phi, this.bigArc, this.sweep);
+	// 	return new Arc(this.from, this.to, this.rx, this.ry, this.phi, this.bigArc, this.sweep);
 	// }
 	override bbox() {
 		return arcBBox(this);
@@ -103,12 +103,12 @@ export class Arc extends SegmentSE {
 	}
 
 	override splitAt(t: number): [SegmentSE, SegmentSE] {
-		const { rx, ry, phi, sweep, rdelta, start, end } = this;
+		const { rx, ry, phi, sweep, rdelta, from, to } = this;
 		const deltaA = abs(rdelta);
 		const mid = arcPointAt(this, t);
 		return [
-			new Arc(start, mid, rx, ry, phi, deltaA * t > PI, sweep),
-			new Arc(mid, end, rx, ry, phi, deltaA * (1 - t) > PI, sweep),
+			new Arc(from, mid, rx, ry, phi, deltaA * t > PI, sweep),
+			new Arc(mid, to, rx, ry, phi, deltaA * (1 - t) > PI, sweep),
 		];
 	}
 
@@ -119,20 +119,20 @@ export class Arc extends SegmentSE {
 			phi,
 			sweep,
 			bigArc,
-			end: [x, y],
+			to: [x, y],
 		} = this;
 		return ['A', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x, y];
 	}
 
 	override transform(matrix: any) {
-		const { bigArc, end, start } = this;
+		const { bigArc, to, from } = this;
 		const [rx, ry, phi, sweep] = arcTransform(this, matrix);
-		return new Arc(start.transform(matrix), end.transform(matrix), rx, ry, phi, bigArc, sweep);
+		return new Arc(from.transform(matrix), to.transform(matrix), rx, ry, phi, bigArc, sweep);
 	}
 
 	override reversed() {
-		const { bigArc, end, start, rx, ry, sweep, phi } = this;
-		return new Arc(end, start, rx, ry, phi, bigArc, sweep ? 0 : 1);
+		const { bigArc, to, from, rx, ry, sweep, phi } = this;
+		return new Arc(to, from, rx, ry, phi, bigArc, sweep ? 0 : 1);
 	}
 
 	asCubic() {
@@ -141,8 +141,8 @@ export class Arc extends SegmentSE {
 		// Degenerated arcs can be ignored by renderer, but should not be dropped
 		// to avoid collisions with `S A S` and so on. Replace with empty line.
 		if (segments.length === 0) {
-			const { end, start } = this;
-			return [new Line(start, end)];
+			const { to, from } = this;
+			return [new Line(from, to)];
 		} else {
 			return segments.map(function (s) {
 				return new Cubic([s[0], s[1]], [s[2], s[3]], [s[4], s[5]], [s[6], s[7]]);
@@ -152,13 +152,13 @@ export class Arc extends SegmentSE {
 }
 
 export function arcPointAt(arc: IArc, t: number) {
-	const { start, end } = arc;
-	if (start.equals(end)) {
-		return start.clone();
+	const { from, to } = arc;
+	if (from.equals(to)) {
+		return from.clone();
 	} else if (t <= 0) {
-		return start;
+		return from;
 	} else if (t >= 1) {
-		return end;
+		return to;
 	}
 	const { rx, ry, cosφ, sinφ, rtheta, rdelta, cx, cy } = arc;
 	const θ = rtheta + rdelta * t;
@@ -178,7 +178,7 @@ export function arcPointAt(arc: IArc, t: number) {
 }
 
 export function arcBBox(arc: IArc) {
-	const { rx, ry, cosφ, sinφ, start, end, rdelta, rtheta, phi } = arc;
+	const { rx, ry, cosφ, sinφ, from, to, rdelta, rtheta, phi } = arc;
 	let atan_x, atan_y;
 	if (cosφ == 0) {
 		atan_x = PI / 2;
@@ -191,8 +191,8 @@ export function arcBBox(arc: IArc) {
 		atan_x = atan(-(ry / rx) * tanφ);
 		atan_y = atan(ry / rx / tanφ);
 	}
-	const xtrema = [start.x, end.x];
-	const ytrema = [start.y, end.y];
+	const xtrema = [from.x, to.x];
+	const ytrema = [from.y, to.y];
 	function angle_inv(ang: number, k: number) {
 		return (ang + PI * k - rtheta) / rdelta;
 	}
@@ -208,20 +208,20 @@ export function arcBBox(arc: IArc) {
 }
 
 export function arcLength(arc: IArc) {
-	const { start, end } = arc;
-	if (start.equals(end)) return 0;
-	return segment_length(arc, 0, 1, start, end);
+	const { from, to } = arc;
+	if (from.equals(to)) return 0;
+	return segment_length(arc, 0, 1, from, to);
 }
 
 // function arcSplitAt(arc: IArc, t: number) {
-// 	const { rx, ry, phi, sweep, rdelta, start, end } = arc;
+// 	const { rx, ry, phi, sweep, rdelta, from, to } = arc;
 // 	const deltaA = abs(rdelta);
 // 	const delta1 = deltaA * t;
 // 	const delta2 = deltaA * (1 - t);
 // 	const pT = arcPointAt(arc, t);
 // 	return [
-// 		[start, pT, delta1 > PI],
-// 		[pT, end, delta2 > PI],
+// 		[from, pT, delta1 > PI],
+// 		[pT, to, delta2 > PI],
 // 	];
 // }
 
@@ -238,10 +238,10 @@ export function arcSlopeAt(arc: IArc, t: number): Vec {
 }
 
 export function arcTransform(self: IArc, matrix: any) {
-	// const { arc, end, start } = self;
+	// const { arc, to, from } = self;
 	let { rx, ry, sweep, phi } = self;
-	// const p1ˈ = start.transform(matrix);
-	// const p2_ = end.transform(matrix);
+	// const p1ˈ = from.transform(matrix);
+	// const p2_ = to.transform(matrix);
 	const { rotate, scaleX, scaleY, skewX } = matrix.decompose();
 	if (scaleX == scaleY && scaleX != 1) {
 		rx = rx * scaleX;

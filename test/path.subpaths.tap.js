@@ -1,6 +1,7 @@
 'uses strict';
 import test from 'tap';
-import {Path, PathDraw, PathLS, dSplit, Vec} from 'svggeom';
+import {PathLS, Vec} from 'svggeom';
+import {dSplit} from '../dist/path.js';
 import './utils.js';
 const CI = !!process.env.CI;
 

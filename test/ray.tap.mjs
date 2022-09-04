@@ -1,5 +1,6 @@
 'uses strict';
-import {Ray, RayL, Point, Vec, PathDraw} from 'svggeom';
+import {Ray, RayL, Vec} from 'svggeom';
+import {PathDraw} from '../dist/draw.js';
 import './utils.js';
 import test from 'tap';
 const CI = !!process.env.CI;
@@ -132,7 +133,7 @@ test.test(`delta`, {bail: !CI}, function (t) {
     let B = Ray.new();
 
     t.same(A.delta(-3, 4).toArray(), [-3, 4, 0]);
-    // t.almostEqual(ray.distance(Point.at(-3, -4)), 5, 1e-11);
+    // t.almostEqual(ray.distance(Vec.at(-3, -4)), 5, 1e-11);
     // t.almostEqual(ray.distance(B.forward(-3).left().back(4)), 5, 1e-11);
 
     t.end();
@@ -143,7 +144,7 @@ test.test(`distance`, {bail: !CI}, function (t) {
     let B = Ray.new();
 
     t.almostEqual(ray.distance(8, 15), 17, 1e-11);
-    t.almostEqual(ray.distance(Point.at(-3, -4)), 5, 1e-11);
+    t.almostEqual(ray.distance(Vec.at(-3, -4)), 5, 1e-11);
     t.almostEqual(ray.distance(B.forward(-3).left().back(4)), 5, 1e-11);
 
     t.end();
@@ -220,7 +221,7 @@ test.test(`Spiral of Theodorus`, {bail: !CI}, function (t) {
     const {PI} = Math;
     let A = Ray.new();
     let B = Ray.new();
-    let O = Point.at(4, 4);
+    let O = Vec.at(4, 4);
     for (const [n, r, x, y, φ, φsum] of spiralOfTheodorus({
         n: CI ? 444 : 13,
         scale: Math.E,
@@ -229,7 +230,7 @@ test.test(`Spiral of Theodorus`, {bail: !CI}, function (t) {
             B = B.translate(x, y).left();
             O = Ray.new(x, y).left(φ).back(r).pos.clone();
         }
-        const P = Point.at(x, y);
+        const P = Vec.at(x, y);
         // console.log(n, r, x, y, (φ / PI) * 180, (φsum / PI) * 180);
         A = Ray.home.left(φsum).forward(r);
 
@@ -264,12 +265,12 @@ test.test(`RegularPentagon`, {bail: !CI}, function (t) {
     const R = 1;
     const a = (R * 10) / sqrt(50 + 10 * sqrt(5));
     const r = (sqrt(25 + 10 * sqrt(5)) * a) / 10;
-    console.log(c1, s1, c2, s2, r, R);
+    // console.log(c1, s1, c2, s2, r, R);
 
     let A = Ray.after(c1, s1);
     let x, y;
-    t.almostEqual(A.distance(Point.at(0, 0)), R, 1e-11);
-    t.almostEqual(A.distance(Point.at(-c2, -s2)), a + a / φ, 1e-11);
+    t.almostEqual(A.distance(Vec.at(0, 0)), R, 1e-11);
+    t.almostEqual(A.distance(Vec.at(-c2, -s2)), a + a / φ, 1e-11);
 
     [x, y] = A.clone()
         .left((PI * 3) / 10)
@@ -285,12 +286,12 @@ test.test(`RegularPentagon`, {bail: !CI}, function (t) {
     t.almostEqual(x, -c2, 1e-11);
     t.almostEqual(y, s2, 1e-11);
 
-    [x, y] = A.clone().toNearestPointOfLine(Point.at(-c2, -s2), Point.at(c1, -s1)).pos.toArray();
+    [x, y] = A.clone().toNearestPointOfLine(Vec.at(-c2, -s2), Vec.at(c1, -s1)).pos.toArray();
 
-    A = A.toMidPoint(Point.at(-c2, -s2), Point.at(c1, -s1));
+    A = A.toMidPoint(Vec.at(-c2, -s2), Vec.at(c1, -s1));
     t.almostEqual(A.x, x, 1e-11);
     t.almostEqual(A.y, y, 1e-11);
-    A = A.toNearestPointFromPoint(Point.at(c1, -s1));
+    A = A.toNearestPointFromPoint(Vec.at(c1, -s1));
     t.almostEqual(A.x, x, 1e-11);
     t.almostEqual(A.y, y, 1e-11);
 
@@ -298,13 +299,13 @@ test.test(`RegularPentagon`, {bail: !CI}, function (t) {
     t.almostEqual(x, 0, 1e-11);
     t.almostEqual(y, 0, 1e-11);
 
-    t.almostEqual(Ray.at(1, 0).distanceFromLine(Point.at(-c2, s2), Point.at(-c2, -s2)), r + R, 1e-11);
-    t.almostEqual(Ray.at(0, 1).distanceFromLine(Point.at(-s2, -c2), Point.at(s2, -c2)), r + R, 1e-11);
-    t.ok(isNaN(Ray.at(1, 0).distanceFromLine(Point.at(-s2, -c2), Point.at(-s2, -c2))));
-    // console.log(Array.from(Ray.away(Point.at(c1, s1)).leftd(72 / 2)))
+    t.almostEqual(Ray.at(1, 0).distanceFromLine(Vec.at(-c2, s2), Vec.at(-c2, -s2)), r + R, 1e-11);
+    t.almostEqual(Ray.at(0, 1).distanceFromLine(Vec.at(-s2, -c2), Vec.at(s2, -c2)), r + R, 1e-11);
+    t.ok(isNaN(Ray.at(1, 0).distanceFromLine(Vec.at(-s2, -c2), Vec.at(-s2, -c2))));
+    // console.log(Array.from(Ray.away(Vec.at(c1, s1)).leftd(72 / 2)))
     t.almostEqual(
         Array.from(
-            Ray.away(Point.at(c1, s1))
+            Ray.away(Vec.at(c1, s1))
                 .leftd(72 / 2)
                 .forward(R)
         ),
@@ -312,7 +313,7 @@ test.test(`RegularPentagon`, {bail: !CI}, function (t) {
     );
     t.almostEqual(
         Array.from(
-            Ray.before(Point.at(-c2, -s2))
+            Ray.before(Vec.at(-c2, -s2))
                 .rightd(180 - 54)
                 .forward(a)
         ),
@@ -320,20 +321,20 @@ test.test(`RegularPentagon`, {bail: !CI}, function (t) {
     );
     A = Ray.towards(s1, c1);
     t.almostEqual(
-        Array.from(A.intersectOfLine(Point.at(-s1, c1), Point.at(-s2, -c2))),
-        Array.from(Ray.at(4, 4).toMidPoint(Point.at(-s1, c1), Point.at(-s2, -c2)))
+        Array.from(A.intersectOfLine(Vec.at(-s1, c1), Vec.at(-s2, -c2))),
+        Array.from(Ray.at(4, 4).toMidPoint(Vec.at(-s1, c1), Vec.at(-s2, -c2)))
     );
     t.almostEqual(
-        Array.from(A.nearestPointFromPoint(Point.at(-s2, -c2))),
-        Array.from(Ray.at(4, 4).toMidPoint(Point.at(-s1, c1), Point.at(-s2, -c2)))
+        Array.from(A.nearestPointFromPoint(Vec.at(-s2, -c2))),
+        Array.from(Ray.at(4, 4).toMidPoint(Vec.at(-s1, c1), Vec.at(-s2, -c2)))
     );
 
     A = Ray.at(-s1, c1)
         .turnd(-18)
         .back()
         .back(r + R);
-    t.almostEqual(Array.from(A), Array.from(Ray.at(4, 4).toMidPoint(Point.at(s1, c1), Point.at(s2, -c2))));
-    t.almostEqual(Array.from(A.along(-1, s1, c1)), Array.from(Point.at(s2, -c2)));
+    t.almostEqual(Array.from(A), Array.from(Ray.at(4, 4).toMidPoint(Vec.at(s1, c1), Vec.at(s2, -c2))));
+    t.almostEqual(Array.from(A.along(-1, s1, c1)), Array.from(Vec.at(s2, -c2)));
 
     t.end();
 });
@@ -356,11 +357,11 @@ test.test(`side`, {bail: !CI}, function (t) {
     t.equal(A.side(E, -E), 1);
     t.equal(A.side(0, PI), 0);
 
-    A = Ray.towards(1 / 2, sqrt(3) / 2).normalToSide(Point.at(-PI, E));
+    A = Ray.towards(1 / 2, sqrt(3) / 2).normalToSide(Vec.at(-PI, E));
     t.almostEqual(A.h, -sqrt(3) / 2, 1e-11);
     t.almostEqual(A.v, 1 / 2, 1e-11);
 
-    A = Ray.towards(1 / 2, sqrt(3) / 2).normalToSide(Point.at(0, -E));
+    A = Ray.towards(1 / 2, sqrt(3) / 2).normalToSide(Vec.at(0, -E));
     t.almostEqual(A.h, sqrt(3) / 2, 1e-11);
     t.almostEqual(A.v, -1 / 2, 1e-11);
 
@@ -374,12 +375,12 @@ test.test(`draw`, {bail: !CI}, function (t) {
     d = new PathDraw();
     d.quadraticCurveTo(3, 4, 5, 6);
 
-    console.log(d);
+    // console.log(d);
     const s = 'M1,2Q3,4,5,6';
     t.equal(PathDraw.moveTo(1, 2).quadraticCurveTo(3, 4, 5, 6) + '', s);
-    t.equal(PathDraw.moveTo(Point.at(1, 2)).quadraticCurveTo(3, 4, 5, 6) + '', s);
-    t.equal(PathDraw.moveTo(Point.at(1, 2)).quadraticCurveTo(3, 4, Point.at(5, 6)) + '', s);
-    t.equal(PathDraw.moveTo(Point.at(1, 2)).quadraticCurveTo(Point.at(3, 4), Point.at(5, 6)) + '', s);
+    t.equal(PathDraw.moveTo(Vec.at(1, 2)).quadraticCurveTo(3, 4, 5, 6) + '', s);
+    t.equal(PathDraw.moveTo(Vec.at(1, 2)).quadraticCurveTo(3, 4, Vec.at(5, 6)) + '', s);
+    t.equal(PathDraw.moveTo(Vec.at(1, 2)).quadraticCurveTo(Vec.at(3, 4), Vec.at(5, 6)) + '', s);
 
     t.end();
 });
@@ -493,9 +494,9 @@ test.test(`RayL`, {bail: !CI}, function (t) {
         t.almostEqual([x, y, dir.degrees], [0, 0, 180 + 53.13010235415598]);
     }
 
-    t.notStrictSame(c, a);
-    t.notStrictSame(b, a);
-    t.notStrictSame(r, a);
+    t.strictNotSame(c, a);
+    t.strictNotSame(b, a);
+    t.strictNotSame(r, a);
     t.strictSame(a.prev(), r);
     t.strictSame(b.prev(), a);
     t.strictSame(c.prev(), b);

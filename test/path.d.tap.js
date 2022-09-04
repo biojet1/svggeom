@@ -1,6 +1,7 @@
 'uses strict';
 import test from 'tap';
-import {Path, PathLS, SegmentLS, Vec} from 'svggeom';
+import {PathLS, SegmentLS, Vec} from 'svggeom';
+import {Path} from '../dist/path.js';
 import {enum_path_data, test_segment} from './path.utils.js';
 import './utils.js';
 const CI = !!process.env.CI;
@@ -42,10 +43,10 @@ test.test(`PathLS.segmentAt`, {bail: !CI}, function (t) {
         [0.4166, 'LineLS', 50, 1, 40, -30, 0],
     ]) {
         const [seg, j] = p.segmentAt(T);
-        const tag = `[${i} ${T} ${cname} ${seg ? seg.end.toString() : ''}]`;
+        const tag = `[${i} ${T} ${cname} ${seg ? seg.to.toString() : ''}]`;
         t.same(seg.constructor.name, cname, tag);
         t.same(seg.length, len, tag);
-        t.same([...seg.end], [x, y, z], tag);
+        t.same([...seg.to], [x, y, z], tag);
         t.same((j * 1000).toFixed(), (sT * 1000).toFixed(), tag);
         ++i;
     }
@@ -116,7 +117,7 @@ test.test(`SegmentLS extra`, {bail: !CI}, function (t) {
         p.prev;
     }, /No prev/);
     t.throwsRE(function () {
-        p.start;
+        p.from;
     }, /No prev/);
     t.same(SegmentLS.lineTo(3, 4).withPrev(undefined).reversed().constructor.name, 'MoveLS');
     {
@@ -130,8 +131,8 @@ test.test(`SegmentLS extra`, {bail: !CI}, function (t) {
     }
     {
         const [a, b] = SegmentLS.moveTo(0, 0).moveTo(3, 4).splitAt(0.5);
-        t.same([...a.end], [(2.5 * 3) / 5, (2.5 * 4) / 5, 0]);
-        t.same([...b.end], [3, 4, 0]);
+        t.same([...a.to], [(2.5 * 3) / 5, (2.5 * 4) / 5, 0]);
+        t.same([...b.to], [3, 4, 0]);
         t.same([...b.firstPoint], [1.5, 2, 0]);
     }
     {

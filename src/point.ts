@@ -332,4 +332,4 @@ export class Vec {
 	}
 }
 
-export { Vec as Point };
+// export { Vec as Point };
