@@ -59,7 +59,7 @@ export declare class PathLS extends CanvasCompat {
         tracking?: number;
         letterSpacing?: number;
     }, text: string): this;
-    segmentAtLength(T: number): [SegmentLS | undefined, number, number];
+    segmentAtLength(T: number, clamp?: boolean): [SegmentLS | undefined, number, number];
     segmentAt(T: number): [SegmentLS | undefined, number];
     get length(): number;
     get from(): Vec | undefined;
@@ -67,7 +67,7 @@ export declare class PathLS extends CanvasCompat {
     tangentAt(T: number): Vec | undefined;
     slopeAt(T: number): Vec | undefined;
     pointAt(T: number): Vec | undefined;
-    pointAtLength(L: number): Vec | undefined;
+    pointAtLength(L: number, clamp?: boolean): Vec | undefined;
     bbox(): Box;
     splitAt(T: number): PathLS[];
     cutAt(T: number): PathLS;

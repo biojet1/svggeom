@@ -251,10 +251,10 @@ export class PathLS extends CanvasCompat {
         }).draw(this);
         return this;
     }
-    segmentAtLength(T) {
+    segmentAtLength(T, clamp) {
         let cur = this._tail;
         if (cur) {
-            return _segmentAtLen(cur, T, lenPath(cur));
+            return _segmentAtLen(cur, T, lenPath(cur), clamp);
         }
         return [undefined, NaN, NaN];
     }
@@ -295,7 +295,7 @@ export class PathLS extends CanvasCompat {
         if (seg)
             return seg.pointAt(t);
     }
-    pointAtLength(L) {
+    pointAtLength(L, clamp) {
         const [seg, n, N] = this.segmentAtLength(L);
         if (seg)
             return seg.pointAt(n / N);
@@ -423,10 +423,15 @@ export class PathLS extends CanvasCompat {
         return PathLS.moveTo(0, 0).lineTo(...arguments);
     }
 }
-function _segmentAtLen(cur, lenP, LEN) {
+function _segmentAtLen(cur, lenP, LEN, clamp) {
     S1: if (cur) {
         if (lenP < 0) {
-            lenP = LEN + (lenP % LEN);
+            if (clamp) {
+                lenP = LEN;
+            }
+            else {
+                lenP = LEN + (lenP % LEN);
+            }
         }
         if (lenP == 0) {
             let last;
@@ -441,7 +446,10 @@ function _segmentAtLen(cur, lenP, LEN) {
             break S1;
         }
         else if (lenP > LEN) {
-            if (0 == (lenP = lenP % LEN)) {
+            if (clamp) {
+                lenP = LEN;
+            }
+            else if (0 == (lenP = lenP % LEN)) {
                 lenP = LEN;
             }
         }
