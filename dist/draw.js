@@ -427,7 +427,7 @@ function _segmentAtLen(cur, lenP, LEN, clamp) {
     S1: if (cur) {
         if (lenP < 0) {
             if (clamp) {
-                lenP = LEN;
+                lenP = 0;
             }
             else {
                 lenP = LEN + (lenP % LEN);
