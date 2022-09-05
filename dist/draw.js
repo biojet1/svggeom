@@ -296,7 +296,7 @@ export class PathLS extends CanvasCompat {
             return seg.pointAt(t);
     }
     pointAtLength(L, clamp) {
-        const [seg, n, N] = this.segmentAtLength(L);
+        const [seg, n, N] = this.segmentAtLength(L, clamp);
         if (seg)
             return seg.pointAt(n / N);
     }
