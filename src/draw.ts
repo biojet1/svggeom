@@ -343,10 +343,10 @@ export class PathLS extends CanvasCompat {
 		}).draw(this);
 		return this;
 	}
-	segmentAtLength(T: number): [SegmentLS | undefined, number, number] {
+	segmentAtLength(T: number, clamp?: boolean): [SegmentLS | undefined, number, number] {
 		let cur: SegmentLS | undefined = this._tail;
 		if (cur) {
-			return _segmentAtLen(cur, T, lenPath(cur));
+			return _segmentAtLen(cur, T, lenPath(cur), clamp);
 		}
 		return [undefined, NaN, NaN];
 	}
@@ -386,10 +386,11 @@ export class PathLS extends CanvasCompat {
 		const [seg, t] = this.segmentAt(T);
 		if (seg) return seg.pointAt(t);
 	}
-	pointAtLength(L: number) {
-		const [seg, n, N] = this.segmentAtLength(L);
+	pointAtLength(L: number, clamp?: boolean) {
+		const [seg, n, N] = this.segmentAtLength(L, clamp);
 		if (seg) return seg.pointAt(n / N);
 	}
+
 	bbox() {
 		let b = Box.new();
 		for (let cur: SegmentLS | undefined = this._tail; cur; cur = cur._prev) {
@@ -511,10 +512,19 @@ export class PathLS extends CanvasCompat {
 	}
 }
 
-function _segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [SegmentLS | undefined, number, number] {
+function _segmentAtLen(
+	cur: SegmentLS | undefined,
+	lenP: number,
+	LEN: number,
+	clamp?: boolean
+): [SegmentLS | undefined, number, number] {
 	S1: if (cur) {
 		if (lenP < 0) {
-			lenP = LEN + (lenP % LEN);
+			if (clamp) {
+				lenP = 0;
+			} else {
+				lenP = LEN + (lenP % LEN);
+			}
 		}
 		if (lenP == 0) {
 			let last: SegmentLS | undefined;
@@ -529,7 +539,9 @@ function _segmentAtLen(cur: SegmentLS | undefined, lenP: number, LEN: number): [
 			}
 			break S1;
 		} else if (lenP > LEN) {
-			if (0 == (lenP = lenP % LEN)) {
+			if (clamp) {
+				lenP = LEN;
+			} else if (0 == (lenP = lenP % LEN)) {
 				lenP = LEN;
 			}
 		}
