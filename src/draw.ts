@@ -485,7 +485,22 @@ export class PathLS extends CanvasCompat {
 	get lastPoint() {
 		return this.to;
 	}
-
+	get firstSegment() {
+		let seg;
+		for (let {_tail: cur} = this; cur; cur = cur._prev) {
+			if (!(cur instanceof MoveLS)) {
+				seg = cur;
+			}
+		}
+		return seg;
+	}
+	get lastSegment() {
+		for (let {_tail: cur} = this; cur; cur = cur._prev) {
+			if (!(cur instanceof MoveLS)) {
+				return cur;
+			}
+		}
+	}
 	override toString() {
 		return this?._tail?.describe() ?? '';
 	}

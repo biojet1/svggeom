@@ -19,7 +19,7 @@ function almostEqual(value, expected, epsilon = 0.0000000000000001) {
             value /= j;
             expected /= j;
             const d2 = Math.abs(value - expected);
-            console.log('almostEqual', value, expected, epsilon, d, d2);
+            // console.log('almostEqual', value, expected, epsilon, d, d2);
             if (d2 <= epsilon) {
                 return 1;
             }
