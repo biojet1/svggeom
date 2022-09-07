@@ -37,7 +37,7 @@ export declare class PathDraw extends CanvasCompat {
     static lineTo(): PathDraw;
 }
 import { Font } from 'opentype.js';
-import { SegmentLS, MoveLS } from './path/linked.js';
+import { SegmentLS } from './path/linked.js';
 import { DescParams } from './path/index.js';
 export declare class PathLS extends CanvasCompat {
     _tail: SegmentLS | undefined;
@@ -80,7 +80,7 @@ export declare class PathLS extends CanvasCompat {
     get firstPoint(): Vec | undefined;
     get lastPoint(): Vec | undefined;
     get firstSegment(): SegmentLS | undefined;
-    get lastSegment(): MoveLS | undefined;
+    get lastSegment(): SegmentLS | undefined;
     toString(): string;
     d(): string;
     static moveTo(...args: Vec[] | number[]): PathLS;
