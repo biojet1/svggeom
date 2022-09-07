@@ -97,7 +97,7 @@ export declare class CloseLS extends LineLS {
 }
 export declare class QuadLS extends SegmentLS {
     readonly p: Vec;
-    constructor(prev: SegmentLS | undefined, p: Vec, _to: Vec);
+    constructor(prev: SegmentLS | undefined, p: Vec, to: Vec);
     private get _qpts();
     get length(): number;
     slopeAt(t: number): Vec;
@@ -112,7 +112,7 @@ export declare class QuadLS extends SegmentLS {
 export declare class CubicLS extends SegmentLS {
     readonly c1: Vec;
     readonly c2: Vec;
-    constructor(prev: SegmentLS | undefined, c1: Vec, c2: Vec, _to: Vec);
+    constructor(prev: SegmentLS | undefined, c1: Vec, c2: Vec, to: Vec);
     private get _cpts();
     pointAt(t: number): Vec;
     bbox(): Box;
@@ -136,7 +136,7 @@ export declare class ArcLS extends SegmentLS {
     readonly rdelta: number;
     readonly cx: number;
     readonly cy: number;
-    constructor(prev: SegmentLS | undefined, rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, _to: Vec);
+    constructor(prev: SegmentLS | undefined, rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, to: Vec);
     bbox(): Box;
     get length(): number;
     pointAt(t: number): Vec;
