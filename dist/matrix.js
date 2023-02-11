@@ -102,7 +102,7 @@ export class Matrix {
             scaleY: scaleY,
             toString: function () {
                 const { translateX, translateY, rotate, skewX, scaleX, scaleY } = this;
-                return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${rotate ? `rotate(${rotate})` : ''}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`}`;
+                return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${rotate ? `rotate(${rotate})` : ''}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX}${scaleX == scaleY ? '' : ' ' + scaleY})`}`;
             },
         };
     }
