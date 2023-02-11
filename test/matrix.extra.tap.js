@@ -1,7 +1,7 @@
 'uses strict';
 import './utils.js';
 import test from 'tap';
-import {Matrix, MatrixMut} from 'svggeom';
+import {Matrix, MatrixMut, SVGTransform} from 'svggeom';
 
 const CI = !!process.env.CI;
 
@@ -11,10 +11,18 @@ test.test(`Matrix.scale`, {bail: !CI}, function (t) {
     t.ok(Matrix.hexad(1, 0, 0, -1, 0, 0).equals(Matrix.scale(1, -1)), 'vflip');
     t.same(Matrix.parse('scale(2,3)').toString(), Matrix.scale(2, 3).toString(), 'scale x y');
     t.same(Matrix.parse('scale(3)').toString(), Matrix.scale(3).toString(), 'scale x y');
-    t.same(Matrix.parse('scale(2)translate(0,60)').toString(), Matrix.scale(2).translate(0, 60).toString(), 'scale x y');
+    t.same(
+        Matrix.parse('scale(2)translate(0,60)').toString(),
+        Matrix.scale(2).translate(0, 60).toString(),
+        'scale x y'
+    );
     t.match(Matrix.scale(2), {a: 2, d: 2}, 'scale x x');
     t.match(Matrix.scale(2, 3), {a: 2, d: 3}, 'scale x y');
-    t.same(Matrix.parse('scale(2)').inverse().toString(), Matrix.scale(0.5).toString(), 'reverse_scale');
+    t.same(
+        Matrix.parse('scale(2)').inverse().toString(),
+        Matrix.scale(0.5).toString(),
+        'reverse_scale'
+    );
     t.end();
 });
 
@@ -37,7 +45,11 @@ test.test(`Matrix.identity`, {bail: !CI}, function (t) {
     t.ok(Matrix.parse('scale(1 1)').isIdentity);
     t.ok(Matrix.parse('rotate(0)').isIdentity);
     t.ok(Matrix.parse('translate(0 0)').isIdentity);
-    t.ok(Matrix.identity().cat(Matrix.hexad(1, 2, 3, 4, 5, 6)).equals(Matrix.parse('matrix(1 2 3 4 5 6)')));
+    t.ok(
+        Matrix.identity()
+            .cat(Matrix.hexad(1, 2, 3, 4, 5, 6))
+            .equals(Matrix.parse('matrix(1 2 3 4 5 6)'))
+    );
     t.end();
 });
 
@@ -66,7 +78,10 @@ test.test(`Matrix.inverse`, {bail: !CI}, function (t) {
     const e = c.cat(b).cat(a);
     const I = Matrix.identity();
     t.ok(d.is2D);
-    t.ok(e.equals(e.inverse().inverse(), 1e-9), `.inverse().inverse() ${e} ${e.inverse().inverse()}`);
+    t.ok(
+        e.equals(e.inverse().inverse(), 1e-9),
+        `.inverse().inverse() ${e} ${e.inverse().inverse()}`
+    );
     t.ok(a.cat(b.cat(c)).equals(d), `assoc ${d} ${a.cat(b.cat(c))}`);
     t.ok(a.postCat(b).postCat(c).equals(e), `assoc ${e} ${a.postCat(b).postCat(c)}`);
     t.notOk(b.cat(c).equals(c.cat(b)), `assoc ${c.cat(b)} ${b.cat(c)}`);
@@ -79,7 +94,10 @@ test.test(`Matrix.inverse`, {bail: !CI}, function (t) {
     t.ok(d.inverse().cat(d).equals(I, 1e-9), `A⁻¹*A = I, ${d} ${d.inverse()}`);
     t.ok(d.cat(d.inverse()).equals(I, 1e-9), `A*A⁻¹ = I, ${d} ${d.inverse()}`);
     // If A and B are invertible matrices, then AB is invertible and (A*B)⁻¹ = B⁻¹*A⁻¹
-    t.ok(a.cat(b).inverse().equals(b.inverse().cat(a.inverse()), 1e-9), `(A*B)⁻¹ = B⁻¹*A⁻¹ ${a} ${b}`);
+    t.ok(
+        a.cat(b).inverse().equals(b.inverse().cat(a.inverse()), 1e-9),
+        `(A*B)⁻¹ = B⁻¹*A⁻¹ ${a} ${b}`
+    );
     // I is invertible and I⁻¹=I
     t.ok(I.inverse().equals(I), `I⁻¹=I ${I}`);
 
@@ -92,6 +110,34 @@ test.test(`logic`, {bail: !CI}, function (t) {
     // console.log(m1.describe(), m1.inverse());
     // console.log(m2.describe(), m2.inverse());
     t.notOk(m1.equals(m2), `${m1} ${m2}`);
+    t.end();
+});
+
+test.test(`SVGTransform`, {bail: !CI}, function (t) {
+    const m1 = new SVGTransform();
+    m1.setMatrix(Matrix.hexad(1, 2, 3, 4, 5, 6));
+    t.same(m1.type, 1);
+    t.ok(m1.matrix.equals(Matrix.parse('matrix(1 2 3 4 5 6)')));
+    m1.setTranslate(3, 4);
+    t.same(m1.type, 2);
+    t.match(m1.describe(), /^translate\(3[, ]4\)$/);
+    t.match(m1.matrix.describe(), /^translate\(3[, ]4\)$/);
+    m1.setScale(5, 6);
+    t.same(m1.type, 3);
+    t.match(m1.describe(), /^scale\(5[, ]6\)$/);
+    t.match(m1.matrix.describe(), /^scale\(5[, ]6\)$/);
+    m1.setRotate(90, 0, 0);
+    t.same(m1.type, 4);
+    t.same(m1.angle, 90);
+    t.match(m1.describe(), /^rotate\(90\)$/);
+    m1.setSkewX(10);
+    t.same(m1.type, 5);
+    t.same(m1.angle, 10);
+    t.ok(m1.matrix.equals(Matrix.new('matrix(1 0 0.176327 1 0 0)'), 1e-5));
+    m1.setSkewY(10);
+    t.same(m1.type, 6);
+    t.same(m1.angle, 10);
+    t.ok(m1.matrix.equals(Matrix.new('matrix(1 0.176327 0 1 0 0)'), 1e-5));
     t.end();
 });
 
