@@ -154,6 +154,22 @@ test.test(`SVGTransform`, {bail: !CI}, function (t) {
     t.same(m1.type, 4);
     t.same(m1.angle, 45);
     t.match(m1.toString(), /^rotate\(45, 3(?:, 0)?\)$/);
+    m1.setRotate(45, 0, 4);
+    t.same(m1.type, 4);
+    t.same(m1.angle, 45);
+    t.match(m1.toString(), /^rotate\(45, 0(?:, 4)?\)$/);
+    m1.setTranslate(3);
+    t.same(m1.type, 2);
+    t.match(m1.matrix.describe(), /^translate\(3[, ]0\)$/);
+    t.same(m1.toString(), `translate(3)`);
+    m1.setTranslate(0, 3);
+    t.same(m1.type, 2);
+    t.match(m1.matrix.describe(), /^translate\(0[, ]3\)$/);
+    t.same(m1.toString(), `translate(0 3)`);
+    m1.setScale(2, 2);
+    t.same(m1.type, 3);
+    t.match(m1.matrix.describe(), /^scale\(2\)$/);
+    t.same(m1.toString(), `scale(2)`);
 
     t.end();
 });

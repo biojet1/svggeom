@@ -85,7 +85,7 @@ export class SVGTransform extends Matrix {
 			}
 			case 3: {
 				const {a, d} = this;
-				return `scale(${a} ${a == d ? '' : d})`;
+				return `scale(${a}${a == d ? '' : ' ' + d})`;
 			}
 			case 4: {
 				const {angle, _tx, _ty} = this;

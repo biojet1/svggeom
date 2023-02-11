@@ -130,7 +130,7 @@ export class Matrix {
 				return `${
 					translateX || translateY ? `translate(${translateX} ${translateY})` : ''
 				}${rotate ? `rotate(${rotate})` : ''}${skewX ? `skewX(${skewX})` : ''}${
-					scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`
+					scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX}${scaleX == scaleY ? '' : ' ' + scaleY})`
 				}`;
 			},
 		};
