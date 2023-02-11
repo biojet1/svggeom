@@ -1,7 +1,8 @@
 'uses strict';
 import './utils.js';
 import test from 'tap';
-import {Matrix, MatrixMut, SVGTransform} from 'svggeom';
+import {Matrix, MatrixMut} from 'svggeom';
+import {SVGTransformList, SVGTransform} from 'svggeom';
 
 const CI = !!process.env.CI;
 
@@ -170,6 +171,37 @@ test.test(`SVGTransform`, {bail: !CI}, function (t) {
     t.same(m1.type, 3);
     t.match(m1.matrix.describe(), /^scale\(2\)$/);
     t.same(m1.toString(), `scale(2)`);
+    t.end();
+});
+
+test.test(`SVGTransformList`, {bail: !CI}, function (t) {
+    {
+        const tl = SVGTransformList.parse(`translate(3 4)`);
+        t.same(tl.numberOfItems, 1);
+        t.same(tl.toString(), `translate(3 4)`);
+    }
+    {
+        const tl = new SVGTransformList();
+        t.same(tl.numberOfItems, 0);
+        t.same(tl.toString(), ``);
+    }
+    {
+        const tl = SVGTransformList.parse('translate(10 10) rotate(90)');
+        const t1 = tl.getItem(0);
+        const t2 = tl.getItem(1);
+        t.same(tl.numberOfItems, 2);
+        t.ok(t1.matrix.equals(Matrix.new('matrix(1, 0, 0, 1, 10, 10)'), 1e-5));
+        t.ok(t2.matrix.equals(Matrix.new('matrix(0, 1, -1, 0, 0, 0)'), 1e-5));
+        t.match(tl.toString(), /^translate\(10\s*10\)\s*rotate\(90\)$/);
+        const tfm = tl.consolidate();
+        t.ok(tfm.matrix.equals(Matrix.new('matrix(0, 1, -1, 0, 10, 10)'), 1e-5));
+        t.ok(t1.matrix.equals(Matrix.new('matrix(1, 0, 0, 1, 10, 10)'), 1e-5));
+        t.ok(t2.matrix.equals(Matrix.new('matrix(0, 1, -1, 0, 0, 0)'), 1e-5));
+        // check that modifying t1 has no effect on the consolidated transform
+        t1.setTranslate(10, 200);
+        t.ok(t1.matrix.equals(Matrix.new('matrix(1, 0, 0, 1, 10, 200)'), 1e-5));
+        t.ok(tfm.matrix.equals(Matrix.new('matrix(0, 1, -1, 0, 10, 10)'), 1e-5));
+    }
 
     t.end();
 });
