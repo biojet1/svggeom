@@ -11,6 +11,8 @@ export declare class SVGTransform extends Matrix {
     static SVG_TRANSFORM_SKEWY: number;
     type: number;
     angle?: number;
+    _tx?: number;
+    _ty?: number;
     get matrix(): this;
     setMatrix(m: Matrix): void;
     setTranslate(x: number, y: number): void;
@@ -18,4 +20,5 @@ export declare class SVGTransform extends Matrix {
     setRotate(angle: number, cx: number, cy: number): void;
     setSkewX(angle: number): void;
     setSkewY(angle: number): void;
+    toString(): string;
 }
