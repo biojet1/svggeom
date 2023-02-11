@@ -15,10 +15,25 @@ export declare class SVGTransform extends Matrix {
     _ty?: number;
     get matrix(): this;
     setMatrix(m: Matrix): void;
-    setTranslate(x: number, y: number): void;
-    setScale(sx: number, sy: number): void;
-    setRotate(angle: number, cx: number, cy: number): void;
+    setTranslate(x: number, y?: number): void;
+    setScale(sx: number, sy?: number): void;
+    setRotate(angle: number, cx?: number, cy?: number): void;
     setSkewX(angle: number): void;
     setSkewY(angle: number): void;
     toString(): string;
+}
+export declare class SVGTransformList extends Array<SVGTransform> {
+    clear(): void;
+    getItem(i: number): SVGTransform;
+    removeItem(i: number): SVGTransform;
+    appendItem(newItem: SVGTransform): SVGTransform;
+    initialize(newItem: SVGTransform): SVGTransform;
+    insertItemBefore(newItem: SVGTransform, i: number): void;
+    replaceItem(newItem: SVGTransform, i: number): void;
+    createSVGTransformFromMatrix(newItem: Matrix): SVGTransform;
+    consolidate(): SVGTransform;
+    toString(): string;
+    get numberOfItems(): number;
+    static parse(d: string): SVGTransformList;
+    static new(m: SVGTransform): SVGTransformList;
 }

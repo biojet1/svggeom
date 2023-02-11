@@ -25,6 +25,8 @@ export declare class Matrix {
     describe(): string;
     protected _set_hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): this;
     protected _hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;
+    _catSelf(m: Matrix): this;
+    _postCatSelf(m: Matrix): this;
     _cat(m: Matrix): Matrix;
     _postCat(m: Matrix): Matrix;
     inverse(): Matrix;
@@ -62,8 +64,6 @@ interface ElementLike {
 }
 export declare class MatrixMut extends Matrix {
     protected setHexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): this;
-    _catSelf(m: Matrix): this;
-    _postCatSelf(m: Matrix): this;
     invertSelf(): this;
     catSelf(m: Matrix): this;
     postCatSelf(m: Matrix): this;

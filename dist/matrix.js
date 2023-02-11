@@ -102,7 +102,9 @@ export class Matrix {
             scaleY: scaleY,
             toString: function () {
                 const { translateX, translateY, rotate, skewX, scaleX, scaleY } = this;
-                return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${rotate ? `rotate(${rotate})` : ''}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX}${scaleX == scaleY ? '' : ' ' + scaleY})`}`;
+                return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${rotate ? `rotate(${rotate})` : ''}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1
+                    ? ''
+                    : `scale(${scaleX}${scaleX == scaleY ? '' : ' ' + scaleY})`}`;
             },
         };
     }
@@ -124,6 +126,12 @@ export class Matrix {
     }
     _hexad(a = 1, b = 0, c = 0, d = 1, e = 0, f = 0) {
         return new Matrix([a, b, c, d, e, f]);
+    }
+    _catSelf(m) {
+        return this._set_hexad(..._cat(this, m));
+    }
+    _postCatSelf(m) {
+        return this._set_hexad(..._cat(m, this));
     }
     _cat(m) {
         return this._hexad(..._cat(this, m));
@@ -269,12 +277,6 @@ export class MatrixMut extends Matrix {
         this.e = e;
         this.f = f;
         return this;
-    }
-    _catSelf(m) {
-        return this.setHexad(..._cat(this, m));
-    }
-    _postCatSelf(m) {
-        return this.setHexad(..._cat(m, this));
     }
     invertSelf() {
         return this.setHexad(..._inv(this));

@@ -25,15 +25,15 @@ export class SVGTransform extends Matrix {
         delete this._ty;
         this._set_hexad(a, b, c, d, e, f);
     }
-    setTranslate(x, y) {
+    setTranslate(x, y = 0) {
         this.type = 2;
         this._set_hexad(1, 0, 0, 1, x, y);
     }
     setScale(sx, sy) {
         this.type = 3;
-        this._set_hexad(sx, 0, 0, sy, 0, 0);
+        this._set_hexad(sx, 0, 0, sy ?? sx, 0, 0);
     }
-    setRotate(angle, cx, cy) {
+    setRotate(angle, cx = 0, cy = 0) {
         const θ = (((this.angle = angle) % 360) * PI) / 180;
         const cosθ = cos(θ);
         const sinθ = sin(θ);
@@ -88,6 +88,115 @@ export class SVGTransform extends Matrix {
             }
         }
         return super.toString();
+    }
+}
+export class SVGTransformList extends Array {
+    clear() {
+        this.splice(0);
+    }
+    getItem(i) {
+        return this[i];
+    }
+    removeItem(i) {
+        const m = this[i];
+        this.splice(i, 1);
+        return m;
+    }
+    appendItem(newItem) {
+        this.push(newItem);
+        return newItem;
+    }
+    initialize(newItem) {
+        this.clear();
+        this.push(newItem);
+        return newItem;
+    }
+    insertItemBefore(newItem, i) {
+        let j;
+        while ((j = this.indexOf(newItem)) >= 0) {
+            this.splice(j, 1);
+        }
+        this.splice(i, 0, newItem);
+    }
+    replaceItem(newItem, i) {
+        let j;
+        while ((j = this.indexOf(newItem)) >= 0) {
+            this.splice(j, 1);
+            --i;
+        }
+        this.splice(i, 0, newItem);
+    }
+    createSVGTransformFromMatrix(newItem) {
+        this.clear();
+        const m = new SVGTransform();
+        m.setMatrix(newItem);
+        this.push(m);
+        return m;
+    }
+    consolidate() {
+        let { [0]: first, length: n } = this;
+        const m = new SVGTransform();
+        if (first) {
+            m.setMatrix(first);
+            for (let i = 1; i < n;) {
+                m._catSelf(this[i++]);
+            }
+        }
+        return this.initialize(m);
+    }
+    toString() {
+        return this.join('');
+    }
+    get numberOfItems() {
+        return this.length;
+    }
+    static parse(d) {
+        const tl = new SVGTransformList();
+        for (const str of d.split(/\)\s*,?\s*/).slice(0, -1)) {
+            const kv = str.trim().split('(');
+            const name = kv[0].trim();
+            const args = kv[1].split(/[\s,]+/).map(str => parseFloat(str));
+            const t = new SVGTransform();
+            switch (name) {
+                case 'matrix':
+                    t.setMatrix(Matrix.fromArray(args));
+                    break;
+                case 'translate':
+                    t.setTranslate(args[0], args[1]);
+                    break;
+                case 'translateX':
+                    t.setTranslate(args[0], 0);
+                    break;
+                case 'translateY':
+                    t.setTranslate(0, args[0]);
+                    break;
+                case 'scale':
+                    t.setScale(args[0], args[1]);
+                    break;
+                case 'scaleX':
+                    t.setScale(args[0], 0);
+                    break;
+                case 'scaleY':
+                    t.setScale(0, args[0]);
+                    break;
+                case 'rotate':
+                    t.setRotate(args[0], args[1], args[3]);
+                    break;
+                case 'skewX':
+                    t.setSkewX(args[0]);
+                    break;
+                case 'skewY':
+                    t.setSkewY(args[0]);
+                    break;
+                default:
+                    throw new Error(`Unexpected transform '${name}'`);
+            }
+            tl.appendItem(t);
+        }
+        return tl;
+    }
+    static new(m) {
+        return new SVGTransformList(m);
     }
 }
 //# sourceMappingURL=svgtransform.js.map
