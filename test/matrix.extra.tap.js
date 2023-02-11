@@ -118,26 +118,43 @@ test.test(`SVGTransform`, {bail: !CI}, function (t) {
     m1.setMatrix(Matrix.hexad(1, 2, 3, 4, 5, 6));
     t.same(m1.type, 1);
     t.ok(m1.matrix.equals(Matrix.parse('matrix(1 2 3 4 5 6)')));
+    t.same(m1.toString(), `matrix(1 2 3 4 5 6)`);
     m1.setTranslate(3, 4);
     t.same(m1.type, 2);
     t.match(m1.describe(), /^translate\(3[, ]4\)$/);
     t.match(m1.matrix.describe(), /^translate\(3[, ]4\)$/);
+    t.same(m1.toString(), `translate(3 4)`);
     m1.setScale(5, 6);
     t.same(m1.type, 3);
     t.match(m1.describe(), /^scale\(5[, ]6\)$/);
     t.match(m1.matrix.describe(), /^scale\(5[, ]6\)$/);
+    t.same(m1.toString(), `scale(5 6)`);
     m1.setRotate(90, 0, 0);
     t.same(m1.type, 4);
     t.same(m1.angle, 90);
     t.match(m1.describe(), /^rotate\(90\)$/);
+    t.same(m1.toString(), `rotate(90)`);
     m1.setSkewX(10);
     t.same(m1.type, 5);
     t.same(m1.angle, 10);
     t.ok(m1.matrix.equals(Matrix.new('matrix(1 0 0.176327 1 0 0)'), 1e-5));
+    t.same(m1.toString(), `skewX(10)`);
     m1.setSkewY(10);
     t.same(m1.type, 6);
     t.same(m1.angle, 10);
     t.ok(m1.matrix.equals(Matrix.new('matrix(1 0.176327 0 1 0 0)'), 1e-5));
+    t.same(m1.toString(), `skewY(10)`);
+
+    m1.setRotate(45, 3, 4);
+    t.same(m1.type, 4);
+    t.same(m1.angle, 45);
+    // t.match(m1.toString(), /^rotate\(45[, ]3[, ]4\)$/);
+    t.match(m1.toString(), /^rotate\(45, 3, 4\)$/);
+    m1.setRotate(45, 3);
+    t.same(m1.type, 4);
+    t.same(m1.angle, 45);
+    t.match(m1.toString(), /^rotate\(45, 3(?:, 0)?\)$/);
+
     t.end();
 });
 
