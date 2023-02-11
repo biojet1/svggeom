@@ -1,5 +1,5 @@
 import { Vec } from './point.js';
-declare type NumOrVec = number | Iterable<number>;
+type NumOrVec = number | Iterable<number>;
 export declare class VecRay {
     readonly _pos: Vec;
     readonly _dir: Vec;

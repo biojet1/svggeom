@@ -43,7 +43,12 @@ export class Matrix {
         this.d = d;
         this.e = e;
         this.f = f;
-        if (!(isFinite(a) && isFinite(b) && isFinite(c) && isFinite(d) && isFinite(e) && isFinite(f)))
+        if (!(isFinite(a) &&
+            isFinite(b) &&
+            isFinite(c) &&
+            isFinite(d) &&
+            isFinite(e) &&
+            isFinite(f)))
             throw TypeError(`${JSON.stringify(arguments)}`);
     }
     get isIdentity() {
@@ -107,6 +112,15 @@ export class Matrix {
     }
     describe() {
         return this.decompose().toString();
+    }
+    _set_hexad(a = 1, b = 0, c = 0, d = 1, e = 0, f = 0) {
+        this.a = a;
+        this.b = b;
+        this.c = c;
+        this.d = d;
+        this.e = e;
+        this.f = f;
+        return this;
     }
     _hexad(a = 1, b = 0, c = 0, d = 1, e = 0, f = 0) {
         return new Matrix([a, b, c, d, e, f]);
