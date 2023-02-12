@@ -186,7 +186,13 @@ export class SVGTransformList extends Array {
     get numberOfItems() {
         return this.length;
     }
-    parse(d) {
+    _dropItem(refItem) {
+        let j;
+        while ((j = this.indexOf(refItem)) >= 0) {
+            this.splice(j, 1);
+        }
+    }
+    _parse(d) {
         for (const str of d.split(/\)\s*,?\s*/).slice(0, -1)) {
             const kv = str.trim().split('(');
             const name = kv[0].trim();
@@ -224,8 +230,8 @@ export class SVGTransformList extends Array {
         }
         return this;
     }
-    static parse(d) {
-        return new SVGTransformList().parse(d);
+    static _parse(d) {
+        return new SVGTransformList()._parse(d);
     }
 }
 //# sourceMappingURL=svgtransform.js.map

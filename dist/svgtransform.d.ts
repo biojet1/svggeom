@@ -35,6 +35,7 @@ export declare class SVGTransformList extends Array<SVGTransform> {
     consolidate(): SVGTransform;
     toString(): string;
     get numberOfItems(): number;
-    parse(d: string): this;
-    static parse(d: string): SVGTransformList;
+    _dropItem(refItem: SVGTransform): void;
+    _parse(d: string): this;
+    static _parse(d: string): SVGTransformList;
 }
