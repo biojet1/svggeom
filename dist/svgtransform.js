@@ -124,7 +124,7 @@ export class SVGTransformList extends Array {
             this.splice(j, 1);
             --i;
         }
-        this.splice(i, 0, newItem);
+        this.splice(i, 1, newItem);
     }
     createSVGTransformFromMatrix(newItem) {
         this.clear();
@@ -174,10 +174,10 @@ export class SVGTransformList extends Array {
                     t.setScale(args[0], args[1]);
                     break;
                 case 'scaleX':
-                    t.setScale(args[0], 0);
+                    t.setScale(args[0], 1);
                     break;
                 case 'scaleY':
-                    t.setScale(0, args[0]);
+                    t.setScale(1, args[0]);
                     break;
                 case 'rotate':
                     t.setRotate(args[0], args[1], args[3]);
