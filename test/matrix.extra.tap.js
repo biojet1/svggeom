@@ -201,6 +201,58 @@ test.test(`SVGTransformList`, {bail: !CI}, function (t) {
         t1.setTranslate(10, 200);
         t.ok(t1.matrix.equals(Matrix.new('matrix(1, 0, 0, 1, 10, 200)'), 1e-5));
         t.ok(tfm.matrix.equals(Matrix.new('matrix(0, 1, -1, 0, 10, 10)'), 1e-5));
+        const t4 = new SVGTransform();
+        const t5 = new SVGTransform();
+        t4.setRotate(-90);
+        t5.setTranslate(-10, -10);
+        tl.appendItem(t4);
+        tl.appendItem(t5);
+        const tfm2 = tl.consolidate();
+        // console.dir(tfm2);
+        t.ok(tfm2.matrix.equals(Matrix.identity(), 1e-5));
+    }
+    {
+        t.ok(
+            SVGTransformList.parse('scale(10, 5)')
+                .consolidate()
+                .matrix.equals(Matrix.parse('scale(10, 5)'), 1e-5)
+        );
+        t.ok(
+            SVGTransformList.parse('translateX(3)translateY(4)')
+                .consolidate()
+                .matrix.equals(Matrix.new('matrix(1, 0, 0, 1, 3, 4)'), 1e-5)
+        );
+    }
+    {
+        const tl = SVGTransformList.parse('translate(10 10) rotate(90)');
+        tl.removeItem(0);
+        t.same(tl.numberOfItems, 1);
+        t.same(tl.toString(), `rotate(90)`);
+    }
+    {
+        const tl = SVGTransformList.parse('translate(10 10) rotate(90)');
+        tl.removeItem(1);
+        t.same(tl.numberOfItems, 1);
+        t.same(tl.toString(), `translate(10 10)`);
+    }
+
+    {
+        const tl = SVGTransformList.parse('translate(10 10) rotate(90)');
+        const t4 = new SVGTransform();
+        t4.setTranslate(-10, -10);
+        tl.replaceItem(t4, 1);
+        t.same(tl.toString(), `translate(10 10)translate(-10 -10)`);
+        t.same(tl.numberOfItems, 2);
+        t.ok(tl.consolidate().matrix.equals(Matrix.identity(), 1e-5));
+    }
+    {
+        const tl = SVGTransformList.parse('translate(10 10) rotate(90)');
+        const t4 = new SVGTransform();
+        t4.setRotate(-90);
+        tl.insertItemBefore(t4, 1);
+        t.same(tl.toString(), `translate(10 10)rotate(-90)rotate(90)`);
+        t.same(tl.numberOfItems, 3);
+        t.ok(tl.consolidate().matrix.equals(Matrix.translate(10, 10), 1e-5));
     }
 
     t.end();
