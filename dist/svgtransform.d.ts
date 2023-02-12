@@ -31,10 +31,10 @@ export declare class SVGTransformList extends Array<SVGTransform> {
     insertItemBefore(newItem: SVGTransform, i: number): void;
     replaceItem(newItem: SVGTransform, i: number): void;
     createSVGTransformFromMatrix(newItem: Matrix): SVGTransform;
+    combine(): Matrix;
     consolidate(): SVGTransform;
     toString(): string;
     get numberOfItems(): number;
     parse(d: string): this;
     static parse(d: string): SVGTransformList;
-    static new(m: SVGTransform): SVGTransformList;
 }
