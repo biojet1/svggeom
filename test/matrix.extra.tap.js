@@ -255,6 +255,64 @@ test.test(`SVGTransformList`, {bail: !CI}, function (t) {
         t.ok(tl.consolidate().matrix.equals(Matrix.translate(10, 10), 1e-5));
     }
 
+    {
+        const tl = SVGTransformList.parse(' skewY(60) matrix(1, 0, 0, 1, 3, 4) skewX(30)');
+        t.same(tl.numberOfItems, 3);
+        t.ok(tl.consolidate().matrix.equals(Matrix.skewY(60).translate(3, 4).skewX(30), 1e-5));
+
+        {
+            const m = new SVGTransform();
+            m.setMatrix(Matrix.hexad(1, 2, 3, 4, 5, 6));
+
+            // "Creates an SVGTransform object which is initialized to transform of type
+            // SVG_TRANSFORM_MATRIX and whose values are the given matrix. The values from
+            // the parameter matrix are copied, the matrix parameter is not adopted as
+            // SVGTransform::matrix."
+            tl.clear();
+            const tr = tl.createSVGTransformFromMatrix(m);
+
+            // Check that list hasn't changed
+            t.same(tl.numberOfItems, 0);
+
+            // Check return value
+            t.same(tr.type, SVGTransform.SVG_TRANSFORM_MATRIX);
+            t.same(tr.toString(), `matrix(1 2 3 4 5 6)`);
+
+            // Check values are copied
+            t.notStrictEqual(tr.matrix, m, 'Matrix should be copied not adopted');
+            m.setTranslate(0, 5);
+            t.same(
+                tr.toString(),
+                `matrix(1 2 3 4 5 6)`,
+                'Changing source matrix should not affect newly created transform'
+            );
+
+            // // Try passing in bad values (null, "undefined" etc.)
+            // var exception = null;
+            // try {
+            //     t = list.createSVGTransformFromMatrix(null);
+            // } catch (e) {
+            //     exception = e;
+            // }
+            // ok(exception, 'Failed to throw for null input to createSVGTransformFromMatrix');
+            // exception = null;
+            // try {
+            //     t = list.createSVGTransformFromMatrix('undefined');
+            // } catch (e) {
+            //     exception = e;
+            // }
+            // ok(exception, 'Failed to throw for string input to createSVGTransformFromMatrix');
+            // exception = null;
+            // try {
+            //     t = list.createSVGTransformFromMatrix(SVGMatrix(t));
+            // } catch (e) {
+            //     exception = e;
+            // }
+            // ok(exception, 'Failed to throw for bad input to createSVGTransformFromMatrix');
+            // exception = null;
+        }
+    }
+
     t.end();
 });
 
