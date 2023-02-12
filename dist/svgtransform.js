@@ -130,7 +130,6 @@ export class SVGTransformList extends Array {
         this.clear();
         const m = new SVGTransform();
         m.setMatrix(newItem);
-        this.push(m);
         return m;
     }
     consolidate() {
@@ -172,12 +171,6 @@ export class SVGTransformList extends Array {
                     break;
                 case 'scale':
                     t.setScale(args[0], args[1]);
-                    break;
-                case 'scaleX':
-                    t.setScale(args[0], 1);
-                    break;
-                case 'scaleY':
-                    t.setScale(1, args[0]);
                     break;
                 case 'rotate':
                     t.setRotate(args[0], args[1], args[3]);
