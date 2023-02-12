@@ -187,7 +187,7 @@ test.test(`SVGTransform`, {bail: !CI}, function (t) {
 
 test.test(`SVGTransformList`, {bail: !CI}, function (t) {
     {
-        const tl = SVGTransformList.parse(`translate(3 4)`);
+        const tl = SVGTransformList._parse(`translate(3 4)`);
         t.same(tl.numberOfItems, 1);
         t.same(tl.toString(), `translate(3 4)`);
     }
@@ -197,7 +197,7 @@ test.test(`SVGTransformList`, {bail: !CI}, function (t) {
         t.same(tl.toString(), ``);
     }
     {
-        const tl = SVGTransformList.parse('translate(10 10) rotate(90)');
+        const tl = SVGTransformList._parse('translate(10 10) rotate(90)');
         const t1 = tl.getItem(0);
         const t2 = tl.getItem(1);
         t.same(tl.numberOfItems, 2);
@@ -224,31 +224,31 @@ test.test(`SVGTransformList`, {bail: !CI}, function (t) {
     }
     {
         t.ok(
-            SVGTransformList.parse('scale(10, 5)')
+            SVGTransformList._parse('scale(10, 5)')
                 .consolidate()
                 .matrix.equals(Matrix.parse('scale(10, 5)'), 1e-5)
         );
         t.ok(
-            SVGTransformList.parse('translateX(3)translateY(4)')
+            SVGTransformList._parse('translateX(3)translateY(4)')
                 .consolidate()
                 .matrix.equals(Matrix.new('matrix(1, 0, 0, 1, 3, 4)'), 1e-5)
         );
     }
     {
-        const tl = SVGTransformList.parse('translate(10 10) rotate(90)');
+        const tl = SVGTransformList._parse('translate(10 10) rotate(90)');
         tl.removeItem(0);
         t.same(tl.numberOfItems, 1);
         t.same(tl.toString(), `rotate(90)`);
     }
     {
-        const tl = SVGTransformList.parse('translate(10 10) rotate(90)');
+        const tl = SVGTransformList._parse('translate(10 10) rotate(90)');
         tl.removeItem(1);
         t.same(tl.numberOfItems, 1);
         t.same(tl.toString(), `translate(10 10)`);
     }
 
     {
-        const tl = SVGTransformList.parse('translate(10 10) rotate(90)');
+        const tl = SVGTransformList._parse('translate(10 10) rotate(90)');
         const t4 = new SVGTransform();
         t4.setTranslate(-10, -10);
         tl.replaceItem(t4, 1);
@@ -257,7 +257,7 @@ test.test(`SVGTransformList`, {bail: !CI}, function (t) {
         t.ok(tl.consolidate().matrix.equals(Matrix.identity(), 1e-5));
     }
     {
-        const tl = SVGTransformList.parse('translate(10 10) rotate(90)');
+        const tl = SVGTransformList._parse('translate(10 10) rotate(90)');
         const t4 = new SVGTransform();
         t4.setRotate(-90);
         tl.insertItemBefore(t4, 1);
@@ -267,7 +267,7 @@ test.test(`SVGTransformList`, {bail: !CI}, function (t) {
     }
 
     {
-        const tl = SVGTransformList.parse(' skewY(60) matrix(1, 0, 0, 1, 3, 4) skewX(30)');
+        const tl = SVGTransformList._parse(' skewY(60) matrix(1, 0, 0, 1, 3, 4) skewX(30)');
         t.same(tl.numberOfItems, 3);
         t.ok(tl.consolidate().matrix.equals(Matrix.skewY(60).translate(3, 4).skewX(30), 1e-5));
 
@@ -322,7 +322,7 @@ test.test(`Matrix Sub Class`, {bail: !CI}, function (t) {
 });
 
 test.test(`case rotate(90,400,300)`, {bail: !CI}, function (t) {
-    const tl = SVGTransformList.parse('rotate(90,400,300)');
+    const tl = SVGTransformList._parse('rotate(90,400,300)');
     t.same(tl.numberOfItems, 1);
     // console.dir(tl);
     t.same(tl.toString(), `rotate(90 400 300)`);

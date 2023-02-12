@@ -84,8 +84,8 @@ for await (const [m1, m2] of matrixes()) {
         t.ok(M2.equals(Matrix.new({nodeType: 1, getAttribute: s => m1}), 1e-15));
         t.ok(M1.equals(Matrix.fromElement({nodeType: 1, getAttribute: s => m1}), 1e-15));
         {
-            const M4 = SVGTransformList.parse(m1).combine();
-            const M5 = SVGTransformList.parse(m2).combine();
+            const M4 = SVGTransformList._parse(m1).combine();
+            const M5 = SVGTransformList._parse(m2).combine();
             t.ok(M1.equals(M4, 1e-15), `M1==M4`, extra);
             t.ok(M2.equals(M5, 1e-15), `M2==M5`, extra);
             t.ok(M4.equals(M5, 1e-15), `M4==M5`, extra);
@@ -139,5 +139,26 @@ test.test(`test_new_from_rotate`, {bail: !CI}, function (t) {
             1e-4
         )
     );
+    t.end();
+});
+
+test.test(`test_new_from_rotate`, {bail: !CI}, function (t) {
+    t.ok(
+        Matrix.parse('translateX(-12) translateY(-10)').equals(
+            Matrix.parse('matrix(1 0 0 1 -12 -10)')
+        )
+    );
+    t.ok(
+        Matrix.parse('translateX(-12) translateY(-10) scale(3, 4)').equals(
+            Matrix.parse('matrix(3 0 0 4 -12 -10)')
+        )
+    );
+    t.end();
+});
+
+test.test(`parse error`, {bail: !CI}, function (t) {
+    t.throws(() => Matrix.parse('translateX(-12) translateQ(-10)'), {
+        message: /Unexpected transform/i,
+    });
     t.end();
 });

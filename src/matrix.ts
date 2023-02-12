@@ -273,7 +273,7 @@ export class Matrix {
 		d: number = 1,
 		e: number = 0,
 		f: number = 0
-	): Matrix {
+	) {
 		return new this([a, b, c, d, e, f]);
 	}
 
