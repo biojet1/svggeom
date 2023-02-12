@@ -31,6 +31,7 @@ export declare class Matrix {
     _postCat(m: Matrix): Matrix;
     inverse(): Matrix;
     cat(m: Matrix): Matrix;
+    multiply(m: Matrix): Matrix;
     postCat(m: Matrix): Matrix;
     translate(x?: number, y?: number): Matrix;
     translateY(v: number): Matrix;
@@ -55,7 +56,6 @@ export declare class Matrix {
     static skewY(y: number): Matrix;
     static rotate(ang: number, x?: number, y?: number): Matrix;
     static scale(scaleX: number, scaleY?: number): Matrix;
-    static Identity: Matrix;
     static identity(): Matrix;
 }
 interface ElementLike {

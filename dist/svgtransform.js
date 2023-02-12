@@ -149,8 +149,7 @@ export class SVGTransformList extends Array {
     get numberOfItems() {
         return this.length;
     }
-    static parse(d) {
-        const tl = new SVGTransformList();
+    parse(d) {
         for (const str of d.split(/\)\s*,?\s*/).slice(0, -1)) {
             const kv = str.trim().split('(');
             const name = kv[0].trim();
@@ -184,9 +183,12 @@ export class SVGTransformList extends Array {
                 default:
                     throw new Error(`Unexpected transform '${name}'`);
             }
-            tl.appendItem(t);
+            this.appendItem(t);
         }
-        return tl;
+        return this;
+    }
+    static parse(d) {
+        return new SVGTransformList().parse(d);
     }
     static new(m) {
         return new SVGTransformList(m);

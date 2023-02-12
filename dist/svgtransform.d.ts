@@ -2,13 +2,13 @@ import { Matrix } from './matrix.js';
 export declare class SVGMatrix extends Matrix {
 }
 export declare class SVGTransform extends Matrix {
-    static SVG_TRANSFORM_UNKNOWN: number;
-    static SVG_TRANSFORM_MATRIX: number;
-    static SVG_TRANSFORM_TRANSLATE: number;
-    static SVG_TRANSFORM_SCALE: number;
-    static SVG_TRANSFORM_ROTATE: number;
-    static SVG_TRANSFORM_SKEWX: number;
-    static SVG_TRANSFORM_SKEWY: number;
+    static readonly SVG_TRANSFORM_UNKNOWN = 0;
+    static readonly SVG_TRANSFORM_MATRIX = 1;
+    static readonly SVG_TRANSFORM_TRANSLATE = 2;
+    static readonly SVG_TRANSFORM_SCALE = 3;
+    static readonly SVG_TRANSFORM_ROTATE = 4;
+    static readonly SVG_TRANSFORM_SKEWX = 5;
+    static readonly SVG_TRANSFORM_SKEWY = 6;
     type: number;
     angle?: number;
     _tx?: number;
@@ -34,6 +34,7 @@ export declare class SVGTransformList extends Array<SVGTransform> {
     consolidate(): SVGTransform;
     toString(): string;
     get numberOfItems(): number;
+    parse(d: string): this;
     static parse(d: string): SVGTransformList;
     static new(m: SVGTransform): SVGTransformList;
 }
