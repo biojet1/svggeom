@@ -41,9 +41,6 @@ export class SVGTransform extends Matrix {
 	}
 
 	setRotate(angle: number, cx: number = 0, cy: number = 0): void {
-		const θ = (((this.angle = angle) % 360) * PI) / 180;
-		const cosθ = cos(θ);
-		const sinθ = sin(θ);
 		this.type = 4;
 		if (cx) {
 			this._tx = cx;
@@ -55,6 +52,42 @@ export class SVGTransform extends Matrix {
 		} else {
 			delete this._ty;
 		}
+		let cosθ, sinθ;
+		switch ((this.angle = angle)) {
+			case 0:
+				cosθ = 1;
+				sinθ = 0;
+				break;
+			case 90:
+				cosθ = +0;
+				sinθ = +1;
+				break;
+			case -90:
+				cosθ = +0;
+				sinθ = -1;
+				break;
+			case 180:
+				cosθ = -1;
+				sinθ = +0;
+				break;
+			case -180:
+				cosθ = -1;
+				sinθ = -0;
+				break;
+			case 270:
+				cosθ = -0;
+				sinθ = -1;
+				break;
+			case -270:
+				cosθ = -0;
+				sinθ = +1;
+				break;
+			default:
+				const θ = ((angle % 360) * PI) / 180;
+				cosθ = cos(θ);
+				sinθ = sin(θ);
+		}
+
 		this._set_hexad(
 			cosθ,
 			sinθ,
@@ -143,22 +176,27 @@ export class SVGTransformList extends Array<SVGTransform> {
 		this.splice(i, 1, newItem);
 	}
 	createSVGTransformFromMatrix(newItem: Matrix) {
-		this.clear();
 		const m = new SVGTransform();
 		m.setMatrix(newItem);
+		// this.clear();
 		// this.push(m);
 		return m;
 	}
 
-	consolidate() {
-		let {[0]: first, length: n} = this;
-		const m = new SVGTransform();
-		if (first) {
-			m.setMatrix(first);
-			for (let i = 1; i < n; ) {
-				m._catSelf(this[i++]);
+	combine() {
+		let M;
+		for (const m of this) {
+			if (M) {
+				M._catSelf(m);
+			} else {
+				M = m.clone();
 			}
 		}
+		return M ?? Matrix.identity();
+	}
+	consolidate() {
+		const m = new SVGTransform();
+		m.setMatrix(this.combine());
 		return this.initialize(m);
 	}
 
@@ -214,7 +252,7 @@ export class SVGTransformList extends Array<SVGTransform> {
 		return new SVGTransformList().parse(d);
 	}
 
-	public static new(m: SVGTransform): SVGTransformList {
-		return new SVGTransformList(m);
-	}
+	// public static new(m: SVGTransform): SVGTransformList {
+	// 	return new SVGTransformList(m);
+	// }
 }
