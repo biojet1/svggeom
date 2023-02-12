@@ -193,11 +193,33 @@ export class Matrix {
                 const args = kv[1].split(/[\s,]+/).map(function (str) {
                     return parseFloat(str.trim());
                 });
-                if (name === 'matrix') {
-                    m._catSelf(this.fromArray(args));
-                }
-                else {
-                    m._catSelf(m.constructor[name](...args));
+                switch (name) {
+                    case 'matrix':
+                        m._catSelf(this.fromArray(args));
+                        break;
+                    case 'translate':
+                        m._catSelf(this.translate(args[0], args[1]));
+                        break;
+                    case 'translateX':
+                        m._catSelf(this.translateX(args[0]));
+                        break;
+                    case 'translateY':
+                        m._catSelf(this.translateY(args[0]));
+                        break;
+                    case 'scale':
+                        m._catSelf(this.scale(args[0], args[1]));
+                        break;
+                    case 'rotate':
+                        m._catSelf(this.rotate(args[0], args[1], args[2]));
+                        break;
+                    case 'skewX':
+                        m._catSelf(this.skewX(args[0]));
+                        break;
+                    case 'skewY':
+                        m._catSelf(this.skewY(args[0]));
+                        break;
+                    default:
+                        throw new Error(`Unexpected transform '${name}'`);
                 }
             }
         return m;

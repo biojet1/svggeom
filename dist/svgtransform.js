@@ -107,7 +107,7 @@ export class SVGTransform extends Matrix {
             case 4: {
                 const { angle, _tx, _ty } = this;
                 if (_tx || _ty)
-                    return `rotate(${angle}, ${_tx ?? 0}, ${_ty ?? 0})`;
+                    return `rotate(${angle} ${_tx ?? 0} ${_ty ?? 0})`;
                 return `rotate(${angle})`;
             }
             case 5: {
@@ -209,7 +209,7 @@ export class SVGTransformList extends Array {
                     t.setScale(args[0], args[1]);
                     break;
                 case 'rotate':
-                    t.setRotate(args[0], args[1], args[3]);
+                    t.setRotate(args[0], args[1], args[2]);
                     break;
                 case 'skewX':
                     t.setSkewX(args[0]);
