@@ -122,7 +122,7 @@ export class SVGTransform extends Matrix {
 			}
 			case 4: {
 				const {angle, _tx, _ty} = this;
-				if (_tx || _ty) return `rotate(${angle}, ${_tx ?? 0}, ${_ty ?? 0})`;
+				if (_tx || _ty) return `rotate(${angle} ${_tx ?? 0} ${_ty ?? 0})`;
 				return `rotate(${angle})`;
 			}
 			case 5: {
@@ -213,7 +213,6 @@ export class SVGTransformList extends Array<SVGTransform> {
 			const kv = str.trim().split('(');
 			const name = kv[0].trim();
 			const args = kv[1].split(/[\s,]+/).map(str => parseFloat(str));
-			// console.warn(name, args);
 			const t = new SVGTransform();
 			switch (name) {
 				case 'matrix':
@@ -232,7 +231,7 @@ export class SVGTransformList extends Array<SVGTransform> {
 					t.setScale(args[0], args[1]);
 					break;
 				case 'rotate':
-					t.setRotate(args[0], args[1], args[3]);
+					t.setRotate(args[0], args[1], args[2]);
 					break;
 				case 'skewX':
 					t.setSkewX(args[0]);

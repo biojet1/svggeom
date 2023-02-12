@@ -150,15 +150,15 @@ test.test(`SVGTransform`, {bail: !CI}, function (t) {
     t.same(m1.type, 4);
     t.same(m1.angle, 45);
     // t.match(m1.toString(), /^rotate\(45[, ]3[, ]4\)$/);
-    t.match(m1.toString(), /^rotate\(45, 3, 4\)$/);
+    t.match(m1.toString(), /^rotate\(45[, ]3[, ]4\)$/);
     m1.setRotate(45, 3);
     t.same(m1.type, 4);
     t.same(m1.angle, 45);
-    t.match(m1.toString(), /^rotate\(45, 3(?:, 0)?\)$/);
+    t.match(m1.toString(), /^rotate\(45[, ]3(?:[, ]0)?\)$/);
     m1.setRotate(45, 0, 4);
     t.same(m1.type, 4);
     t.same(m1.angle, 45);
-    t.match(m1.toString(), /^rotate\(45, 0(?:, 4)?\)$/);
+    t.match(m1.toString(), /^rotate\(45[, ]0(?:[, ]4)?\)$/);
     m1.setTranslate(3);
     t.same(m1.type, 2);
     t.match(m1.matrix.describe(), /^translate\(3[, ]0\)$/);
@@ -318,6 +318,16 @@ test.test(`Matrix Sub Class`, {bail: !CI}, function (t) {
     t.same(MatrixSubClass.rotate(4).constructor.name, `MatrixSubClass`);
     t.same(MatrixSubClass.skewX(4).constructor.name, `MatrixSubClass`);
     t.same(MatrixSubClass.skewY(4).constructor.name, `MatrixSubClass`);
+    t.end();
+});
+
+test.test(`case rotate(90,400,300)`, {bail: !CI}, function (t) {
+    const tl = SVGTransformList.parse('rotate(90,400,300)');
+    t.same(tl.numberOfItems, 1);
+    // console.dir(tl);
+    t.same(tl.toString(), `rotate(90 400 300)`);
+    t.same(tl.toString(), `rotate(90 400 300)`);
+    t.ok(Matrix.parse("matrix(0 1 -1 0 700 -100)").equals(tl.consolidate()));
     t.end();
 });
 
