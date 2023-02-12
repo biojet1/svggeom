@@ -4,7 +4,7 @@ tasks:
     tsc:
         method: timestamp
         cmds:
-            - npx tsc
+            - npx tsc -d
         sources:
             - src/**/*.ts
         generates:

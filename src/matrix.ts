@@ -201,6 +201,10 @@ export class Matrix {
 		return this._cat(m);
 	}
 
+	multiply(m: Matrix): Matrix {
+		return this._cat(m);
+	}
+
 	postCat(m: Matrix): Matrix {
 		return this._postCat(m);
 	}
@@ -278,7 +282,6 @@ export class Matrix {
 	}
 
 	public static parse(d: string) {
-		d = d.trim();
 		let m = new this();
 		if (d)
 			for (const str of d.split(/\)\s*,?\s*/).slice(0, -1)) {
@@ -287,7 +290,21 @@ export class Matrix {
 				const args = kv[1].split(/[\s,]+/).map(function (str) {
 					return parseFloat(str.trim());
 				});
-				m = name === 'matrix' ? m._cat(Matrix.fromArray(args)) : m[name].apply(m, args);
+				// m =
+				// 	name === 'matrix'
+				// 		? m._cat(this.fromArray(args))
+				// 		: m._cat(
+				// 				((m.constructor as any)[name] as (...args: number[]) => Matrix)(
+				// 					...args
+				// 				)
+				// 		  );
+				if (name === 'matrix') {
+					m._catSelf(this.fromArray(args));
+				} else {
+					m._catSelf(
+						((m.constructor as any)[name] as (...args: number[]) => Matrix)(...args)
+					);
+				}
 			}
 		return m;
 	}
@@ -379,9 +396,10 @@ export class Matrix {
 	static scale(scaleX: number, scaleY?: number) {
 		return this.hexad(scaleX, 0, 0, scaleY ?? scaleX, 0, 0);
 	}
-	static Identity = new Matrix();
+	// static Identity = new Matrix();
 	static identity() {
-		return this.Identity;
+		return new this();
+		// return this.Identity;
 	}
 }
 

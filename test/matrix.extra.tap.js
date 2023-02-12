@@ -171,6 +171,17 @@ test.test(`SVGTransform`, {bail: !CI}, function (t) {
     t.same(m1.type, 3);
     t.match(m1.matrix.describe(), /^scale\(2\)$/);
     t.same(m1.toString(), `scale(2)`);
+    {
+        //
+        t.same(SVGTransform.translate(4, 5).constructor.name, `SVGTransform`);
+        t.same(SVGTransform.scale(4, 5).constructor.name, `SVGTransform`);
+        t.same(SVGTransform.rotate(4).constructor.name, `SVGTransform`);
+        t.same(SVGTransform.skewX(4).constructor.name, `SVGTransform`);
+        t.same(SVGTransform.skewY(4).constructor.name, `SVGTransform`);
+        // t.same(SVGTransform.matrix(1, 2, 3, 4, 5, 6).constructor.name, `SVGTransform`);
+        t.same(SVGTransform.parse(``).constructor.name, `SVGTransform`);
+        t.same(SVGTransform.parse(`scale(2)`).constructor.name, `SVGTransform`);
+    }
     t.end();
 });
 
@@ -261,6 +272,7 @@ test.test(`SVGTransformList`, {bail: !CI}, function (t) {
         t.ok(tl.consolidate().matrix.equals(Matrix.skewY(60).translate(3, 4).skewX(30), 1e-5));
 
         {
+            // https://github.com/michielbdejong/gecko-dev/blob/4ca96f2eee849a7c3a7f9ad1838c95fe9b5cba2b/dom/svg/test/test_SVGTransformList.xhtml
             const m = new SVGTransform();
             m.setMatrix(Matrix.hexad(1, 2, 3, 4, 5, 6));
 
@@ -286,33 +298,26 @@ test.test(`SVGTransformList`, {bail: !CI}, function (t) {
                 `matrix(1 2 3 4 5 6)`,
                 'Changing source matrix should not affect newly created transform'
             );
-
-            // // Try passing in bad values (null, "undefined" etc.)
-            // var exception = null;
-            // try {
-            //     t = list.createSVGTransformFromMatrix(null);
-            // } catch (e) {
-            //     exception = e;
-            // }
-            // ok(exception, 'Failed to throw for null input to createSVGTransformFromMatrix');
-            // exception = null;
-            // try {
-            //     t = list.createSVGTransformFromMatrix('undefined');
-            // } catch (e) {
-            //     exception = e;
-            // }
-            // ok(exception, 'Failed to throw for string input to createSVGTransformFromMatrix');
-            // exception = null;
-            // try {
-            //     t = list.createSVGTransformFromMatrix(SVGMatrix(t));
-            // } catch (e) {
-            //     exception = e;
-            // }
-            // ok(exception, 'Failed to throw for bad input to createSVGTransformFromMatrix');
-            // exception = null;
         }
     }
 
+    t.end();
+});
+
+test.test(`Matrix Sub Class`, {bail: !CI}, function (t) {
+    class MatrixSubClass extends Matrix {}
+    t.same(MatrixSubClass.skewX(4).constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.fromArray([1, 2, 3, 4, 5, 6]).constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.parse().constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.parse(`\t`).constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.parse(`matrix(7 8 9 0 1 2)`).constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.hexad(1, 2, 3, 4, 5, 6).constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.identity().constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.translate(4, 5).constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.scale(4, 5).constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.rotate(4).constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.skewX(4).constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.skewY(4).constructor.name, `MatrixSubClass`);
     t.end();
 });
 

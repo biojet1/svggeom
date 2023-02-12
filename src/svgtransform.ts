@@ -4,13 +4,13 @@ const {PI, cos, sin, tan} = Math;
 export class SVGMatrix extends Matrix {}
 
 export class SVGTransform extends Matrix {
-	static SVG_TRANSFORM_UNKNOWN = 0;
-	static SVG_TRANSFORM_MATRIX = 1;
-	static SVG_TRANSFORM_TRANSLATE = 2;
-	static SVG_TRANSFORM_SCALE = 3;
-	static SVG_TRANSFORM_ROTATE = 4;
-	static SVG_TRANSFORM_SKEWX = 5;
-	static SVG_TRANSFORM_SKEWY = 6;
+	static readonly SVG_TRANSFORM_UNKNOWN = 0;
+	static readonly SVG_TRANSFORM_MATRIX = 1;
+	static readonly SVG_TRANSFORM_TRANSLATE = 2;
+	static readonly SVG_TRANSFORM_SCALE = 3;
+	static readonly SVG_TRANSFORM_ROTATE = 4;
+	static readonly SVG_TRANSFORM_SKEWX = 5;
+	static readonly SVG_TRANSFORM_SKEWY = 6;
 
 	type: number = 0;
 	angle?: number;
@@ -165,12 +165,12 @@ export class SVGTransformList extends Array<SVGTransform> {
 	toString() {
 		return this.join('');
 	}
+
 	get numberOfItems() {
 		return this.length;
 	}
 
-	public static parse(d: string): SVGTransformList {
-		const tl = new SVGTransformList();
+	parse(d: string) {
 		for (const str of d.split(/\)\s*,?\s*/).slice(0, -1)) {
 			const kv = str.trim().split('(');
 			const name = kv[0].trim();
@@ -205,10 +205,15 @@ export class SVGTransformList extends Array<SVGTransform> {
 				default:
 					throw new Error(`Unexpected transform '${name}'`);
 			}
-			tl.appendItem(t);
+			this.appendItem(t);
 		}
-		return tl;
+		return this;
 	}
+
+	public static parse(d: string): SVGTransformList {
+		return new SVGTransformList().parse(d);
+	}
+
 	public static new(m: SVGTransform): SVGTransformList {
 		return new SVGTransformList(m);
 	}
