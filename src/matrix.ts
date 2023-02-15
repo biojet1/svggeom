@@ -255,17 +255,6 @@ export class Matrix {
 
 	// Static methods
 
-	// public static compose(dec: any) {
-	// 	const { translateX, translateY, rotate, skewX, scaleX, scaleY } = dec;
-	// 	return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${
-	// 		rotate ? `rotate(${rotate})` : ''
-	// 	}${skewX ? `skewX(${skewX})` : ''}${
-	// 		scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`
-	// 	}`;
-
-	// 	// return `translate(${dec.translateX}, ${dec.translateY}) rotate(${dec.rotate}) skewX(${dec.skewX}) scale(${dec.scaleX}, ${dec.scaleY})`;
-	// }
-
 	public static hexad(
 		a: number = 1,
 		b: number = 0,
