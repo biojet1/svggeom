@@ -177,9 +177,8 @@ export class Box {
 		return Box.fromExtrema(xMin, xMax, yMin, maxY);
 	}
 	isValid() {
-		return true;
-		// const { x, y, width, height } = this;
-		// return x == null || y == null || width == null || height == null;
+		const {x, y, width, height} = this;
+		return isFinite(x) && isFinite(y) && isFinite(width) && isFinite(height);
 	}
 	isEmpty() {
 		const {x, y, width, height} = this;
