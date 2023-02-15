@@ -125,7 +125,8 @@ export class Box {
         return Box.fromExtrema(xMin, xMax, yMin, maxY);
     }
     isValid() {
-        return true;
+        const { x, y, width, height } = this;
+        return isFinite(x) && isFinite(y) && isFinite(width) && isFinite(height);
     }
     isEmpty() {
         const { x, y, width, height } = this;
@@ -306,7 +307,7 @@ export class BoxMut extends Box {
         return new BoxMut(NaN, NaN, NaN, NaN);
     }
     static forRect(x, y, width, height) {
-        return new BoxMut(x, y, width, height);
+        return new this(x, y, width, height);
     }
 }
 function closeEnough(a, b, threshold = 1e-6) {
