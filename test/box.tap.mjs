@@ -277,6 +277,7 @@ test.test(`Box withCenter`, {bail: !CI}, function (t) {
     t.same(b.withMinY(122).toArray(), [122, 122, 150, 90]);
     t.end();
 });
+
 test.test(`Box inflated`, {bail: !CI}, function (t) {
     let b = A.inflated(5, 6);
     // const A = Box.new('-210,-150,80,60');
@@ -289,5 +290,15 @@ test.test(`Box isEmpty`, {bail: !CI}, function (t) {
     t.same(A.isEmpty(), false);
     t.same(Box.not().isEmpty(), false);
     t.same(Box.new('-0,0,0,-0').isEmpty(), true);
+    t.end();
+});
+
+test.test(`Box withSize withPos`, {bail: !CI}, function (t) {
+    t.same(B.withSize([150, 90]).withPos([-60, -50]).toArray(), D.toArray());
+    t.same(C.withPos([-130, -90]).withSize([130, 90]).toArray(), B.toArray());
+    t.same(E.withSize([0, 0]).toArray(), E.toArray());
+    t.same(E.withSize([70, 90]).toArray(), F.toArray());
+    t.same(C.withPos([-60, -50]).toArray(), C.toArray());
+    t.same(E.withPos([0, 0]).toArray(), [0, 0, 0, 0]);
     t.end();
 });

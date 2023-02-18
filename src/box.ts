@@ -115,6 +115,18 @@ export class Box {
 		return Box.forRect(cx - W / 2, cy - H / 2, W, H);
 	}
 
+	withSize(p: Iterable<number>): Box {
+		const [w, h] = p;
+		const {x, y} = this;
+		return Box.forRect(x, y, w, h);
+	}
+
+	withPos(p: Iterable<number>): Box {
+		const [x, y] = p;
+		const {width, height} = this;
+		return Box.forRect(x, y, width, height);
+	}
+
 	withMinY(n: number): Box {
 		const {x, width, height} = this;
 		return Box.forRect(x, n, width, height);
