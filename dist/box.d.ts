@@ -23,6 +23,8 @@ export declare class Box {
     get centerY(): number;
     get center(): Vec;
     withCenter(p: Iterable<number>): Box;
+    withSize(p: Iterable<number>): Box;
+    withPos(p: Iterable<number>): Box;
     withMinY(n: number): Box;
     withMinX(n: number): Box;
     merge(box: Box): Box;
