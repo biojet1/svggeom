@@ -1,7 +1,7 @@
 'uses strict';
 import './utils.js';
 import test from 'tap';
-import {Matrix} from 'svggeom';
+import {Matrix, SVGTransformList} from 'svggeom';
 
 const CI = !!process.env.CI;
 const ts = [100, 0, -100];
@@ -10,9 +10,9 @@ const ss = [-3, 1, 1, 2];
 
 const rs = CI
     ? [
-          0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330, 345, 360,
-          -15, -30, -45, -60, -75, -90, -105, -120, -135, -150, -165, -180, -195, -210, -225, -240, -255, -270, -285, -300,
-          -315, -330, -345, -360,
+          0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270,
+          285, 300, 315, 330, 345, 360, -15, -30, -45, -60, -75, -90, -105, -120, -135, -150, -165,
+          -180, -195, -210, -225, -240, -255, -270, -285, -300, -315, -330, -345, -360,
       ]
     : [0, -30, 60, -90, 120, -150, 180, -210, 240, -270, 300, -330, 360];
 const PI = Math.PI;
@@ -30,7 +30,10 @@ function* matrixes() {
                         const b = sx * sinθ;
                         const c = -sy * sinθ;
                         const d = sy * cosθ;
-                        yield [`matrix(${a},${b},${c},${d},${e},${f})`, `translate(${e},${f})rotate(${r})scale(${sx},${sy})`];
+                        yield [
+                            `matrix(${a},${b},${c},${d},${e},${f})`,
+                            `translate(${e},${f})rotate(${r})scale(${sx},${sy})`,
+                        ];
                     }
                 }
             }
@@ -45,10 +48,10 @@ for await (const [m1, m2] of matrixes()) {
     const extra = [M1, M2];
 
     // if (!M1.isURT()) {
-    // 	continue;
+    //  continue;
     // }
     // if (!M2.isURT()) {
-    // 	continue;
+    //  continue;
     // }
 
     test.test(`${m2} vs ${m1} #${c}`, {bail: !CI}, function (t) {
@@ -80,8 +83,16 @@ for await (const [m1, m2] of matrixes()) {
         t.ok(M1.equals(Matrix.new(q), 1e-15));
         t.ok(M2.equals(Matrix.new({nodeType: 1, getAttribute: s => m1}), 1e-15));
         t.ok(M1.equals(Matrix.fromElement({nodeType: 1, getAttribute: s => m1}), 1e-15));
+        {
+            const M4 = SVGTransformList._parse(m1).combine();
+            const M5 = SVGTransformList._parse(m2).combine();
+            t.ok(M1.equals(M4, 1e-15), `M1==M4`, extra);
+            t.ok(M2.equals(M5, 1e-15), `M2==M5`, extra);
+            t.ok(M4.equals(M5, 1e-15), `M4==M5`, extra);
+        }
         t.end();
     });
+
     ++c;
 }
 console.log(`${c} matrixes CI(${CI})`);
@@ -122,6 +133,32 @@ test.test(`test_matrix_inversion`, {bail: !CI}, function (t) {
 });
 
 test.test(`test_new_from_rotate`, {bail: !CI}, function (t) {
-    t.ok(Matrix.parse('rotate(90 10 12)').equals(Matrix.parse('matrix(6.12323e-17 1 -1 6.12323e-17 22 2)'), 1e-4));
+    t.ok(
+        Matrix.parse('rotate(90 10 12)').equals(
+            Matrix.parse('matrix(6.12323e-17 1 -1 6.12323e-17 22 2)'),
+            1e-4
+        )
+    );
+    t.end();
+});
+
+test.test(`test_new_from_rotate`, {bail: !CI}, function (t) {
+    t.ok(
+        Matrix.parse('translateX(-12) translateY(-10)').equals(
+            Matrix.parse('matrix(1 0 0 1 -12 -10)')
+        )
+    );
+    t.ok(
+        Matrix.parse('translateX(-12) translateY(-10) scale(3, 4)').equals(
+            Matrix.parse('matrix(3 0 0 4 -12 -10)')
+        )
+    );
+    t.end();
+});
+
+test.test(`parse error`, {bail: !CI}, function (t) {
+    t.throws(() => Matrix.parse('translateX(-12) translateQ(-10)'), {
+        message: /Unexpected transform/i,
+    });
     t.end();
 });

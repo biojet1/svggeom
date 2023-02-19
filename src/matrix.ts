@@ -1,12 +1,12 @@
-const { sqrt, abs, tan, cos, sin, atan, atan2, PI } = Math;
-const { isFinite } = Number;
+const {sqrt, abs, tan, cos, sin, atan, atan2, PI} = Math;
+const {isFinite} = Number;
 
 const radians = function (d: number) {
 	return ((d % 360) * PI) / 180;
 };
 const _cat = function (m: Matrix, n: Matrix) {
-	const { a, b, c, d, e, f } = m;
-	const { a: A, b: B, c: C, d: D, e: E, f: F } = n;
+	const {a, b, c, d, e, f} = m;
+	const {a: A, b: B, c: C, d: D, e: E, f: F} = n;
 	return [
 		a * A + c * B + e * 0,
 		b * A + d * B + f * 0,
@@ -18,7 +18,7 @@ const _cat = function (m: Matrix, n: Matrix) {
 };
 const _inv = function (m: Matrix) {
 	// Get the current parameters out of the matrix
-	const { a, b, c, d, e, f } = m;
+	const {a, b, c, d, e, f} = m;
 
 	// Invert the 2x2 matrix in the top left
 	const det = a * d - b * c;
@@ -57,12 +57,22 @@ export class Matrix {
 		this.d = d;
 		this.e = e;
 		this.f = f;
-		if (!(isFinite(a) && isFinite(b) && isFinite(c) && isFinite(d) && isFinite(e) && isFinite(f)))
+		if (
+			!(
+				isFinite(a) &&
+				isFinite(b) &&
+				isFinite(c) &&
+				isFinite(d) &&
+				isFinite(e) &&
+				isFinite(f)
+			)
+		)
 			throw TypeError(`${JSON.stringify(arguments)}`);
 	}
+
 	// Query methods
 	get isIdentity() {
-		const { a, b, c, d, e, f } = this;
+		const {a, b, c, d, e, f} = this;
 		return a === 1 && b === 0 && c === 0 && d === 1 && e === 0 && f === 0;
 	}
 
@@ -71,18 +81,18 @@ export class Matrix {
 	}
 
 	toString() {
-		const { a, b, c, d, e, f } = this;
+		const {a, b, c, d, e, f} = this;
 		return `matrix(${a} ${b} ${c} ${d} ${e} ${f})`;
 	}
 
 	clone() {
-		const { a, b, c, d, e, f } = this;
+		const {a, b, c, d, e, f} = this;
 		return new Matrix([a, b, c, d, e, f]);
 	}
 
 	equals(other: Matrix, epsilon = 0) {
-		const { a, b, c, d, e, f } = this;
-		const { a: A, b: B, c: C, d: D, e: E, f: F } = other;
+		const {a, b, c, d, e, f} = this;
+		const {a: A, b: B, c: C, d: D, e: E, f: F} = other;
 		return (
 			other === this ||
 			(closeEnough(a, A, epsilon) &&
@@ -96,13 +106,13 @@ export class Matrix {
 
 	isURT(epsilon = 1e-15) {
 		// decomposition as U*R*T is possible
-		const { a, d, b, c } = this;
+		const {a, d, b, c} = this;
 		return a - d <= epsilon && b + c <= epsilon;
 	}
 
 	decompose() {
-		let { a, d, b, c } = this;
-		const { e, f } = this;
+		let {a, d, b, c} = this;
+		const {e, f} = this;
 		let scaleX, scaleY, skewX;
 		if ((scaleX = sqrt(a * a + b * b))) (a /= scaleX), (b /= scaleX);
 		if ((skewX = a * c + b * d)) (c -= a * skewX), (d -= b * skewX);
@@ -116,24 +126,43 @@ export class Matrix {
 			scaleX: scaleX,
 			scaleY: scaleY,
 			toString: function () {
-				const { translateX, translateY, rotate, skewX, scaleX, scaleY } = this;
-				return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${
-					rotate ? `rotate(${rotate})` : ''
-				}${skewX ? `skewX(${skewX})` : ''}${
-					scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`
+				const {translateX, translateY, rotate, skewX, scaleX, scaleY} = this;
+				return `${
+					translateX || translateY ? `translate(${translateX} ${translateY})` : ''
+				}${rotate ? `rotate(${rotate})` : ''}${skewX ? `skewX(${skewX})` : ''}${
+					scaleX == 1 && scaleY == 1
+						? ''
+						: `scale(${scaleX}${scaleX == scaleY ? '' : ' ' + scaleY})`
 				}`;
 			},
 		};
 	}
 
 	toArray() {
-		const { a, b, c, d, e, f } = this;
+		const {a, b, c, d, e, f} = this;
 
 		return [a, b, c, d, e, f];
 	}
 
 	describe() {
 		return this.decompose().toString();
+	}
+
+	protected _set_hexad(
+		a: number = 1,
+		b: number = 0,
+		c: number = 0,
+		d: number = 1,
+		e: number = 0,
+		f: number = 0
+	): this {
+		this.a = a;
+		this.b = b;
+		this.c = c;
+		this.d = d;
+		this.e = e;
+		this.f = f;
+		return this;
 	}
 
 	// methods returning a Matrix
@@ -143,9 +172,17 @@ export class Matrix {
 		c: number = 0,
 		d: number = 1,
 		e: number = 0,
-		f: number = 0,
+		f: number = 0
 	): Matrix {
 		return new Matrix([a, b, c, d, e, f]);
+	}
+
+	_catSelf(m: Matrix): this {
+		return this._set_hexad(..._cat(this, m));
+	}
+
+	_postCatSelf(m: Matrix): this {
+		return this._set_hexad(..._cat(m, this));
 	}
 
 	_cat(m: Matrix): Matrix {
@@ -161,6 +198,10 @@ export class Matrix {
 	}
 
 	cat(m: Matrix): Matrix {
+		return this._cat(m);
+	}
+
+	multiply(m: Matrix): Matrix {
 		return this._cat(m);
 	}
 
@@ -195,8 +236,8 @@ export class Matrix {
 				-sinθ,
 				cosθ,
 				x ? -cosθ * x + sinθ * y + x : 0,
-				y ? -sinθ * x - cosθ * y + y : 0,
-			),
+				y ? -sinθ * x - cosθ * y + y : 0
+			)
 		);
 	}
 
@@ -214,25 +255,14 @@ export class Matrix {
 
 	// Static methods
 
-	// public static compose(dec: any) {
-	// 	const { translateX, translateY, rotate, skewX, scaleX, scaleY } = dec;
-	// 	return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''}${
-	// 		rotate ? `rotate(${rotate})` : ''
-	// 	}${skewX ? `skewX(${skewX})` : ''}${
-	// 		scaleX == 1 && scaleY == 1 ? '' : `scale(${scaleX} ${scaleY})`
-	// 	}`;
-
-	// 	// return `translate(${dec.translateX}, ${dec.translateY}) rotate(${dec.rotate}) skewX(${dec.skewX}) scale(${dec.scaleX}, ${dec.scaleY})`;
-	// }
-
 	public static hexad(
 		a: number = 1,
 		b: number = 0,
 		c: number = 0,
 		d: number = 1,
 		e: number = 0,
-		f: number = 0,
-	): Matrix {
+		f: number = 0
+	) {
 		return new this([a, b, c, d, e, f]);
 	}
 
@@ -241,7 +271,6 @@ export class Matrix {
 	}
 
 	public static parse(d: string) {
-		d = d.trim();
 		let m = new this();
 		if (d)
 			for (const str of d.split(/\)\s*,?\s*/).slice(0, -1)) {
@@ -250,7 +279,34 @@ export class Matrix {
 				const args = kv[1].split(/[\s,]+/).map(function (str) {
 					return parseFloat(str.trim());
 				});
-				m = name === 'matrix' ? m._cat(Matrix.fromArray(args)) : m[name].apply(m, args);
+				switch (name) {
+					case 'matrix':
+						m._catSelf(this.fromArray(args));
+						break;
+					case 'translate':
+						m._catSelf(this.translate(args[0], args[1]));
+						break;
+					case 'translateX':
+						m._catSelf(this.translateX(args[0]));
+						break;
+					case 'translateY':
+						m._catSelf(this.translateY(args[0]));
+						break;
+					case 'scale':
+						m._catSelf(this.scale(args[0], args[1]));
+						break;
+					case 'rotate':
+						m._catSelf(this.rotate(args[0], args[1], args[2]));
+						break;
+					case 'skewX':
+						m._catSelf(this.skewX(args[0]));
+						break;
+					case 'skewY':
+						m._catSelf(this.skewY(args[0]));
+						break;
+					default:
+						throw new Error(`Unexpected transform '${name}'`);
+				}
 			}
 		return m;
 	}
@@ -271,7 +327,7 @@ export class Matrix {
 					arguments[2],
 					arguments[3],
 					arguments[4],
-					arguments[5],
+					arguments[5]
 				);
 			case 'undefined':
 				return new Matrix();
@@ -281,7 +337,7 @@ export class Matrix {
 				} else if ((first as any).nodeType === 1) {
 					return this.fromElement(first as any as ElementLike);
 				} else {
-					const { a, b, c, d, e, f } = first as any;
+					const {a, b, c, d, e, f} = first as any;
 
 					return this.hexad(a, b, c, d, e, f);
 				}
@@ -293,7 +349,7 @@ export class Matrix {
 	static interpolate(
 		A: number[] | string | Matrix | ElementLike,
 		B: number[] | string | Matrix | ElementLike,
-		opt?: any,
+		opt?: any
 	) {
 		const a = this.new(A).toArray();
 		const b = this.new(B).toArray();
@@ -335,16 +391,17 @@ export class Matrix {
 			-sinθ,
 			cosθ,
 			x ? -cosθ * x + sinθ * y + x : 0,
-			y ? -sinθ * x - cosθ * y + y : 0,
+			y ? -sinθ * x - cosθ * y + y : 0
 		);
 	}
 
 	static scale(scaleX: number, scaleY?: number) {
 		return this.hexad(scaleX, 0, 0, scaleY ?? scaleX, 0, 0);
 	}
-	static Identity = new Matrix();
+	// static Identity = new Matrix();
 	static identity() {
-		return this.Identity;
+		return new this();
+		// return this.Identity;
 	}
 }
 
@@ -364,7 +421,7 @@ export class MatrixMut extends Matrix {
 		c: number = 0,
 		d: number = 1,
 		e: number = 0,
-		f: number = 0,
+		f: number = 0
 	) {
 		this.a = a;
 		this.b = b;
@@ -374,13 +431,13 @@ export class MatrixMut extends Matrix {
 		this.f = f;
 		return this;
 	}
-	_catSelf(m: Matrix) {
-		return this.setHexad(..._cat(this, m));
-	}
+	// _catSelf(m: Matrix) {
+	// 	return this.setHexad(..._cat(this, m));
+	// }
 
-	_postCatSelf(m: Matrix) {
-		return this.setHexad(..._cat(m, this));
-	}
+	// _postCatSelf(m: Matrix) {
+	// 	return this.setHexad(..._cat(m, this));
+	// }
 
 	invertSelf() {
 		return this.setHexad(..._inv(this));

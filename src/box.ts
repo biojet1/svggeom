@@ -1,5 +1,5 @@
-import { Vec } from './point.js';
-const { max, min, abs } = Math;
+import {Vec} from './point.js';
+const {max, min, abs} = Math;
 
 export class Box {
 	protected _x: number;
@@ -29,7 +29,7 @@ export class Box {
 		this._h = height;
 	}
 	clone() {
-		const { x, y, width, height } = this;
+		const {x, y, width, height} = this;
 
 		return Box.forRect(x, y, width, height);
 	}
@@ -63,11 +63,11 @@ export class Box {
 		return this._h;
 	}
 	get maxX() {
-		const { x, width } = this;
+		const {x, width} = this;
 		return x + width;
 	}
 	get maxY() {
-		const { y, height } = this;
+		const {y, height} = this;
 		return y + height;
 	}
 	get right() {
@@ -77,15 +77,15 @@ export class Box {
 		return this.maxY;
 	}
 	get centerX() {
-		const { x, width } = this;
+		const {x, width} = this;
 		return x + width / 2;
 	}
 	get centerY() {
-		const { y, height } = this;
+		const {y, height} = this;
 		return y + height / 2;
 	}
 	get center() {
-		const { centerX, centerY } = this;
+		const {centerX, centerY} = this;
 		return Vec.pos(centerX, centerY);
 	}
 
@@ -111,17 +111,29 @@ export class Box {
 
 	withCenter(p: Iterable<number>): Box {
 		const [cx, cy] = p;
-		const { width: W, height: H } = this;
+		const {width: W, height: H} = this;
 		return Box.forRect(cx - W / 2, cy - H / 2, W, H);
 	}
 
+	withSize(p: Iterable<number>): Box {
+		const [w, h] = p;
+		const {x, y} = this;
+		return Box.forRect(x, y, w, h);
+	}
+
+	withPos(p: Iterable<number>): Box {
+		const [x, y] = p;
+		const {width, height} = this;
+		return Box.forRect(x, y, width, height);
+	}
+
 	withMinY(n: number): Box {
-		const { x, width, height } = this;
+		const {x, width, height} = this;
 		return Box.forRect(x, n, width, height);
 	}
 
 	withMinX(n: number): Box {
-		const { y, width, height } = this;
+		const {y, width, height} = this;
 		return Box.forRect(n, y, width, height);
 	}
 
@@ -142,20 +154,20 @@ export class Box {
 
 		// return Box.forRect(x, y, max(x1 + width1, x2 + width2) - x, max(y1 + height1, y2 + height2) - y);
 
-		const { minX: xMin1, minY: yMin1, maxX: xMax1, maxY: yMax1 } = this;
-		const { minX: xMin2, minY: yMin2, maxX: xMax2, maxY: yMax2 } = box;
+		const {minX: xMin1, minY: yMin1, maxX: xMax1, maxY: yMax1} = this;
+		const {minX: xMin2, minY: yMin2, maxX: xMax2, maxY: yMax2} = box;
 		return Box.fromExtrema(
 			min(xMin1, xMin2),
 			max(xMax1, xMax2),
 			min(yMin1, yMin2),
-			max(yMax1, yMax2),
+			max(yMax1, yMax2)
 		);
 	}
 	// translated
 	// resized
 	inflated(h: number, v?: number): Box {
 		v = v ?? h;
-		const { x, y, width, height } = this;
+		const {x, y, width, height} = this;
 		return Box.forRect(x - h, y - v, h + width + h, v + height + v);
 	}
 	transform(m: any) {
@@ -164,41 +176,40 @@ export class Box {
 		let yMin = Infinity;
 		let maxY = -Infinity;
 		// const {a, b, c, d, e, f} = matrix;
-		const { x, y, bottom, right } = this;
+		const {x, y, bottom, right} = this;
 		[Vec.pos(x, y), Vec.pos(right, y), Vec.pos(x, bottom), Vec.pos(right, bottom)].forEach(
 			function (p) {
-				const { x, y } = p.transform(m);
+				const {x, y} = p.transform(m);
 				xMin = min(xMin, x);
 				xMax = max(xMax, x);
 				yMin = min(yMin, y);
 				maxY = max(maxY, y);
-			},
+			}
 		);
 		return Box.fromExtrema(xMin, xMax, yMin, maxY);
 	}
 	isValid() {
-		return true;
-		// const { x, y, width, height } = this;
-		// return x == null || y == null || width == null || height == null;
+		const {x, y, width, height} = this;
+		return isFinite(x) && isFinite(y) && isFinite(width) && isFinite(height);
 	}
 	isEmpty() {
-		const { x, y, width, height } = this;
+		const {x, y, width, height} = this;
 		return x == 0 || y == 0 || width == 0 || height == 0;
 	}
 	toArray() {
-		const { x, y, width, height } = this;
+		const {x, y, width, height} = this;
 		return [x, y, width, height];
 	}
 	toString() {
-		const { x, y, width, height } = this;
+		const {x, y, width, height} = this;
 		return `${x}, ${y}, ${width}, ${height}`;
 	}
 	equals(other: Box, epsilon = 0) {
 		if (other === this) {
 			return true;
 		}
-		const { x: x1, y: y1, width: width1, height: height1 } = this;
-		const { x: x2, y: y2, width: width2, height: height2 } = other;
+		const {x: x1, y: y1, width: width1, height: height1} = this;
+		const {x: x2, y: y2, width: width2, height: height2} = other;
 		return (
 			closeEnough(x1, x2, epsilon) &&
 			closeEnough(y1, y2, epsilon) &&
@@ -212,8 +223,8 @@ export class Box {
 		} else if (!other.isValid()) {
 			return this;
 		} else {
-			const { minX: xMin1, minY: yMin1, maxX: xMax1, maxY: yMax1 } = this;
-			const { minX: xMin2, minY: yMin2, maxX: xMax2, maxY: yMax2 } = other;
+			const {minX: xMin1, minY: yMin1, maxX: xMax1, maxY: yMax1} = this;
+			const {minX: xMin2, minY: yMin2, maxX: xMax2, maxY: yMax2} = other;
 			const xMin = max(xMin1, xMin2);
 			const xMax = min(xMax1, xMax2);
 			if (xMax >= xMin) {
@@ -231,7 +242,7 @@ export class Box {
 	}
 	private static _empty?: Box;
 	public static empty() {
-		const { _empty } = Box;
+		const {_empty} = Box;
 		return _empty || (Box._empty = Box.forRect(0, 0, 0, 0));
 	}
 	public static fromExtrema(x1: number, x2: number, y1: number, y2: number) {
@@ -239,7 +250,7 @@ export class Box {
 		if (y1 > y2) [y1, y2] = [y2, y1];
 		return this.forRect(x1, y1, abs(x2 - x1), abs(y2 - y1));
 	}
-	public static fromRect({ x = 0, y = 0, width = 0, height = 0 }) {
+	public static fromRect({x = 0, y = 0, width = 0, height = 0}) {
 		// https://developer.mozilla.org/en-US/docs/Web/API/DOMRect/fromRect
 		return this.forRect(x, y, width, height);
 	}
@@ -261,7 +272,7 @@ export class Box {
 		first?: number | number[] | [number[], number[]] | string | Box,
 		y?: number,
 		width?: number,
-		height?: number,
+		height?: number
 	) {
 		switch (typeof first) {
 			case 'string': {
@@ -277,17 +288,22 @@ export class Box {
 					if (Array.isArray(x)) {
 						const [x1, x2] = first[0] as number[];
 						const [y1, y2] = first[1] as number[];
-						return this.fromExtrema(x1 as number, x2 as number, y1 as number, y2 as number);
+						return this.fromExtrema(
+							x1 as number,
+							x2 as number,
+							y1 as number,
+							y2 as number
+						);
 					} else {
 						return this.forRect(
 							first[0] as number,
 							first[1] as number,
 							first[2] as number,
-							first[3] as number,
+							first[3] as number
 						);
 					}
 				} else {
-					const { left, x, top, y, width, height } = first;
+					const {left, x, top, y, width, height} = first;
 					return this.forRect(left || x || 0, top || y || 0, width, height);
 				}
 			default:
@@ -343,37 +359,37 @@ export class BoxMut extends Box {
 		} else if (!box.isValid()) {
 			return this;
 		} else {
-			const { x: x1, y: y1, width: width1, height: height1 } = this;
-			const { x: x2, y: y2, width: width2, height: height2 } = box;
+			const {x: x1, y: y1, width: width1, height: height1} = this;
+			const {x: x2, y: y2, width: width2, height: height2} = box;
 			const x = min(x1, x2);
 			const y = min(y1, y2);
 			return this.reset(
 				x,
 				y,
 				max(x1 + width1, x2 + width2) - x,
-				max(y1 + height1, y2 + height2) - y,
+				max(y1 + height1, y2 + height2) - y
 			);
 		}
 	}
 
 	inflateSelf(h: number, v?: number): Box {
 		v = v ?? h;
-		const { x, y, width, height } = this;
+		const {x, y, width, height} = this;
 		return this.reset(x - h, y - v, h + width + h, v + height + v);
 	}
 
 	sizeSelf(w: number, h?: number): Box {
-		const { x, y, width, height } = this;
+		const {x, y, width, height} = this;
 		return this.reset(x, y, w ?? width, h ?? height);
 	}
 
 	override isValid() {
-		const { x, y, width, height } = this;
+		const {x, y, width, height} = this;
 		return !(isNaN(x) || isNaN(y) || isNaN(width) || isNaN(height));
 	}
 
 	copy(that: Box) {
-		const { x, y, width, height } = that;
+		const {x, y, width, height} = that;
 		this._x = x;
 		this._y = y;
 		this._w = width;
@@ -386,7 +402,7 @@ export class BoxMut extends Box {
 	}
 
 	public static override forRect(x: number, y: number, width: number, height: number) {
-		return new BoxMut(x, y, width, height);
+		return new this(x, y, width, height);
 	}
 }
 

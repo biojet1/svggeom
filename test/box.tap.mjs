@@ -24,7 +24,22 @@ export async function* enum_box_data(env) {
 }
 
 for await (const [i, item] of enum_box_data({})) {
-    const {x, y, width, height, top, bottom, left, rigth, centerX, centerY, maxX, maxY, minX, minY} = item;
+    const {
+        x,
+        y,
+        width,
+        height,
+        top,
+        bottom,
+        left,
+        rigth,
+        centerX,
+        centerY,
+        maxX,
+        maxY,
+        minX,
+        minY,
+    } = item;
 
     test.test(`Box(${x},${y},${width},${height})`, {bail: !CI}, function (t) {
         let box2, box;
@@ -43,7 +58,7 @@ for await (const [i, item] of enum_box_data({})) {
                 break;
             default:
                 box = Box.new(x, y, width, height);
-                box2 = Box.fromExtrema(minX, maxX, minY, maxY);
+                box2 = Box.fromExtrema(maxX, minX, maxY, minY); // reverse
         }
         const ex = [item, box];
 
@@ -79,11 +94,19 @@ for await (const [i, item] of enum_box_data({})) {
         t.equal(box3.centerY, centerY - 100, 'centerY', box3);
         t.equal(box3.width, width, 'width', ex);
         t.equal(box3.height, height, 'height', ex);
-        const not = Box.new();
-        t.strictSame(not.merge(box2), box2);
-        t.strictSame(not.merge(not), not);
-        t.strictSame(box.merge(not), box);
+        {
+            const not = Box.new();
+            t.strictSame(not.merge(box2), box2);
+            t.strictSame(not.merge(not), not);
+            t.strictSame(box.merge(not), box);
+        }
         t.same(box2.toArray(), [x, y, width, height]);
+        {
+            const not = Box.forRect(NaN, NaN, NaN, NaN);
+            t.strictSame(not.merge(box2), box2);
+            t.strictSame(not.merge(not), not);
+            t.strictSame(box.merge(not), box);
+        }
         t.end();
     });
 }
@@ -241,6 +264,8 @@ test.test(`Box mutable`, {bail: !CI}, function (t) {
         t.same(b.toArray(), [-216, -156, 10, 72]);
         b.sizeSelf(6, 4);
         t.same(b.toArray(), [-216, -156, 6, 4]);
+        b.sizeSelf(undefined, 3);
+        t.same(b.toArray(), [-216, -156, 6, 3]);
     }
     t.end();
 });
@@ -252,6 +277,7 @@ test.test(`Box withCenter`, {bail: !CI}, function (t) {
     t.same(b.withMinY(122).toArray(), [122, 122, 150, 90]);
     t.end();
 });
+
 test.test(`Box inflated`, {bail: !CI}, function (t) {
     let b = A.inflated(5, 6);
     // const A = Box.new('-210,-150,80,60');
@@ -264,5 +290,15 @@ test.test(`Box isEmpty`, {bail: !CI}, function (t) {
     t.same(A.isEmpty(), false);
     t.same(Box.not().isEmpty(), false);
     t.same(Box.new('-0,0,0,-0').isEmpty(), true);
+    t.end();
+});
+
+test.test(`Box withSize withPos`, {bail: !CI}, function (t) {
+    t.same(B.withSize([150, 90]).withPos([-60, -50]).toArray(), D.toArray());
+    t.same(C.withPos([-130, -90]).withSize([130, 90]).toArray(), B.toArray());
+    t.same(E.withSize([0, 0]).toArray(), E.toArray());
+    t.same(E.withSize([70, 90]).toArray(), F.toArray());
+    t.same(C.withPos([-60, -50]).toArray(), C.toArray());
+    t.same(E.withPos([0, 0]).toArray(), [0, 0, 0, 0]);
     t.end();
 });
