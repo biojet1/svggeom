@@ -10,19 +10,15 @@ tasks:
         generates:
             - dist/**/*.js
 
-    testx:
-        method: timestamp
+    tap:
+        method: none
         deps: [tsc]
-        sources:
-            - test/**/*.tap.*js*
         cmds:
             - tap {{.CLI_ARGS}}
 
     c8tap:
-        method: timestamp
+        method: none
         deps: [tsc]
-        sources:
-            - test/**/*.tap.*js*
         cmds:
             - |
                 c8 tap {{.CLI_ARGS}}

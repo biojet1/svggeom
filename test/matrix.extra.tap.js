@@ -7,9 +7,9 @@ import {SVGTransformList, SVGTransform} from 'svggeom';
 const CI = !!process.env.CI;
 
 test.test(`Matrix.scale`, {bail: !CI}, function (t) {
-    t.ok(Matrix.hexad(2, 0, 0, 2, 0, 0).equals(Matrix.scale(2)), 'x2 scale');
-    t.ok(Matrix.hexad(-1, 0, 0, 1, 0, 0).equals(Matrix.scale(-1, 1)), 'hflip');
-    t.ok(Matrix.hexad(1, 0, 0, -1, 0, 0).equals(Matrix.scale(1, -1)), 'vflip');
+    t.ok(Matrix.matrix(2, 0, 0, 2, 0, 0).equals(Matrix.scale(2)), 'x2 scale');
+    t.ok(Matrix.matrix(-1, 0, 0, 1, 0, 0).equals(Matrix.scale(-1, 1)), 'hflip');
+    t.ok(Matrix.matrix(1, 0, 0, -1, 0, 0).equals(Matrix.scale(1, -1)), 'vflip');
     t.same(Matrix.parse('scale(2,3)').toString(), Matrix.scale(2, 3).toString(), 'scale x y');
     t.same(Matrix.parse('scale(3)').toString(), Matrix.scale(3).toString(), 'scale x y');
     t.same(
@@ -35,20 +35,20 @@ test.test(`Matrix.skew`, {bail: !CI}, function (t) {
 
 test.test(`Matrix.rotate`, {bail: !CI}, function (t) {
     t.ok(Matrix.parse('rotate(30)').inverse().equals(Matrix.rotate(-30)), 'reverse_rotate');
-    t.ok(Matrix.hexad(0, 1, -1, 0, 0, 0), Matrix.rotate(90));
+    t.ok(Matrix.matrix(0, 1, -1, 0, 0, 0), Matrix.rotate(90));
     t.end();
 });
 
 test.test(`Matrix.identity`, {bail: !CI}, function (t) {
-    t.ok(Matrix.hexad(1, 0, 0, 1, 0, 0).isIdentity);
-    t.notOk(Matrix.hexad(1, 0, 0, 2, 0, 0).isIdentity);
+    t.ok(Matrix.matrix(1, 0, 0, 1, 0, 0).isIdentity);
+    t.notOk(Matrix.matrix(1, 0, 0, 2, 0, 0).isIdentity);
     t.ok(Matrix.identity().equals(Matrix.parse('matrix(1 0 0 1 0 0)')), 'identity');
     t.ok(Matrix.parse('scale(1 1)').isIdentity);
     t.ok(Matrix.parse('rotate(0)').isIdentity);
     t.ok(Matrix.parse('translate(0 0)').isIdentity);
     t.ok(
         Matrix.identity()
-            .cat(Matrix.hexad(1, 2, 3, 4, 5, 6))
+            .cat(Matrix.matrix(1, 2, 3, 4, 5, 6))
             .equals(Matrix.parse('matrix(1 2 3 4 5 6)'))
     );
     t.end();
@@ -116,7 +116,7 @@ test.test(`logic`, {bail: !CI}, function (t) {
 
 test.test(`SVGTransform`, {bail: !CI}, function (t) {
     const m1 = new SVGTransform();
-    m1.setMatrix(Matrix.hexad(1, 2, 3, 4, 5, 6));
+    m1.setMatrix(Matrix.matrix(1, 2, 3, 4, 5, 6));
     t.same(m1.type, 1);
     t.ok(m1.matrix.equals(Matrix.parse('matrix(1 2 3 4 5 6)')));
     t.same(m1.toString(), `matrix(1 2 3 4 5 6)`);
@@ -274,7 +274,7 @@ test.test(`SVGTransformList`, {bail: !CI}, function (t) {
         {
             // https://github.com/michielbdejong/gecko-dev/blob/4ca96f2eee849a7c3a7f9ad1838c95fe9b5cba2b/dom/svg/test/test_SVGTransformList.xhtml
             const m = new SVGTransform();
-            m.setMatrix(Matrix.hexad(1, 2, 3, 4, 5, 6));
+            m.setMatrix(Matrix.matrix(1, 2, 3, 4, 5, 6));
 
             // "Creates an SVGTransform object which is initialized to transform of type
             // SVG_TRANSFORM_MATRIX and whose values are the given matrix. The values from
@@ -311,7 +311,7 @@ test.test(`Matrix Sub Class`, {bail: !CI}, function (t) {
     t.same(MatrixSubClass.parse().constructor.name, `MatrixSubClass`);
     t.same(MatrixSubClass.parse(`\t`).constructor.name, `MatrixSubClass`);
     t.same(MatrixSubClass.parse(`matrix(7 8 9 0 1 2)`).constructor.name, `MatrixSubClass`);
-    t.same(MatrixSubClass.hexad(1, 2, 3, 4, 5, 6).constructor.name, `MatrixSubClass`);
+    t.same(MatrixSubClass.matrix(1, 2, 3, 4, 5, 6).constructor.name, `MatrixSubClass`);
     t.same(MatrixSubClass.identity().constructor.name, `MatrixSubClass`);
     t.same(MatrixSubClass.translate(4, 5).constructor.name, `MatrixSubClass`);
     t.same(MatrixSubClass.scale(4, 5).constructor.name, `MatrixSubClass`);
