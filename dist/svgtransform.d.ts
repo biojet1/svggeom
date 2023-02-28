@@ -1,6 +1,5 @@
 import { Matrix } from './matrix.js';
-export declare class SVGMatrix extends Matrix {
-}
+export { Matrix as SVGMatrix };
 export declare class SVGTransform extends Matrix {
     static readonly SVG_TRANSFORM_UNKNOWN = 0;
     static readonly SVG_TRANSFORM_MATRIX = 1;

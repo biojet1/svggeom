@@ -42,6 +42,7 @@ export declare class Matrix {
     skewX(x: number): Matrix;
     skewY(y: number): Matrix;
     static hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;
+    static matrix(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;
     static fromArray(m: number[]): Matrix;
     static parse(d: string): Matrix;
     [shot: string]: any;

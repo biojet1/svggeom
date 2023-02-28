@@ -24,8 +24,17 @@ export class Arc extends SegmentSE {
         super(from, to);
         const { x: x1, y: y1 } = this.from;
         const { x: x2, y: y2 } = this.to;
-        [this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] =
-            arcParams(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
+        [
+            this.phi,
+            this.rx,
+            this.ry,
+            this.sinφ,
+            this.cosφ,
+            this.cx,
+            this.cy,
+            this.rtheta,
+            this.rdelta,
+        ] = arcParams(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
     }
     static fromEndPoint(from, rx, ry, φ, bigArc, sweep, to) {
         if (!rx || !ry) {
@@ -36,7 +45,7 @@ export class Arc extends SegmentSE {
     static fromCenterForm(c, rx, ry, φ, θ, Δθ) {
         const cosφ = cos((φ / 180) * PI);
         const sinφ = sin((φ / 180) * PI);
-        const m = Matrix.hexad(cosφ, sinφ, -sinφ, cosφ, 0, 0);
+        const m = Matrix.matrix(cosφ, sinφ, -sinφ, cosφ, 0, 0);
         const from = Vec.pos(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
             .transform(m)
             .add(c);

@@ -1,7 +1,6 @@
 import { Matrix } from './matrix.js';
 const { PI, cos, sin, tan } = Math;
-export class SVGMatrix extends Matrix {
-}
+export { Matrix as SVGMatrix };
 export class SVGTransform extends Matrix {
     static SVG_TRANSFORM_UNKNOWN = 0;
     static SVG_TRANSFORM_MATRIX = 1;
