@@ -136,3 +136,29 @@ test.test(`with/only/shift/flip`, {bail: !CI}, function (t) {
 
     t.end();
 });
+
+test.test(`parse`, {bail: !CI}, function (t) {
+    const v = Vec.parse(`3, -4, 5`);
+
+    t.same(Array.from(Vec.parse(`3, -4, 5`)), [3, -4, 5]);
+    t.same(Array.from(Vec.parse(`3 -4\t5`)), [3, -4, 5]);
+    t.same(Array.from(Vec.parse(`3\n-4,5`)), [3, -4, 5]);
+    t.same(Array.from(Vec.parse(`3,\n-45`)), [3, -45, 0]);
+    t.same(Array.from(Vec.parse(`3,-45`)), [3, -45, 0]);
+    t.same(Array.from(Vec.parse(`3,-4,5`)), [3, -4, 5]);
+    t.same(Array.from(Vec.parse(`3,,5`)), [3, 0, 5]);
+    {
+        const x = [Vec.parse(`1.4142135623730951<45`), Vec.pos(1, 1, 0)];
+        t.ok(x[0].closeTo(x[1]), x);
+    }
+    {
+        const x = [Vec.parse(`  5  <  36.86989765 `), Vec.pos(4, 3, 0)];
+        t.ok(x[0].closeTo(x[1], 1e-9), x);
+    }
+
+    {
+        const x = [Vec.parse(`  5  <53.13010235`), Vec.pos(3, 4, 0)];
+        t.ok(x[0].closeTo(x[1], 1e-9), x);
+    }
+    t.end();
+});
