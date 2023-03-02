@@ -241,8 +241,8 @@ export class Vec {
         }
         return this.radians((ϴ * PI) / 180, r);
     }
-    static grade(n) {
-        return this.degrees((n * 9) / 10);
+    static grade(n, r = 1) {
+        return this.degrees((n * 9) / 10, r);
     }
     static add(a, b) {
         const [x1, y1 = 0, z1 = 0] = a;
