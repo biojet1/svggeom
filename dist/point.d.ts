@@ -49,9 +49,10 @@ export declare class Vec {
     static at(x?: number, y?: number, z?: number): Vec;
     static pos(x?: number, y?: number, z?: number): Vec;
     static polar(radius?: number, ϕ?: number, ϴ?: number): Vec;
-    static radians(n: number): Vec;
-    static degrees(n: number): Vec;
+    static radians(n: number, r?: number): Vec;
+    static degrees(ϴ: number, r?: number): Vec;
     static grade(n: number): Vec;
     static add(a: Iterable<number>, b: Iterable<number>): Vec;
     static subtract(a: Iterable<number>, b: Iterable<number>): Vec;
+    static parse(s: string): Vec;
 }

@@ -220,22 +220,22 @@ export class Vec {
                 : new this();
         }
     }
-    static radians(n) {
-        return this.polar(1, n);
+    static radians(n, r = 1) {
+        return this.polar(r, n);
     }
-    static degrees(n) {
-        switch (n) {
+    static degrees(ϴ, r = 1) {
+        switch (ϴ) {
             case 90:
             case -270:
-                return new this(0, 1, 0);
+                return new this(0, r, 0);
             case -90:
             case 270:
-                return new this(0, -1, 0);
+                return new this(0, -r, 0);
             case 180:
             case -180:
-                return new this(-1, 0, 0);
+                return new this(-r, 0, 0);
         }
-        return this.radians((n * PI) / 180);
+        return this.radians((ϴ * PI) / 180, r);
     }
     static grade(n) {
         return this.degrees((n * 9) / 10);
@@ -249,6 +249,14 @@ export class Vec {
         const [x1, y1 = 0, z1 = 0] = a;
         const [x2, y2 = 0, z2 = 0] = b;
         return new this(x1 - x2, y1 - y2, z1 - z2);
+    }
+    static parse(s) {
+        const a = s.split(/\</);
+        if (a.length > 1) {
+            const [r, ϴ] = a.map(v => parseFloat(v.trim()));
+            return this.degrees(ϴ, r);
+        }
+        return this.pos(...s.split(/(?:\s|\,)\s*/).map(v => parseFloat(v.trim() || '0')));
     }
 }
 //# sourceMappingURL=point.js.map
