@@ -160,5 +160,18 @@ test.test(`parse`, {bail: !CI}, function (t) {
         const x = [Vec.parse(`  5  <53.13010235`), Vec.pos(3, 4, 0)];
         t.ok(x[0].closeTo(x[1], 1e-9), x);
     }
+    {
+        const x = [Vec.new(`5<53.13010235`), Vec.pos(3, 4, 0)];
+        t.ok(x[0].closeTo(x[1], 1e-9), x);
+    }
+    {
+        const x = [Vec.new(`1.4142135623730951<45`), Vec.new(`1 1 0`)];
+        t.ok(x[0].closeTo(x[1]), x);
+    }
+    {
+        const x = [Vec.new(`  5  <  36.86989765 `), Vec.new(`4, 3, 0`)];
+        t.ok(x[0].closeTo(x[1], 1e-9), x);
+    }
+
     t.end();
 });

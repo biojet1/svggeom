@@ -266,12 +266,17 @@ export class Vec {
 	//***** static methods ****
 
 	static new(x?: number[] | Iterable<number> | number, y?: number, z?: number) {
-		if (typeof x == 'number') {
-			return new this(x, y as number, z as number);
-		} else if (x) {
-			return new this(...x);
-		} else {
-			return new this();
+		switch (typeof x) {
+			case 'number':
+				return new this(x, y as number, z as number);
+			case 'string':
+				return this.parse(x);
+			default:
+				if (x) {
+					return new this(...x);
+				} else {
+					return new this();
+				}
 		}
 	}
 
