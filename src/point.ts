@@ -321,8 +321,8 @@ export class Vec {
 		return this.radians((ϴ * PI) / 180, r);
 	}
 
-	static grade(n: number) {
-		return this.degrees((n * 9) / 10);
+	static grade(n: number, r: number = 1) {
+		return this.degrees((n * 9) / 10, r);
 	}
 
 	static add(a: Iterable<number>, b: Iterable<number>) {
