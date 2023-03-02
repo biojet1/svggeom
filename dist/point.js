@@ -193,14 +193,18 @@ export class Vec {
         return Object.isFrozen(this) ? this.clone() : this;
     }
     static new(x, y, z) {
-        if (typeof x == 'number') {
-            return new this(x, y, z);
-        }
-        else if (x) {
-            return new this(...x);
-        }
-        else {
-            return new this();
+        switch (typeof x) {
+            case 'number':
+                return new this(x, y, z);
+            case 'string':
+                return this.parse(x);
+            default:
+                if (x) {
+                    return new this(...x);
+                }
+                else {
+                    return new this();
+                }
         }
     }
     static at(x = 0, y = 0, z = 0) {
