@@ -265,7 +265,7 @@ export class Vec {
 	}
 	//***** static methods ****
 
-	static new(x?: number[] | Iterable<number> | number, y?: number, z?: number) {
+	static new(x?: number[] | Iterable<number> | number | string, y?: number, z?: number) {
 		switch (typeof x) {
 			case 'number':
 				return new this(x, y as number, z as number);
