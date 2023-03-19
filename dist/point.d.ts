@@ -45,7 +45,7 @@ export declare class Vec {
     [Symbol.iterator](): Iterator<number>;
     final(): Readonly<Vec>;
     mut(): Vec;
-    static new(x?: number[] | Iterable<number> | number, y?: number, z?: number): Vec;
+    static new(x?: number[] | Iterable<number> | number | string, y?: number, z?: number): Vec;
     static at(x?: number, y?: number, z?: number): Vec;
     static pos(x?: number, y?: number, z?: number): Vec;
     static polar(radius?: number, ϕ?: number, ϴ?: number): Vec;

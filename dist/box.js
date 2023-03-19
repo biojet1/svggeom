@@ -1,6 +1,6 @@
 import { Vec } from './point.js';
 const { max, min, abs } = Math;
-export class Box {
+class Box {
     _x;
     _y;
     _h;
@@ -245,6 +245,7 @@ export class Box {
         }
     }
 }
+export { Box };
 export class BoxMut extends Box {
     get x() {
         return this._x;
