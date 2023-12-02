@@ -1,7 +1,7 @@
 import { Matrix } from './matrix.js';
 const { PI, cos, sin, tan } = Math;
 export { Matrix as SVGMatrix };
-class SVGTransform extends Matrix {
+export class SVGTransform extends Matrix {
     static SVG_TRANSFORM_UNKNOWN = 0;
     static SVG_TRANSFORM_MATRIX = 1;
     static SVG_TRANSFORM_TRANSLATE = 2;
@@ -121,7 +121,6 @@ class SVGTransform extends Matrix {
         return super.toString();
     }
 }
-export { SVGTransform };
 export class SVGTransformList extends Array {
     clear() {
         this.splice(0);
@@ -167,7 +166,7 @@ export class SVGTransformList extends Array {
         let M;
         for (const m of this) {
             if (M) {
-                M._catSelf(m);
+                M._catSelf(m.matrix);
             }
             else {
                 M = m.clone();

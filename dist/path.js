@@ -1,7 +1,7 @@
 import { parseDesc, dSplit } from './path/parser.js';
 import { SegmentSE, tNorm, tCheck } from './path/index.js';
 import { Box } from './box.js';
-class Path {
+export class Path {
     static digits = 5;
     _segs;
     _length;
@@ -380,7 +380,6 @@ class Path {
         }
     }
 }
-export { Path };
 import { Line, Close, Vertical, Horizontal } from './path/line.js';
 import { Arc } from './path/arc.js';
 import { Cubic } from './path/cubic.js';
