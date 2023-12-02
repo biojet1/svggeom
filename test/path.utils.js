@@ -1,7 +1,7 @@
 'uses strict';
 import {spawn} from 'child_process';
 export async function* enum_path_data(env) {
-    const pyproc = spawn('python', ['test/path.py'], {
+    const pyproc = spawn('python3', ['test/path.py'], {
         stdio: ['ignore', 'pipe', 'inherit'],
         env: {...process.env, ...env},
     });

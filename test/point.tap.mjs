@@ -112,6 +112,27 @@ test.test(`Vec.degrees`, {bail: !CI}, function (t) {
     t.almostEqual(Vec.grade(160).degrees, 144);
     // t.same(Array.from(Vec.degrees(360)), [1, 0, 0]);
 
+    [Vec.degrees(30, -2), Vec.degrees(210, 2), Vec.degrees(-150, 2)].forEach((e, i, a) => {
+        i > 0 && t.ok(a[i].closeTo(a[i - 1], 1e-9), [a[i], a[i - 1]]);
+    });
+    [Vec.degrees(30, -2), Vec.degrees(30, 2), Vec.degrees(-30, 2)].forEach((e, i, a) => {
+        i > 0 && t.not(a[i].closeTo(a[i - 1], 1e-9), [a[i], a[i - 1]]);
+    });
+    [Vec.degrees(180, -3), Vec.degrees(0, 3), Vec.degrees(-180, -3)].forEach((e, i, a) => {
+        i > 0 && t.ok(a[i].closeTo(a[i - 1], 1e-9), [a[i], a[i - 1]]);
+    });
+
+    [
+        Vec.degrees(-90, 4),
+        Vec.degrees(90, -4),
+        Vec.degrees(-270, -4),
+        Vec.degrees(270, 4),
+        Vec.grade(100, -4),
+        Vec.radians(-Math.PI/2, 4),
+    ].forEach((e, i, a) => {
+        i > 0 && t.ok(a[i].closeTo(a[i - 1], 1e-9), [a[i], a[i - 1]]);
+    });
+
     t.end();
 });
 
@@ -134,5 +155,52 @@ test.test(`with/only/shift/flip`, {bail: !CI}, function (t) {
     t.same(Array.from(v.flipY()), [3, 4, 5]);
     t.same(Array.from(v.flipX()), [-3, -4, 5]);
 
+    t.end();
+});
+
+test.test(`parse`, {bail: !CI}, function (t) {
+    const v = Vec.parse(`3, -4, 5`);
+
+    t.same(Array.from(Vec.parse(`3, -4, 5`)), [3, -4, 5]);
+    t.same(Array.from(Vec.parse(`3 -4\t5`)), [3, -4, 5]);
+    t.same(Array.from(Vec.parse(`3\n-4,5`)), [3, -4, 5]);
+    t.same(Array.from(Vec.parse(`3,\n-45`)), [3, -45, 0]);
+    t.same(Array.from(Vec.parse(`3,-45`)), [3, -45, 0]);
+    t.same(Array.from(Vec.parse(`3,-4,5`)), [3, -4, 5]);
+    t.same(Array.from(Vec.parse(`3,,5`)), [3, 0, 5]);
+    {
+        const x = [Vec.parse(`1.4142135623730951<45`), Vec.pos(1, 1, 0)];
+        t.ok(x[0].closeTo(x[1]), x);
+    }
+    {
+        const x = [Vec.parse(`  5  <  36.86989765 `), Vec.pos(4, 3, 0)];
+        t.ok(x[0].closeTo(x[1], 1e-9), x);
+    }
+
+    {
+        const x = [Vec.parse(`  5  <53.13010235`), Vec.pos(3, 4, 0)];
+        t.ok(x[0].closeTo(x[1], 1e-9), x);
+    }
+    {
+        const x = [Vec.new(`5<53.13010235`), Vec.pos(3, 4, 0)];
+        t.ok(x[0].closeTo(x[1], 1e-9), x);
+    }
+    {
+        const x = [Vec.new(`1.4142135623730951<45`), Vec.new(`1 1 0`)];
+        t.ok(x[0].closeTo(x[1]), x);
+    }
+    {
+        const x = [Vec.new(`  5  <  36.86989765 `), Vec.new(`4, 3, 0`)];
+        t.ok(x[0].closeTo(x[1], 1e-9), x);
+    }
+    [
+        Vec.new(`5<36.86989765`),
+        Vec.new(`4, 3, 0`),
+        Vec.new(4, 3, 0),
+        Vec.degrees(36.86989765, 5),
+        Vec.radians(0.6435011088658199, 5),
+    ].forEach((e, i, a) => {
+        i > 0 && t.ok(a[i].closeTo(a[i - 1], 1e-9), [a[i], a[i - 1]]);
+    });
     t.end();
 });

@@ -210,7 +210,7 @@ export class Matrix {
 	}
 
 	translate(x = 0, y = 0) {
-		return this._cat(Matrix.hexad(1, 0, 0, 1, x, y));
+		return this._cat(Matrix.matrix(1, 0, 0, 1, x, y));
 	}
 
 	translateY(v: number) {
@@ -222,7 +222,7 @@ export class Matrix {
 	}
 
 	scale(scaleX: number, scaleY?: number) {
-		return this._cat(Matrix.hexad(scaleX, 0, 0, scaleY ?? scaleX, 0, 0));
+		return this._cat(Matrix.matrix(scaleX, 0, 0, scaleY ?? scaleX, 0, 0));
 	}
 
 	rotate(ang: number, x: number = 0, y: number = 0): Matrix {
@@ -230,7 +230,7 @@ export class Matrix {
 		const cosθ = cos(θ);
 		const sinθ = sin(θ);
 		return this._cat(
-			Matrix.hexad(
+			Matrix.matrix(
 				cosθ,
 				sinθ,
 				-sinθ,
@@ -242,7 +242,7 @@ export class Matrix {
 	}
 
 	skew(x: number, y: number) {
-		return this._cat(Matrix.hexad(1, tan(radians(y)), tan(radians(x)), 1, 0, 0));
+		return this._cat(Matrix.matrix(1, tan(radians(y)), tan(radians(x)), 1, 0, 0));
 	}
 
 	skewX(x: number) {
@@ -256,6 +256,17 @@ export class Matrix {
 	// Static methods
 
 	public static hexad(
+		a: number = 1,
+		b: number = 0,
+		c: number = 0,
+		d: number = 1,
+		e: number = 0,
+		f: number = 0
+	) {
+		return new this([a, b, c, d, e, f]);
+	}
+
+	public static matrix(
 		a: number = 1,
 		b: number = 0,
 		c: number = 0,
@@ -321,7 +332,7 @@ export class Matrix {
 			case 'string':
 				return this.parse(first);
 			case 'number':
-				return this.hexad(
+				return this.matrix(
 					first,
 					arguments[1],
 					arguments[2],
@@ -339,7 +350,7 @@ export class Matrix {
 				} else {
 					const {a, b, c, d, e, f} = first as any;
 
-					return this.hexad(a, b, c, d, e, f);
+					return this.matrix(a, b, c, d, e, f);
 				}
 			default:
 				throw new TypeError(`Invalid matrix argument ${Array.from(arguments)}`);
@@ -364,16 +375,16 @@ export class Matrix {
 		};
 	}
 	static translate(x = 0, y = 0) {
-		return this.hexad(1, 0, 0, 1, x, y);
+		return this.matrix(1, 0, 0, 1, x, y);
 	}
 	static translateY(v: number) {
-		return this.hexad(1, 0, 0, 1, 0, v);
+		return this.matrix(1, 0, 0, 1, 0, v);
 	}
 	static translateX(v: number) {
-		return this.hexad(1, 0, 0, 1, v, 0);
+		return this.matrix(1, 0, 0, 1, v, 0);
 	}
 	static skew(x: number, y: number) {
-		return this.hexad(1, tan(radians(y)), tan(radians(x)), 1, 0, 0);
+		return this.matrix(1, tan(radians(y)), tan(radians(x)), 1, 0, 0);
 	}
 	static skewX(x: number) {
 		return this.skew(x, 0);
@@ -385,7 +396,7 @@ export class Matrix {
 		const θ = ((ang % 360) * PI) / 180;
 		const cosθ = cos(θ);
 		const sinθ = sin(θ);
-		return this.hexad(
+		return this.matrix(
 			cosθ,
 			sinθ,
 			-sinθ,
@@ -396,7 +407,7 @@ export class Matrix {
 	}
 
 	static scale(scaleX: number, scaleY?: number) {
-		return this.hexad(scaleX, 0, 0, scaleY ?? scaleX, 0, 0);
+		return this.matrix(scaleX, 0, 0, scaleY ?? scaleX, 0, 0);
 	}
 	// static Identity = new Matrix();
 	static identity() {
