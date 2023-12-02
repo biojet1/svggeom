@@ -5,7 +5,7 @@ import test from 'tap';
 const CI = !!process.env.CI;
 
 export async function* enum_box_data(env) {
-    const pyproc = spawn('python', ['test/data.box.py'], {
+    const pyproc = spawn('python3', ['test/data.box.py'], {
         stdio: ['ignore', 'pipe', 'inherit'],
         env: {...process.env, ...env},
     });

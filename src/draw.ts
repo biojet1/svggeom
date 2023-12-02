@@ -223,7 +223,7 @@ export class PathDraw extends CanvasCompat {
 			kerning,
 			letterSpacing,
 			tracking,
-		}).draw(this);
+		}).draw(this as unknown as Parameters<Font["draw"]>[0]);
 		return this;
 	}
 
@@ -340,7 +340,7 @@ export class PathLS extends CanvasCompat {
 			kerning,
 			letterSpacing,
 			tracking,
-		}).draw(this);
+		}).draw(this as unknown as Parameters<Font["draw"]>[0]);
 		return this;
 	}
 	segmentAtLength(T: number, clamp?: boolean): [SegmentLS | undefined, number, number] {

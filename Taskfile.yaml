@@ -14,7 +14,7 @@ tasks:
         method: none
         deps: [tsc]
         cmds:
-            - tap {{.CLI_ARGS}}
+            - npx tap {{.CLI_ARGS}}
 
     c8tap:
         method: none
