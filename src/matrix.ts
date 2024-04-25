@@ -1,12 +1,12 @@
-const {sqrt, abs, tan, cos, sin, atan, atan2, PI} = Math;
-const {isFinite} = Number;
+const { sqrt, abs, tan, cos, sin, atan, atan2, PI } = Math;
+const { isFinite } = Number;
 
 const radians = function (d: number) {
 	return ((d % 360) * PI) / 180;
 };
 const _cat = function (m: Matrix, n: Matrix) {
-	const {a, b, c, d, e, f} = m;
-	const {a: A, b: B, c: C, d: D, e: E, f: F} = n;
+	const { a, b, c, d, e, f } = m;
+	const { a: A, b: B, c: C, d: D, e: E, f: F } = n;
 	return [
 		a * A + c * B + e * 0,
 		b * A + d * B + f * 0,
@@ -18,7 +18,7 @@ const _cat = function (m: Matrix, n: Matrix) {
 };
 const _inv = function (m: Matrix) {
 	// Get the current parameters out of the matrix
-	const {a, b, c, d, e, f} = m;
+	const { a, b, c, d, e, f } = m;
 
 	// Invert the 2x2 matrix in the top left
 	const det = a * d - b * c;
@@ -72,7 +72,7 @@ export class Matrix {
 
 	// Query methods
 	get isIdentity() {
-		const {a, b, c, d, e, f} = this;
+		const { a, b, c, d, e, f } = this;
 		return a === 1 && b === 0 && c === 0 && d === 1 && e === 0 && f === 0;
 	}
 
@@ -81,18 +81,18 @@ export class Matrix {
 	}
 
 	toString() {
-		const {a, b, c, d, e, f} = this;
+		const { a, b, c, d, e, f } = this;
 		return `matrix(${a} ${b} ${c} ${d} ${e} ${f})`;
 	}
 
 	clone() {
-		const {a, b, c, d, e, f} = this;
+		const { a, b, c, d, e, f } = this;
 		return new Matrix([a, b, c, d, e, f]);
 	}
 
 	equals(other: Matrix, epsilon = 0) {
-		const {a, b, c, d, e, f} = this;
-		const {a: A, b: B, c: C, d: D, e: E, f: F} = other;
+		const { a, b, c, d, e, f } = this;
+		const { a: A, b: B, c: C, d: D, e: E, f: F } = other;
 		return (
 			other === this ||
 			(closeEnough(a, A, epsilon) &&
@@ -106,13 +106,13 @@ export class Matrix {
 
 	isURT(epsilon = 1e-15) {
 		// decomposition as U*R*T is possible
-		const {a, d, b, c} = this;
+		const { a, d, b, c } = this;
 		return a - d <= epsilon && b + c <= epsilon;
 	}
 
 	decompose() {
-		let {a, d, b, c} = this;
-		const {e, f} = this;
+		let { a, d, b, c } = this;
+		const { e, f } = this;
 		let scaleX, scaleY, skewX;
 		if ((scaleX = sqrt(a * a + b * b))) (a /= scaleX), (b /= scaleX);
 		if ((skewX = a * c + b * d)) (c -= a * skewX), (d -= b * skewX);
@@ -126,20 +126,39 @@ export class Matrix {
 			scaleX: scaleX,
 			scaleY: scaleY,
 			toString: function () {
-				const {translateX, translateY, rotate, skewX, scaleX, scaleY} = this;
-				return `${
-					translateX || translateY ? `translate(${translateX} ${translateY})` : ''
-				}${rotate ? `rotate(${rotate})` : ''}${skewX ? `skewX(${skewX})` : ''}${
-					scaleX == 1 && scaleY == 1
+				const { translateX, translateY, rotate, skewX, scaleX, scaleY } = this;
+				return `${translateX || translateY ? `translate(${translateX} ${translateY})` : ''
+					}${rotate ? `rotate(${rotate})` : ''}${skewX ? `skewX(${skewX})` : ''}${scaleX == 1 && scaleY == 1
 						? ''
 						: `scale(${scaleX}${scaleX == scaleY ? '' : ' ' + scaleY})`
-				}`;
+					}`;
 			},
 		};
 	}
+	// https://github.com/svg/svgo/blob/8d6385bd9ab49d1d300a10268930238baa5eb269/plugins/_transforms.js#L461
+	take_apart() {
+		const { a, b, c, d, e, f } = this;
+		let rotation, scale, skew, r, skew_axis;
+		const delta = a * d - b * c;
+		if (a !== 0 || b !== 0) {
+			r = Math.hypot(a, b);
+			// rotation = ((b < 0 ? -1 : 1) * Math.acos(a / r)) * 180 / Math.PI;
+			rotation = ((b > 0 ? 1 : -1) * Math.acos(a / r)) * 180 / Math.PI;
+			scale = [r, delta / r];
+			skew_axis = 0;
+		} else {
+			r = Math.hypot(c, d);
+			// rotation = 90 + ((d < 0 ? -1 : 1) * Math.acos(c / r) * 180 / Math.PI);
+			rotation = 90 - ((d > 0 ? Math.acos(-c / r) : -Math.acos(c / r)) * 180 / Math.PI);
+			scale = [delta / r, r];
+			skew_axis = 90;
+		}
+		skew = Math.atan2((a * c + b * d), r * r) * 180 / Math.PI;
+		return { rotation, scale, skew, skew_axis, translation: [e, f] };
+	}
 
 	toArray() {
-		const {a, b, c, d, e, f} = this;
+		const { a, b, c, d, e, f } = this;
 
 		return [a, b, c, d, e, f];
 	}
@@ -348,7 +367,7 @@ export class Matrix {
 				} else if ((first as any).nodeType === 1) {
 					return this.fromElement(first as any as ElementLike);
 				} else {
-					const {a, b, c, d, e, f} = first as any;
+					const { a, b, c, d, e, f } = first as any;
 
 					return this.matrix(a, b, c, d, e, f);
 				}
@@ -392,8 +411,8 @@ export class Matrix {
 	static skewY(y: number) {
 		return this.skew(0, y);
 	}
-	static rotate(ang: number, x: number = 0, y: number = 0) {
-		const θ = ((ang % 360) * PI) / 180;
+	static rotate(deg: number, x: number = 0, y: number = 0) {
+		const θ = ((deg % 360) * PI) / 180;
 		const cosθ = cos(θ);
 		const sinθ = sin(θ);
 		return this.matrix(
