@@ -101,9 +101,9 @@ export function parseDesc(d: string) {
 				{
 					const v = num();
 					if (absolute) {
-						pos = pos.withX(v)
+						pos = pos.with_x(v)
 					} else {
-						pos = pos.shiftX(v)
+						pos = pos.shift_x(v)
 					}
 					segments.push(new Horizontal(start, pos));
 				}
@@ -115,9 +115,9 @@ export function parseDesc(d: string) {
 					const v = num();
 					if (absolute) {
 
-						pos = pos.withY(v);
+						pos = pos.with_y(v);
 					} else {
-						pos = pos.shiftY(v);
+						pos = pos.shift_y(v);
 
 					}
 					segments.push(new Vertical(start, pos));
@@ -200,9 +200,9 @@ export function parseDesc(d: string) {
 						// the second control point on the previous command relative
 						// to the current point.
 						// control1 = pos + pos - segments[-1].control2
-						// c1 = last.c2.reflectAt(pos);
-						// c1 = last.c2.reflectAt(start);
-						c1 = last.c2.reflectAt(last.to);
+						// c1 = last.c2.reflect_at(pos);
+						// c1 = last.c2.reflect_at(start);
+						c1 = last.c2.reflect_at(last.to);
 						// c1 = start.add(start.sub(last.c2));
 					} else {
 						c1 = start;
@@ -230,7 +230,7 @@ export function parseDesc(d: string) {
 					let c;
 					const last = segments.length > 0 && segments[segments.length - 1];
 					if (last instanceof Quadratic) {
-						c = last.c.reflectAt(start);
+						c = last.c.reflect_at(start);
 					} else {
 						c = start;
 					}

@@ -19,7 +19,7 @@ test.test(`point properties`, { bail: !CI }, function (t) {
     t.ok(p.equals([3, 4, 5]));
     t.ok(p.clone().equals(p));
     t.not(p.clone(), p);
-    t.same(p.reflectAt(Vec.new()).toArray(), [-3, -4, -5], 'reflectAt');
+    t.same(p.reflect_at(Vec.new()).toArray(), [-3, -4, -5], 'reflect_at');
     t.end();
 });
 
@@ -53,9 +53,9 @@ test.test(`point extra`, { bail: !CI }, function (t) {
     t.equals(Z, 0);
 
     const { PI, E, LN10, LOG2E } = Math;
-    t.almostEqual((Vec.new(0, 0).angleTo(Vec.new(3, 4)) * 180) / PI, 53.13010235415598, 1e-11);
+    t.almostEqual((Vec.new(0, 0).angle_to(Vec.new(3, 4)) * 180) / PI, 53.13010235415598, 1e-11);
     t.almostEqual((Vec.new(42, 42).angle * 180) / PI, 45, 1e-11);
-    const r = Vec.new(-2.1830320757712625, -2.057758721559409).angleTo(Vec.new(0, 0));
+    const r = Vec.new(-2.1830320757712625, -2.057758721559409).angle_to(Vec.new(0, 0));
     console.log(r);
     t.almostEqual((r / PI) * 180, 90 - (270 - 223.30796939966595), 1e-11);
     t.almostEqual(Vec.grade(33.33333333333333333).angle, (30 / 180) * PI, 1e-11);
@@ -78,9 +78,9 @@ test.test(`pentagon extra`, { bail: !CI }, function (t) {
     const c2 = (sqrt(5) + 1) / 4;
     const s1 = sqrt(10 + 2 * sqrt(5)) / 4;
     const s2 = sqrt(10 - 2 * sqrt(5)) / 4;
-    t.almostEqual(degrees(Vec.new(s1, c1).angleTo(Vec.new(s2, -c2))), 72 + 180, 1e-11);
-    t.almostEqual(degrees(Vec.new(-s2, -c2).angleTo(Vec.new(0, 1))), 72, 1e-11);
-    t.almostEqual(degrees(Vec.new(-s2, -c2).angleTo(Vec.new(s2, -c2))), 0, 1e-11);
+    t.almostEqual(degrees(Vec.new(s1, c1).angle_to(Vec.new(s2, -c2))), 72 + 180, 1e-11);
+    t.almostEqual(degrees(Vec.new(-s2, -c2).angle_to(Vec.new(0, 1))), 72, 1e-11);
+    t.almostEqual(degrees(Vec.new(-s2, -c2).angle_to(Vec.new(s2, -c2))), 0, 1e-11);
     t.end();
 });
 
@@ -128,13 +128,13 @@ test.test(`Vec.degrees`, { bail: !CI }, function (t) {
     // t.same(Array.from(Vec.degrees(360)), [1, 0, 0]);
 
     [Vec.degrees(30, -2), Vec.degrees(210, 2), Vec.degrees(-150, 2)].forEach((e, i, a) => {
-        i > 0 && t.ok(a[i].closeTo(a[i - 1], 1e-9), [a[i], a[i - 1]]);
+        i > 0 && t.ok(a[i].close_to(a[i - 1], 1e-9), [a[i], a[i - 1]]);
     });
     [Vec.degrees(30, -2), Vec.degrees(30, 2), Vec.degrees(-30, 2)].forEach((e, i, a) => {
-        i > 0 && t.not(a[i].closeTo(a[i - 1], 1e-9), [a[i], a[i - 1]]);
+        i > 0 && t.not(a[i].close_to(a[i - 1], 1e-9), [a[i], a[i - 1]]);
     });
     [Vec.degrees(180, -3), Vec.degrees(0, 3), Vec.degrees(-180, -3)].forEach((e, i, a) => {
-        i > 0 && t.ok(a[i].closeTo(a[i - 1], 1e-9), [a[i], a[i - 1]]);
+        i > 0 && t.ok(a[i].close_to(a[i - 1], 1e-9), [a[i], a[i - 1]]);
     });
 
     [
@@ -145,7 +145,7 @@ test.test(`Vec.degrees`, { bail: !CI }, function (t) {
         Vec.grade(100, -4),
         Vec.radians(-Math.PI / 2, 4),
     ].forEach((e, i, a) => {
-        i > 0 && t.ok(a[i].closeTo(a[i - 1], 1e-9), [a[i], a[i - 1]]);
+        i > 0 && t.ok(a[i].close_to(a[i - 1], 1e-9), [a[i], a[i - 1]]);
     });
 
     t.end();
@@ -154,21 +154,21 @@ test.test(`Vec.degrees`, { bail: !CI }, function (t) {
 test.test(`with/only/shift/flip`, { bail: !CI }, function (t) {
     const v = Vec.new(3, -4, 5);
 
-    t.same(Array.from(v.withX(-6)), [-6, -4, 5]);
-    t.same(Array.from(v.withY(7)), [3, 7, 5]);
-    t.same(Array.from(v.withZ(8)), [3, -4, 8]);
+    t.same(Array.from(v.with_x(-6)), [-6, -4, 5]);
+    t.same(Array.from(v.with_y(7)), [3, 7, 5]);
+    t.same(Array.from(v.with_z(8)), [3, -4, 8]);
 
-    t.same(Array.from(v.onlyX()), [3, 0, 0]);
-    t.same(Array.from(v.onlyY()), [0, -4, 0]);
-    t.same(Array.from(v.onlyZ()), [0, 0, 5]);
+    t.same(Array.from(v.only_x()), [3, 0, 0]);
+    t.same(Array.from(v.only_y()), [0, -4, 0]);
+    t.same(Array.from(v.only_z()), [0, 0, 5]);
 
-    t.same(Array.from(v.shiftZ(-5)), [3, -4, 0]);
-    t.same(Array.from(v.shiftY(4)), [3, 0, 5]);
-    t.same(Array.from(v.shiftX(-3)), [0, -4, 5]);
+    t.same(Array.from(v.shift_z(-5)), [3, -4, 0]);
+    t.same(Array.from(v.shift_y(4)), [3, 0, 5]);
+    t.same(Array.from(v.shift_x(-3)), [0, -4, 5]);
 
-    t.same(Array.from(v.flipZ()), [3, -4, -5]);
-    t.same(Array.from(v.flipY()), [3, 4, 5]);
-    t.same(Array.from(v.flipX()), [-3, -4, 5]);
+    t.same(Array.from(v.flip_z()), [3, -4, -5]);
+    t.same(Array.from(v.flip_y()), [3, 4, 5]);
+    t.same(Array.from(v.flip_x()), [-3, -4, 5]);
 
     t.end();
 });
@@ -185,28 +185,28 @@ test.test(`parse`, { bail: !CI }, function (t) {
     t.same(Array.from(Vec.parse(`3,,5`)), [3, 0, 5]);
     {
         const x = [Vec.parse(`1.4142135623730951<45`), Vec.new(1, 1, 0)];
-        t.ok(x[0].closeTo(x[1]), x);
+        t.ok(x[0].close_to(x[1]), x);
     }
     {
         const x = [Vec.parse(`  5  <  36.86989765 `), Vec.new(4, 3, 0)];
-        t.ok(x[0].closeTo(x[1], 1e-9), x);
+        t.ok(x[0].close_to(x[1], 1e-9), x);
     }
 
     {
         const x = [Vec.parse(`  5  <53.13010235`), Vec.new(3, 4, 0)];
-        t.ok(x[0].closeTo(x[1], 1e-9), x);
+        t.ok(x[0].close_to(x[1], 1e-9), x);
     }
     {
         const x = [Vec.new(`5<53.13010235`), Vec.new(3, 4, 0)];
-        t.ok(x[0].closeTo(x[1], 1e-9), x);
+        t.ok(x[0].close_to(x[1], 1e-9), x);
     }
     {
         const x = [Vec.new(`1.4142135623730951<45`), Vec.new(`1 1 0`)];
-        t.ok(x[0].closeTo(x[1]), x);
+        t.ok(x[0].close_to(x[1]), x);
     }
     {
         const x = [Vec.new(`  5  <  36.86989765 `), Vec.new(`4, 3, 0`)];
-        t.ok(x[0].closeTo(x[1], 1e-9), x);
+        t.ok(x[0].close_to(x[1], 1e-9), x);
     }
     [
         Vec.new(`5<36.86989765`),
@@ -215,7 +215,7 @@ test.test(`parse`, { bail: !CI }, function (t) {
         Vec.degrees(36.86989765, 5),
         Vec.radians(0.6435011088658199, 5),
     ].forEach((e, i, a) => {
-        i > 0 && t.ok(a[i].closeTo(a[i - 1], 1e-9), [a[i], a[i - 1]]);
+        i > 0 && t.ok(a[i].close_to(a[i - 1], 1e-9), [a[i], a[i - 1]]);
     });
     t.end();
 });

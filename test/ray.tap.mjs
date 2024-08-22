@@ -242,9 +242,9 @@ test.test(`Spiral of Theodorus`, { bail: !CI }, function (t) {
 
         B = B.left(φ).forward(1);
 
-        t.ok(B.clone().back(1).pos.closeTo(P));
+        t.ok(B.clone().back(1).pos.close_to(P));
         t.almostEqual(B.distanceFromLine(O, P), 1, 1e-11);
-        t.ok(B.clone().nearestPointOfLine(P, O).closeTo(P));
+        t.ok(B.clone().nearestPointOfLine(P, O).close_to(P));
     }
 
     t.end();

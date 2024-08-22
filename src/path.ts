@@ -1,6 +1,6 @@
-import {parseDesc, dSplit} from './path/parser.js';
-import {SegmentSE, DescParams, tNorm, tCheck} from './path/index.js';
-import {Box} from './box.js';
+import { parseDesc, dSplit } from './path/parser.js';
+import { SegmentSE, DescParams, tNorm, tCheck } from './path/index.js';
+import { Box } from './box.js';
 
 export class Path {
 	static digits = 5;
@@ -47,7 +47,7 @@ export class Path {
 		// SegmentSE method
 		const [seg, t, i] = this.segmentAt(tCheck(T));
 		if (seg) {
-			const {_segs: segs} = this;
+			const { _segs: segs } = this;
 			let s;
 			let a = segs.slice(0, i);
 			let b = segs.slice(i + 1);
@@ -61,7 +61,7 @@ export class Path {
 		// SegmentSE method
 		const [seg, t, i] = this.segmentAt(T < 0 ? 1 + T : T);
 		if (seg) {
-			const {_segs: segs} = this;
+			const { _segs: segs } = this;
 			if (T < 0) {
 				const a = segs.slice(i + 1);
 				const s = seg.cropAt(t, 1);
@@ -122,7 +122,7 @@ export class Path {
 	}
 
 	pointAtLength(L: number) {
-		const {totalLength} = this;
+		const { totalLength } = this;
 		return totalLength && this.pointAt(L / totalLength);
 	}
 
@@ -145,22 +145,22 @@ export class Path {
 	}
 
 	get firstPoint() {
-		const {_segs: segs} = this;
+		const { _segs: segs } = this;
 		for (const seg of segs) {
 			return seg.from;
 		}
 	}
 
 	get firstSegment() {
-		const {_segs: segs} = this;
+		const { _segs: segs } = this;
 		for (const seg of segs) {
 			return seg;
 		}
 	}
 
 	get lastPoint() {
-		const {_segs: segs} = this;
-		const {length} = segs;
+		const { _segs: segs } = this;
+		const { length } = segs;
 		if (length > 0) {
 			return segs[length - 1].to;
 		}
@@ -172,18 +172,18 @@ export class Path {
 		return this.lastPoint;
 	}
 	get lastSegment() {
-		const {_segs: segs} = this;
-		const {length} = segs;
+		const { _segs: segs } = this;
+		const { length } = segs;
 		if (length > 0) {
 			return segs[length - 1];
 		}
 	}
 
 	segmentAt(T: number): [SegmentSE | undefined, number, number] {
-		const {_segs: segs} = this;
+		const { _segs: segs } = this;
 		if (segs.length > 0) {
 			this.calcLength();
-			const {lengths} = this;
+			const { lengths } = this;
 			if (T <= 0) {
 				for (const [i, seg] of segs.entries()) {
 					if (lengths[i] > 0) {
@@ -191,7 +191,7 @@ export class Path {
 					}
 				}
 			} else if (T >= 1) {
-				for (let i = segs.length; i-- > 0; ) {
+				for (let i = segs.length; i-- > 0;) {
 					if (lengths[i] > 0) {
 						return [segs[i], 1, i];
 					}
@@ -217,12 +217,12 @@ export class Path {
 	isContinuous() {
 		// Checks if a path is continuous with respect to its
 		// parameterization.
-		const {_segs: segs} = this;
+		const { _segs: segs } = this;
 		const f = segs.length - 1;
 		let i = 0;
 		while (i < f) {
-			const {to} = segs[i];
-			const {from} = segs[++i];
+			const { to } = segs[i];
+			const { from } = segs[++i];
 			if (!to.equals(from)) {
 				return false;
 			}
@@ -232,7 +232,7 @@ export class Path {
 	}
 
 	isClosed() {
-		const {_segs: segs} = this;
+		const { _segs: segs } = this;
 		const n = segs.length;
 		if (n > 0 && this.isContinuous()) {
 			return segs[0].from.equals(segs[n - 1].to);
@@ -241,7 +241,7 @@ export class Path {
 	}
 
 	private *enumDesc(params: DescParams) {
-		const {relative: rel = false, close = true, smooth = false, short = false, dfix = Path.digits} = params;
+		const { relative: rel = false, close = true, smooth = false, short = false, dfix = Path.digits } = params;
 
 		let segs = this._segs;
 		const n = segs.length;
@@ -262,7 +262,7 @@ export class Path {
 		let previous_segment;
 		const to = segs.length > 0 ? segs[segs.length - 1].to : undefined;
 		TOP: for (const [i, seg] of segs.entries()) {
-			const {from: seg_start} = seg;
+			const { from: seg_start } = seg;
 			if (!current_pos || !seg_start.equals(current_pos) || (self_closed && to && seg_start.equals(to))) {
 				move_pos = seg_start;
 				const _seg_start = rel ? (current_pos ? seg_start.sub(current_pos) : seg_start) : seg_start;
@@ -277,7 +277,7 @@ export class Path {
 					if (seg instanceof Close) {
 						if (move_pos) {
 							if (close || close == undefined) {
-								if (move_pos.closeTo(seg.to)) {
+								if (move_pos.close_to(seg.to)) {
 									yield rel ? 'z' : 'Z';
 									break OUT;
 								}
@@ -288,7 +288,7 @@ export class Path {
 						// }
 					}
 
-					const {x, y} = rel ? seg.to.sub(seg_start) : seg.to;
+					const { x, y } = rel ? seg.to.sub(seg_start) : seg.to;
 					if (short) {
 						if (seg instanceof Horizontal && !y) {
 							yield rel ? 'h' : 'H';
@@ -305,7 +305,7 @@ export class Path {
 				}
 			} else if (seg instanceof Arc) {
 				const to = rel ? seg.to.sub(seg_start) : seg.to;
-				const {rx, ry, phi, bigArc, sweep} = seg;
+				const { rx, ry, phi, bigArc, sweep } = seg;
 				yield rel ? 'a' : 'A';
 				yield fixNum(rx);
 				yield fixNum(ry);
@@ -315,14 +315,14 @@ export class Path {
 				yield fixNum(to.x);
 				yield fixNum(to.y);
 			} else if (seg instanceof Quadratic) {
-				let {c, to} = seg;
+				let { c, to } = seg;
 				let _smooth = smooth;
 				if (_smooth) {
 					if (previous_segment instanceof Quadratic) {
-						const {c: cP, to: p2P} = previous_segment;
-						_smooth = seg_start.closeTo(p2P) && c.sub(seg_start).closeTo(p2P.sub(cP));
+						const { c: cP, to: p2P } = previous_segment;
+						_smooth = seg_start.close_to(p2P) && c.sub(seg_start).close_to(p2P.sub(cP));
 					} else {
-						_smooth = seg_start.closeTo(c);
+						_smooth = seg_start.close_to(c);
 					}
 				}
 				if (rel) {
@@ -339,14 +339,14 @@ export class Path {
 				yield fixNum(to.x);
 				yield fixNum(to.y);
 			} else if (seg instanceof Cubic) {
-				let {c1, c2, to} = seg;
+				let { c1, c2, to } = seg;
 				let _smooth = smooth;
 				if (_smooth) {
 					if (previous_segment instanceof Cubic) {
-						const {c2: prev_c2, to: prev_p2} = previous_segment;
-						_smooth = seg_start.closeTo(prev_p2) && c1.sub(seg_start).closeTo(prev_p2.sub(prev_c2));
+						const { c2: prev_c2, to: prev_p2 } = previous_segment;
+						_smooth = seg_start.close_to(prev_p2) && c1.sub(seg_start).close_to(prev_p2.sub(prev_c2));
 					} else {
-						_smooth = seg_start.closeTo(c1);
+						_smooth = seg_start.close_to(c1);
 					}
 				}
 				if (rel) {
@@ -386,7 +386,7 @@ export class Path {
 	}
 
 	*enumSubPaths() {
-		const {_segs: segs} = this;
+		const { _segs: segs } = this;
 		let prev;
 		let subpath_start = 0;
 		for (const [i, seg] of segs.entries()) {
@@ -418,11 +418,11 @@ export class Path {
 	}
 }
 
-import {Line, Close, Vertical, Horizontal} from './path/line.js';
-import {Arc} from './path/arc.js';
-import {Cubic} from './path/cubic.js';
-import {Quadratic} from './path/quadratic.js';
+import { Line, Close, Vertical, Horizontal } from './path/line.js';
+import { Arc } from './path/arc.js';
+import { Cubic } from './path/cubic.js';
+import { Quadratic } from './path/quadratic.js';
 export * from './path/cubic.js';
-import {SegmentLS} from './path/linked.js';
-export {SegmentLS};
-export {Arc, Quadratic, Line, dSplit};
+import { SegmentLS } from './path/linked.js';
+export { SegmentLS };
+export { Arc, Quadratic, Line, dSplit };
