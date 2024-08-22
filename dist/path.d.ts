@@ -1,6 +1,6 @@
 import { dSplit } from './path/parser.js';
 import { SegmentSE, DescParams } from './path/index.js';
-import { Box } from './box.js';
+import { BoundingBox } from './bbox.js';
 export declare class Path {
     static digits: number;
     private _segs;
@@ -8,11 +8,11 @@ export declare class Path {
     private _lengths?;
     private constructor();
     getTotalLength(): number | undefined;
-    getBBox(): Box;
+    getBBox(): BoundingBox;
     tangentAt(T: number): import("./vector.js").Vector | undefined;
     slopeAt(T: number): import("./vector.js").Vector | undefined;
     pointAt(T: number): import("./vector.js").Vector | undefined;
-    bbox(): Box;
+    bbox(): BoundingBox;
     splitAt(T: number): Path[] | undefined;
     cutAt(T: number): Path;
     cropAt(T0: number, T1?: number): Path;

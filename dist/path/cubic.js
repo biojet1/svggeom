@@ -1,5 +1,5 @@
 import { Vector } from '../vector.js';
-import { Box } from '../box.js';
+import { BoundingBox } from '../bbox.js';
 export class Cubic extends SegmentSE {
     c1;
     c2;
@@ -83,7 +83,7 @@ function splitAtScalar(z, from, a, b, to) {
 export function cubicBox([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]) {
     const [xmin, xmax] = cubic_extrema(sx, x1, x2, ex);
     const [ymin, ymax] = cubic_extrema(sy, y1, y2, ey);
-    return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+    return BoundingBox.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 }
 const { pow } = Math;
 function cubicFlatness([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]) {

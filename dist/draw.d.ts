@@ -1,5 +1,5 @@
 import { Vector } from './vector.js';
-import { Box } from './box.js';
+import { BoundingBox } from './bbox.js';
 declare class CanvasCompat {
     set fillStyle(_x: any);
     get fillStyle(): any;
@@ -68,7 +68,7 @@ export declare class PathLS extends CanvasCompat {
     slopeAt(T: number): Vector | undefined;
     pointAt(T: number): Vector | undefined;
     pointAtLength(L: number, clamp?: boolean): Vector | undefined;
-    bbox(): Box;
+    bbox(): BoundingBox;
     splitAt(T: number): PathLS[];
     cutAt(T: number): PathLS;
     cropAt(T0: number, T1?: number): PathLS;

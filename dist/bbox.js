@@ -1,11 +1,11 @@
 import { Vector } from './vector.js';
 const { max, min, abs } = Math;
-export class Box {
+export class BoundingBox {
     _x;
     _y;
     _h;
     _w;
-    static _not = new (class extends Box {
+    static _not = new (class extends BoundingBox {
         constructor() {
             super(NaN, NaN, NaN, NaN);
             Object.freeze(this);
@@ -28,7 +28,7 @@ export class Box {
     }
     clone() {
         const { x, y, width, height } = this;
-        return Box.rect(x, y, width, height);
+        return BoundingBox.rect(x, y, width, height);
     }
     get x() {
         return this._x;
@@ -83,25 +83,25 @@ export class Box {
     withCenter(p) {
         const [cx, cy] = p;
         const { width: W, height: H } = this;
-        return Box.rect(cx - W / 2, cy - H / 2, W, H);
+        return BoundingBox.rect(cx - W / 2, cy - H / 2, W, H);
     }
     withSize(p) {
         const [w, h] = p;
         const { x, y } = this;
-        return Box.rect(x, y, w, h);
+        return BoundingBox.rect(x, y, w, h);
     }
     withPos(p) {
         const [x, y] = p;
         const { width, height } = this;
-        return Box.rect(x, y, width, height);
+        return BoundingBox.rect(x, y, width, height);
     }
     withMinY(n) {
         const { x, width, height } = this;
-        return Box.rect(x, n, width, height);
+        return BoundingBox.rect(x, n, width, height);
     }
     withMinX(n) {
         const { y, width, height } = this;
-        return Box.rect(n, y, width, height);
+        return BoundingBox.rect(n, y, width, height);
     }
     merge(box) {
         if (!this.isValid()) {
@@ -112,12 +112,12 @@ export class Box {
         }
         const { minX: xMin1, minY: yMin1, maxX: xMax1, maxY: yMax1 } = this;
         const { minX: xMin2, minY: yMin2, maxX: xMax2, maxY: yMax2 } = box;
-        return Box.extrema(min(xMin1, xMin2), max(xMax1, xMax2), min(yMin1, yMin2), max(yMax1, yMax2));
+        return BoundingBox.extrema(min(xMin1, xMin2), max(xMax1, xMax2), min(yMin1, yMin2), max(yMax1, yMax2));
     }
     inflated(h, v) {
         v = v ?? h;
         const { x, y, width, height } = this;
-        return Box.rect(x - h, y - v, h + width + h, v + height + v);
+        return BoundingBox.rect(x - h, y - v, h + width + h, v + height + v);
     }
     transform(m) {
         let xMin = Infinity;
@@ -132,7 +132,7 @@ export class Box {
             yMin = min(yMin, y);
             maxY = max(maxY, y);
         });
-        return Box.extrema(xMin, xMax, yMin, maxY);
+        return BoundingBox.extrema(xMin, xMax, yMin, maxY);
     }
     isValid() {
         const { x, y, width, height } = this;
@@ -177,19 +177,19 @@ export class Box {
                 const yMin = max(yMin1, yMin2);
                 const yMax = min(yMax1, yMax2);
                 if (yMax >= yMin) {
-                    return Box.extrema(xMin, xMax, yMin, yMax);
+                    return BoundingBox.extrema(xMin, xMax, yMin, yMax);
                 }
             }
         }
-        return Box._not;
+        return BoundingBox._not;
     }
     static not() {
         return this._not;
     }
     static _empty;
     static empty() {
-        const { _empty } = Box;
-        return _empty || (Box._empty = Box.rect(0, 0, 0, 0));
+        const { _empty } = BoundingBox;
+        return _empty || (BoundingBox._empty = BoundingBox.rect(0, 0, 0, 0));
     }
     static extrema(x1, x2, y1, y2) {
         if (x1 > x2)
@@ -209,7 +209,7 @@ export class Box {
         return this.rect(v[0], v[1], v[2], v[3]);
     }
     static merge(...args) {
-        let x = Box.not();
+        let x = BoundingBox.not();
         for (const b of args) {
             x = b.merge(x);
         }
@@ -245,7 +245,7 @@ export class Box {
         }
     }
 }
-export class BoxMut extends Box {
+export class BoxMut extends BoundingBox {
     get x() {
         return this._x;
     }
@@ -323,4 +323,4 @@ export class BoxMut extends Box {
 function closeEnough(a, b, threshold = 1e-6) {
     return abs(b - a) <= threshold;
 }
-//# sourceMappingURL=box.js.map
+//# sourceMappingURL=bbox.js.map

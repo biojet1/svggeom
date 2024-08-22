@@ -1,5 +1,5 @@
 import { Vector } from '../vector.js';
-import { Box } from '../box.js';
+import { BoundingBox } from '../bbox.js';
 import { Segment, DescParams } from './index.js';
 export declare abstract class SegmentLS extends Segment {
     _prev?: SegmentLS;
@@ -49,7 +49,7 @@ export declare abstract class SegmentLS extends Segment {
     cropAt(t0: number, t1: number): SegmentLS | undefined;
     pathLen(): number;
     segmentLen(): number;
-    bbox(): Box;
+    bbox(): BoundingBox;
     withFarPrev(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS;
     withFarPrev3(farPrev: SegmentLS, newPrev: SegmentLS | undefined): SegmentLS | undefined;
     _asCubic(): SegmentLS;
@@ -70,7 +70,7 @@ export declare abstract class SegmentLS extends Segment {
     static rect(...args: Vector[] | number[]): SegmentLS;
 }
 export declare class LineLS extends SegmentLS {
-    bbox(): Box;
+    bbox(): BoundingBox;
     get length(): number;
     pointAt(t: number): Vector;
     slopeAt(_: number): Vector;
@@ -103,7 +103,7 @@ export declare class QuadLS extends SegmentLS {
     slopeAt(t: number): Vector;
     pointAt(t: number): Vector;
     splitAt(t: number): [SegmentLS, SegmentLS];
-    bbox(): Box;
+    bbox(): BoundingBox;
     _descs(opt?: DescParams): (string | number)[];
     reversed(next?: SegmentLS): SegmentLS | undefined;
     transform(M: any): QuadLS;
@@ -115,7 +115,7 @@ export declare class CubicLS extends SegmentLS {
     constructor(prev: SegmentLS | undefined, c1: Vector, c2: Vector, to: Vector);
     private get _cpts();
     pointAt(t: number): Vector;
-    bbox(): Box;
+    bbox(): BoundingBox;
     slopeAt(t: number): Vector;
     splitAt(t: number): [SegmentLS, SegmentLS];
     get length(): number;
@@ -137,7 +137,7 @@ export declare class ArcLS extends SegmentLS {
     readonly cx: number;
     readonly cy: number;
     constructor(prev: SegmentLS | undefined, rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, to: Vector);
-    bbox(): Box;
+    bbox(): BoundingBox;
     get length(): number;
     pointAt(t: number): Vector;
     slopeAt(t: number): Vector;

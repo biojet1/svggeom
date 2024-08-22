@@ -1,4 +1,4 @@
-import { Box } from './box.js';
+import { BoundingBox } from './bbox.js';
 import { tNorm } from './path/index.js';
 const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
 function* pick(args) {
@@ -301,7 +301,7 @@ export class PathLS extends CanvasCompat {
             return seg.pointAt(n / N);
     }
     bbox() {
-        let b = Box.new();
+        let b = BoundingBox.new();
         for (let cur = this._tail; cur; cur = cur._prev) {
             b = b.merge(cur.bbox());
         }

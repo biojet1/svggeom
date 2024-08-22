@@ -1,5 +1,5 @@
 import { Vector } from '../vector.js';
-import { Box } from '../box.js';
+import { BoundingBox } from '../bbox.js';
 import { SegmentSE } from './index.js';
 import { Line } from './line.js';
 import { Cubic } from './cubic.js';
@@ -34,7 +34,7 @@ export declare class Arc extends SegmentSE {
     private constructor();
     static fromEndPoint(from: Iterable<number>, rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, to: Iterable<number>): Line | Arc;
     static fromCenterForm(c: Vector, rx: number, ry: number, φ: number, θ: number, Δθ: number): Arc;
-    bbox(): Box;
+    bbox(): BoundingBox;
     get length(): number;
     pointAt(t: number): Vector;
     slopeAt(t: number): Vector;
@@ -45,7 +45,7 @@ export declare class Arc extends SegmentSE {
     asCubic(): Cubic[] | Line[];
 }
 export declare function arcPointAt(arc: IArc, t: number): Vector;
-export declare function arcBBox(arc: IArc): Box;
+export declare function arcBBox(arc: IArc): BoundingBox;
 export declare function arcLength(arc: IArc): number;
 export declare function arcSlopeAt(arc: IArc, t: number): Vector;
 export declare function arcTransform(self: IArc, matrix: any): number[];

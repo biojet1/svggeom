@@ -1,6 +1,6 @@
 export * from './vector.js';
 export * from './ray.js';
-export * from './box.js';
+export * from './bbox.js';
 export * from './matrix.js';
 export * from './svgtransform.js';
 export { PathLS } from './draw.js';
