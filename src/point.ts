@@ -1,4 +1,4 @@
-const {sqrt, abs, cos, sin, atan2, PI} = Math;
+const { sqrt, abs, cos, sin, atan2, PI } = Math;
 const TAU = PI * 2;
 
 export class Vec {
@@ -22,7 +22,7 @@ export class Vec {
 	}
 
 	get radians() {
-		const {x, y} = this;
+		const { x, y } = this;
 		let r = atan2(y, x);
 		return r < 0 ? r + TAU : r;
 	}
@@ -36,7 +36,7 @@ export class Vec {
 	}
 
 	absQuad() {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return x * x + y * y + z * z;
 	}
 
@@ -61,7 +61,7 @@ export class Vec {
 	cross(p: Iterable<number>) {
 		const [a, b, c] = this;
 		const [x, y = 0, z = 0] = p;
-		return new Vec(b * z - c * y, c * x - a * z, a * y - b * x);
+		return Vec.of(b * z - c * y, c * x - a * z, a * y - b * x);
 	}
 
 	equals(p: Iterable<number>) {
@@ -81,67 +81,67 @@ export class Vec {
 	}
 
 	toString() {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return z ? `${x}, ${y}, ${z}` : `${x}, ${y}`;
 	}
 
 	toArray() {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		return [x, y, z];
 	}
 
 	// Methods returning new Vec
 
 	normal() {
-		const {x, y, z} = this;
-		return new Vec(y, -x, z);
+		const { x, y, z } = this;
+		return Vec.of(y, -x, z);
 	}
 
 	onlyX() {
-		const {x} = this;
-		return new Vec(x, 0, 0);
+		const { x } = this;
+		return Vec.of(x, 0, 0);
 	}
 
 	onlyY() {
-		const {y} = this;
-		return new Vec(0, y, 0);
+		const { y } = this;
+		return Vec.of(0, y, 0);
 	}
 
 	onlyZ() {
-		const {z} = this;
-		return new Vec(0, 0, z);
+		const { z } = this;
+		return Vec.of(0, 0, z);
 	}
 
 	withX(x: number) {
-		const {y, z} = this;
-		return new Vec(x, y, z);
+		const { y, z } = this;
+		return Vec.of(x, y, z);
 	}
 
 	withY(y: number) {
-		const {x, z} = this;
-		return new Vec(x, y, z);
+		const { x, z } = this;
+		return Vec.of(x, y, z);
 	}
 
 	withZ(z: number) {
-		const {y, x} = this;
-		return new Vec(x, y, z);
+		const { y, x } = this;
+		return Vec.of(x, y, z);
 	}
 
 	div(factor: number) {
-		const {x, y, z} = this;
-		return new Vec(x / factor, y / factor, z / factor);
+		const { x, y, z } = this;
+		return Vec.of(x / factor, y / factor, z / factor);
 	}
 
 	add(p: Iterable<number>) {
 		const [x1, y1, z1] = this;
 		const [x2, y2, z2 = 0] = p;
-		return new Vec(x1 + x2, y1 + y2, z1 + z2);
+		return Vec.of(x1 + x2, y1 + y2, z1 + z2);
 	}
 
 	sub(p: Iterable<number>) {
 		const [x1, y1, z1] = this;
 		const [x2, y2, z2 = 0] = p;
-		return new Vec(x1 - x2, y1 - y2, z1 - z2);
+		return Vec.of(x1 - x2, y1 - y2, z1 - z2);
 	}
 
 	// subtract, divide, multiply
@@ -149,18 +149,18 @@ export class Vec {
 	postSubtract(p: Iterable<number>) {
 		const [x1, y1 = 0, z1 = 0] = p;
 		const [x2, y2, z2] = this;
-		return new Vec(x1 - x2, y1 - y2, z1 - z2);
+		return Vec.of(x1 - x2, y1 - y2, z1 - z2);
 	}
 
 	postAdd(p: Iterable<number>) {
 		const [x1, y1 = 0, z1 = 0] = p;
 		const [x2, y2, z2] = this;
-		return new Vec(x1 + x2, y1 + y2, z1 + z2);
+		return Vec.of(x1 + x2, y1 + y2, z1 + z2);
 	}
 
 	mul(factor: number) {
-		const {x, y, z} = this;
-		return new Vec(x * factor, y * factor, z * factor);
+		const { x, y, z } = this;
+		return Vec.of(x * factor, y * factor, z * factor);
 	}
 
 	distance(p: Iterable<number>): number {
@@ -184,50 +184,50 @@ export class Vec {
 	}
 
 	transform(matrix: any) {
-		const {x, y} = this;
-		const {a, b, c, d, e, f} = matrix;
+		const { x, y } = this;
+		const { a, b, c, d, e, f } = matrix;
 
-		return new Vec(a * x + c * y + e, b * x + d * y + f);
+		return Vec.of(a * x + c * y + e, b * x + d * y + f);
 	}
 
 	flipX() {
-		const {x, y, z} = this;
-		return new Vec(-x, y, z);
+		const { x, y, z } = this;
+		return Vec.of(-x, y, z);
 	}
 
 	flipY() {
-		const {x, y, z} = this;
-		return new Vec(x, -y, z);
+		const { x, y, z } = this;
+		return Vec.of(x, -y, z);
 	}
 
 	flipZ() {
-		const {x, y, z} = this;
-		return new Vec(x, y, -z);
+		const { x, y, z } = this;
+		return Vec.of(x, y, -z);
 	}
 
 	shiftX(d: number) {
-		const {x, y, z} = this;
-		return new Vec(x + d, y, z);
+		const { x, y, z } = this;
+		return Vec.of(x + d, y, z);
 	}
 
 	shiftY(d: number) {
-		const {x, y, z} = this;
-		return new Vec(x, y + d, z);
+		const { x, y, z } = this;
+		return Vec.of(x, y + d, z);
 	}
 
 	shiftZ(d: number) {
-		const {x, y, z} = this;
-		return new Vec(x, y, z + d);
+		const { x, y, z } = this;
+		return Vec.of(x, y, z + d);
 	}
 
 	rotated(rad: number) {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		const [cs, sn] = [cos(rad), sin(rad)];
-		return new Vec(x * cs - y * sn, x * sn + y * cs, z);
+		return Vec.of(x * cs - y * sn, x * sn + y * cs, z);
 	}
 
 	clone() {
-		return new Vec(...this);
+		return Vec.of(...this);
 	}
 
 	nearestPointOfLine(a: Iterable<number>, b: Iterable<number>): Vec {
@@ -250,7 +250,7 @@ export class Vec {
 	// Misc methods
 
 	*[Symbol.iterator](): Iterator<number> {
-		const {x, y, z} = this;
+		const { x, y, z } = this;
 		yield x;
 		yield y;
 		yield z;
@@ -278,6 +278,9 @@ export class Vec {
 					return new this();
 				}
 		}
+	}
+	static of(...nums: number[]) {
+		return new this(...nums);
 	}
 
 	static at(x: number = 0, y: number = 0, z: number = 0) {

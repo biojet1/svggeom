@@ -1,12 +1,12 @@
 'uses strict';
 import './utils.js';
 import test from 'tap';
-import {Matrix, MatrixMut} from 'svggeom';
-import {SVGTransformList, SVGTransform} from 'svggeom';
+import { Matrix, MatrixMut } from 'svggeom';
+import { SVGTransformList, SVGTransform } from 'svggeom';
 
 const CI = !!process.env.CI;
 
-test.test(`Matrix.scale`, {bail: !CI}, function (t) {
+test.test(`Matrix.scale`, { bail: !CI }, function (t) {
     t.ok(Matrix.matrix(2, 0, 0, 2, 0, 0).equals(Matrix.scale(2)), 'x2 scale');
     t.ok(Matrix.matrix(-1, 0, 0, 1, 0, 0).equals(Matrix.scale(-1, 1)), 'hflip');
     t.ok(Matrix.matrix(1, 0, 0, -1, 0, 0).equals(Matrix.scale(1, -1)), 'vflip');
@@ -17,8 +17,8 @@ test.test(`Matrix.scale`, {bail: !CI}, function (t) {
         Matrix.scale(2).translate(0, 60).toString(),
         'scale x y'
     );
-    t.match(Matrix.scale(2), {a: 2, d: 2}, 'scale x x');
-    t.match(Matrix.scale(2, 3), {a: 2, d: 3}, 'scale x y');
+    t.match(Matrix.scale(2), { a: 2, d: 2 }, 'scale x x');
+    t.match(Matrix.scale(2, 3), { a: 2, d: 3 }, 'scale x y');
     t.same(
         Matrix.parse('scale(2)').inverse().toString(),
         Matrix.scale(0.5).toString(),
@@ -27,19 +27,19 @@ test.test(`Matrix.scale`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`Matrix.skew`, {bail: !CI}, function (t) {
+test.test(`Matrix.skew`, { bail: !CI }, function (t) {
     t.ok(Matrix.parse('skewX(1)').inverse().equals(Matrix.skewX(-1)), 'reverse_skewx');
     t.ok(Matrix.parse('skewY(-1)').inverse().equals(Matrix.skewY(1)), 'reverse_skewy');
     t.end();
 });
 
-test.test(`Matrix.rotate`, {bail: !CI}, function (t) {
+test.test(`Matrix.rotate`, { bail: !CI }, function (t) {
     t.ok(Matrix.parse('rotate(30)').inverse().equals(Matrix.rotate(-30)), 'reverse_rotate');
     t.ok(Matrix.matrix(0, 1, -1, 0, 0, 0), Matrix.rotate(90));
     t.end();
 });
 
-test.test(`Matrix.identity`, {bail: !CI}, function (t) {
+test.test(`Matrix.identity`, { bail: !CI }, function (t) {
     t.ok(Matrix.matrix(1, 0, 0, 1, 0, 0).isIdentity);
     t.notOk(Matrix.matrix(1, 0, 0, 2, 0, 0).isIdentity);
     t.ok(Matrix.identity().equals(Matrix.parse('matrix(1 0 0 1 0 0)')), 'identity');
@@ -54,14 +54,14 @@ test.test(`Matrix.identity`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`Matrix.preMultiply`, {bail: !CI}, function (t) {
+test.test(`Matrix.preMultiply`, { bail: !CI }, function (t) {
     const m1 = Matrix.translate(-20, -20).cat(Matrix.scale(2));
     const m2 = Matrix.parse('matrix(2, 0, 0, 2, -20, -20)');
     t.ok(m1.equals(m2), `preMultiply ${m1} ${m2}`);
     t.end();
 });
 
-test.test(`Matrix.translateYX`, {bail: !CI}, function (t) {
+test.test(`Matrix.translateYX`, { bail: !CI }, function (t) {
     const m1 = Matrix.translate(30, -40);
     const m2 = Matrix.translateY(-40).translateX(30);
     const m3 = Matrix.translateX(30).translateY(-40);
@@ -71,7 +71,7 @@ test.test(`Matrix.translateYX`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`Matrix.inverse`, {bail: !CI}, function (t) {
+test.test(`Matrix.inverse`, { bail: !CI }, function (t) {
     const a = Matrix.parse('matrix(1 2 3 4 5 6)');
     const b = Matrix.parse('matrix(7 8 9 0 1 2)');
     const c = Matrix.parse('matrix(3 4 5 6 7 8)');
@@ -105,7 +105,7 @@ test.test(`Matrix.inverse`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`logic`, {bail: !CI}, function (t) {
+test.test(`logic`, { bail: !CI }, function (t) {
     const m1 = Matrix.parse('translate(0,60)scale(2)');
     const m2 = Matrix.parse('scale(2)translate(0,60)');
     // console.log(m1.describe(), m1.inverse());
@@ -114,7 +114,7 @@ test.test(`logic`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`SVGTransform`, {bail: !CI}, function (t) {
+test.test(`SVGTransform`, { bail: !CI }, function (t) {
     const m1 = new SVGTransform();
     m1.setMatrix(Matrix.matrix(1, 2, 3, 4, 5, 6));
     t.same(m1.type, 1);
@@ -185,7 +185,7 @@ test.test(`SVGTransform`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`SVGTransformList`, {bail: !CI}, function (t) {
+test.test(`SVGTransformList`, { bail: !CI }, function (t) {
     {
         const tl = SVGTransformList._parse(`translate(3 4)`);
         t.same(tl.numberOfItems, 1);
@@ -304,8 +304,8 @@ test.test(`SVGTransformList`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`Matrix Sub Class`, {bail: !CI}, function (t) {
-    class MatrixSubClass extends Matrix {}
+test.test(`Matrix Sub Class`, { bail: !CI }, function (t) {
+    class MatrixSubClass extends Matrix { }
     t.same(MatrixSubClass.skewX(4).constructor.name, `MatrixSubClass`);
     t.same(MatrixSubClass.fromArray([1, 2, 3, 4, 5, 6]).constructor.name, `MatrixSubClass`);
     t.same(MatrixSubClass.parse().constructor.name, `MatrixSubClass`);
@@ -321,7 +321,7 @@ test.test(`Matrix Sub Class`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`case rotate(90,400,300)`, {bail: !CI}, function (t) {
+test.test(`case rotate(90,400,300)`, { bail: !CI }, function (t) {
     const tl = SVGTransformList._parse('rotate(90,400,300)');
     t.same(tl.numberOfItems, 1);
     // console.dir(tl);
@@ -331,17 +331,12 @@ test.test(`case rotate(90,400,300)`, {bail: !CI}, function (t) {
     t.end();
 });
 
-// test.test(`MatrixMut`, {bail: !CI}, function (t) {
-//     // const m1 = MatrixMut.parse('translate(3,4)');
-//     const a = Matrix.parse('matrix(1 2 3 4 5 6)');
-//     const b = Matrix.parse('matrix(7 8 9 0 1 2)');
-//     const c = Matrix.parse('matrix(3 4 5 6 7 8)');
-//     const d = a.cat(b).cat(c);
-//     const e = c.cat(b).cat(a);
-//     const m = MatrixMut.new('matrix(1 2 3 4 5 6)');
-//      // console.log(m.constructor.name);
-//     m.catSelf(b);
-//     m.catSelf(c);
-//     t.ok(m.equals(d));
-//     t.end();
-// });
+test.test(`MatrixMut`, { bail: !CI }, function (t) {
+    // const m1 = MatrixMut.parse('translate(3,4)');
+    const a = Matrix.parse('matrix(1 2 3 4 5 6)');
+    const b = Matrix.parse('matrix(0 0 0 0 9 7)');
+    const c = a.inverse()
+    const d = a.cat(b).cat(c);
+    console.log(d);
+    t.end();
+});

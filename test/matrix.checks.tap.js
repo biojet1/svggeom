@@ -88,11 +88,11 @@ test.test(`take_apart`, { bail: !CI }, function (t) {
     {
         for (const deg of [0, 45, 90, -0, -55, -90, -1, 1, -359, -181]) {
             const m = Matrix.rotate(deg);
-            console.log(m);
+            // console.log(m);
             const { rotation, scale, skew, skew_axis, translation } = m.take_apart();
             t.almostEqual(scale[0], 1);
             t.almostEqual(scale[1], 1);
-            t.almostEqual(rotation, deg, 0.00001);
+            t.almostEqual(rotation, (deg < -180) ? (deg + 360) : deg, 0.00001, `deg=${deg}`);
             t.same(skew, 0);
             t.same(skew_axis, 0);
             t.same(translation, [0, 0]);

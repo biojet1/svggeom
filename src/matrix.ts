@@ -244,8 +244,8 @@ export class Matrix {
 		return this._cat(Matrix.matrix(scaleX, 0, 0, scaleY ?? scaleX, 0, 0));
 	}
 
-	rotate(ang: number, x: number = 0, y: number = 0): Matrix {
-		const θ = ((ang % 360) * PI) / 180;
+	rotate(deg: number, x: number = 0, y: number = 0): Matrix {
+		const θ = ((deg % 360) * PI) / 180;
 		const cosθ = cos(θ);
 		const sinθ = sin(θ);
 		return this._cat(
@@ -264,12 +264,12 @@ export class Matrix {
 		return this._cat(Matrix.matrix(1, tan(radians(y)), tan(radians(x)), 1, 0, 0));
 	}
 
-	skewX(x: number) {
-		return this.skew(x, 0);
+	skewX(deg: number) {
+		return this.skew(deg, 0);
 	}
 
-	skewY(y: number) {
-		return this.skew(0, y);
+	skewY(deg: number) {
+		return this.skew(0, deg);
 	}
 
 	// Static methods
