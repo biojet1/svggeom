@@ -1,4 +1,4 @@
-import { Vec } from "../point.js";
+import { Vector } from "../vector.js";
 
 const { abs, tan, cos, sin, sqrt, acos, PI, ceil, max } = Math;
 const TAU = PI * 2;
@@ -68,15 +68,15 @@ function unit_vector_angle(
 const LENGTH_MIN_DEPTH = 17;
 const LENGTH_ERROR = 1e-12;
 interface PointAt {
-	pointAt(f: number): Vec;
+	pointAt(f: number): Vector;
 }
 
 export function segment_length(
 	curve: PointAt,
 	start: number,
 	end: number,
-	start_point: Vec,
-	end_point: Vec,
+	start_point: Vector,
+	end_point: Vector,
 	error = LENGTH_ERROR,
 	min_depth = LENGTH_MIN_DEPTH,
 	depth = 0

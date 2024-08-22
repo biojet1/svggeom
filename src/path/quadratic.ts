@@ -1,22 +1,22 @@
-import { Vec } from '../point.js';
+import { Vector } from '../vector.js';
 import { Box } from '../box.js';
 import { SegmentSE } from './index.js';
 
 export class Quadratic extends SegmentSE {
-	readonly c: Vec;
+	readonly c: Vector;
 
 	constructor(p1: Iterable<number>, control: Iterable<number>, p2: Iterable<number>) {
-		super(Vec.new(p1), Vec.new(p2));
-		this.c = Vec.new(control);
+		super(Vector.new(p1), Vector.new(p2));
+		this.c = Vector.new(control);
 	}
-	private get _qpts(): Vec[] {
+	private get _qpts(): Vector[] {
 		const { from, c, to } = this;
 		return [from, c, to];
 	}
 	override get length() {
 		return quadLength(this._qpts);
 	}
-	override slopeAt(t: number): Vec {
+	override slopeAt(t: number): Vector {
 		return quadSlopeAt(this._qpts, t);
 	}
 
@@ -81,7 +81,7 @@ const { pow } = Math;
 // 	return pow(2 * cx - ex - sx, 2) + pow(2 * cy - ey - sy, 2);
 // }
 
-export function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
+export function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]]: Vector[], t: number) {
 	const mx1 = (1 - t) * x1 + t * cx;
 	const mx2 = (1 - t) * cx + t * x2;
 	const mxt = (1 - t) * mx1 + t * mx2;
@@ -91,17 +91,17 @@ export function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	const myt = (1 - t) * my1 + t * my2;
 
 	return [
-		[Vec.new(x1, y1), Vec.new(mx1, my1), Vec.new(mxt, myt)],
-		[Vec.new(mxt, myt), Vec.new(mx2, my2), Vec.new(x2, y2)],
+		[Vector.new(x1, y1), Vector.new(mx1, my1), Vector.new(mxt, myt)],
+		[Vector.new(mxt, myt), Vector.new(mx2, my2), Vector.new(x2, y2)],
 	];
 }
 
-export function quadPointAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
+export function quadPointAt([[x1, y1], [cx, cy], [x2, y2]]: Vector[], t: number) {
 	const v = 1 - t;
-	return Vec.new(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
+	return Vector.new(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
 }
 
-export function quadSlopeAt([from, c, to]: Vec[], t: number): Vec {
+export function quadSlopeAt([from, c, to]: Vector[], t: number): Vector {
 	if (c.equals(from) || c.equals(to)) {
 		const vec = to.sub(from);
 		return vec.div(vec.abs());
@@ -117,14 +117,14 @@ export function quadSlopeAt([from, c, to]: Vec[], t: number): Vec {
 	return a.add(b).mul(2); // 1st derivative;
 }
 
-export function quadBBox([[x1, y1], [x2, y2], [x3, y3]]: Vec[]) {
+export function quadBBox([[x1, y1], [x2, y2], [x3, y3]]: Vector[]) {
 	const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
 	const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
 	return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 }
 
 // https://github.com/rveciana/svg-path-properties/blob/master/src/bezier-functions.ts
-export function quadLength([[x0, y0], [x1, y1], [x2, y2]]: Vec[], t: number = 1) {
+export function quadLength([[x0, y0], [x1, y1], [x2, y2]]: Vector[], t: number = 1) {
 	const ax = x0 - 2 * x1 + x2;
 	const ay = y0 - 2 * y1 + y2;
 	const bx = 2 * x1 - 2 * x0;

@@ -1,6 +1,6 @@
 'uses strict';
 import test from 'tap';
-import { PathLS, SegmentLS, Vec } from 'svggeom';
+import { PathLS, SegmentLS, Vector } from 'svggeom';
 import { Path } from '../dist/path.js';
 import { enum_path_data, test_segment } from './path.utils.js';
 import './utils.js';
@@ -102,7 +102,7 @@ test.test(`PathLS empty`, { bail: !CI }, function (t) {
         t.same(a.describe(), '');
         t.same(b.describe(), '');
         t.same(a.lineTo(3, 4).describe(), 'M0,0L3,4');
-        t.same(b.lineTo(Vec.new(3, 4)).describe(), 'M0,0L3,4');
+        t.same(b.lineTo(Vector.new(3, 4)).describe(), 'M0,0L3,4');
     }
 
     t.strictSame(p.reversed(), p);

@@ -1,6 +1,6 @@
 'uses strict';
 import { spawn } from 'child_process';
-import { PathLS, Vec } from 'svggeom';
+import { PathLS, Vector } from 'svggeom';
 import { Path } from '../dist/path.js';
 import test from 'tap';
 const CI = !!process.env.CI;
@@ -34,15 +34,15 @@ test.test(`Path etc`, { bail: !CI }, function (t) {
     t.same(segs[1].to.toArray().slice(0, 2), [771.83612, 66.487356]);
     t.same(segs[2].from.toArray().slice(0, 2), [771.83612, 66.487356]);
 
-    t.ok(segs[2].to.close_to(Vec.new(762.57684, 66.487356), 1e-4));
+    t.ok(segs[2].to.close_to(Vector.new(762.57684, 66.487356), 1e-4));
     t.same(p.firstPoint.toArray().slice(0, 2), [755.16947, 151.67245]);
-    t.ok(p.lastPoint.close_to(Vec.new(762.57684, 66.487356), 1e-4));
+    t.ok(p.lastPoint.close_to(Vector.new(762.57684, 66.487356), 1e-4));
 
     t.ok(p.isContinuous());
     t.strictSame(segs.length, 3);
     // t.same(segs[0].to.toArray().slice(0, 2), [225, 45]);
     p = Path.parse(`m 0 0 h 200 v 300 h -200 Z`);
-    t.ok(p.pointAtLength(300).close_to(Vec.new(200, 100), 1e-12));
+    t.ok(p.pointAtLength(300).close_to(Vector.new(200, 100), 1e-12));
 
     t.end();
 });

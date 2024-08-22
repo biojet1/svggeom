@@ -1,4 +1,4 @@
-import { Vec } from '../point.js';
+import { Vector } from '../vector.js';
 import { Box } from '../box.js';
 import { SegmentSE, tNorm, DescParams } from './index.js';
 
@@ -51,7 +51,7 @@ abstract class LineSegment extends SegmentSE {
 		return ['L', x, y];
 	}
 
-	abstract newFromTo(a: Vec, b: Vec): LineSegment;
+	abstract newFromTo(a: Vector, b: Vector): LineSegment;
 }
 
 export class Line extends LineSegment {
@@ -60,7 +60,7 @@ export class Line extends LineSegment {
 		super(from, to);
 	}
 
-	override newFromTo(a: Vec, b: Vec) {
+	override newFromTo(a: Vector, b: Vector) {
 		return new Line(a, b);
 	}
 }
@@ -74,7 +74,7 @@ export class Close extends Line {
 		return 'Z';
 	}
 
-	override newFromTo(a: Vec, b: Vec) {
+	override newFromTo(a: Vector, b: Vector) {
 		return new Close(a, b);
 	}
 }

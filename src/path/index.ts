@@ -1,4 +1,4 @@
-import { Vec } from '../point.js';
+import { Vector } from '../vector.js';
 import { Box } from '../box.js';
 
 export interface DescParams {
@@ -10,12 +10,12 @@ export interface DescParams {
 }
 
 export abstract class Segment {
-	abstract get from(): Vec;
-	abstract get to(): Vec;
+	abstract get from(): Vector;
+	abstract get to(): Vector;
 	abstract get length(): number;
 	abstract bbox(): Box;
-	abstract pointAt(t: number): Vec;
-	abstract slopeAt(t: number): Vec;
+	abstract pointAt(t: number): Vector;
+	abstract slopeAt(t: number): Vector;
 
 	get firstPoint() {
 		return this.from;
@@ -43,13 +43,13 @@ export abstract class Segment {
 }
 
 export abstract class SegmentSE extends Segment {
-	private readonly _start: Vec;
-	private readonly _end: Vec;
+	private readonly _start: Vector;
+	private readonly _end: Vector;
 
 	constructor(from: Iterable<number>, to: Iterable<number>) {
 		super();
-		this._start = Vec.new(from);
-		this._end = Vec.new(to);
+		this._start = Vector.new(from);
+		this._end = Vector.new(to);
 	}
 
 	get from() {
@@ -112,27 +112,27 @@ export function tNorm(t: number) {
 	return t;
 }
 
-export function* pickPos(args: Vec[] | number[]) {
+export function* pickPos(args: Vector[] | number[]) {
 	let n: number | undefined = undefined;
 	for (const v of args) {
 		if (typeof v == 'number') {
 			if (n == undefined) {
 				n = v;
 			} else {
-				yield Vec.new(n, v);
+				yield Vector.new(n, v);
 				n = undefined;
 			}
 		} else if (n != undefined) {
 			throw new Error(`n == ${n}`);
-		} else if (v instanceof Vec) {
+		} else if (v instanceof Vector) {
 			yield v;
 		} else {
-			yield Vec.new(v);
+			yield Vector.new(v);
 		}
 	}
 }
 
-export function* pickNum(args: Vec[] | number[]) {
+export function* pickNum(args: Vector[] | number[]) {
 	for (const v of args) {
 		switch (typeof v) {
 			case 'number':

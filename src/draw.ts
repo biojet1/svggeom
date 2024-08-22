@@ -1,10 +1,10 @@
-import {Vec} from './point.js';
-import {Box} from './box.js';
-import {tNorm} from './path/index.js';
+import { Vector } from './vector.js';
+import { Box } from './box.js';
+import { tNorm } from './path/index.js';
 
-const {PI: pi, abs, sqrt, tan, acos, sin, cos} = Math;
+const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
 
-function* pick(args: Vec[] | number[] | boolean[]) {
+function* pick(args: Vector[] | number[] | boolean[]) {
 	for (const v of args) {
 		if (typeof v == 'number') {
 			yield +v;
@@ -33,7 +33,7 @@ function fmtN(n: number) {
 }
 
 class CanvasCompat {
-	set fillStyle(_x: any) {}
+	set fillStyle(_x: any) { }
 	get fillStyle() {
 		return 'red';
 	}
@@ -58,13 +58,13 @@ export class PathDraw extends CanvasCompat {
 		digits = n;
 	}
 
-	moveTo(...args: Vec[] | number[]) {
+	moveTo(...args: Vector[] | number[]) {
 		const [x, y] = pick(args);
 		this._ += `M${fmtN((this._x0 = this._x1 = +x))},${fmtN((this._y0 = this._y1 = +y))}`;
 		return this;
 	}
 
-	lineTo(...args: Vec[] | number[]) {
+	lineTo(...args: Vector[] | number[]) {
 		const [x, y] = pick(args);
 		this._ += `L${fmtN((this._x1 = +x))},${fmtN((this._y1 = +y))}`;
 		return this;
@@ -78,19 +78,19 @@ export class PathDraw extends CanvasCompat {
 		return this;
 	}
 
-	quadraticCurveTo(...args: Vec[] | number[]) {
+	quadraticCurveTo(...args: Vector[] | number[]) {
 		const [x1, y1, x, y] = pick(args);
 		this._ += `Q${fmtN(x1)},${fmtN(y1)},${fmtN((this._x1 = +x))},${fmtN((this._y1 = +y))}`;
 		return this;
 	}
 
-	bezierCurveTo(...args: Vec[] | number[]) {
+	bezierCurveTo(...args: Vector[] | number[]) {
 		const [x1, y1, x2, y2, x, y] = pick(args);
 		this._ += `C${fmtN(x1)},${fmtN(y1)},${fmtN(x2)},${fmtN(y2)},${fmtN((this._x1 = +x))},${fmtN((this._y1 = +y))}`;
 		return this;
 	}
 
-	arcTo(...args: Vec[] | number[]) {
+	arcTo(...args: Vector[] | number[]) {
 		const [x1, y1, x2, y2, r] = pick(args);
 
 		// (x1 = +x1), (y1 = +y1), (x2 = +x2), (y2 = +y2), (r = +r);
@@ -138,14 +138,14 @@ export class PathDraw extends CanvasCompat {
 		}
 		return this;
 	}
-	arcd(...args: Vec[] | number[]) {
+	arcd(...args: Vector[] | number[]) {
 		const [x, y, r, a0, a1, ccw] = pick(args);
 		return this.arc(x, y, r, (a0 * pi) / 180, (a1 * pi) / 180, ccw);
 	}
 	// qTo()
-	arc(...args: Vec[] | number[]) {
+	arc(...args: Vector[] | number[]) {
 		const [x, y, r, a0, a1, ccw] = pick(args);
-		const {_x1, _y1} = this;
+		const { _x1, _y1 } = this;
 		const cw = ccw ? 0 : 1;
 		const dx = r * Math.cos(a0);
 		const dy = r * Math.sin(a0);
@@ -187,7 +187,7 @@ export class PathDraw extends CanvasCompat {
 		return this;
 	}
 
-	rect(...args: Vec[] | number[]) {
+	rect(...args: Vector[] | number[]) {
 		const [x, y, w, h] = pick(args);
 		this._ += `M${fmtN((this._x0 = this._x1 = +x))},${fmtN((this._y0 = this._y1 = +y))}h${+w}v${+h}h${-w}Z`;
 		return this;
@@ -212,13 +212,13 @@ export class PathDraw extends CanvasCompat {
 		text: string
 		// maxWidth?: number
 	) {
-		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
+		const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
 		// const fontSize = options.fontSize || 72;
 		//   const kerning = 'kerning' in options ? options.kerning : true;
 		//   const letterSpacing = 'letterSpacing' in options ? options.letterSpacing : false;
 		// const tracking = 'tracking' in options ? options.tracking : false;
 		// const metrics = this.getMetrics(text, options);
-		const {_x1, _y1} = this;
+		const { _x1, _y1 } = this;
 		font.getPath(text, _x1 ?? 0, _y1 ?? 0, fontSize, {
 			kerning,
 			letterSpacing,
@@ -242,9 +242,9 @@ export class PathDraw extends CanvasCompat {
 	}
 }
 
-import {Font /*, load, loadSync*/} from 'opentype.js';
-import {SegmentLS, MoveLS} from './path/linked.js';
-import {DescParams} from './path/index.js';
+import { Font /*, load, loadSync*/ } from 'opentype.js';
+import { SegmentLS, MoveLS } from './path/linked.js';
+import { DescParams } from './path/index.js';
 
 const len_segm = new WeakMap<SegmentLS, number>();
 const len_path = new WeakMap<SegmentLS, number>();
@@ -272,49 +272,49 @@ export class PathLS extends CanvasCompat {
 		this._tail = tail;
 	}
 
-	moveTo(...args: Vec[] | number[]) {
-		const {_tail} = this;
+	moveTo(...args: Vector[] | number[]) {
+		const { _tail } = this;
 		this._tail = (_tail ?? SegmentLS).moveTo(...args);
 		return this;
 	}
-	lineTo(...args: Vec[] | number[]) {
-		const {_tail} = this;
+	lineTo(...args: Vector[] | number[]) {
+		const { _tail } = this;
 		this._tail = (_tail ?? SegmentLS).lineTo(...args);
 		return this;
 	}
-	bezierCurveTo(...args: Vec[] | number[]) {
-		const {_tail} = this;
+	bezierCurveTo(...args: Vector[] | number[]) {
+		const { _tail } = this;
 		this._tail = (_tail ?? SegmentLS).bezierCurveTo(...args);
 		return this;
 	}
-	quadraticCurveTo(...args: Vec[] | number[]) {
-		const {_tail} = this;
+	quadraticCurveTo(...args: Vector[] | number[]) {
+		const { _tail } = this;
 		this._tail = (_tail ?? SegmentLS).quadraticCurveTo(...args);
 		return this;
 	}
-	arc(...args: Vec[] | number[]) {
-		const {_tail} = this;
+	arc(...args: Vector[] | number[]) {
+		const { _tail } = this;
 		this._tail = (_tail ?? SegmentLS).arc(...args);
 		return this;
 	}
-	arcd(...args: Vec[] | number[]) {
-		const {_tail} = this;
+	arcd(...args: Vector[] | number[]) {
+		const { _tail } = this;
 		this._tail = (_tail ?? SegmentLS).arcd(...args);
 		return this;
 	}
 
-	arcTo(...args: Vec[] | number[]) {
-		const {_tail} = this;
+	arcTo(...args: Vector[] | number[]) {
+		const { _tail } = this;
 		this._tail = (_tail ?? SegmentLS).arcTo(...args);
 		return this;
 	}
-	rect(...args: Vec[] | number[]) {
-		const {_tail} = this;
+	rect(...args: Vector[] | number[]) {
+		const { _tail } = this;
 		this._tail = (_tail ?? SegmentLS).rect(...args);
 		return this;
 	}
 	closePath() {
-		const {_tail} = this;
+		const { _tail } = this;
 		if (_tail) {
 			this._tail = _tail.closePath();
 		}
@@ -334,7 +334,7 @@ export class PathLS extends CanvasCompat {
 		text: string
 		// maxWidth?: number
 	) {
-		const {font, fontSize = 72, kerning, letterSpacing, tracking} = options;
+		const { font, fontSize = 72, kerning, letterSpacing, tracking } = options;
 		const [_x1, _y1] = this?._tail?.to ?? [0, 0];
 		font.getPath(text, _x1, _y1, fontSize, {
 			kerning,
@@ -399,12 +399,12 @@ export class PathLS extends CanvasCompat {
 		return b;
 	}
 	splitAt(T: number) {
-		const {_tail} = this;
+		const { _tail } = this;
 		if (_tail) {
 			const [seg, t] = this.segmentAt(T);
 			if (seg) {
 				if (t == 0) {
-					const {prev} = seg;
+					const { prev } = seg;
 					return [new PathLS(prev), new PathLS(_tail.withFarPrev3(seg, SegmentLS.moveTo(prev?.to)))];
 				} else if (t == 1) {
 					return [new PathLS(seg), new PathLS(_tail.withFarPrev(seg, SegmentLS.moveTo(seg.to)))];
@@ -449,7 +449,7 @@ export class PathLS extends CanvasCompat {
 		return new PathLS(undefined);
 	}
 	reversed(_next?: SegmentLS): PathLS {
-		const {_tail} = this;
+		const { _tail } = this;
 		if (_tail) {
 			return new PathLS(_tail.reversed());
 		}
@@ -459,19 +459,19 @@ export class PathLS extends CanvasCompat {
 		return this?._tail?.descArray(opt) ?? [];
 	}
 	*enumSubPaths(opt?: DescParams) {
-		const {_tail} = this;
+		const { _tail } = this;
 		if (_tail) {
 			yield* _subPaths(_tail);
 		}
 	}
 	*[Symbol.iterator]() {
-		let {_tail: cur} = this;
+		let { _tail: cur } = this;
 		for (; cur; cur = cur._prev) {
 			yield cur;
 		}
 	}
 	transform(M: any) {
-		const {_tail} = this;
+		const { _tail } = this;
 		if (_tail) {
 			return new PathLS(_tail.transform(M));
 		}
@@ -487,7 +487,7 @@ export class PathLS extends CanvasCompat {
 	}
 	get firstSegment() {
 		let seg;
-		for (let {_tail: cur} = this; cur; cur = cur._prev) {
+		for (let { _tail: cur } = this; cur; cur = cur._prev) {
 			if (!(cur instanceof MoveLS)) {
 				seg = cur;
 			}
@@ -495,7 +495,7 @@ export class PathLS extends CanvasCompat {
 		return seg;
 	}
 	get lastSegment() {
-		for (let {_tail: cur} = this; cur; cur = cur._prev) {
+		for (let { _tail: cur } = this; cur; cur = cur._prev) {
 			if (!(cur instanceof MoveLS)) {
 				return cur;
 			}
@@ -507,13 +507,13 @@ export class PathLS extends CanvasCompat {
 	d() {
 		return this.describe();
 	}
-	static moveTo(...args: Vec[] | number[]) {
+	static moveTo(...args: Vector[] | number[]) {
 		return new PathLS(SegmentLS.moveTo(...args));
 	}
 	static parse(d: string) {
 		return new PathLS(SegmentLS.parse(d));
 	}
-	static rect(...args: Vec[] | number[]) {
+	static rect(...args: Vector[] | number[]) {
 		return new PathLS(SegmentLS.rect(...args));
 	}
 	static get digits() {

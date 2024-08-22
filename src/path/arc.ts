@@ -1,4 +1,4 @@
-import { Vec } from '../point.js';
+import { Vector } from '../vector.js';
 import { Box } from '../box.js';
 import { SegmentSE } from './index.js';
 import { Line } from './line.js';
@@ -8,8 +8,8 @@ import { segment_length, arc_params, arc_to_curve } from './archelp.js';
 const { abs, atan, tan, cos, sin, PI, min, max } = Math;
 
 interface IArc {
-	readonly from: Vec;
-	readonly to: Vec;
+	readonly from: Vector;
+	readonly to: Vector;
 	//
 	readonly rx: number;
 	readonly ry: number;
@@ -24,7 +24,7 @@ interface IArc {
 	readonly cx: number;
 	readonly cy: number;
 	//
-	pointAt(f: number): Vec;
+	pointAt(f: number): Vector;
 }
 
 export class Arc extends SegmentSE {
@@ -82,14 +82,14 @@ export class Arc extends SegmentSE {
 		}
 		return new Arc(from, to, rx, ry, φ, bigArc, sweep);
 	}
-	static fromCenterForm(c: Vec, rx: number, ry: number, φ: number, θ: number, Δθ: number) {
+	static fromCenterForm(c: Vector, rx: number, ry: number, φ: number, θ: number, Δθ: number) {
 		const cosφ = cos((φ / 180) * PI);
 		const sinφ = sin((φ / 180) * PI);
 		const m = Matrix.matrix(cosφ, sinφ, -sinφ, cosφ, 0, 0);
-		const from = Vec.new(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
+		const from = Vector.new(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
 			.transform(m)
 			.add(c);
-		const to = Vec.new(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
+		const to = Vector.new(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
 			.transform(m)
 			.add(c);
 		const bigArc = abs(Δθ) > 180 ? 1 : 0;
@@ -108,7 +108,7 @@ export class Arc extends SegmentSE {
 	override pointAt(t: number) {
 		return arcPointAt(this, t);
 	}
-	override slopeAt(t: number): Vec {
+	override slopeAt(t: number): Vector {
 		return arcSlopeAt(this, t);
 	}
 
@@ -177,7 +177,7 @@ export function arcPointAt(arc: IArc, t: number) {
 	// const [cosθ, sinθ] = cossin((180 * rtheta + 180 * rdelta * t) / PI);
 	// (eq. 3.1) https://svgwg.org/svg2-draft/implnote.html#ArcParameterizationAlternatives
 	try {
-		return Vec.new(
+		return Vector.new(
 			rx * cosφ * cosθ - ry * sinφ * sinθ + cx,
 			rx * sinφ * cosθ + ry * cosφ * sinθ + cy
 		);
@@ -235,13 +235,13 @@ export function arcLength(arc: IArc) {
 // 	];
 // }
 
-export function arcSlopeAt(arc: IArc, t: number): Vec {
+export function arcSlopeAt(arc: IArc, t: number): Vector {
 	const { rx, ry, cosφ, sinφ, rdelta, rtheta } = arc;
 	const θ = rtheta + t * rdelta;
 	const sinθ = sin(θ);
 	const cosθ = cos(θ);
 	const k = rdelta;
-	return Vec.new(
+	return Vector.new(
 		-rx * cosφ * sinθ * k - ry * sinφ * cosθ * k,
 		-rx * sinφ * sinθ * k + ry * cosφ * cosθ * k
 	);

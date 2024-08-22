@@ -1,4 +1,4 @@
-import { Vec } from './point.js';
+import { Vector } from './vector.js';
 const { max, min, abs } = Math;
 
 export class Box {
@@ -31,7 +31,7 @@ export class Box {
 	clone() {
 		const { x, y, width, height } = this;
 
-		return Box.forRect(x, y, width, height);
+		return Box.rect(x, y, width, height);
 	}
 
 	// private _notsup() {
@@ -86,7 +86,7 @@ export class Box {
 	}
 	get center() {
 		const { centerX, centerY } = this;
-		return Vec.new(centerX, centerY);
+		return Vector.new(centerX, centerY);
 	}
 
 	// set maxY(n: number) {
@@ -112,29 +112,29 @@ export class Box {
 	withCenter(p: Iterable<number>): Box {
 		const [cx, cy] = p;
 		const { width: W, height: H } = this;
-		return Box.forRect(cx - W / 2, cy - H / 2, W, H);
+		return Box.rect(cx - W / 2, cy - H / 2, W, H);
 	}
 
 	withSize(p: Iterable<number>): Box {
 		const [w, h] = p;
 		const { x, y } = this;
-		return Box.forRect(x, y, w, h);
+		return Box.rect(x, y, w, h);
 	}
 
 	withPos(p: Iterable<number>): Box {
 		const [x, y] = p;
 		const { width, height } = this;
-		return Box.forRect(x, y, width, height);
+		return Box.rect(x, y, width, height);
 	}
 
 	withMinY(n: number): Box {
 		const { x, width, height } = this;
-		return Box.forRect(x, n, width, height);
+		return Box.rect(x, n, width, height);
 	}
 
 	withMinX(n: number): Box {
 		const { y, width, height } = this;
-		return Box.forRect(n, y, width, height);
+		return Box.rect(n, y, width, height);
 	}
 
 	// Merge rect box with another, return a new instance
@@ -156,7 +156,7 @@ export class Box {
 
 		const { minX: xMin1, minY: yMin1, maxX: xMax1, maxY: yMax1 } = this;
 		const { minX: xMin2, minY: yMin2, maxX: xMax2, maxY: yMax2 } = box;
-		return Box.fromExtrema(
+		return Box.extrema(
 			min(xMin1, xMin2),
 			max(xMax1, xMax2),
 			min(yMin1, yMin2),
@@ -168,7 +168,7 @@ export class Box {
 	inflated(h: number, v?: number): Box {
 		v = v ?? h;
 		const { x, y, width, height } = this;
-		return Box.forRect(x - h, y - v, h + width + h, v + height + v);
+		return Box.rect(x - h, y - v, h + width + h, v + height + v);
 	}
 	transform(m: any) {
 		let xMin = Infinity;
@@ -177,7 +177,7 @@ export class Box {
 		let maxY = -Infinity;
 		// const {a, b, c, d, e, f} = matrix;
 		const { x, y, bottom, right } = this;
-		[Vec.new(x, y), Vec.new(right, y), Vec.new(x, bottom), Vec.new(right, bottom)].forEach(
+		[Vector.new(x, y), Vector.new(right, y), Vector.new(x, bottom), Vector.new(right, bottom)].forEach(
 			function (p) {
 				const [x, y] = p.transform(m);
 				xMin = min(xMin, x);
@@ -186,7 +186,7 @@ export class Box {
 				maxY = max(maxY, y);
 			}
 		);
-		return Box.fromExtrema(xMin, xMax, yMin, maxY);
+		return Box.extrema(xMin, xMax, yMin, maxY);
 	}
 	isValid() {
 		const { x, y, width, height } = this;
@@ -231,7 +231,7 @@ export class Box {
 				const yMin = max(yMin1, yMin2);
 				const yMax = min(yMax1, yMax2);
 				if (yMax >= yMin) {
-					return Box.fromExtrema(xMin, xMax, yMin, yMax);
+					return Box.extrema(xMin, xMax, yMin, yMax);
 				}
 			}
 		}
@@ -243,23 +243,23 @@ export class Box {
 	private static _empty?: Box;
 	public static empty() {
 		const { _empty } = Box;
-		return _empty || (Box._empty = Box.forRect(0, 0, 0, 0));
+		return _empty || (Box._empty = Box.rect(0, 0, 0, 0));
 	}
-	public static fromExtrema(x1: number, x2: number, y1: number, y2: number) {
+	public static extrema(x1: number, x2: number, y1: number, y2: number) {
 		if (x1 > x2) [x1, x2] = [x2, x1];
 		if (y1 > y2) [y1, y2] = [y2, y1];
-		return this.forRect(x1, y1, abs(x2 - x1), abs(y2 - y1));
+		return this.rect(x1, y1, abs(x2 - x1), abs(y2 - y1));
 	}
 	public static fromRect({ x = 0, y = 0, width = 0, height = 0 }) {
 		// https://developer.mozilla.org/en-US/docs/Web/API/DOMRect/fromRect
-		return this.forRect(x, y, width, height);
+		return this.rect(x, y, width, height);
 	}
-	public static forRect(x: number, y: number, width: number, height: number) {
+	public static rect(x: number, y: number, width: number, height: number) {
 		return new this(x, y, width, height);
 	}
 	public static parse(s: string) {
 		const v = s.split(/[\s,]+/).map(parseFloat);
-		return this.forRect(v[0], v[1], v[2], v[3]);
+		return this.rect(v[0], v[1], v[2], v[3]);
 	}
 	public static merge(...args: Array<Box>) {
 		let x = Box.not();
@@ -279,7 +279,7 @@ export class Box {
 				return this.parse(first);
 			}
 			case 'number':
-				return this.forRect(first, arguments[1], arguments[2], arguments[3]);
+				return this.rect(first, arguments[1], arguments[2], arguments[3]);
 			case 'undefined':
 				return this.not();
 			case 'object':
@@ -288,14 +288,14 @@ export class Box {
 					if (Array.isArray(x)) {
 						const [x1, x2] = first[0] as number[];
 						const [y1, y2] = first[1] as number[];
-						return this.fromExtrema(
+						return this.extrema(
 							x1 as number,
 							x2 as number,
 							y1 as number,
 							y2 as number
 						);
 					} else {
-						return this.forRect(
+						return this.rect(
 							first[0] as number,
 							first[1] as number,
 							first[2] as number,
@@ -304,7 +304,7 @@ export class Box {
 					}
 				} else {
 					const { left, x, top, y, width, height } = first;
-					return this.forRect(left || x || 0, top || y || 0, width, height);
+					return this.rect(left || x || 0, top || y || 0, width, height);
 				}
 			default:
 				throw new TypeError(`Invalid box argument ${arguments}`);
@@ -401,7 +401,7 @@ export class BoxMut extends Box {
 		return new BoxMut(NaN, NaN, NaN, NaN);
 	}
 
-	public static override forRect(x: number, y: number, width: number, height: number) {
+	public static override rect(x: number, y: number, width: number, height: number) {
 		return new this(x, y, width, height);
 	}
 }

@@ -1,6 +1,6 @@
 'uses strict';
 import { spawn } from 'child_process';
-import { Box, Matrix, BoxMut, Vec } from 'svggeom';
+import { Box, Matrix, BoxMut, Vector } from 'svggeom';
 import test from 'tap';
 const CI = !!process.env.CI;
 
@@ -46,7 +46,7 @@ for await (const [i, item] of enum_box_data({})) {
         switch (i % 4) {
             case 1:
                 box = Box.new(x, y, width, height);
-                box2 = Box.fromExtrema(minX, maxX, maxY, minY);
+                box2 = Box.extrema(minX, maxX, maxY, minY);
                 break;
             case 2:
                 box = Box.new(`${x}, ${y}, ${width}, ${height}`);
@@ -57,8 +57,8 @@ for await (const [i, item] of enum_box_data({})) {
                 box2 = Box.new({ left, top, width, height });
                 break;
             default:
-                box = Box.new(x, y, width, height);
-                box2 = Box.fromExtrema(maxX, minX, maxY, minY); // reverse
+                box = Box.rect(x, y, width, height);
+                box2 = Box.extrema(maxX, minX, maxY, minY); // reverse
         }
         const ex = [item, box];
 
@@ -73,7 +73,7 @@ for await (const [i, item] of enum_box_data({})) {
         t.equal(box.bottom, bottom, 'bottom', ex);
         t.equal(box.centerX, centerX, 'centerX', ex);
         t.equal(box.centerY, centerY, 'centerY', ex);
-        t.equal(box.center.toString(), Vec.new(centerX, centerY).toString(), ex);
+        t.equal(box.center.toString(), Vector.new(centerX, centerY).toString(), ex);
 
         t.equal(box.minX, minX, 'minX', ex);
         t.equal(box.minY, minY, 'minY', ex);
@@ -102,7 +102,7 @@ for await (const [i, item] of enum_box_data({})) {
         }
         t.same(box2.toArray(), [x, y, width, height]);
         {
-            const not = Box.forRect(NaN, NaN, NaN, NaN);
+            const not = Box.rect(NaN, NaN, NaN, NaN);
             t.strictSame(not.merge(box2), box2);
             t.strictSame(not.merge(not), not);
             t.strictSame(box.merge(not), box);

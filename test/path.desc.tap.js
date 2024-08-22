@@ -1,6 +1,6 @@
 'uses strict';
 import test from 'tap';
-import { PathLS, Vec } from 'svggeom';
+import { PathLS, Vector } from 'svggeom';
 import { PathDraw } from '../dist/draw.js';
 import { dSplit } from '../dist/path.js';
 import './utils.js';
@@ -514,9 +514,9 @@ function testPath(test, PathClass) {
         const p = PathClass.lineTo(3, 4);
         t.same(p.d(), 'M0,0L3,4');
         t.ok(p.fillStyle);
-        t.same(PathClass.moveTo(Vec.new(3, 4)).toString(), 'M3,4');
+        t.same(PathClass.moveTo(Vector.new(3, 4)).toString(), 'M3,4');
         if (p.constructor.name == 'PathLS') {
-            const p2 = PathClass.rect(Vec.new(3, 4), 5, 6);
+            const p2 = PathClass.rect(Vector.new(3, 4), 5, 6);
             t.same(p2.describe({ relative: true, short: true }), 'm3,4h5v6h-5z');
             // console.log(p2.describe());
             t.same(p2.describe({ relative: false, short: false }), 'M3,4L8,4L8,10L3,10Z');
