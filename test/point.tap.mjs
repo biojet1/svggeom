@@ -26,12 +26,11 @@ test.test(`point properties`, { bail: !CI }, function (t) {
 test.test(`point construct`, { bail: !CI }, function (t) {
     t.throws(() => Vec.new(5, NaN), TypeError, 'must be finite');
     t.same(Array.from(Vec.new([42, 72])), [42, 72, 0], 'fromArray');
-    t.strictSame(Vec.new().toString(), '0, 0', 'Vec.new()');
-    t.strictSame(Vec.new(-1).toString(), '-1, 0', 'Vec.new(number)');
+    t.strictSame(Vec.new(0, 0, 0).toString(), '0, 0, 0', 'Vec.new()');
+    t.strictSame(Vec.new(-1).toString(), '-1, 0, 0', 'Vec.new(number)');
     t.strictSame(Vec.new(-2, -3, -5).toString(), '-2, -3, -5', 'Vec.new(...)');
-    t.strictSame(Vec.new([42, 72]).toString(), '42, 72', 'Vec.new(array)');
+    t.strictSame(Vec.new([42, 72]).toString(), '42, 72, 0', 'Vec.new(array)');
     t.strictSame(Vec.add([2, 4, 6], [-2, -4, 1]).toString(), '0, 0, 7', 'Vec.add(...)');
-
     t.throws(() => Vec.new(NaN), TypeError, 'must be finite');
     t.end();
 });

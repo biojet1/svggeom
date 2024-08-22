@@ -1,7 +1,7 @@
-import {Matrix} from './matrix.js';
-const {PI, cos, sin, tan} = Math;
+import { Matrix } from './matrix.js';
+const { PI, cos, sin, tan } = Math;
 
-export {Matrix as SVGMatrix};
+export { Matrix as SVGMatrix };
 
 export class SVGTransform extends Matrix {
 	static readonly SVG_TRANSFORM_UNKNOWN = 0;
@@ -22,7 +22,7 @@ export class SVGTransform extends Matrix {
 	}
 
 	setMatrix(m: Matrix): void {
-		const {a, b, c, d, e, f} = m;
+		const { a, b, c, d, e, f } = m;
 		this.type = 1;
 		delete this.angle;
 		delete this._tx;
@@ -113,24 +113,24 @@ export class SVGTransform extends Matrix {
 	toString() {
 		switch (this.type) {
 			case 2: {
-				const {e, f} = this;
+				const { e, f } = this;
 				return `translate(${e}${f ? ' ' + f : ''})`;
 			}
 			case 3: {
-				const {a, d} = this;
+				const { a, d } = this;
 				return `scale(${a}${a == d ? '' : ' ' + d})`;
 			}
 			case 4: {
-				const {angle, _tx, _ty} = this;
+				const { angle, _tx, _ty } = this;
 				if (_tx || _ty) return `rotate(${angle} ${_tx ?? 0} ${_ty ?? 0})`;
 				return `rotate(${angle})`;
 			}
 			case 5: {
-				const {angle} = this;
+				const { angle } = this;
 				return `skewX(${angle})`;
 			}
 			case 6: {
-				const {angle} = this;
+				const { angle } = this;
 				return `skewY(${angle})`;
 			}
 		}
@@ -187,7 +187,7 @@ export class SVGTransformList extends Array<SVGTransform> {
 		let M;
 		for (const m of this) {
 			if (M) {
-				M._catSelf(m.matrix);
+				M._cat_self(m.matrix);
 			} else {
 				M = m.clone();
 			}

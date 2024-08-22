@@ -196,11 +196,11 @@ export class Matrix {
 		return new Matrix([a, b, c, d, e, f]);
 	}
 
-	_catSelf(m: Matrix): this {
+	_cat_self(m: Matrix): this {
 		return this._set_hexad(..._cat(this, m));
 	}
 
-	_postCatSelf(m: Matrix): this {
+	_post_cat_self(m: Matrix): this {
 		return this._set_hexad(..._cat(m, this));
 	}
 
@@ -208,7 +208,7 @@ export class Matrix {
 		return this._hexad(..._cat(this, m));
 	}
 
-	_postCat(m: Matrix): Matrix {
+	_post_cat(m: Matrix): Matrix {
 		return this._hexad(..._cat(m, this));
 	}
 
@@ -224,8 +224,8 @@ export class Matrix {
 		return this._cat(m);
 	}
 
-	postCat(m: Matrix): Matrix {
-		return this._postCat(m);
+	post_cat(m: Matrix): Matrix {
+		return this._post_cat(m);
 	}
 
 	translate(x = 0, y = 0) {
@@ -311,28 +311,28 @@ export class Matrix {
 				});
 				switch (name) {
 					case 'matrix':
-						m._catSelf(this.fromArray(args));
+						m._cat_self(this.fromArray(args));
 						break;
 					case 'translate':
-						m._catSelf(this.translate(args[0], args[1]));
+						m._cat_self(this.translate(args[0], args[1]));
 						break;
 					case 'translateX':
-						m._catSelf(this.translateX(args[0]));
+						m._cat_self(this.translateX(args[0]));
 						break;
 					case 'translateY':
-						m._catSelf(this.translateY(args[0]));
+						m._cat_self(this.translateY(args[0]));
 						break;
 					case 'scale':
-						m._catSelf(this.scale(args[0], args[1]));
+						m._cat_self(this.scale(args[0], args[1]));
 						break;
 					case 'rotate':
-						m._catSelf(this.rotate(args[0], args[1], args[2]));
+						m._cat_self(this.rotate(args[0], args[1], args[2]));
 						break;
 					case 'skewX':
-						m._catSelf(this.skewX(args[0]));
+						m._cat_self(this.skewX(args[0]));
 						break;
 					case 'skewY':
-						m._catSelf(this.skewY(args[0]));
+						m._cat_self(this.skewY(args[0]));
 						break;
 					default:
 						throw new Error(`Unexpected transform '${name}'`);
@@ -473,11 +473,11 @@ export class MatrixMut extends Matrix {
 		return this.setHexad(..._inv(this));
 	}
 
-	catSelf(m: Matrix): this {
-		return this._catSelf(m);
+	cat_self(m: Matrix): this {
+		return this._cat_self(m);
 	}
 
-	postCatSelf(m: Matrix): this {
-		return this._postCatSelf(m);
+	post_cat_self(m: Matrix): this {
+		return this._post_cat_self(m);
 	}
 }

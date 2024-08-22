@@ -84,9 +84,9 @@ test.test(`Matrix.inverse`, { bail: !CI }, function (t) {
         `.inverse().inverse() ${e} ${e.inverse().inverse()}`
     );
     t.ok(a.cat(b.cat(c)).equals(d), `assoc ${d} ${a.cat(b.cat(c))}`);
-    t.ok(a.postCat(b).postCat(c).equals(e), `assoc ${e} ${a.postCat(b).postCat(c)}`);
+    t.ok(a.post_cat(b).post_cat(c).equals(e), `assoc ${e} ${a.post_cat(b).post_cat(c)}`);
     t.notOk(b.cat(c).equals(c.cat(b)), `assoc ${c.cat(b)} ${b.cat(c)}`);
-    t.ok(b.cat(c).equals(c.postCat(b)), `assoc ${c.cat(b)} ${b.cat(c)}`);
+    t.ok(b.cat(c).equals(c.post_cat(b)), `assoc ${c.cat(b)} ${b.cat(c)}`);
     // The identity matrix
     t.ok(I.cat(I).cat(I).equals(I), `I When multiplied by itself, the result is itself ${I}`);
     // Suppose A is an m×n matrix and I is the n×n identity matrix

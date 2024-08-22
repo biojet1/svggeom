@@ -17,16 +17,14 @@ export class Vec {
 
 	// **** Query methods ****
 
-	get angle() {
-		return this.radians;
-	}
-
 	get radians() {
-		const { x, y } = this;
+		const [x, y] = this;
 		let r = atan2(y, x);
 		return r < 0 ? r + TAU : r;
 	}
-
+	get angle() {
+		return this.radians;
+	}
 	get degrees() {
 		return (this.radians * 180) / PI;
 	}
@@ -35,27 +33,43 @@ export class Vec {
 		return (this.degrees * 10) / 9;
 	}
 
-	absQuad() {
-		const { x, y, z } = this;
-		return x * x + y * y + z * z;
+	abs_quad() {
+		let r = 0;
+		for (const n of this) {
+			r += (n * n)
+		}
+		return r;
 	}
 
 	abs() {
-		return sqrt(this.absQuad());
-		// const { x, y } = this;
-		// return hypot(x, y);
+		return sqrt(this.abs_quad());
 	}
 
 	closeTo(p: Iterable<number>, epsilon = 1e-12) {
-		const [x1, y1, z1] = this;
-		const [x2, y2 = 0, z2 = 0] = p;
-		return abs(x1 - x2) < epsilon && abs(y1 - y2) < epsilon && abs(z1 - z2) < epsilon;
+		const i = p[Symbol.iterator]();
+		for (const n of this) {
+			const m = i.next().value;
+			if (abs(n - m) >= epsilon) {
+				return false;
+			}
+		}
+		return true;
+		// const [x1, y1, z1] = this;
+		// const [x2, y2 = 0, z2 = 0] = p;
+		// return abs(x1 - x2) < epsilon && abs(y1 - y2) < epsilon && abs(z1 - z2) < epsilon;
 	}
 
 	dot(p: Iterable<number>) {
-		const [x1, y1, z1] = this;
-		const [x2, y2 = 0, z2 = 0] = p;
-		return x1 * x2 + y1 * y2 + z1 * z2;
+		// const [x1, y1, z1] = this;
+		// const [x2, y2 = 0, z2 = 0] = p;
+		// return x1 * x2 + y1 * y2 + z1 * z2;
+		let r = 0;
+		const i = p[Symbol.iterator]();
+		for (const n of this) {
+			const m = i.next().value;
+			r += (n * m)
+		}
+		return r;
 	}
 
 	cross(p: Iterable<number>) {
@@ -64,30 +78,46 @@ export class Vec {
 		return Vec.of(b * z - c * y, c * x - a * z, a * y - b * x);
 	}
 
-	equals(p: Iterable<number>) {
+	equals(p: Iterable<number>): boolean {
 		if (!p) {
 			return false;
 		} else if (p === this) {
 			return true;
+		} else {
+			const A = this[Symbol.iterator]();
+			const B = p[Symbol.iterator]();
+			let a = A.next();
+			let b = B.next();
+			while (1) {
+				if (a.done && b.done) {
+					return true;
+				} else if (!b.done && a.value == b.value) {
+					a = A.next();
+					b = B.next();
+				} else {
+					return false;
+				}
+			};
+			return false;
 		}
-		const [x1, y1, z1] = this;
-		const [x2, y2 = 0, z2 = 0] = p;
-		return x1 === x2 && y1 === y2 && z1 === z2;
+		// const [x1, y1, z1] = this;
+		// const [x2, y2 = 0, z2 = 0] = p;
+		// return x1 === x2 && y1 === y2 && z1 === z2;
 	}
 
 	angleTo(p: Iterable<number>) {
 		// return p.sub(this).angle;
-		return this.postSubtract(p).angle;
+		return this.post_subtract(p).angle;
 	}
 
 	toString() {
-		const { x, y, z } = this;
-		return z ? `${x}, ${y}, ${z}` : `${x}, ${y}`;
+		// const { x, y, z } = this;
+		// return z ? `${x}, ${y}, ${z}` : `${x}, ${y}`;
+		return this.toArray().join(', ')
 	}
 
 	toArray() {
-		const { x, y, z } = this;
-		return [x, y, z];
+		return [...this];
 	}
 
 	// Methods returning new Vec
@@ -146,7 +176,7 @@ export class Vec {
 
 	// subtract, divide, multiply
 
-	postSubtract(p: Iterable<number>) {
+	post_subtract(p: Iterable<number>) {
 		const [x1, y1 = 0, z1 = 0] = p;
 		const [x2, y2, z2] = this;
 		return Vec.of(x1 - x2, y1 - y2, z1 - z2);
@@ -171,16 +201,11 @@ export class Vec {
 		const abs = this.abs();
 		if (!abs) throw new TypeError(`Can't normalize vector of zero length [${this}]`);
 		return this.div(abs);
-		// const {x, y, z} = this;
-		// if(x){
-		// 	if(y==0,)
-		// }
-		// return x * x + y * y + z * z;
 	}
 
 	reflectAt(p: Iterable<number>) {
 		// return p.add(p.sub(this));
-		return this.postSubtract(p).postAdd(p);
+		return this.post_subtract(p).postAdd(p);
 	}
 
 	transform(matrix: any) {
@@ -233,19 +258,10 @@ export class Vec {
 	nearestPointOfLine(a: Iterable<number>, b: Iterable<number>): Vec {
 		const a_to_p = this.sub(a); // a → p
 		const a_to_b = Vec.subtract(b, a); // a → b
-		const t = a_to_p.dot(a_to_b) / a_to_b.absQuad();
+		const t = a_to_p.dot(a_to_b) / a_to_b.abs_quad();
 		return a_to_b.mul(t).postAdd(a);
 	}
 	// Modify self methods
-
-	// divideSelf(factor: number) {
-	// 	const { x, y, z } = this;
-	// 	this.x = x / factor;
-	// 	this.y = y / factor;
-	// 	this.z = z / factor;
-	// 	return this;
-	// }
-	// isolateX
 
 	// Misc methods
 
