@@ -166,7 +166,7 @@ export class SVGTransformList extends Array {
         let M;
         for (const m of this) {
             if (M) {
-                M._catSelf(m.matrix);
+                M._cat_self(m.matrix);
             }
             else {
                 M = m.clone();

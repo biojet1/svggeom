@@ -3,11 +3,11 @@ export declare class Vec {
     readonly y: number;
     readonly z: number;
     private constructor();
-    get angle(): number;
     get radians(): number;
+    get angle(): number;
     get degrees(): number;
     get grade(): number;
-    absQuad(): number;
+    abs_quad(): number;
     abs(): number;
     closeTo(p: Iterable<number>, epsilon?: number): boolean;
     dot(p: Iterable<number>): number;
@@ -26,7 +26,7 @@ export declare class Vec {
     div(factor: number): Vec;
     add(p: Iterable<number>): Vec;
     sub(p: Iterable<number>): Vec;
-    postSubtract(p: Iterable<number>): Vec;
+    post_subtract(p: Iterable<number>): Vec;
     postAdd(p: Iterable<number>): Vec;
     mul(factor: number): Vec;
     distance(p: Iterable<number>): number;

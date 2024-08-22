@@ -146,16 +146,16 @@ export class Matrix {
     _hexad(a = 1, b = 0, c = 0, d = 1, e = 0, f = 0) {
         return new Matrix([a, b, c, d, e, f]);
     }
-    _catSelf(m) {
+    _cat_self(m) {
         return this._set_hexad(..._cat(this, m));
     }
-    _postCatSelf(m) {
+    _post_cat_self(m) {
         return this._set_hexad(..._cat(m, this));
     }
     _cat(m) {
         return this._hexad(..._cat(this, m));
     }
-    _postCat(m) {
+    _post_cat(m) {
         return this._hexad(..._cat(m, this));
     }
     inverse() {
@@ -167,8 +167,8 @@ export class Matrix {
     multiply(m) {
         return this._cat(m);
     }
-    postCat(m) {
-        return this._postCat(m);
+    post_cat(m) {
+        return this._post_cat(m);
     }
     translate(x = 0, y = 0) {
         return this._cat(Matrix.matrix(1, 0, 0, 1, x, y));
@@ -217,28 +217,28 @@ export class Matrix {
                 });
                 switch (name) {
                     case 'matrix':
-                        m._catSelf(this.fromArray(args));
+                        m._cat_self(this.fromArray(args));
                         break;
                     case 'translate':
-                        m._catSelf(this.translate(args[0], args[1]));
+                        m._cat_self(this.translate(args[0], args[1]));
                         break;
                     case 'translateX':
-                        m._catSelf(this.translateX(args[0]));
+                        m._cat_self(this.translateX(args[0]));
                         break;
                     case 'translateY':
-                        m._catSelf(this.translateY(args[0]));
+                        m._cat_self(this.translateY(args[0]));
                         break;
                     case 'scale':
-                        m._catSelf(this.scale(args[0], args[1]));
+                        m._cat_self(this.scale(args[0], args[1]));
                         break;
                     case 'rotate':
-                        m._catSelf(this.rotate(args[0], args[1], args[2]));
+                        m._cat_self(this.rotate(args[0], args[1], args[2]));
                         break;
                     case 'skewX':
-                        m._catSelf(this.skewX(args[0]));
+                        m._cat_self(this.skewX(args[0]));
                         break;
                     case 'skewY':
-                        m._catSelf(this.skewY(args[0]));
+                        m._cat_self(this.skewY(args[0]));
                         break;
                     default:
                         throw new Error(`Unexpected transform '${name}'`);
@@ -331,11 +331,11 @@ export class MatrixMut extends Matrix {
     invertSelf() {
         return this.setHexad(..._inv(this));
     }
-    catSelf(m) {
-        return this._catSelf(m);
+    cat_self(m) {
+        return this._cat_self(m);
     }
-    postCatSelf(m) {
-        return this._postCatSelf(m);
+    post_cat_self(m) {
+        return this._post_cat_self(m);
     }
 }
 //# sourceMappingURL=matrix.js.map

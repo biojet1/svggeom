@@ -32,14 +32,14 @@ export declare class Matrix {
     describe(): string;
     protected _set_hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): this;
     protected _hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;
-    _catSelf(m: Matrix): this;
-    _postCatSelf(m: Matrix): this;
+    _cat_self(m: Matrix): this;
+    _post_cat_self(m: Matrix): this;
     _cat(m: Matrix): Matrix;
-    _postCat(m: Matrix): Matrix;
+    _post_cat(m: Matrix): Matrix;
     inverse(): Matrix;
     cat(m: Matrix): Matrix;
     multiply(m: Matrix): Matrix;
-    postCat(m: Matrix): Matrix;
+    post_cat(m: Matrix): Matrix;
     translate(x?: number, y?: number): Matrix;
     translateY(v: number): Matrix;
     translateX(v: number): Matrix;
@@ -73,7 +73,7 @@ interface ElementLike {
 export declare class MatrixMut extends Matrix {
     protected setHexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): this;
     invertSelf(): this;
-    catSelf(m: Matrix): this;
-    postCatSelf(m: Matrix): this;
+    cat_self(m: Matrix): this;
+    post_cat_self(m: Matrix): this;
 }
 export {};
