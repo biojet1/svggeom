@@ -2,7 +2,7 @@ import { Box } from '../box.js';
 import { SegmentSE, tNorm } from './index.js';
 class LineSegment extends SegmentSE {
     bbox() {
-        const { from: { x: p1x, y: p1y }, to: { x: p2x, y: p2y }, } = this;
+        const { from: [p1x, p1y], to: [p2x, p2y], } = this;
         const [xmin, xmax] = [Math.min(p1x, p2x), Math.max(p1x, p2x)];
         const [ymin, ymax] = [Math.min(p1y, p2y), Math.max(p1y, p2y)];
         return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
@@ -13,7 +13,7 @@ class LineSegment extends SegmentSE {
     }
     pointAt(t) {
         const { from, to } = this;
-        return to.sub(from).mul(tNorm(t)).postAdd(from);
+        return to.sub(from).mul(tNorm(t)).post_add(from);
     }
     slopeAt(t) {
         const { from, to } = this;
@@ -34,7 +34,7 @@ class LineSegment extends SegmentSE {
         return this.newFromTo(to, from);
     }
     toPathFragment(opt) {
-        const { to: { x, y }, } = this;
+        const { to: [x, y] } = this;
         return ['L', x, y];
     }
 }

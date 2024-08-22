@@ -1,15 +1,14 @@
 const { sqrt, abs, cos, sin, atan2, PI } = Math;
 const TAU = PI * 2;
-export class Vec {
-    x;
-    y;
-    z;
-    constructor(x = 0, y = 0, z = 0) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        if (isNaN(x) || isNaN(y) || isNaN(z))
-            throw TypeError(`Must be a number x=${x} y=${y} z=${z}`);
+export class Vec extends Float64Array {
+    get x() {
+        return this[0];
+    }
+    get y() {
+        return this[1];
+    }
+    get z() {
+        return this[2];
     }
     get radians() {
         const [x, y] = this;
@@ -28,6 +27,9 @@ export class Vec {
     abs_quad() {
         let r = 0;
         for (const n of this) {
+            if (!isFinite(n)) {
+                throw new Error(`{this}`);
+            }
             r += (n * n);
         }
         return r;
@@ -38,7 +40,13 @@ export class Vec {
     closeTo(p, epsilon = 1e-12) {
         const i = p[Symbol.iterator]();
         for (const n of this) {
+            if (!isFinite(n)) {
+                throw new Error(`{this}`);
+            }
             const m = i.next().value;
+            if (!isFinite(m)) {
+                throw new Error(`{this}`);
+            }
             if (abs(n - m) >= epsilon) {
                 return false;
             }
@@ -57,7 +65,7 @@ export class Vec {
     cross(p) {
         const [a, b, c] = this;
         const [x, y = 0, z = 0] = p;
-        return Vec.of(b * z - c * y, c * x - a * z, a * y - b * x);
+        return Vec.vec(b * z - c * y, c * x - a * z, a * y - b * x);
     }
     equals(p) {
         if (!p) {
@@ -97,60 +105,54 @@ export class Vec {
         return [...this];
     }
     normal() {
-        const { x, y, z } = this;
-        return Vec.of(y, -x, z);
+        const [x, y, z] = this;
+        return Vec.vec(y, -x, z);
     }
     onlyX() {
-        const { x } = this;
-        return Vec.of(x, 0, 0);
+        const [x] = this;
+        return Vec.vec(x, 0, 0);
     }
     onlyY() {
-        const { y } = this;
-        return Vec.of(0, y, 0);
+        const [_, y] = this;
+        return Vec.vec(0, y, 0);
     }
     onlyZ() {
-        const { z } = this;
-        return Vec.of(0, 0, z);
+        const [_1, _2, z] = this;
+        return Vec.vec(0, 0, z);
     }
     withX(x) {
-        const { y, z } = this;
-        return Vec.of(x, y, z);
+        const [_, y, z] = this;
+        return Vec.vec(x, y, z);
     }
     withY(y) {
-        const { x, z } = this;
-        return Vec.of(x, y, z);
+        const [x, _, z] = this;
+        return Vec.vec(x, y, z);
     }
     withZ(z) {
-        const { y, x } = this;
-        return Vec.of(x, y, z);
+        const [x, y] = this;
+        return Vec.vec(x, y, z);
     }
     div(factor) {
-        const { x, y, z } = this;
-        return Vec.of(x / factor, y / factor, z / factor);
-    }
-    add(p) {
-        const [x1, y1, z1] = this;
-        const [x2, y2, z2 = 0] = p;
-        return Vec.of(x1 + x2, y1 + y2, z1 + z2);
-    }
-    sub(p) {
-        const [x1, y1, z1] = this;
-        const [x2, y2, z2 = 0] = p;
-        return Vec.of(x1 - x2, y1 - y2, z1 - z2);
-    }
-    post_subtract(p) {
-        const [x1, y1 = 0, z1 = 0] = p;
-        const [x2, y2, z2] = this;
-        return Vec.of(x1 - x2, y1 - y2, z1 - z2);
-    }
-    postAdd(p) {
-        const [x1, y1 = 0, z1 = 0] = p;
-        const [x2, y2, z2] = this;
-        return Vec.of(x1 + x2, y1 + y2, z1 + z2);
+        return Vec.vec(...[...this].map(v => v / factor));
     }
     mul(factor) {
-        const { x, y, z } = this;
-        return Vec.of(x * factor, y * factor, z * factor);
+        return Vec.vec(...[...this].map(v => v * factor));
+    }
+    add(that) {
+        const I = that[Symbol.iterator]();
+        return new Vec(this.map((v, i) => v + (I.next().value ?? 0)));
+    }
+    sub(that) {
+        const I = that[Symbol.iterator]();
+        return new Vec(this.map((v, i) => v - (I.next().value ?? 0)));
+    }
+    post_subtract(that) {
+        const I = that[Symbol.iterator]();
+        return new Vec(this.map((v, i) => (I.next().value ?? 0) - v));
+    }
+    post_add(that) {
+        const I = that[Symbol.iterator]();
+        return new Vec(this.map((v, i) => (I.next().value ?? 0) + v));
     }
     distance(p) {
         return this.sub(p).abs();
@@ -162,56 +164,50 @@ export class Vec {
         return this.div(abs);
     }
     reflectAt(p) {
-        return this.post_subtract(p).postAdd(p);
+        return this.post_subtract(p).post_add(p);
     }
     transform(matrix) {
-        const { x, y } = this;
+        const [x, y] = this;
         const { a, b, c, d, e, f } = matrix;
-        return Vec.of(a * x + c * y + e, b * x + d * y + f);
+        return Vec.vec(a * x + c * y + e, b * x + d * y + f);
     }
     flipX() {
-        const { x, y, z } = this;
-        return Vec.of(-x, y, z);
+        const [x, y, z] = this;
+        return Vec.vec(-x, y, z);
     }
     flipY() {
-        const { x, y, z } = this;
-        return Vec.of(x, -y, z);
+        const [x, y, z] = this;
+        return Vec.vec(x, -y, z);
     }
     flipZ() {
-        const { x, y, z } = this;
-        return Vec.of(x, y, -z);
+        const [x, y, z] = this;
+        return Vec.vec(x, y, -z);
     }
     shiftX(d) {
-        const { x, y, z } = this;
-        return Vec.of(x + d, y, z);
+        const [x, y, z] = this;
+        return Vec.vec(x + d, y, z);
     }
     shiftY(d) {
-        const { x, y, z } = this;
-        return Vec.of(x, y + d, z);
+        const [x, y, z] = this;
+        return Vec.vec(x, y + d, z);
     }
     shiftZ(d) {
-        const { x, y, z } = this;
-        return Vec.of(x, y, z + d);
+        const [x, y, z] = this;
+        return Vec.vec(x, y, z + d);
     }
     rotated(rad) {
-        const { x, y, z } = this;
+        const [x, y, z] = this;
         const [cs, sn] = [cos(rad), sin(rad)];
-        return Vec.of(x * cs - y * sn, x * sn + y * cs, z);
+        return Vec.vec(x * cs - y * sn, x * sn + y * cs, z);
     }
     clone() {
-        return Vec.of(...this);
+        return Vec.vec(...this);
     }
     nearestPointOfLine(a, b) {
         const a_to_p = this.sub(a);
         const a_to_b = Vec.subtract(b, a);
         const t = a_to_p.dot(a_to_b) / a_to_b.abs_quad();
-        return a_to_b.mul(t).postAdd(a);
-    }
-    *[Symbol.iterator]() {
-        const { x, y, z } = this;
-        yield x;
-        yield y;
-        yield z;
+        return a_to_b.mul(t).post_add(a);
     }
     final() {
         return Object.isFrozen(this) ? this : Object.freeze(this.clone());
@@ -222,30 +218,38 @@ export class Vec {
     static new(x, y, z) {
         switch (typeof x) {
             case 'number':
-                return new this(x, y, z);
+                return this.vec(x, y ?? 0, z ?? 0);
             case 'string':
                 return this.parse(x);
             default:
                 if (x) {
-                    return new this(...x);
+                    return this.pos(...x);
                 }
                 else {
                     return new this();
                 }
         }
     }
-    static of(...nums) {
-        return new this(...nums);
+    static vec(...nums) {
+        for (const n of nums) {
+            if (!isFinite(n)) {
+                throw new TypeError(`must be finite {nums}`);
+            }
+        }
+        return new this(nums);
+    }
+    static pos(x = 0, y = 0, z = 0) {
+        return this.vec(x, y, z);
     }
     static polar(radius = 1, ϕ = 0, ϴ) {
         if (ϴ == null) {
-            return radius ? this.of(radius * cos(ϕ), radius * sin(ϕ)) : this.of(0, 0, 0);
+            return radius ? this.vec(radius * cos(ϕ), radius * sin(ϕ), 0) : this.vec(0, 0, 0);
         }
         else {
             const sinϴ = sin(ϴ);
             return radius
-                ? this.of(radius * cos(ϕ) * sinϴ, radius * sin(ϕ) * sinϴ, radius * cos(ϴ))
-                : this.of(0, 0, 0);
+                ? this.vec(radius * cos(ϕ) * sinϴ, radius * sin(ϕ) * sinϴ, radius * cos(ϴ))
+                : this.vec(0, 0, 0);
         }
     }
     static radians(n, r = 1) {
@@ -255,13 +259,13 @@ export class Vec {
         switch (ϴ) {
             case 90:
             case -270:
-                return this.of(0, r, 0);
+                return this.vec(0, r, 0);
             case -90:
             case 270:
-                return this.of(0, -r, 0);
+                return this.vec(0, -r, 0);
             case 180:
             case -180:
-                return this.of(-r, 0, 0);
+                return this.vec(-r, 0, 0);
         }
         return this.radians((ϴ * PI) / 180, r);
     }
@@ -271,12 +275,12 @@ export class Vec {
     static add(a, b) {
         const [x1, y1 = 0, z1 = 0] = a;
         const [x2, y2 = 0, z2 = 0] = b;
-        return this.of(x1 + x2, y1 + y2, z1 + z2);
+        return this.vec(x1 + x2, y1 + y2, z1 + z2);
     }
     static subtract(a, b) {
         const [x1, y1 = 0, z1 = 0] = a;
         const [x2, y2 = 0, z2 = 0] = b;
-        return this.of(x1 - x2, y1 - y2, z1 - z2);
+        return this.vec(x1 - x2, y1 - y2, z1 - z2);
     }
     static parse(s) {
         const a = s.split(/\</);

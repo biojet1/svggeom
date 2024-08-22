@@ -1,8 +1,7 @@
-export declare class Vec {
-    readonly x: number;
-    readonly y: number;
-    readonly z: number;
-    private constructor();
+export declare class Vec extends Float64Array {
+    get x(): number;
+    get y(): number;
+    get z(): number;
     get radians(): number;
     get angle(): number;
     get degrees(): number;
@@ -24,11 +23,11 @@ export declare class Vec {
     withY(y: number): Vec;
     withZ(z: number): Vec;
     div(factor: number): Vec;
-    add(p: Iterable<number>): Vec;
-    sub(p: Iterable<number>): Vec;
-    post_subtract(p: Iterable<number>): Vec;
-    postAdd(p: Iterable<number>): Vec;
     mul(factor: number): Vec;
+    add(that: Iterable<number>): Vec;
+    sub(that: Iterable<number>): Vec;
+    post_subtract(that: Iterable<number> | Vec): Vec;
+    post_add(that: Iterable<number>): Vec;
     distance(p: Iterable<number>): number;
     normalize(): Vec;
     reflectAt(p: Iterable<number>): Vec;
@@ -42,11 +41,11 @@ export declare class Vec {
     rotated(rad: number): Vec;
     clone(): Vec;
     nearestPointOfLine(a: Iterable<number>, b: Iterable<number>): Vec;
-    [Symbol.iterator](): Iterator<number>;
     final(): Readonly<Vec>;
     mut(): Vec;
     static new(x?: number[] | Iterable<number> | number | string, y?: number, z?: number): Vec;
-    private static of;
+    private static vec;
+    static pos(x?: number, y?: number, z?: number): Vec;
     static polar(radius?: number, ϕ?: number, ϴ?: number): Vec;
     static radians(n: number, r?: number): Vec;
     static degrees(ϴ: number, r?: number): Vec;

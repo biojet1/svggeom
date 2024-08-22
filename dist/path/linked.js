@@ -354,7 +354,7 @@ export class LineLS extends SegmentLS {
     }
     pointAt(t) {
         const { from, to } = this;
-        return to.sub(from).mul(tCheck(t)).postAdd(from);
+        return to.sub(from).mul(tCheck(t)).post_add(from);
     }
     slopeAt(_) {
         const { from, to } = this;
@@ -523,7 +523,7 @@ export class QuadLS extends SegmentLS {
         return _prev ? quadBBox(this._qpts) : Box.new();
     }
     _descs(opt) {
-        const { p: { x: x1, y: y1 }, to: { x: ex, y: ey }, } = this;
+        const { p: [x1, y1], to: [ex, ey], } = this;
         if (opt) {
             const { relative, smooth } = opt;
             const { p, _prev } = this;
@@ -646,8 +646,8 @@ export class ArcLS extends SegmentLS {
         if (!(isFinite(φ) && isFinite(rx) && isFinite(ry)))
             throw Error(`${JSON.stringify(arguments)}`);
         super(prev, to);
-        const { x: x1, y: y1 } = this.from;
-        const { x: x2, y: y2 } = this.to;
+        const [x1, y1] = this.from;
+        const [x2, y2] = this.to;
         [this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] = arc_params(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
     }
     bbox() {

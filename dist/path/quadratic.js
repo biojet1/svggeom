@@ -28,8 +28,8 @@ export class Quadratic extends SegmentSE {
         return quadBBox(this._qpts);
     }
     toPathFragment() {
-        const { c, to } = this;
-        return ['Q', c.x, c.y, to.x, to.y];
+        const { c: [cx, cy], to: [x, y] } = this;
+        return ['Q', cx, cy, x, y];
     }
     transform(M) {
         const { from, c, to } = this;

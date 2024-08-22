@@ -15,10 +15,10 @@ function* pickXY(args) {
 }
 function Pt(x, y) {
     if (typeof x === 'object') {
-        return Vec.new(...x);
+        return Vec.pos(...x);
     }
     else {
-        return Vec.new(x, y);
+        return Vec.pos(x, y);
     }
 }
 export class VecRay {
@@ -29,19 +29,24 @@ export class VecRay {
         this._dir = aim;
     }
     get x() {
-        return this.pos.x;
+        const [x,] = this.pos;
+        return x;
     }
     get y() {
-        return this.pos.y;
+        const [x, y] = this.pos;
+        return y;
     }
     get z() {
-        return this.pos.z;
+        const [x, y, z] = this.pos;
+        return z;
     }
     get h() {
-        return this.dir.x;
+        const [x, y] = this.dir;
+        return x;
     }
     get v() {
-        return this.dir.y;
+        const [x, y] = this.dir;
+        return y;
     }
     get pos() {
         return this._pos;
@@ -50,10 +55,7 @@ export class VecRay {
         return this._dir;
     }
     *[Symbol.iterator]() {
-        const { x, y, z } = this.pos;
-        yield x;
-        yield y;
-        yield z;
+        yield* this.pos;
     }
     at() {
         return this.pos;
@@ -77,7 +79,7 @@ export class VecRay {
         return d > 0 ? 1 : d < 0 ? -1 : 0;
     }
     distanceFromLine(a, b) {
-        const { x, y } = this.pos;
+        const [x, y] = this.pos;
         const [x1, y1] = a;
         const [x2, y2] = b;
         const [dx, dy] = [x2 - x1, y2 - y1];
@@ -106,7 +108,7 @@ export class VecRay {
         const dx = [x1 - x2, x3 - x4];
         const dy = [y1 - y2, y3 - y4];
         const d = dx[0] * dy[1] - dy[0] * dx[1];
-        return Vec.new((e1 * dx[1] - dx[0] * e2) / d, (e1 * dy[1] - dy[0] * e2) / d);
+        return Vec.pos((e1 * dx[1] - dx[0] * e2) / d, (e1 * dy[1] - dy[0] * e2) / d);
     }
     intersectOfRay(r) {
         const { pos, dir } = this;
@@ -133,7 +135,7 @@ export class Ray extends VecRay {
     }
     withDir(rad) {
         if (typeof rad === 'object') {
-            return this._Dir(Vec.new(...rad));
+            return this._Dir(Vec.pos(...rad));
         }
         else {
             return this._Dir(Vec.radians(rad));
@@ -141,11 +143,11 @@ export class Ray extends VecRay {
     }
     withH(h = 0) {
         const { v } = this;
-        return this._Dir(Vec.new(h, v));
+        return this._Dir(Vec.pos(h, v));
     }
     withV(v = 0) {
         const { h } = this;
-        return this._Dir(Vec.new(h, v));
+        return this._Dir(Vec.pos(h, v));
     }
     withX(x = 0) {
         const { pos } = this;
@@ -182,7 +184,7 @@ export class Ray extends VecRay {
     }
     forward(d) {
         const { pos, dir } = this;
-        return this._Pos(dir.normalize().mul(d).postAdd(pos));
+        return this._Pos(dir.normalize().mul(d).post_add(pos));
     }
     back(d) {
         if (d) {
@@ -194,15 +196,15 @@ export class Ray extends VecRay {
     }
     translate(x, y) {
         const { pos } = this;
-        return this._Pos(Pt(x, y).postAdd(pos));
+        return this._Pos(Pt(x, y).post_add(pos));
     }
     along(t, x, y) {
         const { pos } = this;
-        return this._Pos(Pt(x, y).sub(pos).mul(t).postAdd(pos));
+        return this._Pos(Pt(x, y).sub(pos).mul(t).post_add(pos));
     }
     turn(rad) {
         if (typeof rad === 'object') {
-            return this._Dir(Vec.new(...rad));
+            return this._Dir(Vec.pos(...rad));
         }
         else {
             return this._Dir(Vec.radians(rad));
@@ -212,7 +214,7 @@ export class Ray extends VecRay {
         switch (rad) {
             case undefined:
                 const { h, v } = this;
-                return this._Dir(Vec.new(-v, h));
+                return this._Dir(Vec.pos(-v, h));
             default:
                 return this._Dir(this.dir.rotated(rad));
         }
@@ -220,7 +222,7 @@ export class Ray extends VecRay {
     right(rad) {
         if (rad === undefined) {
             const { h, v } = this;
-            return this._Dir(Vec.new(v, -h));
+            return this._Dir(Vec.pos(v, -h));
         }
         else {
             return this._Dir(this.dir.rotated(-rad));
@@ -251,12 +253,12 @@ export class Ray extends VecRay {
     }
     normalToSide(a) {
         const s = this.side(a);
-        const { dir: { x, y }, } = this;
+        const { dir: [x, y] } = this;
         if (s > 0) {
-            return this._Dir(Vec.new(-y, x));
+            return this._Dir(Vec.pos(-y, x));
         }
         else if (s < 0) {
-            return this._Dir(Vec.new(y, -x));
+            return this._Dir(Vec.pos(y, -x));
         }
         return this;
     }
@@ -278,20 +280,20 @@ export class Ray extends VecRay {
     }
     static new(...args) {
         const [x = 0, y = 0, h = 1, v = 0] = pickXY(args);
-        return new this(Vec.new(x, y), Vec.new(h, v));
+        return new this(Vec.pos(x, y), Vec.pos(h, v));
     }
     static pos(x, y) {
-        return new this(Pt(x, y), Vec.new(1, 0));
+        return new this(Pt(x, y), Vec.pos(1, 0));
     }
     static at(x, y) {
-        return new this(Pt(x, y), Vec.new(1, 0));
+        return new this(Pt(x, y), Vec.pos(1, 0));
     }
     static dir(rad) {
         if (typeof rad === 'object') {
-            return new this(Vec.new(0, 0), Vec.new(...rad));
+            return new this(Vec.pos(0, 0), Vec.pos(...rad));
         }
         else {
-            return new this(Vec.new(0, 0), Vec.radians(rad));
+            return new this(Vec.pos(0, 0), Vec.radians(rad));
         }
     }
     static towards(x, y) {
@@ -307,7 +309,7 @@ export class Ray extends VecRay {
         return this.new().before(Pt(x, y));
     }
     static get home() {
-        return new this(Vec.new(0, 0), Vec.new(1, 0));
+        return new this(Vec.pos(0, 0), Vec.pos(1, 0));
     }
 }
 export class RayL extends Ray {

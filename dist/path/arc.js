@@ -22,8 +22,8 @@ export class Arc extends SegmentSE {
         if (!(isFinite(φ) && isFinite(rx) && isFinite(ry)))
             throw Error(`${JSON.stringify(arguments)}`);
         super(from, to);
-        const { x: x1, y: y1 } = this.from;
-        const { x: x2, y: y2 } = this.to;
+        const [x1, y1] = this.from;
+        const [x2, y2] = this.to;
         [
             this.phi,
             this.rx,
