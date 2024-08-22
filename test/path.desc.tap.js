@@ -1,8 +1,8 @@
 'uses strict';
 import test from 'tap';
-import {PathLS, Vec} from 'svggeom';
-import {PathDraw} from '../dist/draw.js';
-import {dSplit} from '../dist/path.js';
+import { PathLS, Vec } from 'svggeom';
+import { PathDraw } from '../dist/draw.js';
+import { dSplit } from '../dist/path.js';
 import './utils.js';
 const CI = !!process.env.CI;
 // https://github.com/d3/d3-path/blob/main/test/path-test.js
@@ -28,7 +28,7 @@ function testPath(test, PathClass) {
         return new PathClass();
     };
 
-    test.test(`Path=${PathClass.name}`, {bail: 1}, function (t) {
+    test.test(`Path=${PathClass.name}`, { bail: 1 }, function (t) {
         const it = t.test;
         const path = function () {
             return new PathClass();
@@ -471,9 +471,9 @@ function testPath(test, PathClass) {
             p.moveTo(150, 100), p.rect(100, 200, 50, 25);
             if (p.constructor.name == 'PathLS') {
                 t.samePath(p, 'M150,100M100,200L150,200L150,225L100,225Z');
-                t.samePath(p.describe({relative: true}), 'm150,100m-50,100l50,0l0,25l-50,0z');
-                t.samePath(p.describe({relative: true, short: true}), 'm150,100m-50,100h50v25h-50z');
-                t.samePath(p.describe({short: true}), 'M150,100M100,200H150V225H100Z');
+                t.samePath(p.describe({ relative: true }), 'm150,100m-50,100l50,0l0,25l-50,0z');
+                t.samePath(p.describe({ relative: true, short: true }), 'm150,100m-50,100h50v25h-50z');
+                t.samePath(p.describe({ short: true }), 'M150,100M100,200H150V225H100Z');
             } else {
                 t.samePath(p, 'M150,100M100,200h50v25h-50Z');
             }
@@ -490,13 +490,13 @@ function testPath(test, PathClass) {
         });
         t.end();
     });
-    test.test(`Path<${PathClass.name}>:Font`, {bail: 1}, async t =>
+    test.test(`Path<${PathClass.name}>:Font`, { bail: 1 }, async t =>
         import('opentype.js')
             .then(mod => mod.loadSync('test/CaviarDreams.ttf'))
             .then(font => {
                 let s = '!';
                 PathClass.digits = 2;
-                const par = {font, fontSize: 42};
+                const par = { font, fontSize: 42 };
                 const d1 = par.font.getPath(s, 0, 0, par.fontSize).toPathData(PathClass.digits);
                 const d2 = `M3,4` + par.font.getPath(s, 3, 4, par.fontSize).toPathData(PathClass.digits);
                 // console.log(d1);
@@ -510,16 +510,16 @@ function testPath(test, PathClass) {
                 t.same(descSplit(p2), descSplit(d2));
             })
     );
-    test.test(`Path<${PathClass.name}>:Extra`, {bail: 1}, function (t) {
+    test.test(`Path<${PathClass.name}>:Extra`, { bail: 1 }, function (t) {
         const p = PathClass.lineTo(3, 4);
         t.same(p.d(), 'M0,0L3,4');
         t.ok(p.fillStyle);
-        t.same(PathClass.moveTo(Vec.pos(3, 4)).toString(), 'M3,4');
+        t.same(PathClass.moveTo(Vec.new(3, 4)).toString(), 'M3,4');
         if (p.constructor.name == 'PathLS') {
-            const p2 = PathClass.rect(Vec.pos(3, 4), 5, 6);
-            t.same(p2.describe({relative: true, short: true}), 'm3,4h5v6h-5z');
+            const p2 = PathClass.rect(Vec.new(3, 4), 5, 6);
+            t.same(p2.describe({ relative: true, short: true }), 'm3,4h5v6h-5z');
             // console.log(p2.describe());
-            t.same(p2.describe({relative: false, short: false}), 'M3,4L8,4L8,10L3,10Z');
+            t.same(p2.describe({ relative: false, short: false }), 'M3,4L8,4L8,10L3,10Z');
 
             {
                 const [seg, part, len] = p2.segmentAtLength(10);
@@ -575,13 +575,13 @@ function testPath(test, PathClass) {
                 t.same([x, y], [3, 4]);
             }
 
-            t.same(p2.cropAt(0, 1).describe({relative: true, short: true}), 'm3,4h5v6h-5z');
-            t.same(p2.cropAt(0, 2).describe({relative: true, short: true}), 'm3,4h5v6h-5z');
-            t.same(p2.cropAt(0.5, 1).describe({relative: false, short: false}), 'M8,10L3,10Z');
-            t.same(p2.cropAt(1, 0.5).describe({relative: false, short: false}), 'M8,10L3,10Z');
-            t.same(p2.cropAt(0.5, 0.75).describe({relative: false, short: false}), 'M8,10L3,10L3,9.5');
-            t.same(p2.cropAt(0.75, 0.5).describe({relative: false, short: false}), 'M8,10L3,10L3,9.5');
-            t.same(p2.cropAt(-0.5, -0.25).describe({relative: false, short: false}), 'M8,10L3,10L3,9.5');
+            t.same(p2.cropAt(0, 1).describe({ relative: true, short: true }), 'm3,4h5v6h-5z');
+            t.same(p2.cropAt(0, 2).describe({ relative: true, short: true }), 'm3,4h5v6h-5z');
+            t.same(p2.cropAt(0.5, 1).describe({ relative: false, short: false }), 'M8,10L3,10Z');
+            t.same(p2.cropAt(1, 0.5).describe({ relative: false, short: false }), 'M8,10L3,10Z');
+            t.same(p2.cropAt(0.5, 0.75).describe({ relative: false, short: false }), 'M8,10L3,10L3,9.5');
+            t.same(p2.cropAt(0.75, 0.5).describe({ relative: false, short: false }), 'M8,10L3,10L3,9.5');
+            t.same(p2.cropAt(-0.5, -0.25).describe({ relative: false, short: false }), 'M8,10L3,10L3,9.5');
 
             {
                 const [seg, part, len] = PathLS.moveTo(0, 0).lineTo(3, 4).segmentAtLength(2.5);
@@ -593,10 +593,10 @@ function testPath(test, PathClass) {
                 t.notOk(PathClass.parse('Z').bbox().isValid());
                 t.notOk(PathClass.parse('z').bbox().isValid());
                 t.same(
-                    PathClass.parse('m 40,60 h 10 10 10 20 v 30 20').describe({relative: true, short: true}),
+                    PathClass.parse('m 40,60 h 10 10 10 20 v 30 20').describe({ relative: true, short: true }),
                     'm40,60h10h10h10h20v30v20'
                 );
-                t.same(PathClass.parse('m1,2,3,4,5,6,7,8').describe({relative: true, short: true}), 'm1,2l3,4l5,6l7,8');
+                t.same(PathClass.parse('m1,2,3,4,5,6,7,8').describe({ relative: true, short: true }), 'm1,2l3,4l5,6l7,8');
             }
             // Test that additional parameters to pathdata commands are treated as additional calls to the most recent command
             [
@@ -624,8 +624,8 @@ function testPath(test, PathClass) {
                 ['M400,300 a25 25 0 0 0 25 -50 a25 25 0 0 0 -25 50', 'M400,300 a25 25 0 0 0 25 -50 25 25 0 0 0 -25 50'],
             ].forEach(([a, b]) => {
                 t.notSame(a, b);
-                const A = PathClass.parse(a).describe({relative: true, short: true});
-                const B = PathClass.parse(b).describe({relative: true, short: true});
+                const A = PathClass.parse(a).describe({ relative: true, short: true });
+                const B = PathClass.parse(b).describe({ relative: true, short: true });
                 t.same(A, B, [
                     [a, b],
                     [A, B],

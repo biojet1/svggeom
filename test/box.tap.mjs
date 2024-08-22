@@ -1,13 +1,13 @@
 'uses strict';
-import {spawn} from 'child_process';
-import {Box, Matrix, BoxMut, Vec} from 'svggeom';
+import { spawn } from 'child_process';
+import { Box, Matrix, BoxMut, Vec } from 'svggeom';
 import test from 'tap';
 const CI = !!process.env.CI;
 
 export async function* enum_box_data(env) {
     const pyproc = spawn('python3', ['test/data.box.py'], {
         stdio: ['ignore', 'pipe', 'inherit'],
-        env: {...process.env, ...env},
+        env: { ...process.env, ...env },
     });
     let last,
         i = 0;
@@ -41,7 +41,7 @@ for await (const [i, item] of enum_box_data({})) {
         minY,
     } = item;
 
-    test.test(`Box(${x},${y},${width},${height})`, {bail: !CI}, function (t) {
+    test.test(`Box(${x},${y},${width},${height})`, { bail: !CI }, function (t) {
         let box2, box;
         switch (i % 4) {
             case 1:
@@ -53,8 +53,8 @@ for await (const [i, item] of enum_box_data({})) {
                 box2 = Box.new(`${left} ${top} ${width} ${height}`);
                 break;
             case 3:
-                box = Box.new({x, y, width, height});
-                box2 = Box.new({left, top, width, height});
+                box = Box.new({ x, y, width, height });
+                box2 = Box.new({ left, top, width, height });
                 break;
             default:
                 box = Box.new(x, y, width, height);
@@ -73,7 +73,7 @@ for await (const [i, item] of enum_box_data({})) {
         t.equal(box.bottom, bottom, 'bottom', ex);
         t.equal(box.centerX, centerX, 'centerX', ex);
         t.equal(box.centerY, centerY, 'centerY', ex);
-        t.equal(box.center.toString(), Vec.pos(centerX, centerY).toString(), ex);
+        t.equal(box.center.toString(), Vec.new(centerX, centerY).toString(), ex);
 
         t.equal(box.minX, minX, 'minX', ex);
         t.equal(box.minY, minY, 'minY', ex);
@@ -111,7 +111,7 @@ for await (const [i, item] of enum_box_data({})) {
     });
 }
 
-test.test(`Box extra`, {bail: !CI}, function (t) {
+test.test(`Box extra`, { bail: !CI }, function (t) {
     const not = Box.not();
     t.notOk(not.isValid());
     t.strictSame(Box.new(), not);
@@ -131,7 +131,7 @@ const A = Box.new('-210,-150,80,60');
 const E = Box.new('-130,-90,0,0');
 const F = Box.new('-130,-90,70,90');
 const G = Box.new('-60,-90,60,40');
-test.test(`Box overlap`, {bail: !CI}, function (t) {
+test.test(`Box overlap`, { bail: !CI }, function (t) {
     const bbox2 = Box.new([
         [2, 3],
         [1, 2],
@@ -159,7 +159,7 @@ test.test(`Box overlap`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`Box equals`, {bail: !CI}, function (t) {
+test.test(`Box equals`, { bail: !CI }, function (t) {
     function eq(a, b, epsilon = 0) {
         t.ok(a.equals(b, epsilon), `${a}, ${b}`);
     }
@@ -178,7 +178,7 @@ test.test(`Box equals`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`Box merge`, {bail: !CI}, function (t) {
+test.test(`Box merge`, { bail: !CI }, function (t) {
     t.same(C.merge(D).toArray(), D.toArray());
     t.same(D.merge(C).toArray(), D.toArray());
     t.same(B.overlap(C).merge(D).toArray(), D.toArray());
@@ -212,13 +212,13 @@ test.test(`Box merge`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`Box fromRect`, {bail: !CI}, function (t) {
-    t.same(Box.fromRect({x: -20, width: 400}).toArray(), [-20, 0, 400, 0]);
-    t.same(Box.fromRect({y: -20, height: 400}).toArray(), [0, -20, 0, 400]);
+test.test(`Box fromRect`, { bail: !CI }, function (t) {
+    t.same(Box.fromRect({ x: -20, width: 400 }).toArray(), [-20, 0, 400, 0]);
+    t.same(Box.fromRect({ y: -20, height: 400 }).toArray(), [0, -20, 0, 400]);
     t.end();
 });
 
-test.test(`Box mutable`, {bail: !CI}, function (t) {
+test.test(`Box mutable`, { bail: !CI }, function (t) {
     const a = BoxMut.new([0, 0, 100, 100]);
     const b = BoxMut.parse('-60 -50 60 50');
 
@@ -270,7 +270,7 @@ test.test(`Box mutable`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`Box withCenter`, {bail: !CI}, function (t) {
+test.test(`Box withCenter`, { bail: !CI }, function (t) {
     let b = D.withCenter([197, 122]);
     t.same(b.toArray(), [122, 77, 150, 90]);
     t.same(b.withMinX(197).toArray(), [197, 77, 150, 90]);
@@ -278,7 +278,7 @@ test.test(`Box withCenter`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`Box inflated`, {bail: !CI}, function (t) {
+test.test(`Box inflated`, { bail: !CI }, function (t) {
     let b = A.inflated(5, 6);
     // const A = Box.new('-210,-150,80,60');
     t.same(A.inflated(5, 6).toArray(), [-210 - 5, -150 - 6, 80 + 5 + 5, 60 + 6 + 6]);
@@ -286,14 +286,14 @@ test.test(`Box inflated`, {bail: !CI}, function (t) {
     t.end();
 });
 
-test.test(`Box isEmpty`, {bail: !CI}, function (t) {
+test.test(`Box isEmpty`, { bail: !CI }, function (t) {
     t.same(A.isEmpty(), false);
     t.same(Box.not().isEmpty(), false);
     t.same(Box.new('-0,0,0,-0').isEmpty(), true);
     t.end();
 });
 
-test.test(`Box withSize withPos`, {bail: !CI}, function (t) {
+test.test(`Box withSize withPos`, { bail: !CI }, function (t) {
     t.same(B.withSize([150, 90]).withPos([-60, -50]).toArray(), D.toArray());
     t.same(C.withPos([-130, -90]).withSize([130, 90]).toArray(), B.toArray());
     t.same(E.withSize([0, 0]).toArray(), E.toArray());

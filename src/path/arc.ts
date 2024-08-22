@@ -1,11 +1,11 @@
-import {Vec} from '../point.js';
-import {Box} from '../box.js';
-import {SegmentSE} from './index.js';
-import {Line} from './line.js';
-import {Cubic} from './cubic.js';
-import {Matrix} from '../matrix.js';
-import {segment_length, arcParams, arcToCurve} from '../util.js';
-const {abs, atan, tan, cos, sin, PI, min, max} = Math;
+import { Vec } from '../point.js';
+import { Box } from '../box.js';
+import { SegmentSE } from './index.js';
+import { Line } from './line.js';
+import { Cubic } from './cubic.js';
+import { Matrix } from '../matrix.js';
+import { segment_length, arcParams, arcToCurve } from '../util.js';
+const { abs, atan, tan, cos, sin, PI, min, max } = Math;
 
 interface IArc {
 	readonly from: Vec;
@@ -53,8 +53,8 @@ export class Arc extends SegmentSE {
 			throw Error(`${JSON.stringify(arguments)}`);
 		super(from, to);
 
-		const {x: x1, y: y1} = this.from;
-		const {x: x2, y: y2} = this.to;
+		const { x: x1, y: y1 } = this.from;
+		const { x: x2, y: y2 } = this.to;
 
 		[
 			this.phi,
@@ -86,10 +86,10 @@ export class Arc extends SegmentSE {
 		const cosφ = cos((φ / 180) * PI);
 		const sinφ = sin((φ / 180) * PI);
 		const m = Matrix.matrix(cosφ, sinφ, -sinφ, cosφ, 0, 0);
-		const from = Vec.pos(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
+		const from = Vec.new(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
 			.transform(m)
 			.add(c);
-		const to = Vec.pos(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
+		const to = Vec.new(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
 			.transform(m)
 			.add(c);
 		const bigArc = abs(Δθ) > 180 ? 1 : 0;
@@ -113,7 +113,7 @@ export class Arc extends SegmentSE {
 	}
 
 	override splitAt(t: number): [SegmentSE, SegmentSE] {
-		const {rx, ry, phi, sweep, rdelta, from, to} = this;
+		const { rx, ry, phi, sweep, rdelta, from, to } = this;
 		const deltaA = abs(rdelta);
 		const mid = arcPointAt(this, t);
 		return [
@@ -135,23 +135,23 @@ export class Arc extends SegmentSE {
 	}
 
 	override transform(matrix: any) {
-		const {bigArc, to, from} = this;
+		const { bigArc, to, from } = this;
 		const [rx, ry, phi, sweep] = arcTransform(this, matrix);
 		return new Arc(from.transform(matrix), to.transform(matrix), rx, ry, phi, bigArc, sweep);
 	}
 
 	override reversed() {
-		const {bigArc, to, from, rx, ry, sweep, phi} = this;
+		const { bigArc, to, from, rx, ry, sweep, phi } = this;
 		return new Arc(to, from, rx, ry, phi, bigArc, sweep ? 0 : 1);
 	}
 
 	asCubic() {
-		const {rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta} = this;
+		const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = this;
 		const segments = arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
 		// Degenerated arcs can be ignored by renderer, but should not be dropped
 		// to avoid collisions with `S A S` and so on. Replace with empty line.
 		if (segments.length === 0) {
-			const {to, from} = this;
+			const { to, from } = this;
 			return [new Line(from, to)];
 		} else {
 			return segments.map(function (s) {
@@ -162,7 +162,7 @@ export class Arc extends SegmentSE {
 }
 
 export function arcPointAt(arc: IArc, t: number) {
-	const {from, to} = arc;
+	const { from, to } = arc;
 	if (from.equals(to)) {
 		return from.clone();
 	} else if (t <= 0) {
@@ -170,14 +170,14 @@ export function arcPointAt(arc: IArc, t: number) {
 	} else if (t >= 1) {
 		return to;
 	}
-	const {rx, ry, cosφ, sinφ, rtheta, rdelta, cx, cy} = arc;
+	const { rx, ry, cosφ, sinφ, rtheta, rdelta, cx, cy } = arc;
 	const θ = rtheta + rdelta * t;
 	const sinθ = sin(θ);
 	const cosθ = cos(θ);
 	// const [cosθ, sinθ] = cossin((180 * rtheta + 180 * rdelta * t) / PI);
 	// (eq. 3.1) https://svgwg.org/svg2-draft/implnote.html#ArcParameterizationAlternatives
 	try {
-		return Vec.pos(
+		return Vec.new(
 			rx * cosφ * cosθ - ry * sinφ * sinθ + cx,
 			rx * sinφ * cosθ + ry * cosφ * sinθ + cy
 		);
@@ -188,7 +188,7 @@ export function arcPointAt(arc: IArc, t: number) {
 }
 
 export function arcBBox(arc: IArc) {
-	const {rx, ry, cosφ, sinφ, from, to, rdelta, rtheta, phi} = arc;
+	const { rx, ry, cosφ, sinφ, from, to, rdelta, rtheta, phi } = arc;
 	let atan_x, atan_y;
 	if (cosφ == 0) {
 		atan_x = PI / 2;
@@ -218,7 +218,7 @@ export function arcBBox(arc: IArc) {
 }
 
 export function arcLength(arc: IArc) {
-	const {from, to} = arc;
+	const { from, to } = arc;
 	if (from.equals(to)) return 0;
 	return segment_length(arc, 0, 1, from, to);
 }
@@ -236,12 +236,12 @@ export function arcLength(arc: IArc) {
 // }
 
 export function arcSlopeAt(arc: IArc, t: number): Vec {
-	const {rx, ry, cosφ, sinφ, rdelta, rtheta} = arc;
+	const { rx, ry, cosφ, sinφ, rdelta, rtheta } = arc;
 	const θ = rtheta + t * rdelta;
 	const sinθ = sin(θ);
 	const cosθ = cos(θ);
 	const k = rdelta;
-	return Vec.pos(
+	return Vec.new(
 		-rx * cosφ * sinθ * k - ry * sinφ * cosθ * k,
 		-rx * sinφ * sinθ * k + ry * cosφ * cosθ * k
 	);
@@ -249,10 +249,10 @@ export function arcSlopeAt(arc: IArc, t: number): Vec {
 
 export function arcTransform(self: IArc, matrix: any) {
 	// const { arc, to, from } = self;
-	let {rx, ry, sweep, phi} = self;
+	let { rx, ry, sweep, phi } = self;
 	// const p1ˈ = from.transform(matrix);
 	// const p2_ = to.transform(matrix);
-	const {rotate, scaleX, scaleY, skewX} = matrix.decompose();
+	const { rotate, scaleX, scaleY, skewX } = matrix.decompose();
 	if (scaleX == scaleY && scaleX != 1) {
 		rx = rx * scaleX;
 		ry = ry * scaleX;
@@ -260,7 +260,7 @@ export function arcTransform(self: IArc, matrix: any) {
 
 	OUT: if (rotate || skewX || scaleX != 1 || scaleY != 1) {
 		phi = (((phi + rotate) % 360) + 360) % 360; // from -30 -> 330
-		const {a, c, b, d} = matrix;
+		const { a, c, b, d } = matrix;
 		const detT = a * d - b * c;
 		const detT2 = detT * detT;
 		if (!rx || !ry || !detT2) break OUT;

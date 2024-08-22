@@ -1,6 +1,6 @@
-import {Vec} from '../point.js';
-import {Box} from '../box.js';
-import {SegmentSE} from './index.js';
+import { Vec } from '../point.js';
+import { Box } from '../box.js';
+import { SegmentSE } from './index.js';
 
 export class Quadratic extends SegmentSE {
 	readonly c: Vec;
@@ -10,7 +10,7 @@ export class Quadratic extends SegmentSE {
 		this.c = Vec.new(control);
 	}
 	private get _qpts(): Vec[] {
-		const {from, c, to} = this;
+		const { from, c, to } = this;
 		return [from, c, to];
 	}
 	override get length() {
@@ -34,17 +34,17 @@ export class Quadratic extends SegmentSE {
 	}
 
 	override toPathFragment() {
-		const {c, to} = this;
+		const { c, to } = this;
 		return ['Q', c.x, c.y, to.x, to.y];
 	}
 
 	override transform(M: any) {
-		const {from, c, to} = this;
+		const { from, c, to } = this;
 		return new Quadratic(from.transform(M), c.transform(M), to.transform(M));
 	}
 
 	override reversed() {
-		const {from, c, to} = this;
+		const { from, c, to } = this;
 		return new Quadratic(to, c, from);
 	}
 }
@@ -64,7 +64,7 @@ function quadratic_extrema(a: number, b: number, c: number) {
 	}
 	return [cmin, cmax];
 }
-const {pow} = Math;
+const { pow } = Math;
 
 // export function quadFlatness([[sx, sy], [cx, cy], [ex, ey]]: Iterable<number>[]) {
 // 	// let ux = pow(3 * x1 - 2 * sx - ex, 2);   // 2cx−ex−sx
@@ -91,14 +91,14 @@ export function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	const myt = (1 - t) * my1 + t * my2;
 
 	return [
-		[Vec.pos(x1, y1), Vec.pos(mx1, my1), Vec.pos(mxt, myt)],
-		[Vec.pos(mxt, myt), Vec.pos(mx2, my2), Vec.pos(x2, y2)],
+		[Vec.new(x1, y1), Vec.new(mx1, my1), Vec.new(mxt, myt)],
+		[Vec.new(mxt, myt), Vec.new(mx2, my2), Vec.new(x2, y2)],
 	];
 }
 
 export function quadPointAt([[x1, y1], [cx, cy], [x2, y2]]: Vec[], t: number) {
 	const v = 1 - t;
-	return Vec.pos(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
+	return Vec.new(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
 }
 
 export function quadSlopeAt([from, c, to]: Vec[], t: number): Vec {

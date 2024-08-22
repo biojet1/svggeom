@@ -1,5 +1,5 @@
-import {Vec} from '../point.js';
-import {Box} from '../box.js';
+import { Vec } from '../point.js';
+import { Box } from '../box.js';
 
 export class Cubic extends SegmentSE {
 	readonly c1: Vec;
@@ -16,7 +16,7 @@ export class Cubic extends SegmentSE {
 		return new Cubic(from, c1, c2, to);
 	}
 	private get _cpts(): Vec[] {
-		const {from, c1, c2, to} = this;
+		const { from, c1, c2, to } = this;
 		return [from, c1, c2, to];
 	}
 	//////
@@ -44,19 +44,19 @@ export class Cubic extends SegmentSE {
 
 	override toPathFragment() {
 		const {
-			c1: {x: x1, y: y1},
-			c2: {x: x2, y: y2},
-			to: {x: x3, y: y3},
+			c1: { x: x1, y: y1 },
+			c2: { x: x2, y: y2 },
+			to: { x: x3, y: y3 },
 		} = this;
 		return ['C', x1, y1, x2, y2, x3, y3];
 	}
 
 	override transform(M: any) {
-		const {from, c1, c2, to} = this;
+		const { from, c1, c2, to } = this;
 		return this.new(from.transform(M), c1.transform(M), c2.transform(M), to.transform(M));
 	}
 	override reversed() {
-		const {from, c1, c2, to} = this;
+		const { from, c1, c2, to } = this;
 		return this.new(to, c2, c1, from);
 	}
 }
@@ -92,7 +92,7 @@ function cubic_extrema(s: number, a: number, b: number, e: number) {
 	return [cmin, cmax];
 }
 
-export {Cubic as CubicSegment};
+export { Cubic as CubicSegment };
 
 function splitAtScalar(
 	z: number,
@@ -113,7 +113,7 @@ export function cubicBox([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Vec[]) {
 	const [ymin, ymax] = cubic_extrema(sy, y1, y2, ey);
 	return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 }
-const {pow} = Math;
+const { pow } = Math;
 function cubicFlatness([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[]) {
 	let ux = pow(3 * x1 - 2 * sx - ex, 2);
 	let uy = pow(3 * y1 - 2 * sy - ey, 2);
@@ -130,7 +130,7 @@ function cubicFlatness([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number
 
 export function cubicPointAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[], t: number) {
 	const F = 1 - t;
-	return Vec.at(
+	return Vec.new(
 		F * F * F * sx + 3 * F * F * t * x1 + 3 * F * t * t * x2 + t * t * t * ex,
 		F * F * F * sy + 3 * F * F * t * y1 + 3 * F * t * t * y2 + t * t * t * ey
 	);
@@ -140,8 +140,8 @@ export function cubicSplitAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<
 	const x = splitAtScalar(z, sx, x1, x2, ex);
 	const y = splitAtScalar(z, sy, y1, y2, ey);
 	return [
-		[Vec.pos(x[0][0], y[0][0]), Vec.pos(x[0][1], y[0][1]), Vec.pos(x[0][2], y[0][2]), Vec.pos(x[0][3], y[0][3])],
-		[Vec.pos(x[1][0], y[1][0]), Vec.pos(x[1][1], y[1][1]), Vec.pos(x[1][2], y[1][2]), Vec.pos(x[1][3], y[1][3])],
+		[Vec.new(x[0][0], y[0][0]), Vec.new(x[0][1], y[0][1]), Vec.new(x[0][2], y[0][2]), Vec.new(x[0][3], y[0][3])],
+		[Vec.new(x[1][0], y[1][0]), Vec.new(x[1][1], y[1][1]), Vec.new(x[1][2], y[1][2]), Vec.new(x[1][3], y[1][3])],
 	];
 }
 export function cubicSlopeAt([from, c1, c2, to]: Vec[], t: number): Vec {
@@ -188,5 +188,5 @@ export function cubicLength(_cpts: Vec[]): number {
 
 // import { SegmentLS } from './linked.js';
 
-import {SegmentSE} from './index.js';
+import { SegmentSE } from './index.js';
 // import { SegmentLS, MoveLS, LineLS } from './linked.js';

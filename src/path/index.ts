@@ -1,5 +1,5 @@
-import {Vec} from '../point.js';
-import {Box} from '../box.js';
+import { Vec } from '../point.js';
+import { Box } from '../box.js';
 
 export interface DescParams {
 	relative?: boolean;
@@ -26,11 +26,11 @@ export abstract class Segment {
 	}
 
 	toPath(): string {
-		const {x, y} = this.from;
+		const { x, y } = this.from;
 		return ['M', x, y].concat(this.toPathFragment()).join(' ');
 	}
 	descArray(opt?: DescParams): (string | number)[] {
-		const {x, y} = this.from;
+		const { x, y } = this.from;
 		return ['M', x, y].concat(this.toPathFragment(opt));
 	}
 	tangentAt(t: number) {
@@ -119,7 +119,7 @@ export function* pickPos(args: Vec[] | number[]) {
 			if (n == undefined) {
 				n = v;
 			} else {
-				yield Vec.pos(n, v);
+				yield Vec.new(n, v);
 				n = undefined;
 			}
 		} else if (n != undefined) {
