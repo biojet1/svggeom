@@ -1,9 +1,9 @@
-import { Vec } from "./point.js";
+import { Vec } from "../point.js";
 
 const { abs, tan, cos, sin, sqrt, acos, PI, ceil, max } = Math;
 const TAU = PI * 2;
 
-export function cossin(θ: number) {
+function cossin(θ: number) {
 	θ = ((θ % 360) + 360) % 360; // from -30 -> 330
 	switch (θ) {
 		case 0:
@@ -44,7 +44,7 @@ export function cossin(θ: number) {
 	}
 }
 
-export function unit_vector_angle(
+function unit_vector_angle(
 	ux: number,
 	uy: number,
 	vx: number,
@@ -117,7 +117,7 @@ export function segment_length(
 	return length2;
 }
 
-export function arcParams(
+export function arc_params(
 	x1: number,
 	y1: number,
 	rx: number,
@@ -209,7 +209,7 @@ export function arcParams(
 		cy,
 		theta1,
 		delta_theta +
-			(sweep ? (delta_theta < 0 ? +TAU : 0) : delta_theta > 0 ? -TAU : 0),
+		(sweep ? (delta_theta < 0 ? +TAU : 0) : delta_theta > 0 ? -TAU : 0),
 	];
 }
 
@@ -233,7 +233,7 @@ function approximate_unit_arc(theta1: number, delta_theta: number) {
 	];
 }
 
-export function arcToCurve(
+export function arc_to_curve(
 	rx: number,
 	ry: number,
 	cx: number,
