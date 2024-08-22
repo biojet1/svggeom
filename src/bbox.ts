@@ -1,18 +1,18 @@
 import { Vector } from './vector.js';
 const { max, min, abs } = Math;
 
-export class Box {
+export class BoundingBox {
 	protected _x: number;
 	protected _y: number;
 	protected _h: number;
 	protected _w: number;
-	private static _not: Box = new (class extends Box {
+	private static _not: BoundingBox = new (class extends BoundingBox {
 		// NoBox has no valid values so it cant be merged
 		constructor() {
 			super(NaN, NaN, NaN, NaN);
 			Object.freeze(this);
 		}
-		override merge(box: Box): Box {
+		override merge(box: BoundingBox): BoundingBox {
 			return box;
 		}
 		override transform(m: any) {
@@ -31,7 +31,7 @@ export class Box {
 	clone() {
 		const { x, y, width, height } = this;
 
-		return Box.rect(x, y, width, height);
+		return BoundingBox.rect(x, y, width, height);
 	}
 
 	// private _notsup() {
@@ -89,74 +89,54 @@ export class Box {
 		return Vector.new(centerX, centerY);
 	}
 
-	// set maxY(n: number) {
-	// 	const {y} = this;
-	// 	if (n < y) {
-	// 		this.y = n;
-	// 		this.height = y - n;
-	// 	} else {
-	// 		this.height = n - y;
-	// 	}
-	// }
-
-	// set centerX(n: number) {
-	// 	const {width} = this;
-	// 	this.x = n - width / 2;
-	// }
-
-	// set centerY(n: number) {
-	// 	const {height} = this;
-	// 	this.y = n - height / 2;
-	// }
-
-	withCenter(p: Iterable<number>): Box {
+	withCenter(p: Iterable<number>): BoundingBox {
 		const [cx, cy] = p;
 		const { width: W, height: H } = this;
-		return Box.rect(cx - W / 2, cy - H / 2, W, H);
+		return BoundingBox.rect(cx - W / 2, cy - H / 2, W, H);
 	}
 
-	withSize(p: Iterable<number>): Box {
+	withSize(p: Iterable<number>): BoundingBox {
 		const [w, h] = p;
 		const { x, y } = this;
-		return Box.rect(x, y, w, h);
+		return BoundingBox.rect(x, y, w, h);
 	}
 
-	withPos(p: Iterable<number>): Box {
+	withPos(p: Iterable<number>): BoundingBox {
 		const [x, y] = p;
 		const { width, height } = this;
-		return Box.rect(x, y, width, height);
+		return BoundingBox.rect(x, y, width, height);
 	}
 
-	withMinY(n: number): Box {
+	withMinY(n: number): BoundingBox {
 		const { x, width, height } = this;
-		return Box.rect(x, n, width, height);
+		return BoundingBox.rect(x, n, width, height);
 	}
 
-	withMinX(n: number): Box {
+	withMinX(n: number): BoundingBox {
 		const { y, width, height } = this;
-		return Box.rect(n, y, width, height);
+		return BoundingBox.rect(n, y, width, height);
 	}
 
 	// Merge rect box with another, return a new instance
-	merge(box: Box): Box {
+	merge(box: BoundingBox): BoundingBox {
 		if (!this.isValid()) {
 			return box;
 		} else if (!box.isValid()) {
 			return this;
 		}
 
-		// if (!box.isValid()) return Box.new(this);
+		// if (!box.isValid()) return BoundingBox.new(this);
 		// const { x: x1, y: y1, width: width1, height: height1 } = this;
 		// const { x: x2, y: y2, width: width2, height: height2 } = box;
 
 		// const x = min(x1, x2);
 		// const y = min(y1, y2);
 
-		// return Box.forRect(x, y, max(x1 + width1, x2 + width2) - x, max(y1 + height1, y2 + height2) - y);
+		// return BoundingBox.forRect(x, y, max(x1 + width1, x2 + width2) - x, max(y1 + height1, y2 + height2) - y);
 
 		const { minX: xMin1, minY: yMin1, maxX: xMax1, maxY: yMax1 } = this;
 		const { minX: xMin2, minY: yMin2, maxX: xMax2, maxY: yMax2 } = box;
-		return Box.extrema(
+		return BoundingBox.extrema(
 			min(xMin1, xMin2),
 			max(xMax1, xMax2),
 			min(yMin1, yMin2),
@@ -165,10 +145,10 @@ export class Box {
 	}
 	// translated
 	// resized
-	inflated(h: number, v?: number): Box {
+	inflated(h: number, v?: number): BoundingBox {
 		v = v ?? h;
 		const { x, y, width, height } = this;
-		return Box.rect(x - h, y - v, h + width + h, v + height + v);
+		return BoundingBox.rect(x - h, y - v, h + width + h, v + height + v);
 	}
 	transform(m: any) {
 		let xMin = Infinity;
@@ -186,7 +166,7 @@ export class Box {
 				maxY = max(maxY, y);
 			}
 		);
-		return Box.extrema(xMin, xMax, yMin, maxY);
+		return BoundingBox.extrema(xMin, xMax, yMin, maxY);
 	}
 	isValid() {
 		const { x, y, width, height } = this;
@@ -204,7 +184,7 @@ export class Box {
 		const { x, y, width, height } = this;
 		return `${x}, ${y}, ${width}, ${height}`;
 	}
-	equals(other: Box, epsilon = 0) {
+	equals(other: BoundingBox, epsilon = 0) {
 		if (other === this) {
 			return true;
 		}
@@ -217,7 +197,7 @@ export class Box {
 			closeEnough(height1, height2, epsilon)
 		);
 	}
-	overlap(other: Box): Box {
+	overlap(other: BoundingBox): BoundingBox {
 		if (!this.isValid()) {
 			return other;
 		} else if (!other.isValid()) {
@@ -231,19 +211,19 @@ export class Box {
 				const yMin = max(yMin1, yMin2);
 				const yMax = min(yMax1, yMax2);
 				if (yMax >= yMin) {
-					return Box.extrema(xMin, xMax, yMin, yMax);
+					return BoundingBox.extrema(xMin, xMax, yMin, yMax);
 				}
 			}
 		}
-		return Box._not;
+		return BoundingBox._not;
 	}
 	public static not() {
 		return this._not;
 	}
-	private static _empty?: Box;
+	private static _empty?: BoundingBox;
 	public static empty() {
-		const { _empty } = Box;
-		return _empty || (Box._empty = Box.rect(0, 0, 0, 0));
+		const { _empty } = BoundingBox;
+		return _empty || (BoundingBox._empty = BoundingBox.rect(0, 0, 0, 0));
 	}
 	public static extrema(x1: number, x2: number, y1: number, y2: number) {
 		if (x1 > x2) [x1, x2] = [x2, x1];
@@ -261,15 +241,15 @@ export class Box {
 		const v = s.split(/[\s,]+/).map(parseFloat);
 		return this.rect(v[0], v[1], v[2], v[3]);
 	}
-	public static merge(...args: Array<Box>) {
-		let x = Box.not();
+	public static merge(...args: Array<BoundingBox>) {
+		let x = BoundingBox.not();
 		for (const b of args) {
 			x = b.merge(x);
 		}
 		return x;
 	}
 	public static new(
-		first?: number | number[] | [number[], number[]] | string | Box,
+		first?: number | number[] | [number[], number[]] | string | BoundingBox,
 		y?: number,
 		width?: number,
 		height?: number
@@ -312,7 +292,7 @@ export class Box {
 	}
 }
 
-export class BoxMut extends Box {
+export class BoxMut extends BoundingBox {
 	override get x() {
 		return this._x;
 	}
@@ -353,7 +333,7 @@ export class BoxMut extends Box {
 		return this;
 	}
 
-	mergeSelf(box: Box): this {
+	mergeSelf(box: BoundingBox): this {
 		if (!this.isValid()) {
 			return this.copy(box);
 		} else if (!box.isValid()) {
@@ -372,13 +352,13 @@ export class BoxMut extends Box {
 		}
 	}
 
-	inflateSelf(h: number, v?: number): Box {
+	inflateSelf(h: number, v?: number): BoundingBox {
 		v = v ?? h;
 		const { x, y, width, height } = this;
 		return this.reset(x - h, y - v, h + width + h, v + height + v);
 	}
 
-	sizeSelf(w: number, h?: number): Box {
+	sizeSelf(w: number, h?: number): BoundingBox {
 		const { x, y, width, height } = this;
 		return this.reset(x, y, w ?? width, h ?? height);
 	}
@@ -388,7 +368,7 @@ export class BoxMut extends Box {
 		return !(isNaN(x) || isNaN(y) || isNaN(width) || isNaN(height));
 	}
 
-	copy(that: Box) {
+	copy(that: BoundingBox) {
 		const { x, y, width, height } = that;
 		this._x = x;
 		this._y = y;

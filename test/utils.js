@@ -59,22 +59,22 @@ function checkClose(t, a, b, epsilon = 0.0000001, message, extra) {
 
 test.Test.prototype.addAssert('sameBox', 3, function (box1, box2, epsilon = 0.0001, message, extra) {
     if (box1.bbox) {
-        const {left, right, top, bottom} = box1.bbox();
+        const { left, right, top, bottom } = box1.bbox();
         box1 = [left, right, top, bottom];
     }
     // console.error(box1, box2);
     for (const [i, k] of [`left`, `right`, `top`, `bottom`]) {
         if (!almostEqual(box1[i], box2[i], epsilon)) {
-            this.fail(`Box ${k} ${box1[i]} not close to ${box2[i]} ${box1[i] - box2[i]}Δ ±${epsilon} : ${message}`);
+            this.fail(`BoundingBox ${k} ${box1[i]} not close to ${box2[i]} ${box1[i] - box2[i]}Δ ±${epsilon} : ${message}`);
             // this.end();
             return;
         }
     }
-    this.pass(`Box ${box1} close to ${box2} ±${epsilon}`);
+    this.pass(`BoundingBox ${box1} close to ${box2} ±${epsilon}`);
     // this.end();
 });
 test.Test.prototype.addAssert('almostEqual', 3, function (A, B, opt, message, extra) {
-    opt = typeof opt == 'number' ? {epsilon: opt} : opt;
+    opt = typeof opt == 'number' ? { epsilon: opt } : opt;
     const epsilon = opt?.epsilon || 1e-13;
     // console.error(Array.from(arguments));
     if (!Array.isArray(A)) {
@@ -136,7 +136,7 @@ function dbgwrite(dbg, pC, pX, d) {
             style = 'fill:orange;stroke:yellow;stroke-width:1;stroke-dasharray:none;opacity:0.6';
             yield `<path id="d" d="${d}" style="${style}"/>`;
         }
-        const {item} = dbg;
+        const { item } = dbg;
         if (dbg.pathA) {
             style = 'fill:none;stroke:skyblue;stroke-width:1;stroke-dasharray:none;opacity:0.6';
             yield `<path id="pathA" d="${dbg.pathA.join(' ')}" style="${style}"/>`;
@@ -162,8 +162,8 @@ function zip() {
         args.length == 0
             ? []
             : args.reduce(function (a, b) {
-                  return a.length < b.length ? a : b;
-              });
+                return a.length < b.length ? a : b;
+            });
 
     return shortest.map(function (_, i) {
         return args.map(function (array) {
@@ -173,7 +173,7 @@ function zip() {
 }
 
 test.Test.prototype.addAssert('sameDescs', 3, function (a, b, opt, message, extra = {}, debug_svg = null) {
-    opt = typeof opt == 'number' ? {epsilon: opt} : opt;
+    opt = typeof opt == 'number' ? { epsilon: opt } : opt;
     const epsilon = opt?.epsilon || 1e-13;
     function cmpn(a, b) {
         return Math.abs(a - b) <= epsilon;
@@ -276,7 +276,7 @@ test.Test.prototype.addAssert('sameTangent', 3, function (a, b, epsilon, message
         delta_epsilon = epsilon;
         slope_epsilon = epsilon;
     } else {
-        ({delta_epsilon = 1e-11, slope_epsilon = 1e-11} = epsilon);
+        ({ delta_epsilon = 1e-11, slope_epsilon = 1e-11 } = epsilon);
     }
 
     if (a[0] === b[0]) {
@@ -318,8 +318,7 @@ test.Test.prototype.addAssert('sameTangent', 3, function (a, b, epsilon, message
 
         if (!almostEqual(A, B, slope_epsilon)) {
             return this.fail(
-                `Tangent / ${A} not close to ${B} ${A - B}Δ ±${slope_epsilon}  [${a}], [${b}], Δ[${a[0] - b[0]}, ${
-                    a[1] - b[1]
+                `Tangent / ${A} not close to ${B} ${A - B}Δ ±${slope_epsilon}  [${a}], [${b}], Δ[${a[0] - b[0]}, ${a[1] - b[1]
                 }] : ${message}`,
                 extra
             );

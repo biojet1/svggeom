@@ -1,5 +1,5 @@
 import { Vector } from '../vector.js';
-import { Box } from '../box.js';
+import { BoundingBox } from '../bbox.js';
 import { SegmentSE } from './index.js';
 import { Line } from './line.js';
 import { Cubic } from './cubic.js';
@@ -214,7 +214,7 @@ export function arcBBox(arc: IArc) {
 	}
 	const [xmin, xmax] = [min(...xtrema), max(...xtrema)];
 	const [ymin, ymax] = [min(...ytrema), max(...ytrema)];
-	return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+	return BoundingBox.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 }
 
 export function arcLength(arc: IArc) {

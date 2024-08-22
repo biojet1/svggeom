@@ -1,5 +1,5 @@
 import { Vector } from './vector.js';
-import { Box } from './box.js';
+import { BoundingBox } from './bbox.js';
 import { tNorm } from './path/index.js';
 
 const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
@@ -392,7 +392,7 @@ export class PathLS extends CanvasCompat {
 	}
 
 	bbox() {
-		let b = Box.new();
+		let b = BoundingBox.new();
 		for (let cur: SegmentLS | undefined = this._tail; cur; cur = cur._prev) {
 			b = b.merge(cur.bbox());
 		}

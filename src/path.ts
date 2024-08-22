@@ -1,6 +1,6 @@
 import { parseDesc, dSplit } from './path/parser.js';
 import { SegmentSE, DescParams, tNorm, tCheck } from './path/index.js';
-import { Box } from './box.js';
+import { BoundingBox } from './bbox.js';
 
 export class Path {
 	static digits = 5;
@@ -17,7 +17,7 @@ export class Path {
 	}
 
 	getBBox() {
-		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
+		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), BoundingBox.new());
 	}
 
 	tangentAt(T: number) {
@@ -40,7 +40,7 @@ export class Path {
 
 	bbox() {
 		// SegmentSE method
-		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), Box.new());
+		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), BoundingBox.new());
 	}
 
 	splitAt(T: number) {

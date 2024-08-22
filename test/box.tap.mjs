@@ -1,6 +1,6 @@
 'uses strict';
 import { spawn } from 'child_process';
-import { Box, Matrix, BoxMut, Vector } from 'svggeom';
+import { BoundingBox, Matrix, BoxMut, Vector } from 'svggeom';
 import test from 'tap';
 const CI = !!process.env.CI;
 
@@ -41,24 +41,24 @@ for await (const [i, item] of enum_box_data({})) {
         minY,
     } = item;
 
-    test.test(`Box(${x},${y},${width},${height})`, { bail: !CI }, function (t) {
+    test.test(`BoundingBox(${x},${y},${width},${height})`, { bail: !CI }, function (t) {
         let box2, box;
         switch (i % 4) {
             case 1:
-                box = Box.new(x, y, width, height);
-                box2 = Box.extrema(minX, maxX, maxY, minY);
+                box = BoundingBox.new(x, y, width, height);
+                box2 = BoundingBox.extrema(minX, maxX, maxY, minY);
                 break;
             case 2:
-                box = Box.new(`${x}, ${y}, ${width}, ${height}`);
-                box2 = Box.new(`${left} ${top} ${width} ${height}`);
+                box = BoundingBox.new(`${x}, ${y}, ${width}, ${height}`);
+                box2 = BoundingBox.new(`${left} ${top} ${width} ${height}`);
                 break;
             case 3:
-                box = Box.new({ x, y, width, height });
-                box2 = Box.new({ left, top, width, height });
+                box = BoundingBox.new({ x, y, width, height });
+                box2 = BoundingBox.new({ left, top, width, height });
                 break;
             default:
-                box = Box.rect(x, y, width, height);
-                box2 = Box.extrema(maxX, minX, maxY, minY); // reverse
+                box = BoundingBox.rect(x, y, width, height);
+                box2 = BoundingBox.extrema(maxX, minX, maxY, minY); // reverse
         }
         const ex = [item, box];
 
@@ -95,14 +95,14 @@ for await (const [i, item] of enum_box_data({})) {
         t.equal(box3.width, width, 'width', ex);
         t.equal(box3.height, height, 'height', ex);
         {
-            const not = Box.new();
+            const not = BoundingBox.new();
             t.strictSame(not.merge(box2), box2);
             t.strictSame(not.merge(not), not);
             t.strictSame(box.merge(not), box);
         }
         t.same(box2.toArray(), [x, y, width, height]);
         {
-            const not = Box.rect(NaN, NaN, NaN, NaN);
+            const not = BoundingBox.rect(NaN, NaN, NaN, NaN);
             t.strictSame(not.merge(box2), box2);
             t.strictSame(not.merge(not), not);
             t.strictSame(box.merge(not), box);
@@ -111,55 +111,55 @@ for await (const [i, item] of enum_box_data({})) {
     });
 }
 
-test.test(`Box extra`, { bail: !CI }, function (t) {
-    const not = Box.not();
+test.test(`BoundingBox extra`, { bail: !CI }, function (t) {
+    const not = BoundingBox.not();
     t.notOk(not.isValid());
-    t.strictSame(Box.new(), not);
-    t.same(Box.empty().toArray(), [0, 0, 0, 0]);
+    t.strictSame(BoundingBox.new(), not);
+    t.same(BoundingBox.empty().toArray(), [0, 0, 0, 0]);
     t.strictSame(not.transform(Matrix.parse('translate(100, -100)')), not);
-    t.throws(() => Box.new(false), TypeError, 'wrong new params');
+    t.throws(() => BoundingBox.new(false), TypeError, 'wrong new params');
 
     // self.assertEqual(tuple(BoundingBox((0, 10), (0, 10)) +
     //                        BoundingBox((-10, 0), (-10, 0))), ((-10, 10), (-10, 10)))
     t.end();
 });
 
-const B = Box.new('-130,-90,130,90');
-const D = Box.new('-60,-50,150,90');
-const C = Box.new('-60 -50 60 50');
-const A = Box.new('-210,-150,80,60');
-const E = Box.new('-130,-90,0,0');
-const F = Box.new('-130,-90,70,90');
-const G = Box.new('-60,-90,60,40');
-test.test(`Box overlap`, { bail: !CI }, function (t) {
-    const bbox2 = Box.new([
+const B = BoundingBox.new('-130,-90,130,90');
+const D = BoundingBox.new('-60,-50,150,90');
+const C = BoundingBox.new('-60 -50 60 50');
+const A = BoundingBox.new('-210,-150,80,60');
+const E = BoundingBox.new('-130,-90,0,0');
+const F = BoundingBox.new('-130,-90,70,90');
+const G = BoundingBox.new('-60,-90,60,40');
+test.test(`BoundingBox overlap`, { bail: !CI }, function (t) {
+    const bbox2 = BoundingBox.new([
         [2, 3],
         [1, 2],
     ]);
-    const bbox1 = Box.new([
+    const bbox1 = BoundingBox.new([
         [0, 1],
         [2, 3],
     ]);
     t.same(bbox1.overlap(bbox1).toArray(), bbox1.toArray());
     t.same(bbox2.overlap(bbox2).toArray(), bbox2.toArray());
-    t.strictSame(bbox1.overlap(bbox2), Box.not());
-    t.strictSame(bbox2.overlap(bbox1), Box.not());
-    t.strictSame(bbox2.overlap(Box.not()), bbox2);
+    t.strictSame(bbox1.overlap(bbox2), BoundingBox.not());
+    t.strictSame(bbox2.overlap(bbox1), BoundingBox.not());
+    t.strictSame(bbox2.overlap(BoundingBox.not()), bbox2);
 
-    t.same(Box.not().overlap(bbox1).toArray(), bbox1.toArray());
+    t.same(BoundingBox.not().overlap(bbox1).toArray(), bbox1.toArray());
 
-    // const bbox1 = Box.new([-210, -150, 60, 3]);
-    // Array.from(document.getElementsByTagName("rect")).sort().map(e=>`const ${e.id} = Box.new('${e.x.baseVal.value},${e.y.baseVal.value},${e.width.baseVal.value},${e.height.baseVal.value}');`).join('\n')
+    // const bbox1 = BoundingBox.new([-210, -150, 60, 3]);
+    // Array.from(document.getElementsByTagName("rect")).sort().map(e=>`const ${e.id} = BoundingBox.new('${e.x.baseVal.value},${e.y.baseVal.value},${e.width.baseVal.value},${e.height.baseVal.value}');`).join('\n')
     t.same(B.overlap(D).toArray(), C.toArray());
     t.same(D.overlap(B).toArray(), C.toArray());
     t.same(A.overlap(B).toArray(), E.toArray());
     t.same(B.overlap(A).toArray(), E.toArray());
-    t.strictSame(A.overlap(C), Box.not());
-    t.strictSame(C.overlap(A), Box.not());
+    t.strictSame(A.overlap(C), BoundingBox.not());
+    t.strictSame(C.overlap(A), BoundingBox.not());
     t.end();
 });
 
-test.test(`Box equals`, { bail: !CI }, function (t) {
+test.test(`BoundingBox equals`, { bail: !CI }, function (t) {
     function eq(a, b, epsilon = 0) {
         t.ok(a.equals(b, epsilon), `${a}, ${b}`);
     }
@@ -170,25 +170,25 @@ test.test(`Box equals`, { bail: !CI }, function (t) {
     ne(D, C);
     eq(C, C);
     eq(D, D);
-    ne(Box.new('-130,-90,130,90'), Box.new('-130,-90,130,90.01'));
-    eq(Box.new('-130,-90,130,90'), Box.new('-130,-90,130,90.01'), 0.0109);
-    eq(Box.new('-130,-90,130,90'), Box.new('-130,-90,130.01,90'), 0.0109);
-    eq(Box.new('-130,-90,130,90'), Box.new('-130,-90.01,130,90'), 0.0109);
-    eq(Box.new('-130,-90,130,90'), Box.new('-130.01,-90,130,90'), 0.0109);
+    ne(BoundingBox.new('-130,-90,130,90'), BoundingBox.new('-130,-90,130,90.01'));
+    eq(BoundingBox.new('-130,-90,130,90'), BoundingBox.new('-130,-90,130,90.01'), 0.0109);
+    eq(BoundingBox.new('-130,-90,130,90'), BoundingBox.new('-130,-90,130.01,90'), 0.0109);
+    eq(BoundingBox.new('-130,-90,130,90'), BoundingBox.new('-130,-90.01,130,90'), 0.0109);
+    eq(BoundingBox.new('-130,-90,130,90'), BoundingBox.new('-130.01,-90,130,90'), 0.0109);
     t.end();
 });
 
-test.test(`Box merge`, { bail: !CI }, function (t) {
+test.test(`BoundingBox merge`, { bail: !CI }, function (t) {
     t.same(C.merge(D).toArray(), D.toArray());
     t.same(D.merge(C).toArray(), D.toArray());
     t.same(B.overlap(C).merge(D).toArray(), D.toArray());
     t.same(E.merge(C).merge(F).toArray(), B.toArray());
-    t.same(Box.merge(C, F, E).toArray(), B.toArray());
+    t.same(BoundingBox.merge(C, F, E).toArray(), B.toArray());
 
-    const not = Box.not();
-    t.same(Box.merge(C, not).toArray(), C.toArray());
-    t.same(Box.merge(not, C).toArray(), C.toArray());
-    t.same(Box.merge(not, not).toArray(), not.toArray());
+    const not = BoundingBox.not();
+    t.same(BoundingBox.merge(C, not).toArray(), C.toArray());
+    t.same(BoundingBox.merge(not, C).toArray(), C.toArray());
+    t.same(BoundingBox.merge(not, not).toArray(), not.toArray());
     t.same(not.merge(not).toArray(), not.toArray());
     t.notOk(not.isValid());
     t.same(not.merge(C).toArray(), C.toArray());
@@ -198,27 +198,27 @@ test.test(`Box merge`, { bail: !CI }, function (t) {
         t.same(not.merge(b).toArray(), b.toArray());
         t.same(b.merge(not).toArray(), b.toArray());
     }
-    let box = Box.not();
+    let box = BoundingBox.not();
 
     for (const b of [C, G, F]) {
         box = box.merge(b);
     }
     t.same(box.toArray(), B.toArray());
     t.ok(box.equals(B));
-    const n1 = Box.not();
-    const n2 = Box.not();
+    const n1 = BoundingBox.not();
+    const n2 = BoundingBox.not();
     t.strictSame(n1.merge(n2), n2);
 
     t.end();
 });
 
-test.test(`Box fromRect`, { bail: !CI }, function (t) {
-    t.same(Box.fromRect({ x: -20, width: 400 }).toArray(), [-20, 0, 400, 0]);
-    t.same(Box.fromRect({ y: -20, height: 400 }).toArray(), [0, -20, 0, 400]);
+test.test(`BoundingBox fromRect`, { bail: !CI }, function (t) {
+    t.same(BoundingBox.fromRect({ x: -20, width: 400 }).toArray(), [-20, 0, 400, 0]);
+    t.same(BoundingBox.fromRect({ y: -20, height: 400 }).toArray(), [0, -20, 0, 400]);
     t.end();
 });
 
-test.test(`Box mutable`, { bail: !CI }, function (t) {
+test.test(`BoundingBox mutable`, { bail: !CI }, function (t) {
     const a = BoxMut.new([0, 0, 100, 100]);
     const b = BoxMut.parse('-60 -50 60 50');
 
@@ -270,7 +270,7 @@ test.test(`Box mutable`, { bail: !CI }, function (t) {
     t.end();
 });
 
-test.test(`Box withCenter`, { bail: !CI }, function (t) {
+test.test(`BoundingBox withCenter`, { bail: !CI }, function (t) {
     let b = D.withCenter([197, 122]);
     t.same(b.toArray(), [122, 77, 150, 90]);
     t.same(b.withMinX(197).toArray(), [197, 77, 150, 90]);
@@ -278,22 +278,22 @@ test.test(`Box withCenter`, { bail: !CI }, function (t) {
     t.end();
 });
 
-test.test(`Box inflated`, { bail: !CI }, function (t) {
+test.test(`BoundingBox inflated`, { bail: !CI }, function (t) {
     let b = A.inflated(5, 6);
-    // const A = Box.new('-210,-150,80,60');
+    // const A = BoundingBox.new('-210,-150,80,60');
     t.same(A.inflated(5, 6).toArray(), [-210 - 5, -150 - 6, 80 + 5 + 5, 60 + 6 + 6]);
     t.same(A.inflated(6).toArray(), [-210 - 6, -150 - 6, 80 + 6 + 6, 60 + 6 + 6]);
     t.end();
 });
 
-test.test(`Box isEmpty`, { bail: !CI }, function (t) {
+test.test(`BoundingBox isEmpty`, { bail: !CI }, function (t) {
     t.same(A.isEmpty(), false);
-    t.same(Box.not().isEmpty(), false);
-    t.same(Box.new('-0,0,0,-0').isEmpty(), true);
+    t.same(BoundingBox.not().isEmpty(), false);
+    t.same(BoundingBox.new('-0,0,0,-0').isEmpty(), true);
     t.end();
 });
 
-test.test(`Box withSize withPos`, { bail: !CI }, function (t) {
+test.test(`BoundingBox withSize withPos`, { bail: !CI }, function (t) {
     t.same(B.withSize([150, 90]).withPos([-60, -50]).toArray(), D.toArray());
     t.same(C.withPos([-130, -90]).withSize([130, 90]).toArray(), B.toArray());
     t.same(E.withSize([0, 0]).toArray(), E.toArray());

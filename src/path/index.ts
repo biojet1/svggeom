@@ -1,5 +1,5 @@
 import { Vector } from '../vector.js';
-import { Box } from '../box.js';
+import { BoundingBox } from '../bbox.js';
 
 export interface DescParams {
 	relative?: boolean;
@@ -13,7 +13,7 @@ export abstract class Segment {
 	abstract get from(): Vector;
 	abstract get to(): Vector;
 	abstract get length(): number;
-	abstract bbox(): Box;
+	abstract bbox(): BoundingBox;
 	abstract pointAt(t: number): Vector;
 	abstract slopeAt(t: number): Vector;
 

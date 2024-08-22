@@ -1,5 +1,5 @@
 import { Vector } from '../vector.js';
-import { Box } from '../box.js';
+import { BoundingBox } from '../bbox.js';
 import { SegmentSE, tNorm, DescParams } from './index.js';
 
 abstract class LineSegment extends SegmentSE {
@@ -10,7 +10,7 @@ abstract class LineSegment extends SegmentSE {
 		} = this;
 		const [xmin, xmax] = [Math.min(p1x, p2x), Math.max(p1x, p2x)];
 		const [ymin, ymax] = [Math.min(p1y, p2y), Math.max(p1y, p2y)];
-		return Box.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+		return BoundingBox.new([xmin, ymin, xmax - xmin, ymax - ymin]);
 	}
 
 	override get length() {
