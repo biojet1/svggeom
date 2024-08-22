@@ -1,33 +1,33 @@
-import { Vec } from './point.js';
+import { Vector } from './vector.js';
 type NumOrVec = number | Iterable<number>;
 export declare class VecRay {
-    readonly _pos: Vec;
-    readonly _dir: Vec;
-    constructor(pos: Vec, aim: Vec);
+    readonly _pos: Vector;
+    readonly _dir: Vector;
+    constructor(pos: Vector, aim: Vector);
     get x(): number;
     get y(): number;
     get z(): number;
     get h(): number;
     get v(): number;
-    get pos(): Vec;
-    get dir(): Vec;
+    get pos(): Vector;
+    get dir(): Vector;
     [Symbol.iterator](): Iterator<number>;
-    at(): Vec;
+    at(): Vector;
     distance(x: NumOrVec, y?: number): number;
-    pointAlong(d: number): Vec;
-    delta(x: NumOrVec, y?: number): Vec;
+    pointAlong(d: number): Vector;
+    delta(x: NumOrVec, y?: number): Vector;
     side(x: NumOrVec, y?: number): 0 | 1 | -1;
     distanceFromLine(a: Iterable<number>, b: Iterable<number>): number;
-    nearestPointOfLine(a: Iterable<number>, b: Iterable<number>): Vec;
-    intersectOfLine(a: Iterable<number>, b: Iterable<number>): Vec;
-    intersectOfRay(r: Ray): Vec;
-    nearestPointFromPoint(p: Iterable<number>): Vec;
+    nearestPointOfLine(a: Iterable<number>, b: Iterable<number>): Vector;
+    intersectOfLine(a: Iterable<number>, b: Iterable<number>): Vector;
+    intersectOfRay(r: Ray): Vector;
+    nearestPointFromPoint(p: Iterable<number>): Vector;
 }
 export declare class Ray extends VecRay {
     clone(): Ray;
-    protected _Pos(v: Vec): Ray;
-    protected _Dir(v: Vec): Ray;
-    protected _Set(p: Vec, a: Vec): Ray;
+    protected _Pos(v: Vector): Ray;
+    protected _Dir(v: Vector): Ray;
+    protected _Set(p: Vector, a: Vector): Ray;
     withDir(rad: NumOrVec): Ray;
     withH(h?: number): Ray;
     withV(v?: number): Ray;
@@ -73,10 +73,10 @@ export declare class Ray extends VecRay {
 }
 export declare class RayL extends Ray {
     _prev: Ray | undefined;
-    constructor(pos: Vec, dir: Vec, ray?: Ray);
+    constructor(pos: Vector, dir: Vector, ray?: Ray);
     prev(): Ray | undefined;
-    protected _Pos(v: Vec): RayL;
-    protected _Dir(v: Vec): RayL;
-    protected _Set(p: Vec, a: Vec): RayL;
+    protected _Pos(v: Vector): RayL;
+    protected _Dir(v: Vector): RayL;
+    protected _Set(p: Vector, a: Vector): RayL;
 }
 export {};

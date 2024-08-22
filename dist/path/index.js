@@ -1,4 +1,4 @@
-import { Vec } from '../point.js';
+import { Vector } from '../vector.js';
 export class Segment {
     get firstPoint() {
         return this.from;
@@ -27,8 +27,8 @@ export class SegmentSE extends Segment {
     _end;
     constructor(from, to) {
         super();
-        this._start = Vec.new(from);
-        this._end = Vec.new(to);
+        this._start = Vector.new(from);
+        this._end = Vector.new(to);
     }
     get from() {
         return this._start;
@@ -94,18 +94,18 @@ export function* pickPos(args) {
                 n = v;
             }
             else {
-                yield Vec.new(n, v);
+                yield Vector.new(n, v);
                 n = undefined;
             }
         }
         else if (n != undefined) {
             throw new Error(`n == ${n}`);
         }
-        else if (v instanceof Vec) {
+        else if (v instanceof Vector) {
             yield v;
         }
         else {
-            yield Vec.new(v);
+            yield Vector.new(v);
         }
     }
 }

@@ -1,25 +1,25 @@
-import { Vec } from '../point.js';
+import { Vector } from '../vector.js';
 import { Box } from '../box.js';
 import { SegmentSE, DescParams } from './index.js';
 declare abstract class LineSegment extends SegmentSE {
     bbox(): Box;
     get length(): number;
-    pointAt(t: number): Vec;
-    slopeAt(t: number): Vec;
+    pointAt(t: number): Vector;
+    slopeAt(t: number): Vector;
     splitAt(t: number): [SegmentSE, SegmentSE];
     transform(M: any): LineSegment;
     reversed(): LineSegment;
     toPathFragment(opt?: DescParams): (string | number)[];
-    abstract newFromTo(a: Vec, b: Vec): LineSegment;
+    abstract newFromTo(a: Vector, b: Vector): LineSegment;
 }
 export declare class Line extends LineSegment {
     constructor(from: Iterable<number>, to: Iterable<number>);
-    newFromTo(a: Vec, b: Vec): Line;
+    newFromTo(a: Vector, b: Vector): Line;
 }
 export declare class Close extends Line {
     toPathFragment(): string[];
     toPath(): string;
-    newFromTo(a: Vec, b: Vec): Close;
+    newFromTo(a: Vector, b: Vector): Close;
 }
 export declare class Horizontal extends Line {
 }

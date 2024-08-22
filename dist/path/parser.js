@@ -1,4 +1,4 @@
-import { Vec } from '../point.js';
+import { Vector } from '../vector.js';
 import { Arc } from './arc.js';
 import { Cubic } from './cubic.js';
 import { Line, Close, Vertical, Horizontal } from './line.js';
@@ -24,8 +24,8 @@ export function dSplit(d) {
 export function parseDesc(d) {
     const segments = new Array();
     const array = dSplit(d).reverse();
-    let pos = Vec.pos(0, 0);
-    let moved = Vec.pos(0, 0);
+    let pos = Vector.pos(0, 0);
+    let moved = Vector.pos(0, 0);
     let last_command;
     const num = function () {
         const v = array.pop();
@@ -46,10 +46,10 @@ export function parseDesc(d) {
                     const x = num();
                     const y = num();
                     if (absolute) {
-                        pos = moved = Vec.pos(x, y);
+                        pos = moved = Vector.pos(x, y);
                     }
                     else {
-                        pos = moved = start.add(Vec.pos(x, y));
+                        pos = moved = start.add(Vector.pos(x, y));
                     }
                 }
                 break;
@@ -67,10 +67,10 @@ export function parseDesc(d) {
                     const x = num();
                     const y = num();
                     if (absolute) {
-                        pos = Vec.pos(x, y);
+                        pos = Vector.pos(x, y);
                     }
                     else {
-                        pos = pos.add(Vec.pos(x, y));
+                        pos = pos.add(Vector.pos(x, y));
                     }
                     segments.push(new Line(start, pos));
                 }
@@ -115,10 +115,10 @@ export function parseDesc(d) {
                     const x = num();
                     const y = num();
                     if (absolute) {
-                        pos = Vec.pos(x, y);
+                        pos = Vector.pos(x, y);
                     }
                     else {
-                        pos = pos.add(Vec.pos(x, y));
+                        pos = pos.add(Vector.pos(x, y));
                     }
                     segments.push(Arc.fromEndPoint(start, rx, ry, rotation, arc, sweep, pos));
                 }
@@ -133,15 +133,15 @@ export function parseDesc(d) {
                     const c2y = num();
                     const x = num();
                     const y = num();
-                    let c1 = Vec.pos(c1x, c1y);
-                    let c2 = Vec.pos(c2x, c2y);
+                    let c1 = Vector.pos(c1x, c1y);
+                    let c2 = Vector.pos(c2x, c2y);
                     if (absolute) {
-                        pos = Vec.pos(x, y);
+                        pos = Vector.pos(x, y);
                     }
                     else {
                         c1 = c1.add(pos);
                         c2 = c2.add(pos);
-                        pos = pos.add(Vec.pos(x, y));
+                        pos = pos.add(Vector.pos(x, y));
                     }
                     segments.push(new Cubic(start, c1, c2, pos));
                 }
@@ -154,13 +154,13 @@ export function parseDesc(d) {
                     const cy = num();
                     const x = num();
                     const y = num();
-                    let con = Vec.pos(cx, cy);
+                    let con = Vector.pos(cx, cy);
                     if (absolute) {
-                        pos = Vec.pos(x, y);
+                        pos = Vector.pos(x, y);
                     }
                     else {
                         con = con.add(pos);
-                        pos = pos.add(Vec.pos(x, y));
+                        pos = pos.add(Vector.pos(x, y));
                     }
                     segments.push(new Quadratic(start, con, pos));
                 }
@@ -181,13 +181,13 @@ export function parseDesc(d) {
                     else {
                         c1 = start;
                     }
-                    let c2 = Vec.pos(cx, cy);
+                    let c2 = Vector.pos(cx, cy);
                     if (absolute) {
-                        pos = Vec.pos(x, y);
+                        pos = Vector.pos(x, y);
                     }
                     else {
                         c2 = c2.add(pos);
-                        pos = start.add(Vec.pos(x, y));
+                        pos = start.add(Vector.pos(x, y));
                     }
                     segments.push(new Cubic(start, c1, c2, pos));
                 }
@@ -207,10 +207,10 @@ export function parseDesc(d) {
                         c = start;
                     }
                     if (absolute) {
-                        pos = Vec.pos(x, y);
+                        pos = Vector.pos(x, y);
                     }
                     else {
-                        pos = start.add(Vec.pos(x, y));
+                        pos = start.add(Vector.pos(x, y));
                     }
                     segments.push(new Quadratic(start, c, pos));
                 }
@@ -273,8 +273,8 @@ export function parseLS(d, prev) {
         throw new Error(`Number expected '${v}' '${d}'`);
     };
     const isNum = () => peek()?.[2];
-    const vec = () => Vec.pos(num(), num());
-    const first = SegmentLS.moveTo(Vec.pos(0, 0));
+    const vec = () => Vector.pos(num(), num());
+    const first = SegmentLS.moveTo(Vector.pos(0, 0));
     let cur = prev ?? first;
     let command;
     while ((command = cmd())) {

@@ -1,6 +1,6 @@
 const { sqrt, abs, cos, sin, atan2, PI } = Math;
 const TAU = PI * 2;
-export class Vec extends Float64Array {
+export class Vector extends Float64Array {
     get x() {
         return this[0];
     }
@@ -41,11 +41,11 @@ export class Vec extends Float64Array {
         const i = p[Symbol.iterator]();
         for (const n of this) {
             if (!isFinite(n)) {
-                throw new Error(`{this}`);
+                throw new Error(`${this}`);
             }
             const m = i.next().value;
             if (!isFinite(m)) {
-                throw new Error(`{this}`);
+                throw new Error(`${p}`);
             }
             if (abs(n - m) >= epsilon) {
                 return false;
@@ -58,6 +58,9 @@ export class Vec extends Float64Array {
         const i = p[Symbol.iterator]();
         for (const n of this) {
             const m = i.next().value;
+            if (!isFinite(m)) {
+                throw new Error(`${p}`);
+            }
             r += (n * m);
         }
         return r;
@@ -65,7 +68,7 @@ export class Vec extends Float64Array {
     cross(p) {
         const [a, b, c] = this;
         const [x, y = 0, z = 0] = p;
-        return Vec.vec(b * z - c * y, c * x - a * z, a * y - b * x);
+        return Vector.vec(b * z - c * y, c * x - a * z, a * y - b * x);
     }
     equals(p) {
         if (!p) {
@@ -105,30 +108,30 @@ export class Vec extends Float64Array {
         return [...this];
     }
     normal() {
-        const [x, y, z] = this;
-        return Vec.vec(y, -x, z);
+        const [x, y, ...a] = this;
+        return Vector.vec(y, -x, ...a);
     }
     div(factor) {
-        return Vec.vec(...[...this].map(v => v / factor));
+        return Vector.vec(...[...this].map(v => v / factor));
     }
     mul(factor) {
-        return Vec.vec(...[...this].map(v => v * factor));
+        return Vector.vec(...[...this].map(v => v * factor));
     }
     add(that) {
         const I = that[Symbol.iterator]();
-        return new Vec(this.map((v, i) => v + (I.next().value ?? 0)));
+        return new Vector(this.map((v, i) => v + (I.next().value ?? 0)));
     }
     sub(that) {
         const I = that[Symbol.iterator]();
-        return new Vec(this.map((v, i) => v - (I.next().value ?? 0)));
+        return new Vector(this.map((v, i) => v - (I.next().value ?? 0)));
     }
     post_subtract(that) {
         const I = that[Symbol.iterator]();
-        return new Vec(this.map((v, i) => (I.next().value ?? 0) - v));
+        return new Vector(this.map((v, i) => (I.next().value ?? 0) - v));
     }
     post_add(that) {
         const I = that[Symbol.iterator]();
-        return new Vec(this.map((v, i) => (I.next().value ?? 0) + v));
+        return new Vector(this.map((v, i) => (I.next().value ?? 0) + v));
     }
     distance(p) {
         return this.sub(p).abs();
@@ -145,63 +148,57 @@ export class Vec extends Float64Array {
     transform(matrix) {
         const [x, y] = this;
         const { a, b, c, d, e, f } = matrix;
-        return Vec.vec(a * x + c * y + e, b * x + d * y + f);
+        return Vector.vec(a * x + c * y + e, b * x + d * y + f);
     }
     flip_x() {
-        return new Vec(this.map((v, i) => (i == 0 ? -v : v)));
+        return new Vector(this.map((v, i) => (i == 0 ? -v : v)));
     }
     flip_y() {
-        return new Vec(this.map((v, i) => (i == 1 ? -v : v)));
+        return new Vector(this.map((v, i) => (i == 1 ? -v : v)));
     }
     flip_z() {
-        return new Vec(this.map((v, i) => (i == 2 ? -v : v)));
+        return new Vector(this.map((v, i) => (i == 2 ? -v : v)));
     }
     shift_x(d) {
-        return new Vec(this.map((v, i) => (i == 0 ? v + d : v)));
+        return new Vector(this.map((v, i) => (i == 0 ? v + d : v)));
     }
     shift_y(d) {
-        return new Vec(this.map((v, i) => (i == 1 ? v + d : v)));
+        return new Vector(this.map((v, i) => (i == 1 ? v + d : v)));
     }
     shift_z(d) {
-        return new Vec(this.map((v, i) => (i == 2 ? v + d : v)));
+        return new Vector(this.map((v, i) => (i == 2 ? v + d : v)));
     }
     only_x() {
-        return new Vec(this.map((v, i) => (i == 0 ? v : 0)));
+        return new Vector(this.map((v, i) => (i == 0 ? v : 0)));
     }
     only_y() {
-        return new Vec(this.map((v, i) => (i == 1 ? v : 0)));
+        return new Vector(this.map((v, i) => (i == 1 ? v : 0)));
     }
     only_z() {
-        return new Vec(this.map((v, i) => (i == 2 ? v : 0)));
+        return new Vector(this.map((v, i) => (i == 2 ? v : 0)));
     }
     with_x(n) {
-        return new Vec(this.map((v, i) => (i == 0 ? n : v)));
+        return new Vector(this.map((v, i) => (i == 0 ? n : v)));
     }
     with_y(n) {
-        return new Vec(this.map((v, i) => (i == 1 ? n : v)));
+        return new Vector(this.map((v, i) => (i == 1 ? n : v)));
     }
     with_z(n) {
-        return new Vec(this.map((v, i) => (i == 2 ? n : v)));
+        return new Vector(this.map((v, i) => (i == 2 ? n : v)));
     }
     rotated(rad) {
         const [x, y, z] = this;
         const [cs, sn] = [cos(rad), sin(rad)];
-        return Vec.vec(x * cs - y * sn, x * sn + y * cs, z);
+        return Vector.vec(x * cs - y * sn, x * sn + y * cs, z);
     }
     clone() {
-        return Vec.vec(...this);
+        return Vector.vec(...this);
     }
     nearest_point_of_line(a, b) {
         const a_to_p = this.sub(a);
-        const a_to_b = Vec.subtract(b, a);
+        const a_to_b = Vector.subtract(b, a);
         const t = a_to_p.dot(a_to_b) / a_to_b.abs_quad();
         return a_to_b.mul(t).post_add(a);
-    }
-    final() {
-        return Object.isFrozen(this) ? this : Object.freeze(this.clone());
-    }
-    mut() {
-        return Object.isFrozen(this) ? this.clone() : this;
     }
     static new(x, y, z) {
         switch (typeof x) {
@@ -279,4 +276,4 @@ export class Vec extends Float64Array {
         return this.new(...s.split(/(?:\s|\,)\s*/).map(v => parseFloat(v.trim() || '0')));
     }
 }
-//# sourceMappingURL=point.js.map
+//# sourceMappingURL=vector.js.map

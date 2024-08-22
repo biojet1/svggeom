@@ -1,4 +1,4 @@
-import { Vec } from '../point.js';
+import { Vector } from '../vector.js';
 import { Box } from '../box.js';
 export class Cubic extends SegmentSE {
     c1;
@@ -6,8 +6,8 @@ export class Cubic extends SegmentSE {
     t_value;
     constructor(from, c1, c2, to) {
         super(from, to);
-        this.c1 = Vec.new(c1);
-        this.c2 = Vec.new(c2);
+        this.c1 = Vector.new(c1);
+        this.c2 = Vector.new(c2);
     }
     new(from, c1, c2, to) {
         return new Cubic(from, c1, c2, to);
@@ -101,14 +101,14 @@ function cubicFlatness([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]) {
 }
 export function cubicPointAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]], t) {
     const F = 1 - t;
-    return Vec.new(F * F * F * sx + 3 * F * F * t * x1 + 3 * F * t * t * x2 + t * t * t * ex, F * F * F * sy + 3 * F * F * t * y1 + 3 * F * t * t * y2 + t * t * t * ey);
+    return Vector.new(F * F * F * sx + 3 * F * F * t * x1 + 3 * F * t * t * x2 + t * t * t * ex, F * F * F * sy + 3 * F * F * t * y1 + 3 * F * t * t * y2 + t * t * t * ey);
 }
 export function cubicSplitAt([[sx, sy], [x1, y1], [x2, y2], [ex, ey]], z) {
     const x = splitAtScalar(z, sx, x1, x2, ex);
     const y = splitAtScalar(z, sy, y1, y2, ey);
     return [
-        [Vec.new(x[0][0], y[0][0]), Vec.new(x[0][1], y[0][1]), Vec.new(x[0][2], y[0][2]), Vec.new(x[0][3], y[0][3])],
-        [Vec.new(x[1][0], y[1][0]), Vec.new(x[1][1], y[1][1]), Vec.new(x[1][2], y[1][2]), Vec.new(x[1][3], y[1][3])],
+        [Vector.new(x[0][0], y[0][0]), Vector.new(x[0][1], y[0][1]), Vector.new(x[0][2], y[0][2]), Vector.new(x[0][3], y[0][3])],
+        [Vector.new(x[1][0], y[1][0]), Vector.new(x[1][1], y[1][1]), Vector.new(x[1][2], y[1][2]), Vector.new(x[1][3], y[1][3])],
     ];
 }
 export function cubicSlopeAt([from, c1, c2, to], t) {

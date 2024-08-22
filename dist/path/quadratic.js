@@ -1,11 +1,11 @@
-import { Vec } from '../point.js';
+import { Vector } from '../vector.js';
 import { Box } from '../box.js';
 import { SegmentSE } from './index.js';
 export class Quadratic extends SegmentSE {
     c;
     constructor(p1, control, p2) {
-        super(Vec.new(p1), Vec.new(p2));
-        this.c = Vec.new(control);
+        super(Vector.new(p1), Vector.new(p2));
+        this.c = Vector.new(control);
     }
     get _qpts() {
         const { from, c, to } = this;
@@ -62,13 +62,13 @@ export function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]], t) {
     const my2 = (1 - t) * cy + t * y2;
     const myt = (1 - t) * my1 + t * my2;
     return [
-        [Vec.new(x1, y1), Vec.new(mx1, my1), Vec.new(mxt, myt)],
-        [Vec.new(mxt, myt), Vec.new(mx2, my2), Vec.new(x2, y2)],
+        [Vector.new(x1, y1), Vector.new(mx1, my1), Vector.new(mxt, myt)],
+        [Vector.new(mxt, myt), Vector.new(mx2, my2), Vector.new(x2, y2)],
     ];
 }
 export function quadPointAt([[x1, y1], [cx, cy], [x2, y2]], t) {
     const v = 1 - t;
-    return Vec.new(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
+    return Vector.new(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
 }
 export function quadSlopeAt([from, c, to], t) {
     if (c.equals(from) || c.equals(to)) {

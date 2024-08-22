@@ -1,4 +1,4 @@
-import { Vec } from './point.js';
+import { Vector } from './vector.js';
 const { max, min, abs } = Math;
 export class Box {
     _x;
@@ -28,7 +28,7 @@ export class Box {
     }
     clone() {
         const { x, y, width, height } = this;
-        return Box.forRect(x, y, width, height);
+        return Box.rect(x, y, width, height);
     }
     get x() {
         return this._x;
@@ -78,30 +78,30 @@ export class Box {
     }
     get center() {
         const { centerX, centerY } = this;
-        return Vec.new(centerX, centerY);
+        return Vector.new(centerX, centerY);
     }
     withCenter(p) {
         const [cx, cy] = p;
         const { width: W, height: H } = this;
-        return Box.forRect(cx - W / 2, cy - H / 2, W, H);
+        return Box.rect(cx - W / 2, cy - H / 2, W, H);
     }
     withSize(p) {
         const [w, h] = p;
         const { x, y } = this;
-        return Box.forRect(x, y, w, h);
+        return Box.rect(x, y, w, h);
     }
     withPos(p) {
         const [x, y] = p;
         const { width, height } = this;
-        return Box.forRect(x, y, width, height);
+        return Box.rect(x, y, width, height);
     }
     withMinY(n) {
         const { x, width, height } = this;
-        return Box.forRect(x, n, width, height);
+        return Box.rect(x, n, width, height);
     }
     withMinX(n) {
         const { y, width, height } = this;
-        return Box.forRect(n, y, width, height);
+        return Box.rect(n, y, width, height);
     }
     merge(box) {
         if (!this.isValid()) {
@@ -112,12 +112,12 @@ export class Box {
         }
         const { minX: xMin1, minY: yMin1, maxX: xMax1, maxY: yMax1 } = this;
         const { minX: xMin2, minY: yMin2, maxX: xMax2, maxY: yMax2 } = box;
-        return Box.fromExtrema(min(xMin1, xMin2), max(xMax1, xMax2), min(yMin1, yMin2), max(yMax1, yMax2));
+        return Box.extrema(min(xMin1, xMin2), max(xMax1, xMax2), min(yMin1, yMin2), max(yMax1, yMax2));
     }
     inflated(h, v) {
         v = v ?? h;
         const { x, y, width, height } = this;
-        return Box.forRect(x - h, y - v, h + width + h, v + height + v);
+        return Box.rect(x - h, y - v, h + width + h, v + height + v);
     }
     transform(m) {
         let xMin = Infinity;
@@ -125,14 +125,14 @@ export class Box {
         let yMin = Infinity;
         let maxY = -Infinity;
         const { x, y, bottom, right } = this;
-        [Vec.new(x, y), Vec.new(right, y), Vec.new(x, bottom), Vec.new(right, bottom)].forEach(function (p) {
+        [Vector.new(x, y), Vector.new(right, y), Vector.new(x, bottom), Vector.new(right, bottom)].forEach(function (p) {
             const [x, y] = p.transform(m);
             xMin = min(xMin, x);
             xMax = max(xMax, x);
             yMin = min(yMin, y);
             maxY = max(maxY, y);
         });
-        return Box.fromExtrema(xMin, xMax, yMin, maxY);
+        return Box.extrema(xMin, xMax, yMin, maxY);
     }
     isValid() {
         const { x, y, width, height } = this;
@@ -177,7 +177,7 @@ export class Box {
                 const yMin = max(yMin1, yMin2);
                 const yMax = min(yMax1, yMax2);
                 if (yMax >= yMin) {
-                    return Box.fromExtrema(xMin, xMax, yMin, yMax);
+                    return Box.extrema(xMin, xMax, yMin, yMax);
                 }
             }
         }
@@ -189,24 +189,24 @@ export class Box {
     static _empty;
     static empty() {
         const { _empty } = Box;
-        return _empty || (Box._empty = Box.forRect(0, 0, 0, 0));
+        return _empty || (Box._empty = Box.rect(0, 0, 0, 0));
     }
-    static fromExtrema(x1, x2, y1, y2) {
+    static extrema(x1, x2, y1, y2) {
         if (x1 > x2)
             [x1, x2] = [x2, x1];
         if (y1 > y2)
             [y1, y2] = [y2, y1];
-        return this.forRect(x1, y1, abs(x2 - x1), abs(y2 - y1));
+        return this.rect(x1, y1, abs(x2 - x1), abs(y2 - y1));
     }
     static fromRect({ x = 0, y = 0, width = 0, height = 0 }) {
-        return this.forRect(x, y, width, height);
+        return this.rect(x, y, width, height);
     }
-    static forRect(x, y, width, height) {
+    static rect(x, y, width, height) {
         return new this(x, y, width, height);
     }
     static parse(s) {
         const v = s.split(/[\s,]+/).map(parseFloat);
-        return this.forRect(v[0], v[1], v[2], v[3]);
+        return this.rect(v[0], v[1], v[2], v[3]);
     }
     static merge(...args) {
         let x = Box.not();
@@ -221,7 +221,7 @@ export class Box {
                 return this.parse(first);
             }
             case 'number':
-                return this.forRect(first, arguments[1], arguments[2], arguments[3]);
+                return this.rect(first, arguments[1], arguments[2], arguments[3]);
             case 'undefined':
                 return this.not();
             case 'object':
@@ -230,15 +230,15 @@ export class Box {
                     if (Array.isArray(x)) {
                         const [x1, x2] = first[0];
                         const [y1, y2] = first[1];
-                        return this.fromExtrema(x1, x2, y1, y2);
+                        return this.extrema(x1, x2, y1, y2);
                     }
                     else {
-                        return this.forRect(first[0], first[1], first[2], first[3]);
+                        return this.rect(first[0], first[1], first[2], first[3]);
                     }
                 }
                 else {
                     const { left, x, top, y, width, height } = first;
-                    return this.forRect(left || x || 0, top || y || 0, width, height);
+                    return this.rect(left || x || 0, top || y || 0, width, height);
                 }
             default:
                 throw new TypeError(`Invalid box argument ${arguments}`);
@@ -316,7 +316,7 @@ export class BoxMut extends Box {
     static not() {
         return new BoxMut(NaN, NaN, NaN, NaN);
     }
-    static forRect(x, y, width, height) {
+    static rect(x, y, width, height) {
         return new this(x, y, width, height);
     }
 }

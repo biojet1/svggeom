@@ -1,4 +1,4 @@
-import { Vec } from './point.js';
+import { Vector } from './vector.js';
 export declare class Box {
     protected _x: number;
     protected _y: number;
@@ -21,7 +21,7 @@ export declare class Box {
     get bottom(): number;
     get centerX(): number;
     get centerY(): number;
-    get center(): Vec;
+    get center(): Vector;
     withCenter(p: Iterable<number>): Box;
     withSize(p: Iterable<number>): Box;
     withPos(p: Iterable<number>): Box;
@@ -39,14 +39,14 @@ export declare class Box {
     static not(): Box;
     private static _empty?;
     static empty(): Box;
-    static fromExtrema(x1: number, x2: number, y1: number, y2: number): Box;
+    static extrema(x1: number, x2: number, y1: number, y2: number): Box;
     static fromRect({ x, y, width, height }: {
         x?: number | undefined;
         y?: number | undefined;
         width?: number | undefined;
         height?: number | undefined;
     }): Box;
-    static forRect(x: number, y: number, width: number, height: number): Box;
+    static rect(x: number, y: number, width: number, height: number): Box;
     static parse(s: string): Box;
     static merge(...args: Array<Box>): Box;
     static new(first?: number | number[] | [number[], number[]] | string | Box, y?: number, width?: number, height?: number): Box;
@@ -67,5 +67,5 @@ export declare class BoxMut extends Box {
     isValid(): boolean;
     copy(that: Box): this;
     static not(): BoxMut;
-    static forRect(x: number, y: number, width: number, height: number): BoxMut;
+    static rect(x: number, y: number, width: number, height: number): BoxMut;
 }
