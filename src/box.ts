@@ -179,7 +179,7 @@ export class Box {
 		const { x, y, bottom, right } = this;
 		[Vec.new(x, y), Vec.new(right, y), Vec.new(x, bottom), Vec.new(right, bottom)].forEach(
 			function (p) {
-				const { x, y } = p.transform(m);
+				const [x, y] = p.transform(m);
 				xMin = min(xMin, x);
 				xMax = max(xMax, x);
 				yMin = min(yMin, y);

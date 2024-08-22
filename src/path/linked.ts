@@ -387,7 +387,7 @@ export class LineLS extends SegmentLS {
 	}
 	override pointAt(t: number) {
 		const { from, to } = this;
-		return to.sub(from).mul(tCheck(t)).postAdd(from);
+		return to.sub(from).mul(tCheck(t)).post_add(from);
 	}
 	override slopeAt(_: number) {
 		const { from, to } = this;
@@ -557,8 +557,8 @@ export class QuadLS extends SegmentLS {
 	}
 	override _descs(opt?: DescParams) {
 		const {
-			p: { x: x1, y: y1 },
-			to: { x: ex, y: ey },
+			p: [x1, y1],
+			to: [ex, ey],
 		} = this;
 		if (opt) {
 			const { relative, smooth } = opt;
@@ -693,8 +693,8 @@ export class ArcLS extends SegmentLS {
 	) {
 		if (!(isFinite(φ) && isFinite(rx) && isFinite(ry))) throw Error(`${JSON.stringify(arguments)}`);
 		super(prev, to);
-		const { x: x1, y: y1 } = this.from;
-		const { x: x2, y: y2 } = this.to;
+		const [x1, y1] = this.from;
+		const [x2, y2] = this.to;
 		[this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] = arc_params(
 			x1,
 			y1,

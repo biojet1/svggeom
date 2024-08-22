@@ -44,8 +44,8 @@ export function parseDesc(d: string) {
 	// prepare for parsing
 	const segments = new Array<SegmentSE>();
 	const array = dSplit(d).reverse(); // split into array
-	let pos = Vec.new(0, 0);
-	let moved = Vec.new(0, 0);
+	let pos = Vec.pos(0, 0);
+	let moved = Vec.pos(0, 0);
 	let last_command;
 
 	const num = function () {
@@ -68,9 +68,9 @@ export function parseDesc(d: string) {
 					const x = num();
 					const y = num();
 					if (absolute) {
-						pos = moved = Vec.new(x, y);
+						pos = moved = Vec.pos(x, y);
 					} else {
-						pos = moved = start.add(Vec.new(x, y));
+						pos = moved = start.add(Vec.pos(x, y));
 					}
 				}
 				break;
@@ -88,9 +88,9 @@ export function parseDesc(d: string) {
 					const x = num();
 					const y = num();
 					if (absolute) {
-						pos = Vec.new(x, y);
+						pos = Vec.pos(x, y);
 					} else {
-						pos = pos.add(Vec.new(x, y));
+						pos = pos.add(Vec.pos(x, y));
 					}
 					segments.push(new Line(start, pos));
 				}
@@ -101,9 +101,9 @@ export function parseDesc(d: string) {
 				{
 					const v = num();
 					if (absolute) {
-						pos = Vec.new(v, pos.y);
+						pos = pos.withX(v)
 					} else {
-						pos = Vec.new(pos.x + v, pos.y);
+						pos = pos.shiftX(v)
 					}
 					segments.push(new Horizontal(start, pos));
 				}
@@ -114,9 +114,11 @@ export function parseDesc(d: string) {
 				{
 					const v = num();
 					if (absolute) {
-						pos = Vec.new(pos.x, v);
+
+						pos = pos.withY(v);
 					} else {
-						pos = Vec.new(pos.x, pos.y + v);
+						pos = pos.shiftY(v);
+
 					}
 					segments.push(new Vertical(start, pos));
 				}
@@ -133,9 +135,9 @@ export function parseDesc(d: string) {
 					const x = num();
 					const y = num();
 					if (absolute) {
-						pos = Vec.new(x, y);
+						pos = Vec.pos(x, y);
 					} else {
-						pos = pos.add(Vec.new(x, y));
+						pos = pos.add(Vec.pos(x, y));
 					}
 					segments.push(Arc.fromEndPoint(start, rx, ry, rotation, arc, sweep, pos));
 				}
@@ -150,14 +152,14 @@ export function parseDesc(d: string) {
 					const c2y = num();
 					const x = num();
 					const y = num();
-					let c1 = Vec.new(c1x, c1y);
-					let c2 = Vec.new(c2x, c2y);
+					let c1 = Vec.pos(c1x, c1y);
+					let c2 = Vec.pos(c2x, c2y);
 					if (absolute) {
-						pos = Vec.new(x, y);
+						pos = Vec.pos(x, y);
 					} else {
 						c1 = c1.add(pos);
 						c2 = c2.add(pos);
-						pos = pos.add(Vec.new(x, y));
+						pos = pos.add(Vec.pos(x, y));
 					}
 					segments.push(new Cubic(start, c1, c2, pos));
 				}
@@ -170,12 +172,12 @@ export function parseDesc(d: string) {
 					const cy = num();
 					const x = num();
 					const y = num();
-					let con = Vec.new(cx, cy);
+					let con = Vec.pos(cx, cy);
 					if (absolute) {
-						pos = Vec.new(x, y);
+						pos = Vec.pos(x, y);
 					} else {
 						con = con.add(pos);
-						pos = pos.add(Vec.new(x, y));
+						pos = pos.add(Vec.pos(x, y));
 					}
 					segments.push(new Quadratic(start, con, pos));
 				}
@@ -206,14 +208,14 @@ export function parseDesc(d: string) {
 						c1 = start;
 					}
 
-					let c2 = Vec.new(cx, cy);
+					let c2 = Vec.pos(cx, cy);
 
 					if (absolute) {
-						pos = Vec.new(x, y);
+						pos = Vec.pos(x, y);
 					} else {
 						// c1 = c1.add(pos);
 						c2 = c2.add(pos);
-						pos = start.add(Vec.new(x, y));
+						pos = start.add(Vec.pos(x, y));
 					}
 
 					segments.push(new Cubic(start, c1, c2, pos));
@@ -233,10 +235,10 @@ export function parseDesc(d: string) {
 						c = start;
 					}
 					if (absolute) {
-						pos = Vec.new(x, y);
+						pos = Vec.pos(x, y);
 					} else {
 						// c = c.add(start);
-						pos = start.add(Vec.new(x, y));
+						pos = start.add(Vec.pos(x, y));
 					}
 					segments.push(new Quadratic(start, c, pos));
 				}
@@ -304,8 +306,8 @@ export function parseLS(d: string, prev: SegmentLS | undefined): SegmentLS {
 		throw new Error(`Number expected '${v}' '${d}'`);
 	};
 	const isNum = () => peek()?.[2];
-	const vec = () => Vec.new(num(), num());
-	const first = SegmentLS.moveTo(Vec.new(0, 0));
+	const vec = () => Vec.pos(num(), num());
+	const first = SegmentLS.moveTo(Vec.pos(0, 0));
 	let cur: SegmentLS = prev ?? first;
 	let command;
 	while ((command = cmd())) {

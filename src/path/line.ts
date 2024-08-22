@@ -5,8 +5,8 @@ import { SegmentSE, tNorm, DescParams } from './index.js';
 abstract class LineSegment extends SegmentSE {
 	override bbox() {
 		const {
-			from: { x: p1x, y: p1y },
-			to: { x: p2x, y: p2y },
+			from: [p1x, p1y],
+			to: [p2x, p2y],
 		} = this;
 		const [xmin, xmax] = [Math.min(p1x, p2x), Math.max(p1x, p2x)];
 		const [ymin, ymax] = [Math.min(p1y, p2y), Math.max(p1y, p2y)];
@@ -19,7 +19,7 @@ abstract class LineSegment extends SegmentSE {
 	}
 	override pointAt(t: number) {
 		const { from, to } = this;
-		return to.sub(from).mul(tNorm(t)).postAdd(from);
+		return to.sub(from).mul(tNorm(t)).post_add(from);
 	}
 
 	override slopeAt(t: number) {
@@ -46,9 +46,7 @@ abstract class LineSegment extends SegmentSE {
 	}
 
 	override toPathFragment(opt?: DescParams) {
-		const {
-			to: { x, y },
-		} = this;
+		const { to: [x, y] } = this;
 
 		return ['L', x, y];
 	}
@@ -81,7 +79,7 @@ export class Close extends Line {
 	}
 }
 
-export class Horizontal extends Line {}
-export class Vertical extends Line {}
+export class Horizontal extends Line { }
+export class Vertical extends Line { }
 export { Line as LineSegment };
 

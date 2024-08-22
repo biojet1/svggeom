@@ -44,9 +44,9 @@ export class Cubic extends SegmentSE {
 
 	override toPathFragment() {
 		const {
-			c1: { x: x1, y: y1 },
-			c2: { x: x2, y: y2 },
-			to: { x: x3, y: y3 },
+			c1: [x1, y1],
+			c2: [x2, y2],
+			to: [x3, y3],
 		} = this;
 		return ['C', x1, y1, x2, y2, x3, y3];
 	}

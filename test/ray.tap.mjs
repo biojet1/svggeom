@@ -144,7 +144,7 @@ test.test(`distance`, { bail: !CI }, function (t) {
     let B = Ray.new();
 
     t.almostEqual(ray.distance(8, 15), 17, 1e-11);
-    t.almostEqual(ray.distance(Vec.new(-3, -4)), 5, 1e-11);
+    t.almostEqual(ray.distance(Vec.pos(-3, -4)), 5, 1e-11);
     t.almostEqual(ray.distance(B.forward(-3).left().back(4)), 5, 1e-11);
 
     t.end();
@@ -333,7 +333,7 @@ test.test(`RegularPentagon`, { bail: !CI }, function (t) {
         .turnd(-18)
         .back()
         .back(r + R);
-    t.almostEqual(Array.from(A), Array.from(Ray.at(4, 4).toMidPoint(Vec.new(s1, c1), Vec.new(s2, -c2))));
+    t.almostEqual(Array.from(A), Array.from(Ray.at(4, 4).toMidPoint(Vec.pos(s1, c1), Vec.pos(s2, -c2))));
     t.almostEqual(Array.from(A.along(-1, s1, c1)), Array.from(Vec.new(s2, -c2)));
 
     t.end();

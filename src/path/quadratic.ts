@@ -34,8 +34,8 @@ export class Quadratic extends SegmentSE {
 	}
 
 	override toPathFragment() {
-		const { c, to } = this;
-		return ['Q', c.x, c.y, to.x, to.y];
+		const { c: [cx, cy], to: [x, y] } = this;
+		return ['Q', cx, cy, x, y];
 	}
 
 	override transform(M: any) {

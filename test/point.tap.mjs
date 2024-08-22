@@ -85,10 +85,26 @@ test.test(`pentagon extra`, { bail: !CI }, function (t) {
 });
 
 test.test(`cross`, { bail: !CI }, function (t) {
-    const a = Vec.new(1, 3, 4);
-    const b = Vec.new(2, 7, -5);
-    t.same(Array.from(a.cross(b)), [-43, 13, 1]);
-    t.same(Array.from(b.cross(a)), [43, -13, -1]);
+    {
+        const a = Vec.new(1, 3, 4);
+        const b = Vec.new(2, 7, -5);
+        t.same(Array.from(a.cross(b)), [-43, 13, 1]);
+        t.same(Array.from(b.cross(a)), [43, -13, -1]);
+    }
+    {
+        const a = Vec.new(1, 2, 3);
+        const b = Vec.new(4, 5, 6);
+        t.same(Array.from(a.cross(b)), [-3, 6, -3]);
+    }
+    // import numpy as np
+
+    // x = [1, 2, 3]
+
+    // y = [4, 5, 6]
+
+    // np.cross(x, y)
+    // array([-3,  6, -3])
+
     t.end();
 });
 
