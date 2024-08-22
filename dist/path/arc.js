@@ -4,7 +4,7 @@ import { SegmentSE } from './index.js';
 import { Line } from './line.js';
 import { Cubic } from './cubic.js';
 import { Matrix } from '../matrix.js';
-import { segment_length, arcParams, arcToCurve } from '../util.js';
+import { segment_length, arc_params, arc_to_curve } from './archelp.js';
 const { abs, atan, tan, cos, sin, PI, min, max } = Math;
 export class Arc extends SegmentSE {
     rx;
@@ -34,7 +34,7 @@ export class Arc extends SegmentSE {
             this.cy,
             this.rtheta,
             this.rdelta,
-        ] = arcParams(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
+        ] = arc_params(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
     }
     static fromEndPoint(from, rx, ry, φ, bigArc, sweep, to) {
         if (!rx || !ry) {
@@ -92,7 +92,7 @@ export class Arc extends SegmentSE {
     }
     asCubic() {
         const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = this;
-        const segments = arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
+        const segments = arc_to_curve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
         if (segments.length === 0) {
             const { to, from } = this;
             return [new Line(from, to)];

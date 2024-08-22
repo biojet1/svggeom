@@ -629,7 +629,7 @@ export class CubicLS extends SegmentLS {
     }
 }
 import { arcBBox, arcLength, arcPointAt, arcSlopeAt, arcTransform } from './arc.js';
-import { arcParams, arcToCurve } from '../util.js';
+import { arc_params, arc_to_curve } from './archelp.js';
 export class ArcLS extends SegmentLS {
     rx;
     ry;
@@ -648,7 +648,7 @@ export class ArcLS extends SegmentLS {
         super(prev, to);
         const { x: x1, y: y1 } = this.from;
         const { x: x2, y: y2 } = this.to;
-        [this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] = arcParams(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
+        [this.phi, this.rx, this.ry, this.sinφ, this.cosφ, this.cx, this.cy, this.rtheta, this.rdelta] = arc_params(x1, y1, rx, ry, φ, (this.bigArc = !!bigArc), (this.sweep = !!sweep), x2, y2);
     }
     bbox() {
         const { _prev } = this;
@@ -703,7 +703,7 @@ export class ArcLS extends SegmentLS {
         let { _prev, to } = this;
         if (_prev) {
             const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = this;
-            const segments = arcToCurve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
+            const segments = arc_to_curve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
             _prev = _prev._asCubic();
             if (segments.length === 0) {
                 _prev = _prev.lineTo(to);

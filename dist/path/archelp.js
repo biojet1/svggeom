@@ -1,6 +1,6 @@
 const { abs, tan, cos, sin, sqrt, acos, PI, ceil, max } = Math;
 const TAU = PI * 2;
-export function cossin(θ) {
+function cossin(θ) {
     θ = ((θ % 360) + 360) % 360;
     switch (θ) {
         case 0:
@@ -40,7 +40,7 @@ export function cossin(θ) {
             return [cos(r), sin(r)];
     }
 }
-export function unit_vector_angle(ux, uy, vx, vy) {
+function unit_vector_angle(ux, uy, vx, vy) {
     const sign = ux * vy - uy * vx < 0 ? -1 : 1;
     var dot = ux * vx + uy * vy;
     if (dot > 1.0) {
@@ -67,7 +67,7 @@ export function segment_length(curve, start, end, start_point, end_point, error 
     }
     return length2;
 }
-export function arcParams(x1, y1, rx, ry, φ, arc, sweep, x2, y2) {
+export function arc_params(x1, y1, rx, ry, φ, arc, sweep, x2, y2) {
     const [cosφ, sinφ] = cossin(φ);
     const x1ˈ = (cosφ * (x1 - x2) + sinφ * (y1 - y2)) / 2;
     const y1ˈ = (-sinφ * (x1 - x2) + cosφ * (y1 - y2)) / 2;
@@ -136,7 +136,7 @@ function approximate_unit_arc(theta1, delta_theta) {
         y2,
     ];
 }
-export function arcToCurve(rx, ry, cx, cy, sin_phi, cos_phi, theta1, delta_theta) {
+export function arc_to_curve(rx, ry, cx, cy, sin_phi, cos_phi, theta1, delta_theta) {
     var result = [];
     const segments = max(ceil(abs(delta_theta) / (TAU / 12)), 1);
     delta_theta /= segments;
@@ -158,4 +158,4 @@ export function arcToCurve(rx, ry, cx, cy, sin_phi, cos_phi, theta1, delta_theta
         return curve;
     });
 }
-//# sourceMappingURL=util.js.map
+//# sourceMappingURL=archelp.js.map
