@@ -78,7 +78,7 @@ export class Box {
     }
     get center() {
         const { centerX, centerY } = this;
-        return Vec.pos(centerX, centerY);
+        return Vec.new(centerX, centerY);
     }
     withCenter(p) {
         const [cx, cy] = p;
@@ -125,7 +125,7 @@ export class Box {
         let yMin = Infinity;
         let maxY = -Infinity;
         const { x, y, bottom, right } = this;
-        [Vec.pos(x, y), Vec.pos(right, y), Vec.pos(x, bottom), Vec.pos(right, bottom)].forEach(function (p) {
+        [Vec.new(x, y), Vec.new(right, y), Vec.new(x, bottom), Vec.new(right, bottom)].forEach(function (p) {
             const { x, y } = p.transform(m);
             xMin = min(xMin, x);
             xMax = max(xMax, x);

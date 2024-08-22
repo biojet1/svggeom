@@ -45,7 +45,7 @@ export class Vec {
     cross(p) {
         const [a, b, c] = this;
         const [x, y = 0, z = 0] = p;
-        return new Vec(b * z - c * y, c * x - a * z, a * y - b * x);
+        return Vec.of(b * z - c * y, c * x - a * z, a * y - b * x);
     }
     equals(p) {
         if (!p) {
@@ -71,59 +71,59 @@ export class Vec {
     }
     normal() {
         const { x, y, z } = this;
-        return new Vec(y, -x, z);
+        return Vec.of(y, -x, z);
     }
     onlyX() {
         const { x } = this;
-        return new Vec(x, 0, 0);
+        return Vec.of(x, 0, 0);
     }
     onlyY() {
         const { y } = this;
-        return new Vec(0, y, 0);
+        return Vec.of(0, y, 0);
     }
     onlyZ() {
         const { z } = this;
-        return new Vec(0, 0, z);
+        return Vec.of(0, 0, z);
     }
     withX(x) {
         const { y, z } = this;
-        return new Vec(x, y, z);
+        return Vec.of(x, y, z);
     }
     withY(y) {
         const { x, z } = this;
-        return new Vec(x, y, z);
+        return Vec.of(x, y, z);
     }
     withZ(z) {
         const { y, x } = this;
-        return new Vec(x, y, z);
+        return Vec.of(x, y, z);
     }
     div(factor) {
         const { x, y, z } = this;
-        return new Vec(x / factor, y / factor, z / factor);
+        return Vec.of(x / factor, y / factor, z / factor);
     }
     add(p) {
         const [x1, y1, z1] = this;
         const [x2, y2, z2 = 0] = p;
-        return new Vec(x1 + x2, y1 + y2, z1 + z2);
+        return Vec.of(x1 + x2, y1 + y2, z1 + z2);
     }
     sub(p) {
         const [x1, y1, z1] = this;
         const [x2, y2, z2 = 0] = p;
-        return new Vec(x1 - x2, y1 - y2, z1 - z2);
+        return Vec.of(x1 - x2, y1 - y2, z1 - z2);
     }
     postSubtract(p) {
         const [x1, y1 = 0, z1 = 0] = p;
         const [x2, y2, z2] = this;
-        return new Vec(x1 - x2, y1 - y2, z1 - z2);
+        return Vec.of(x1 - x2, y1 - y2, z1 - z2);
     }
     postAdd(p) {
         const [x1, y1 = 0, z1 = 0] = p;
         const [x2, y2, z2] = this;
-        return new Vec(x1 + x2, y1 + y2, z1 + z2);
+        return Vec.of(x1 + x2, y1 + y2, z1 + z2);
     }
     mul(factor) {
         const { x, y, z } = this;
-        return new Vec(x * factor, y * factor, z * factor);
+        return Vec.of(x * factor, y * factor, z * factor);
     }
     distance(p) {
         return this.sub(p).abs();
@@ -140,39 +140,39 @@ export class Vec {
     transform(matrix) {
         const { x, y } = this;
         const { a, b, c, d, e, f } = matrix;
-        return new Vec(a * x + c * y + e, b * x + d * y + f);
+        return Vec.of(a * x + c * y + e, b * x + d * y + f);
     }
     flipX() {
         const { x, y, z } = this;
-        return new Vec(-x, y, z);
+        return Vec.of(-x, y, z);
     }
     flipY() {
         const { x, y, z } = this;
-        return new Vec(x, -y, z);
+        return Vec.of(x, -y, z);
     }
     flipZ() {
         const { x, y, z } = this;
-        return new Vec(x, y, -z);
+        return Vec.of(x, y, -z);
     }
     shiftX(d) {
         const { x, y, z } = this;
-        return new Vec(x + d, y, z);
+        return Vec.of(x + d, y, z);
     }
     shiftY(d) {
         const { x, y, z } = this;
-        return new Vec(x, y + d, z);
+        return Vec.of(x, y + d, z);
     }
     shiftZ(d) {
         const { x, y, z } = this;
-        return new Vec(x, y, z + d);
+        return Vec.of(x, y, z + d);
     }
     rotated(rad) {
         const { x, y, z } = this;
         const [cs, sn] = [cos(rad), sin(rad)];
-        return new Vec(x * cs - y * sn, x * sn + y * cs, z);
+        return Vec.of(x * cs - y * sn, x * sn + y * cs, z);
     }
     clone() {
-        return new Vec(...this);
+        return Vec.of(...this);
     }
     nearestPointOfLine(a, b) {
         const a_to_p = this.sub(a);
@@ -207,21 +207,18 @@ export class Vec {
                 }
         }
     }
-    static at(x = 0, y = 0, z = 0) {
-        return new this(x, y, z);
-    }
-    static pos(x = 0, y = 0, z = 0) {
-        return new this(x, y, z);
+    static of(...nums) {
+        return new this(...nums);
     }
     static polar(radius = 1, ϕ = 0, ϴ) {
         if (ϴ == null) {
-            return radius ? new this(radius * cos(ϕ), radius * sin(ϕ)) : new this();
+            return radius ? this.of(radius * cos(ϕ), radius * sin(ϕ)) : this.of(0, 0, 0);
         }
         else {
             const sinϴ = sin(ϴ);
             return radius
-                ? new this(radius * cos(ϕ) * sinϴ, radius * sin(ϕ) * sinϴ, radius * cos(ϴ))
-                : new this();
+                ? this.of(radius * cos(ϕ) * sinϴ, radius * sin(ϕ) * sinϴ, radius * cos(ϴ))
+                : this.of(0, 0, 0);
         }
     }
     static radians(n, r = 1) {
@@ -231,13 +228,13 @@ export class Vec {
         switch (ϴ) {
             case 90:
             case -270:
-                return new this(0, r, 0);
+                return this.of(0, r, 0);
             case -90:
             case 270:
-                return new this(0, -r, 0);
+                return this.of(0, -r, 0);
             case 180:
             case -180:
-                return new this(-r, 0, 0);
+                return this.of(-r, 0, 0);
         }
         return this.radians((ϴ * PI) / 180, r);
     }
@@ -247,12 +244,12 @@ export class Vec {
     static add(a, b) {
         const [x1, y1 = 0, z1 = 0] = a;
         const [x2, y2 = 0, z2 = 0] = b;
-        return new this(x1 + x2, y1 + y2, z1 + z2);
+        return this.of(x1 + x2, y1 + y2, z1 + z2);
     }
     static subtract(a, b) {
         const [x1, y1 = 0, z1 = 0] = a;
         const [x2, y2 = 0, z2 = 0] = b;
-        return new this(x1 - x2, y1 - y2, z1 - z2);
+        return this.of(x1 - x2, y1 - y2, z1 - z2);
     }
     static parse(s) {
         const a = s.split(/\</);
@@ -260,7 +257,7 @@ export class Vec {
             const [r, ϴ] = a.map(v => parseFloat(v.trim()));
             return this.degrees(ϴ, r);
         }
-        return this.pos(...s.split(/(?:\s|\,)\s*/).map(v => parseFloat(v.trim() || '0')));
+        return this.new(...s.split(/(?:\s|\,)\s*/).map(v => parseFloat(v.trim() || '0')));
     }
 }
 //# sourceMappingURL=point.js.map

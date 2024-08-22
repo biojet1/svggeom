@@ -46,10 +46,10 @@ export class Arc extends SegmentSE {
         const cosφ = cos((φ / 180) * PI);
         const sinφ = sin((φ / 180) * PI);
         const m = Matrix.matrix(cosφ, sinφ, -sinφ, cosφ, 0, 0);
-        const from = Vec.pos(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
+        const from = Vec.new(rx * cos((θ / 180) * PI), ry * sin((θ / 180) * PI))
             .transform(m)
             .add(c);
-        const to = Vec.pos(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
+        const to = Vec.new(rx * cos(((θ + Δθ) / 180) * PI), ry * sin(((θ + Δθ) / 180) * PI))
             .transform(m)
             .add(c);
         const bigArc = abs(Δθ) > 180 ? 1 : 0;
@@ -120,7 +120,7 @@ export function arcPointAt(arc, t) {
     const sinθ = sin(θ);
     const cosθ = cos(θ);
     try {
-        return Vec.pos(rx * cosφ * cosθ - ry * sinφ * sinθ + cx, rx * sinφ * cosθ + ry * cosφ * sinθ + cy);
+        return Vec.new(rx * cosφ * cosθ - ry * sinφ * sinθ + cx, rx * sinφ * cosθ + ry * cosφ * sinθ + cy);
     }
     catch (err) {
         console.warn(rtheta, rdelta, rx, cosφ, cosθ, ry, sinφ, sinθ, cx, cy);
@@ -170,7 +170,7 @@ export function arcSlopeAt(arc, t) {
     const sinθ = sin(θ);
     const cosθ = cos(θ);
     const k = rdelta;
-    return Vec.pos(-rx * cosφ * sinθ * k - ry * sinφ * cosθ * k, -rx * sinφ * sinθ * k + ry * cosφ * cosθ * k);
+    return Vec.new(-rx * cosφ * sinθ * k - ry * sinφ * cosθ * k, -rx * sinφ * sinθ * k + ry * cosφ * cosθ * k);
 }
 export function arcTransform(self, matrix) {
     let { rx, ry, sweep, phi } = self;

@@ -46,8 +46,7 @@ export declare class Vec {
     final(): Readonly<Vec>;
     mut(): Vec;
     static new(x?: number[] | Iterable<number> | number | string, y?: number, z?: number): Vec;
-    static at(x?: number, y?: number, z?: number): Vec;
-    static pos(x?: number, y?: number, z?: number): Vec;
+    private static of;
     static polar(radius?: number, ϕ?: number, ϴ?: number): Vec;
     static radians(n: number, r?: number): Vec;
     static degrees(ϴ: number, r?: number): Vec;

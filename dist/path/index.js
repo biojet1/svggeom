@@ -94,7 +94,7 @@ export function* pickPos(args) {
                 n = v;
             }
             else {
-                yield Vec.pos(n, v);
+                yield Vec.new(n, v);
                 n = undefined;
             }
         }

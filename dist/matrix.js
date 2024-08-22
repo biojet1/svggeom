@@ -108,6 +108,25 @@ export class Matrix {
             },
         };
     }
+    take_apart() {
+        const { a, b, c, d, e, f } = this;
+        let rotation, scale, skew, r, skew_axis;
+        const delta = a * d - b * c;
+        if (a !== 0 || b !== 0) {
+            r = Math.hypot(a, b);
+            rotation = ((b > 0 ? 1 : -1) * Math.acos(a / r)) * 180 / Math.PI;
+            scale = [r, delta / r];
+            skew_axis = 0;
+        }
+        else {
+            r = Math.hypot(c, d);
+            rotation = 90 - ((d > 0 ? Math.acos(-c / r) : -Math.acos(c / r)) * 180 / Math.PI);
+            scale = [delta / r, r];
+            skew_axis = 90;
+        }
+        skew = Math.atan2((a * c + b * d), r * r) * 180 / Math.PI;
+        return { rotation, scale, skew, skew_axis, translation: [e, f] };
+    }
     toArray() {
         const { a, b, c, d, e, f } = this;
         return [a, b, c, d, e, f];
@@ -163,8 +182,8 @@ export class Matrix {
     scale(scaleX, scaleY) {
         return this._cat(Matrix.matrix(scaleX, 0, 0, scaleY ?? scaleX, 0, 0));
     }
-    rotate(ang, x = 0, y = 0) {
-        const θ = ((ang % 360) * PI) / 180;
+    rotate(deg, x = 0, y = 0) {
+        const θ = ((deg % 360) * PI) / 180;
         const cosθ = cos(θ);
         const sinθ = sin(θ);
         return this._cat(Matrix.matrix(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0));
@@ -172,11 +191,11 @@ export class Matrix {
     skew(x, y) {
         return this._cat(Matrix.matrix(1, tan(radians(y)), tan(radians(x)), 1, 0, 0));
     }
-    skewX(x) {
-        return this.skew(x, 0);
+    skewX(deg) {
+        return this.skew(deg, 0);
     }
-    skewY(y) {
-        return this.skew(0, y);
+    skewY(deg) {
+        return this.skew(0, deg);
     }
     static hexad(a = 1, b = 0, c = 0, d = 1, e = 0, f = 0) {
         return new this([a, b, c, d, e, f]);
@@ -283,8 +302,8 @@ export class Matrix {
     static skewY(y) {
         return this.skew(0, y);
     }
-    static rotate(ang, x = 0, y = 0) {
-        const θ = ((ang % 360) * PI) / 180;
+    static rotate(deg, x = 0, y = 0) {
+        const θ = ((deg % 360) * PI) / 180;
         const cosθ = cos(θ);
         const sinθ = sin(θ);
         return this.matrix(cosθ, sinθ, -sinθ, cosθ, x ? -cosθ * x + sinθ * y + x : 0, y ? -sinθ * x - cosθ * y + y : 0);

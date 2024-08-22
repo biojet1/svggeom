@@ -307,15 +307,15 @@ export class SegmentLS extends Segment {
     }
     static lineTo(...args) {
         const [pos] = pickPos(args);
-        return this.moveTo(Vec.pos(0, 0)).lineTo(pos);
+        return this.moveTo(Vec.new(0, 0)).lineTo(pos);
     }
     static bezierCurveTo(...args) {
         const [c1, c2, to] = pickPos(args);
-        return this.moveTo(Vec.pos(0, 0)).bezierCurveTo(c1, c2, to);
+        return this.moveTo(Vec.new(0, 0)).bezierCurveTo(c1, c2, to);
     }
     static quadraticCurveTo(...args) {
         const [p, to] = pickPos(args);
-        return this.moveTo(Vec.pos(0, 0)).quadraticCurveTo(p, to);
+        return this.moveTo(Vec.new(0, 0)).quadraticCurveTo(p, to);
     }
     static parse(d) {
         return parseLS(d, undefined);
@@ -710,7 +710,7 @@ export class ArcLS extends SegmentLS {
             }
             else {
                 for (const s of segments) {
-                    _prev = _prev.bezierCurveTo(Vec.pos(s[2], s[3]), Vec.pos(s[4], s[5]), Vec.pos(s[6], s[7]));
+                    _prev = _prev.bezierCurveTo(Vec.new(s[2], s[3]), Vec.new(s[4], s[5]), Vec.new(s[6], s[7]));
                 }
             }
             return _prev;
@@ -732,10 +732,10 @@ function arcHelp(cur, x, y, r, a0, a1, ccw) {
         throw new Error('negative radius: ' + r);
     }
     else if (!cur) {
-        cur = new MoveLS(undefined, Vec.pos(x0, y0));
+        cur = new MoveLS(undefined, Vec.new(x0, y0));
     }
-    else if (!cur.to.closeTo(Vec.pos(x0, y0), epsilon)) {
-        cur = cur.L(Vec.pos(x0, y0));
+    else if (!cur.to.closeTo(Vec.new(x0, y0), epsilon)) {
+        cur = cur.L(Vec.new(x0, y0));
     }
     let da = cw ? a1 - a0 : a0 - a1;
     if (!r) {
@@ -763,17 +763,17 @@ function arcToHelp(cur, x1, y1, x2, y2, r) {
         throw new Error('negative radius: ' + r);
     }
     else if (!cur) {
-        cur = new MoveLS(undefined, Vec.pos(x1, y1));
+        cur = new MoveLS(undefined, Vec.new(x1, y1));
     }
     else if (!(l01_2 > epsilon)) {
     }
     else if (!(abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
-        cur = cur.L(Vec.pos(x1, y1));
+        cur = cur.L(Vec.new(x1, y1));
     }
     else {
         const x20 = x2 - x0, y20 = y2 - y0, l21_2 = x21 * x21 + y21 * y21, l20_2 = x20 * x20 + y20 * y20, l21 = sqrt(l21_2), l01 = sqrt(l01_2), l = r * tan((PI - acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2), t01 = l / l01, t21 = l / l21;
         if (abs(t01 - 1) > epsilon) {
-            cur = cur.L(Vec.pos(x1 + t01 * x01, y1 + t01 * y01));
+            cur = cur.L(Vec.new(x1 + t01 * x01, y1 + t01 * y01));
         }
         cur = cur.A(r, r, 0, 0, y01 * x20 > x01 * y20 ? 1 : 0, x1 + t21 * x21, y1 + t21 * y21);
     }

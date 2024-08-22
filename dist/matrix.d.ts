@@ -21,6 +21,13 @@ export declare class Matrix {
         scaleY: number;
         toString: () => string;
     };
+    take_apart(): {
+        rotation: number;
+        scale: number[];
+        skew: number;
+        skew_axis: number;
+        translation: number[];
+    };
     toArray(): number[];
     describe(): string;
     protected _set_hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): this;
@@ -37,10 +44,10 @@ export declare class Matrix {
     translateY(v: number): Matrix;
     translateX(v: number): Matrix;
     scale(scaleX: number, scaleY?: number): Matrix;
-    rotate(ang: number, x?: number, y?: number): Matrix;
+    rotate(deg: number, x?: number, y?: number): Matrix;
     skew(x: number, y: number): Matrix;
-    skewX(x: number): Matrix;
-    skewY(y: number): Matrix;
+    skewX(deg: number): Matrix;
+    skewY(deg: number): Matrix;
     static hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;
     static matrix(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;
     static fromArray(m: number[]): Matrix;
@@ -55,7 +62,7 @@ export declare class Matrix {
     static skew(x: number, y: number): Matrix;
     static skewX(x: number): Matrix;
     static skewY(y: number): Matrix;
-    static rotate(ang: number, x?: number, y?: number): Matrix;
+    static rotate(deg: number, x?: number, y?: number): Matrix;
     static scale(scaleX: number, scaleY?: number): Matrix;
     static identity(): Matrix;
 }

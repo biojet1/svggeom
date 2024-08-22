@@ -62,13 +62,13 @@ export function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]], t) {
     const my2 = (1 - t) * cy + t * y2;
     const myt = (1 - t) * my1 + t * my2;
     return [
-        [Vec.pos(x1, y1), Vec.pos(mx1, my1), Vec.pos(mxt, myt)],
-        [Vec.pos(mxt, myt), Vec.pos(mx2, my2), Vec.pos(x2, y2)],
+        [Vec.new(x1, y1), Vec.new(mx1, my1), Vec.new(mxt, myt)],
+        [Vec.new(mxt, myt), Vec.new(mx2, my2), Vec.new(x2, y2)],
     ];
 }
 export function quadPointAt([[x1, y1], [cx, cy], [x2, y2]], t) {
     const v = 1 - t;
-    return Vec.pos(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
+    return Vec.new(v * v * x1 + 2 * v * t * cx + t * t * x2, v * v * y1 + 2 * v * t * cy + t * t * y2);
 }
 export function quadSlopeAt([from, c, to], t) {
     if (c.equals(from) || c.equals(to)) {
