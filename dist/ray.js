@@ -95,7 +95,7 @@ export class VecRay {
         return NaN;
     }
     nearestPointOfLine(a, b) {
-        return this.pos.nearestPointOfLine(a, b);
+        return this.pos.nearest_point_of_line(a, b);
     }
     intersectOfLine(a, b) {
         const { pos, dir } = this;
@@ -116,7 +116,7 @@ export class VecRay {
     }
     nearestPointFromPoint(p) {
         const { pos, dir } = this;
-        return Vec.new(p).nearestPointOfLine(pos, pos.add(dir));
+        return Vec.new(p).nearest_point_of_line(pos, pos.add(dir));
     }
 }
 export class Ray extends VecRay {
@@ -151,33 +151,33 @@ export class Ray extends VecRay {
     }
     withX(x = 0) {
         const { pos } = this;
-        return this._Pos(pos.withX(x));
+        return this._Pos(pos.with_x(x));
     }
     withY(y = 0) {
         const { pos } = this;
-        return this._Pos(pos.withY(y));
+        return this._Pos(pos.with_y(y));
     }
     withZ(z = 0) {
         const { pos } = this;
-        return this._Pos(pos.withZ(z));
+        return this._Pos(pos.with_z(z));
     }
     shiftX(d) {
-        return this._Pos(this.pos.shiftX(d));
+        return this._Pos(this.pos.shift_x(d));
     }
     shiftY(d) {
-        return this._Pos(this.pos.shiftY(d));
+        return this._Pos(this.pos.shift_y(d));
     }
     shiftZ(d) {
-        return this._Pos(this.pos.shiftZ(d));
+        return this._Pos(this.pos.shift_z(d));
     }
     flipX() {
-        return this._Pos(this.pos.flipX());
+        return this._Pos(this.pos.flip_x());
     }
     flipY() {
-        return this._Pos(this.pos.flipY());
+        return this._Pos(this.pos.flip_y());
     }
     flipZ() {
-        return this._Pos(this.pos.flipZ());
+        return this._Pos(this.pos.flip_z());
     }
     goto(x, y) {
         return this._Pos(Pt(x, y));

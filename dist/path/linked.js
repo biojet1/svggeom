@@ -110,16 +110,16 @@ export class SegmentLS extends Segment {
         return new LineLS(this, this.to.add(pos));
     }
     H(n) {
-        return new LineLS(this, this.to.withX(n));
+        return new LineLS(this, this.to.with_x(n));
     }
     h(n) {
-        return new LineLS(this, this.to.shiftX(n));
+        return new LineLS(this, this.to.shift_x(n));
     }
     V(n) {
-        return new LineLS(this, this.to.withY(n));
+        return new LineLS(this, this.to.with_y(n));
     }
     v(n) {
-        return new LineLS(this, this.to.shiftY(n));
+        return new LineLS(this, this.to.shift_y(n));
     }
     Q(...args) {
         const [p, pE] = pickPos(args);
@@ -143,7 +143,7 @@ export class SegmentLS extends Segment {
         const [p2, pE] = pickPos(args);
         const { to } = this;
         if (this instanceof CubicLS) {
-            return new CubicLS(this, this.c2.reflectAt(to), p2, pE);
+            return new CubicLS(this, this.c2.reflect_at(to), p2, pE);
         }
         else {
             return new CubicLS(this, to, p2, pE);
@@ -153,7 +153,7 @@ export class SegmentLS extends Segment {
         const [p2, pE] = pickPos(args);
         const { to } = this;
         if (this instanceof CubicLS) {
-            return new CubicLS(this, this.c2.reflectAt(to), to.add(p2), to.add(pE));
+            return new CubicLS(this, this.c2.reflect_at(to), to.add(p2), to.add(pE));
         }
         else {
             return new CubicLS(this, to, to.add(p2), to.add(pE));
@@ -163,7 +163,7 @@ export class SegmentLS extends Segment {
         const [pE] = pickPos(args);
         const { to } = this;
         if (this instanceof QuadLS) {
-            return new QuadLS(this, this.p.reflectAt(to), pE);
+            return new QuadLS(this, this.p.reflect_at(to), pE);
         }
         else {
             return new QuadLS(this, to, pE);
@@ -173,7 +173,7 @@ export class SegmentLS extends Segment {
         const [pE] = pickPos(args);
         const { to } = this;
         if (this instanceof QuadLS) {
-            return new QuadLS(this, this.p.reflectAt(to), to.add(pE));
+            return new QuadLS(this, this.p.reflect_at(to), to.add(pE));
         }
         else {
             return new QuadLS(this, to, to.add(pE));
@@ -529,7 +529,7 @@ export class QuadLS extends SegmentLS {
             const { p, _prev } = this;
             if (_prev) {
                 const [sx, sy] = _prev.to;
-                if (smooth && (_prev instanceof QuadLS ? _prev.p.reflectAt(_prev.to).closeTo(p) : _prev.to.closeTo(p))) {
+                if (smooth && (_prev instanceof QuadLS ? _prev.p.reflect_at(_prev.to).close_to(p) : _prev.to.close_to(p))) {
                     return relative ? ['t', ex - sx, ey - sy] : ['T', ex, ey];
                 }
                 else if (relative) {
@@ -613,7 +613,7 @@ export class CubicLS extends SegmentLS {
             if (_prev) {
                 const { to: from } = _prev;
                 const [sx, sy] = from;
-                if (smooth && (_prev instanceof CubicLS ? _prev.c2.reflectAt(from).closeTo(c1) : from.closeTo(c1))) {
+                if (smooth && (_prev instanceof CubicLS ? _prev.c2.reflect_at(from).close_to(c1) : from.close_to(c1))) {
                     return relative ? ['s', x2 - sx, y2 - sy, ex - sx, ey - sy] : ['S', x2, y2, ex, ey];
                 }
                 else if (relative) {
@@ -734,7 +734,7 @@ function arcHelp(cur, x, y, r, a0, a1, ccw) {
     else if (!cur) {
         cur = new MoveLS(undefined, Vec.new(x0, y0));
     }
-    else if (!cur.to.closeTo(Vec.new(x0, y0), epsilon)) {
+    else if (!cur.to.close_to(Vec.new(x0, y0), epsilon)) {
         cur = cur.L(Vec.new(x0, y0));
     }
     let da = cw ? a1 - a0 : a0 - a1;

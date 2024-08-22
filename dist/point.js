@@ -37,7 +37,7 @@ export class Vec extends Float64Array {
     abs() {
         return sqrt(this.abs_quad());
     }
-    closeTo(p, epsilon = 1e-12) {
+    close_to(p, epsilon = 1e-12) {
         const i = p[Symbol.iterator]();
         for (const n of this) {
             if (!isFinite(n)) {
@@ -95,7 +95,7 @@ export class Vec extends Float64Array {
             return false;
         }
     }
-    angleTo(p) {
+    angle_to(p) {
         return this.post_subtract(p).angle;
     }
     toString() {
@@ -107,30 +107,6 @@ export class Vec extends Float64Array {
     normal() {
         const [x, y, z] = this;
         return Vec.vec(y, -x, z);
-    }
-    onlyX() {
-        const [x] = this;
-        return Vec.vec(x, 0, 0);
-    }
-    onlyY() {
-        const [_, y] = this;
-        return Vec.vec(0, y, 0);
-    }
-    onlyZ() {
-        const [_1, _2, z] = this;
-        return Vec.vec(0, 0, z);
-    }
-    withX(x) {
-        const [_, y, z] = this;
-        return Vec.vec(x, y, z);
-    }
-    withY(y) {
-        const [x, _, z] = this;
-        return Vec.vec(x, y, z);
-    }
-    withZ(z) {
-        const [x, y] = this;
-        return Vec.vec(x, y, z);
     }
     div(factor) {
         return Vec.vec(...[...this].map(v => v / factor));
@@ -163,7 +139,7 @@ export class Vec extends Float64Array {
             throw new TypeError(`Can't normalize vector of zero length [${this}]`);
         return this.div(abs);
     }
-    reflectAt(p) {
+    reflect_at(p) {
         return this.post_subtract(p).post_add(p);
     }
     transform(matrix) {
@@ -171,29 +147,41 @@ export class Vec extends Float64Array {
         const { a, b, c, d, e, f } = matrix;
         return Vec.vec(a * x + c * y + e, b * x + d * y + f);
     }
-    flipX() {
-        const [x, y, z] = this;
-        return Vec.vec(-x, y, z);
+    flip_x() {
+        return new Vec(this.map((v, i) => (i == 0 ? -v : v)));
     }
-    flipY() {
-        const [x, y, z] = this;
-        return Vec.vec(x, -y, z);
+    flip_y() {
+        return new Vec(this.map((v, i) => (i == 1 ? -v : v)));
     }
-    flipZ() {
-        const [x, y, z] = this;
-        return Vec.vec(x, y, -z);
+    flip_z() {
+        return new Vec(this.map((v, i) => (i == 2 ? -v : v)));
     }
-    shiftX(d) {
-        const [x, y, z] = this;
-        return Vec.vec(x + d, y, z);
+    shift_x(d) {
+        return new Vec(this.map((v, i) => (i == 0 ? v + d : v)));
     }
-    shiftY(d) {
-        const [x, y, z] = this;
-        return Vec.vec(x, y + d, z);
+    shift_y(d) {
+        return new Vec(this.map((v, i) => (i == 1 ? v + d : v)));
     }
-    shiftZ(d) {
-        const [x, y, z] = this;
-        return Vec.vec(x, y, z + d);
+    shift_z(d) {
+        return new Vec(this.map((v, i) => (i == 2 ? v + d : v)));
+    }
+    only_x() {
+        return new Vec(this.map((v, i) => (i == 0 ? v : 0)));
+    }
+    only_y() {
+        return new Vec(this.map((v, i) => (i == 1 ? v : 0)));
+    }
+    only_z() {
+        return new Vec(this.map((v, i) => (i == 2 ? v : 0)));
+    }
+    with_x(n) {
+        return new Vec(this.map((v, i) => (i == 0 ? n : v)));
+    }
+    with_y(n) {
+        return new Vec(this.map((v, i) => (i == 1 ? n : v)));
+    }
+    with_z(n) {
+        return new Vec(this.map((v, i) => (i == 2 ? n : v)));
     }
     rotated(rad) {
         const [x, y, z] = this;
@@ -203,7 +191,7 @@ export class Vec extends Float64Array {
     clone() {
         return Vec.vec(...this);
     }
-    nearestPointOfLine(a, b) {
+    nearest_point_of_line(a, b) {
         const a_to_p = this.sub(a);
         const a_to_b = Vec.subtract(b, a);
         const t = a_to_p.dot(a_to_b) / a_to_b.abs_quad();
@@ -233,7 +221,7 @@ export class Vec extends Float64Array {
     static vec(...nums) {
         for (const n of nums) {
             if (!isFinite(n)) {
-                throw new TypeError(`must be finite {nums}`);
+                throw new TypeError(`must be finite ${nums}`);
             }
         }
         return new this(nums);

@@ -237,7 +237,7 @@ export class Path {
                     if (seg instanceof Close) {
                         if (move_pos) {
                             if (close || close == undefined) {
-                                if (move_pos.closeTo(seg.to)) {
+                                if (move_pos.close_to(seg.to)) {
                                     yield rel ? 'z' : 'Z';
                                     break OUT;
                                 }
@@ -280,10 +280,10 @@ export class Path {
                 if (_smooth) {
                     if (previous_segment instanceof Quadratic) {
                         const { c: cP, to: p2P } = previous_segment;
-                        _smooth = seg_start.closeTo(p2P) && c.sub(seg_start).closeTo(p2P.sub(cP));
+                        _smooth = seg_start.close_to(p2P) && c.sub(seg_start).close_to(p2P.sub(cP));
                     }
                     else {
-                        _smooth = seg_start.closeTo(c);
+                        _smooth = seg_start.close_to(c);
                     }
                 }
                 if (rel) {
@@ -307,10 +307,10 @@ export class Path {
                 if (_smooth) {
                     if (previous_segment instanceof Cubic) {
                         const { c2: prev_c2, to: prev_p2 } = previous_segment;
-                        _smooth = seg_start.closeTo(prev_p2) && c1.sub(seg_start).closeTo(prev_p2.sub(prev_c2));
+                        _smooth = seg_start.close_to(prev_p2) && c1.sub(seg_start).close_to(prev_p2.sub(prev_c2));
                     }
                     else {
-                        _smooth = seg_start.closeTo(c1);
+                        _smooth = seg_start.close_to(c1);
                     }
                 }
                 if (rel) {

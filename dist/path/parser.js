@@ -81,10 +81,10 @@ export function parseDesc(d) {
                 {
                     const v = num();
                     if (absolute) {
-                        pos = pos.withX(v);
+                        pos = pos.with_x(v);
                     }
                     else {
-                        pos = pos.shiftX(v);
+                        pos = pos.shift_x(v);
                     }
                     segments.push(new Horizontal(start, pos));
                 }
@@ -95,10 +95,10 @@ export function parseDesc(d) {
                 {
                     const v = num();
                     if (absolute) {
-                        pos = pos.withY(v);
+                        pos = pos.with_y(v);
                     }
                     else {
-                        pos = pos.shiftY(v);
+                        pos = pos.shift_y(v);
                     }
                     segments.push(new Vertical(start, pos));
                 }
@@ -176,7 +176,7 @@ export function parseDesc(d) {
                     let c1;
                     const last = segments.length > 0 && segments[segments.length - 1];
                     if (last instanceof Cubic) {
-                        c1 = last.c2.reflectAt(last.to);
+                        c1 = last.c2.reflect_at(last.to);
                     }
                     else {
                         c1 = start;
@@ -201,7 +201,7 @@ export function parseDesc(d) {
                     let c;
                     const last = segments.length > 0 && segments[segments.length - 1];
                     if (last instanceof Quadratic) {
-                        c = last.c.reflectAt(start);
+                        c = last.c.reflect_at(start);
                     }
                     else {
                         c = start;
