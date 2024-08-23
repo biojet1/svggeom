@@ -20,6 +20,7 @@ test.test(`point properties`, { bail: !CI }, function (t) {
     t.ok(p.clone().equals(p));
     t.not(p.clone(), p);
     t.same(p.reflect_at(Vector.new()).toArray(), [-3, -4, -5], 'reflect_at');
+    t.same(p.toString(), "3, 4, 5");
     t.end();
 });
 
@@ -217,5 +218,61 @@ test.test(`parse`, { bail: !CI }, function (t) {
     ].forEach((e, i, a) => {
         i > 0 && t.ok(a[i].close_to(a[i - 1], 1e-9), [a[i], a[i - 1]]);
     });
+    t.end();
+});
+
+test.test(`new Vector`, { bail: !CI }, function (t) {
+    let p = new Vector([-7]);
+    t.same(p[0], -7);
+    t.same(p[1], undefined);
+    p = new Vector([-3, 5]);
+    t.same(p[0], -3);
+    t.same(p[1], 5);
+    t.same(p[2], undefined);
+    p = new Vector([-3, 5, 9]);
+    t.same(p[0], -3);
+    t.same(p[1], 5);
+    t.same(p[2], 9);
+    t.same(p[3], undefined);
+    t.end();
+});
+
+test.test(`vec Vector`, { bail: !CI }, function (t) {
+    function vec(...nums) {
+        for (const n of nums) {
+            if (isNaN(n)) {
+                throw new TypeError(`must be finite <${nums}> <${[...arguments]}>`)
+            }
+        }
+        return new Vector(nums);
+    }
+    t.same([...Vector.vec(-7, 3)], [-7, 3]);
+    t.same([...Vector.vec(-7, 3, -5)], [-7, 3, -5]);
+    t.same([...Vector.vec(-7, 3, -5, 0)], [-7, 3, -5, 0]);
+    t.same([...Vector.vec(0)], [0]);
+    t.same([...Vector.vec()], []);
+    t.same(Vector.vec(-7, 3, -5, 0).toString(), '-7, 3, -5, 0');
+    t.same(Vector.vec(0).toString(), '0');
+    t.same(Vector.vec().toString(), '');
+    t.end();
+});
+
+
+
+import { BoundingInterval } from 'svggeom';
+
+
+test.test(`BoundingInterval check`, { bail: !CI }, function (t) {
+    let p = new BoundingInterval([4, 5]);
+    t.ok(p[0] < p[1]);
+    t.ok(p.is_valid());
+    t.same([...p], [4, 5]);
+    p = new BoundingInterval([5, 4]);
+    t.notOk(p[0] < p[1]);
+    t.notOk(p.is_valid());
+    t.same([...p], [5, 4]);
+    // p = new BoundingInterval();
+    // t.ok(p[0] < p[1]);
+    // t.same([...p], [Infinity, -Infinity]);
     t.end();
 });

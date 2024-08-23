@@ -590,8 +590,8 @@ function testPath(test, PathClass) {
                 t.same(len, 5);
             }
             {
-                t.notOk(PathClass.parse('Z').bbox().isValid());
-                t.notOk(PathClass.parse('z').bbox().isValid());
+                t.notOk(PathClass.parse('Z').bbox().is_valid());
+                t.notOk(PathClass.parse('z').bbox().is_valid());
                 t.same(
                     PathClass.parse('m 40,60 h 10 10 10 20 v 30 20').describe({ relative: true, short: true }),
                     'm40,60h10h10h10h20v30v20'

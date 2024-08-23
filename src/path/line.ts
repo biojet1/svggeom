@@ -10,7 +10,7 @@ abstract class LineSegment extends SegmentSE {
 		} = this;
 		const [xmin, xmax] = [Math.min(p1x, p2x), Math.max(p1x, p2x)];
 		const [ymin, ymax] = [Math.min(p1y, p2y), Math.max(p1y, p2y)];
-		return BoundingBox.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+		return BoundingBox.extrema(xmin, xmax, ymin, ymax);
 	}
 
 	override get length() {

@@ -214,7 +214,7 @@ export function arcBBox(arc: IArc) {
 	}
 	const [xmin, xmax] = [min(...xtrema), max(...xtrema)];
 	const [ymin, ymax] = [min(...ytrema), max(...ytrema)];
-	return BoundingBox.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+	return BoundingBox.extrema(xmin, xmax, ymin, ymax);
 }
 
 export function arcLength(arc: IArc) {

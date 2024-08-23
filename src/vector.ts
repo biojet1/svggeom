@@ -23,7 +23,6 @@ export class Vector extends Float64Array {
 	get degrees() {
 		return (this.radians * 180) / PI;
 	}
-
 	get grade() {
 		return (this.degrees * 10) / 9;
 	}
@@ -238,14 +237,6 @@ export class Vector extends Float64Array {
 		return a_to_b.mul(t).post_add(a);
 	}
 	// Modify self methods
-
-	// final() {
-	// 	return Object.isFrozen(this) ? this : Object.freeze(this.clone());
-	// }
-
-	// mut() {
-	// 	return Object.isFrozen(this) ? this.clone() : this;
-	// }
 	//***** static methods ****
 
 	static new(x?: number[] | Iterable<number> | number | string, y?: number, z?: number) {
@@ -262,13 +253,13 @@ export class Vector extends Float64Array {
 				}
 		}
 	}
-	private static vec(...nums: number[]) {
-		for (const n of nums) {
-			if (!isFinite(n)) {
-				throw new TypeError(`must be finite ${nums}`)
+	static vec(...args: number[]) {
+		for (const n of args) {
+			if (isNaN(n)) {
+				throw new TypeError(`Unextepcted NaN <${n}> <${args}> <${[...arguments]}>`)
 			}
 		}
-		return new this(nums);
+		return new this(args);
 	}
 	static pos(x: number = 0, y: number = 0, z: number = 0) {
 		return this.vec(x, y, z);

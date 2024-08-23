@@ -392,7 +392,7 @@ export class PathLS extends CanvasCompat {
 	}
 
 	bbox() {
-		let b = BoundingBox.new();
+		let b = BoundingBox.not();
 		for (let cur: SegmentLS | undefined = this._tail; cur; cur = cur._prev) {
 			b = b.merge(cur.bbox());
 		}

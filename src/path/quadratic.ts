@@ -120,7 +120,7 @@ export function quadSlopeAt([from, c, to]: Vector[], t: number): Vector {
 export function quadBBox([[x1, y1], [x2, y2], [x3, y3]]: Vector[]) {
 	const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
 	const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
-	return BoundingBox.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+	return BoundingBox.extrema(xmin, xmax, ymin, ymax);
 }
 
 // https://github.com/rveciana/svg-path-properties/blob/master/src/bezier-functions.ts

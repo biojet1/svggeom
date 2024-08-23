@@ -79,7 +79,7 @@ test.test(`PathLS.segmentAt`, { bail: !CI }, function (t) {
     {
         const b = p.bbox();
         t.same([b.width, b.height], [30, 40]);
-        t.same([b.x, b.y], [10, -30]);
+        t.same([b.left, b.top], [10, -30]);
     }
 
     {
@@ -123,11 +123,11 @@ test.test(`SegmentLS extra`, { bail: !CI }, function (t) {
     {
         const l = SegmentLS.lineTo(3, 4).withPrev(undefined);
         t.strictSame(l.Z(), l);
-        t.notOk(l.bbox().isValid());
+        t.notOk(l.bbox().is_valid());
         t.same([...l.lastPoint], [3, 4, 0]);
     }
     {
-        t.notOk(SegmentLS.moveTo(3, 4).bbox().isValid());
+        t.notOk(SegmentLS.moveTo(3, 4).bbox().is_valid());
     }
     {
         const [a, b] = SegmentLS.moveTo(0, 0).moveTo(3, 4).splitAt(0.5);

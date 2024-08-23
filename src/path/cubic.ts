@@ -111,7 +111,7 @@ function splitAtScalar(
 export function cubicBox([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Vector[]) {
 	const [xmin, xmax] = cubic_extrema(sx, x1, x2, ex);
 	const [ymin, ymax] = cubic_extrema(sy, y1, y2, ey);
-	return BoundingBox.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+	return BoundingBox.extrema(xmin, xmax, ymin, ymax);
 }
 const { pow } = Math;
 function cubicFlatness([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[]) {

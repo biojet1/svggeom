@@ -17,7 +17,7 @@ export class Path {
 	}
 
 	getBBox() {
-		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), BoundingBox.new());
+		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), BoundingBox.not());
 	}
 
 	tangentAt(T: number) {
@@ -40,7 +40,7 @@ export class Path {
 
 	bbox() {
 		// SegmentSE method
-		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), BoundingBox.new());
+		return this._segs.reduce((box, seg) => box.merge(seg.bbox()), BoundingBox.not());
 	}
 
 	splitAt(T: number) {
