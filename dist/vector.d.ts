@@ -42,7 +42,7 @@ export declare class Vector extends Float64Array {
     clone(): Vector;
     nearest_point_of_line(a: Iterable<number>, b: Iterable<number>): Vector;
     static new(x?: number[] | Iterable<number> | number | string, y?: number, z?: number): Vector;
-    private static vec;
+    static vec(...args: number[]): Vector;
     static pos(x?: number, y?: number, z?: number): Vector;
     static polar(radius?: number, ϕ?: number, ϴ?: number): Vector;
     static radians(n: number, r?: number): Vector;

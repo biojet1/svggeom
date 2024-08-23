@@ -262,7 +262,7 @@ export class SegmentLS extends Segment {
         return this.length;
     }
     bbox() {
-        return BoundingBox.new();
+        return BoundingBox.not();
     }
     withFarPrev(farPrev, newPrev) {
         const { _prev } = this;
@@ -344,9 +344,9 @@ export class LineLS extends SegmentLS {
             const [x1, y1] = _prev.to;
             const [xmin, xmax] = [min(x1, x2), max(x1, x2)];
             const [ymin, ymax] = [min(y1, y2), max(y1, y2)];
-            return BoundingBox.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+            return BoundingBox.extrema(xmin, xmax, ymin, ymax);
         }
-        return BoundingBox.new();
+        return BoundingBox.not();
     }
     get length() {
         const { from, to } = this;
@@ -520,7 +520,7 @@ export class QuadLS extends SegmentLS {
     }
     bbox() {
         const { _prev } = this;
-        return _prev ? quadBBox(this._qpts) : BoundingBox.new();
+        return _prev ? quadBBox(this._qpts) : BoundingBox.not();
     }
     _descs(opt) {
         const { p: [x1, y1], to: [ex, ey], } = this;
@@ -577,7 +577,7 @@ export class CubicLS extends SegmentLS {
     }
     bbox() {
         const { _prev } = this;
-        return _prev ? cubicBox(this._cpts) : BoundingBox.new();
+        return _prev ? cubicBox(this._cpts) : BoundingBox.not();
     }
     slopeAt(t) {
         return cubicSlopeAt(this._cpts, tCheck(t));
@@ -652,7 +652,7 @@ export class ArcLS extends SegmentLS {
     }
     bbox() {
         const { _prev } = this;
-        return _prev ? arcBBox(this) : BoundingBox.new();
+        return _prev ? arcBBox(this) : BoundingBox.not();
     }
     get length() {
         return arcLength(this);

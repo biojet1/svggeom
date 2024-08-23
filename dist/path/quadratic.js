@@ -88,7 +88,7 @@ export function quadSlopeAt([from, c, to], t) {
 export function quadBBox([[x1, y1], [x2, y2], [x3, y3]]) {
     const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
     const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
-    return BoundingBox.new([xmin, ymin, xmax - xmin, ymax - ymin]);
+    return BoundingBox.extrema(xmin, xmax, ymin, ymax);
 }
 export function quadLength([[x0, y0], [x1, y1], [x2, y2]], t = 1) {
     const ax = x0 - 2 * x1 + x2;

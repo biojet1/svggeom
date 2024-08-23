@@ -215,13 +215,13 @@ export class Vector extends Float64Array {
                 }
         }
     }
-    static vec(...nums) {
-        for (const n of nums) {
-            if (!isFinite(n)) {
-                throw new TypeError(`must be finite ${nums}`);
+    static vec(...args) {
+        for (const n of args) {
+            if (isNaN(n)) {
+                throw new TypeError(`Unextepcted NaN <${n}> <${args}> <${[...arguments]}>`);
             }
         }
-        return new this(nums);
+        return new this(args);
     }
     static pos(x = 0, y = 0, z = 0) {
         return this.vec(x, y, z);
