@@ -3,7 +3,9 @@ import { spawn } from 'child_process';
 import { BoundingBox, Matrix, Vector } from 'svggeom';
 import test from 'tap';
 const CI = !!process.env.CI;
-
+function rect_a(b) {
+    return [b.left, b.top, b.width, b.height]
+}
 export async function* enum_box_data(env) {
     const pyproc = spawn('python3', ['test/data.box.py'], {
         stdio: ['ignore', 'pipe', 'inherit'],
@@ -73,13 +75,6 @@ for await (const [i, item] of enum_box_data({})) {
         t.notOk(box.top === Infinity);
         t.ok(box instanceof BoundingBox);
 
-
-        // if (!isFinite(box.top)) {
-        //     t.ok(box.top === y);
-        //     t.notOk(box.top === Infinity);
-        //     throw new Error(`${i} ${i % 4} ${box.top} ${y} ${box.top === y} ${name}`);
-        // }
-        // return t.end();
         t.equal(box.left, left, 'left', ex);
         t.equal(box.right, right, 'right', ex);
         t.equal(box.top, top, 'top', ex);
@@ -98,61 +93,28 @@ for await (const [i, item] of enum_box_data({})) {
         t.equal(box2.top, y, `y {box2}`, ex);
         t.equal(box2.width, width, 'width', ex);
         t.equal(box2.height, height, 'height', ex);
-
-        // t.strictSame(box.clone().center_x, box2.center_x);
+        t.strictSame(box.clone().center_x, box2.center_x);
         t.strictSame(box2.clone().center_y, box.center_y);
 
         {
             const m = Matrix.parse('translate(100, -100)')
-            // console.log(box, m);
-            // const { a, b, c, d, e, f } = m;
-            // // function vec(...nums) {
-            // //     return new Vector(nums);
-            // // }
-            // // t.ok(isFinite(box.top));
-            // // t.ok(isFinite(box.left));
-
-            // // if (!isFinite(box.top) || !isFinite(box.left)) {
-            // //     throw new Error(`${i} < ${[box.top, box.left]} > <${[x, y]}>`);
-            // // }
-            // let { left: L, top, bottom, right } = box;
-            // console.log("M", { a, b, c, d, e, f }, { left, top, bottom, right }, Vector.pos(left, top), name);
-            // t.ok(box.is_valid());
-            // if (!isFinite(top) || !isFinite(L)) {
-            //     throw new Error(`${i} <${[top, L]}>`);
-            // }
-            // [Vector.pos(L, top), Vector.pos(right, top), Vector.pos(left, bottom), Vector.pos(right, bottom)].forEach(
-            //     function (p, i, A) {
-            //         const [x, y] = p;
-            //         const u = a * x + c * y + e;
-            //         const v = b * x + d * y + f;
-            //         if (isNaN(u) || isNaN(v)) {
-            //             throw new Error(`${i} <${[x, y, u, v]}> <${[left, top, bottom, right]}> <${box}> ${name} p(${p}) A(${A.join('|')})`);
-            //         }
-            //         console.log(`P ${i} [${A}]`, [x, y], [u, v], ...vec(u, v));
-            //         Vector.vec(u, v)
-            //         const [X, Y] = p.transform(m);
-            //     }
-            // );
             const box3 = box.transform(m);
             t.equal(box3.center_x, centerX + 100, 'centerX', box3);
             t.equal(box3.center_y, centerY - 100, 'centerY', box3);
             t.equal(box3.width, width, 'width', ex);
             t.equal(box3.height, height, 'height', ex);
         }
-
         {
             const not = BoundingBox.new();
-            t.strictSame(not.merge(box2), box2);
-            t.same(not.merge(not), not, [not.merge(not), not]);
-            t.strictSame(box.merge(not), box);
+            t.strictSame(not.merge(box2).dump(), box2.dump());
+            t.same(not.merge(not).dump(), not.dump(), [not.merge(not), not]);
+            t.strictSame(box.merge(not).dump(), box.dump());
         }
-        // t.same(box2.toArray(), [x, y, width, height]);
         {
             const not = BoundingBox.not();
-            t.strictSame(not.merge(box2), box2);
-            t.strictSame(not.merge(not), not);
-            t.strictSame(box.merge(not), box);
+            t.strictSame(not.merge(box2).dump(), box2.dump());
+            t.strictSame(not.merge(not).dump(), not.dump());
+            t.strictSame(box.merge(not).dump(), box.dump());
         }
 
         t.end();
@@ -162,12 +124,12 @@ for await (const [i, item] of enum_box_data({})) {
 test.test(`BoundingBox extra`, { bail: !CI }, function (t) {
     const not = BoundingBox.not();
     t.notOk(not.is_valid());
-    t.strictSame(BoundingBox.new(), not);
+    t.strictSame(BoundingBox.new().dump(), not.dump());
     t.same(not.toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
-    not.merge_self(BoundingBox.not());
-    t.same(not.toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
-    // t.same(not.transform(Matrix.parse('translate(100, -100)')).toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
-    // t.strictSame(not.transform(Matrix.parse('translate(100, -100)')), not);
+    // not.merge_self(BoundingBox.not());
+    // t.same(not.toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
+    // // t.same(not.transform(Matrix.parse('translate(100, -100)')).toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
+    // // t.strictSame(not.transform(Matrix.parse('translate(100, -100)')), not);
     t.throws(() => BoundingBox.new(false), TypeError, 'wrong new params');
 
     t.end();
@@ -181,30 +143,24 @@ const E = BoundingBox.new('-130,-90,0,0');
 const F = BoundingBox.new('-130,-90,70,90');
 const G = BoundingBox.new('-60,-90,60,40');
 test.test(`BoundingBox overlap`, { bail: !CI }, function (t) {
-    const bbox2 = BoundingBox.new([
-        [2, 3],
-        [1, 2],
-    ]);
-    const bbox1 = BoundingBox.new([
-        [0, 1],
-        [2, 3],
-    ]);
-    t.same(bbox1.overlap(bbox1), bbox1);
-    t.same(bbox2.overlap(bbox2), bbox2);
-    t.strictSame(bbox1.overlap(bbox2), BoundingBox.not());
-    t.strictSame(bbox2.overlap(bbox1), BoundingBox.not());
-    t.strictSame(bbox2.overlap(BoundingBox.not()), bbox2);
+    const bbox2 = BoundingBox.new([[2, 3], [1, 2]]);
+    const bbox1 = BoundingBox.new([[0, 1], [2, 3]]);
+    t.same(bbox1.overlap(bbox1).dump(), bbox1.dump());
+    t.same(bbox2.overlap(bbox2).dump(), bbox2.dump());
+    t.strictSame(bbox1.overlap(bbox2).dump(), BoundingBox.not().dump());
+    t.strictSame(bbox2.overlap(bbox1).dump(), BoundingBox.not().dump());
+    t.strictSame(bbox2.overlap(BoundingBox.not()).dump(), bbox2.dump());
 
-    t.same(BoundingBox.not().overlap(bbox1), bbox1);
+    t.same(BoundingBox.not().overlap(bbox1.dump()), bbox1.dump());
 
     // const bbox1 = BoundingBox.new([-210, -150, 60, 3]);
     // Array.from(document.getElementsByTagName("rect")).sort().map(e=>`const ${e.id} = BoundingBox.new('${e.x.baseVal.value},${e.y.baseVal.value},${e.width.baseVal.value},${e.height.baseVal.value}');`).join('\n')
-    t.same(B.overlap(D), C);
-    t.same(D.overlap(B), C);
-    t.same(A.overlap(B), E);
-    t.same(B.overlap(A), E);
-    t.strictSame(A.overlap(C), BoundingBox.not());
-    t.strictSame(C.overlap(A), BoundingBox.not());
+    t.same(B.overlap(D).dump(), C.dump());
+    t.same(D.overlap(B).dump(), C.dump());
+    t.same(A.overlap(B).dump(), E.dump());
+    t.same(B.overlap(A).dump(), E.dump());
+    t.strictSame(A.overlap(C).dump(), BoundingBox.not().dump());
+    t.strictSame(C.overlap(A).dump(), BoundingBox.not().dump());
     t.end();
 });
 
@@ -260,8 +216,7 @@ test.test(`BoundingBox merge`, { bail: !CI }, function (t) {
     t.ok(box.equals(B), [box, B, box.toString(), B.toString()]);
     const n1 = BoundingBox.not();
     const n2 = BoundingBox.not();
-    t.strictSame(n1.merge(n2), n2);
-
+    t.strictSame(n1.merge(n2).dump(), n2.dump());
     t.end();
 });
 
@@ -323,9 +278,7 @@ test.test(`BoundingBox merge`, { bail: !CI }, function (t) {
 //     t.end();
 // });
 
-function rect_a(b) {
-    return [b.left, b.top, b.width, b.height]
-}
+
 test.test(`BoundingBox withCenter`, { bail: !CI }, function (t) {
     let b = D.with_center([197, 122]);
     t.same(rect_a(b), [122, 77, 150, 90]);

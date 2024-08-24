@@ -259,7 +259,7 @@ test.test(`vec Vector`, { bail: !CI }, function (t) {
 
 
 
-import { BoundingInterval } from 'svggeom';
+import { BoundingInterval, BoundingBox, Matrix } from 'svggeom';
 
 
 test.test(`BoundingInterval check`, { bail: !CI }, function (t) {
@@ -274,5 +274,19 @@ test.test(`BoundingInterval check`, { bail: !CI }, function (t) {
     // p = new BoundingInterval();
     // t.ok(p[0] < p[1]);
     // t.same([...p], [Infinity, -Infinity]);
+    t.end();
+});
+test.test(`BoundingBox extra`, { bail: !CI }, function (t) {
+    const not = BoundingBox.not();
+    t.notOk(not.is_valid());
+    t.same(BoundingBox.new().dump(), [[Infinity, -Infinity], [Infinity, -Infinity]]);
+    t.same(not.dump(), [[Infinity, -Infinity], [Infinity, -Infinity]]);
+    t.same(not.toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
+    not.merge_self(BoundingBox.not());
+    t.same(not.toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
+    // t.same(not.transform(Matrix.parse('translate(100, -100)')).toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
+    // t.strictSame(not.transform(Matrix.parse('translate(100, -100)')), not);
+    t.throws(() => BoundingBox.new(false), TypeError, 'wrong new params');
+
     t.end();
 });
