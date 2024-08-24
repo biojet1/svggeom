@@ -1,6 +1,5 @@
 import { Vector } from '../vector.js';
-import { BoundingBox } from '../bbox.js';
-import { SegmentSE } from './index.js';
+import { SegmentSE } from './segmentse.js';
 export declare class Quadratic extends SegmentSE {
     readonly c: Vector;
     constructor(p1: Iterable<number>, control: Iterable<number>, p2: Iterable<number>);
@@ -9,13 +8,8 @@ export declare class Quadratic extends SegmentSE {
     slopeAt(t: number): Vector;
     pointAt(t: number): Vector;
     splitAt(t: number): [SegmentSE, SegmentSE];
-    bbox(): BoundingBox;
+    bbox(): import("../bbox.js").BoundingBox;
     toPathFragment(): (string | number)[];
     transform(M: any): Quadratic;
     reversed(): Quadratic;
 }
-export declare function quadSplitAt([[x1, y1], [cx, cy], [x2, y2]]: Vector[], t: number): Vector[][];
-export declare function quadPointAt([[x1, y1], [cx, cy], [x2, y2]]: Vector[], t: number): Vector;
-export declare function quadSlopeAt([from, c, to]: Vector[], t: number): Vector;
-export declare function quadBBox([[x1, y1], [x2, y2], [x3, y3]]: Vector[]): BoundingBox;
-export declare function quadLength([[x0, y0], [x1, y1], [x2, y2]]: Vector[], t?: number): number;

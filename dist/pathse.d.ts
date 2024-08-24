@@ -1,7 +1,6 @@
-import { dSplit } from './path/parser.js';
-import { SegmentSE, DescParams } from './path/index.js';
 import { BoundingBox } from './bbox.js';
-export declare class Path {
+import { DescParams } from './path/index.js';
+export declare class PathSE {
     static digits: number;
     private _segs;
     private _length?;
@@ -13,20 +12,20 @@ export declare class Path {
     slopeAt(T: number): import("./vector.js").Vector | undefined;
     pointAt(T: number): import("./vector.js").Vector | undefined;
     bbox(): BoundingBox;
-    splitAt(T: number): Path[] | undefined;
-    cutAt(T: number): Path;
-    cropAt(T0: number, T1?: number): Path;
-    transform(M: any): Path;
-    reversed(): Path;
+    splitAt(T: number): PathSE[] | undefined;
+    cutAt(T: number): PathSE;
+    cropAt(T0: number, T1?: number): PathSE;
+    transform(M: any): PathSE;
+    reversed(): PathSE;
     get length(): number | undefined;
     get totalLength(): number | undefined;
     pointAtLength(L: number): 0 | import("./vector.js").Vector | undefined;
     [Symbol.iterator](): IterableIterator<SegmentSE>;
     private calcLength;
     private get lengths();
-    get firstPoint(): import("./vector.js").Vector | undefined;
+    get start_point(): import("./vector.js").Vector | undefined;
     get firstSegment(): SegmentSE | undefined;
-    get lastPoint(): import("./vector.js").Vector | undefined;
+    get end_point(): import("./vector.js").Vector | undefined;
     get from(): import("./vector.js").Vector | undefined;
     get to(): import("./vector.js").Vector | undefined;
     get lastSegment(): SegmentSE | undefined;
@@ -37,14 +36,14 @@ export declare class Path {
     descArray(params?: DescParams): (string | 0 | 1)[];
     describe(params?: DescParams): string;
     toString(): string;
-    enumSubPaths(): Generator<Path, void, unknown>;
-    static parse(d: string): Path;
-    static new(v?: SegmentSE[] | string | SegmentSE | Path): Path;
+    enumSubPaths(): Generator<PathSE, void, unknown>;
+    static parse(d: string): PathSE;
+    static new(v?: SegmentSE[] | string | SegmentSE | PathSE): PathSE;
 }
 import { Line } from './path/line.js';
 import { Arc } from './path/arc.js';
+import { Cubic } from './path/cubic.js';
 import { Quadratic } from './path/quadratic.js';
-export * from './path/cubic.js';
-import { SegmentLS } from './path/linked.js';
-export { SegmentLS };
-export { Arc, Quadratic, Line, dSplit };
+import { dSplit } from './path/parser.js';
+import { SegmentSE } from './path/segmentse.js';
+export { Arc, Quadratic, Line, Cubic, dSplit };

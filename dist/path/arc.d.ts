@@ -1,6 +1,6 @@
 import { Vector } from '../vector.js';
 import { BoundingBox } from '../bbox.js';
-import { SegmentSE } from './index.js';
+import { SegmentSE } from './segmentse.js';
 import { Line } from './line.js';
 import { Cubic } from './cubic.js';
 interface IArc {

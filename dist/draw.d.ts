@@ -77,8 +77,6 @@ export declare class PathLS extends CanvasCompat {
     enumSubPaths(opt?: DescParams): Generator<SegmentLS | undefined, void, unknown>;
     [Symbol.iterator](): Generator<SegmentLS, void, unknown>;
     transform(M: any): PathLS;
-    get firstPoint(): Vector | undefined;
-    get lastPoint(): Vector | undefined;
     get firstSegment(): SegmentLS | undefined;
     get lastSegment(): SegmentLS | undefined;
     toString(): string;

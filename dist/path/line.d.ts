@@ -1,6 +1,7 @@
 import { Vector } from '../vector.js';
 import { BoundingBox } from '../bbox.js';
-import { SegmentSE, DescParams } from './index.js';
+import { DescParams } from './index.js';
+import { SegmentSE } from './segmentse.js';
 declare abstract class LineSegment extends SegmentSE {
     bbox(): BoundingBox;
     get length(): number;

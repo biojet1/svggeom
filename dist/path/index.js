@@ -1,11 +1,5 @@
 import { Vector } from '../vector.js';
 export class Segment {
-    get firstPoint() {
-        return this.from;
-    }
-    get lastPoint() {
-        return this.to;
-    }
     toPath() {
         const { x, y } = this.from;
         return ['M', x, y].concat(this.toPathFragment()).join(' ');
@@ -20,50 +14,6 @@ export class Segment {
     }
     toPathFragment(opt) {
         throw new Error('NOTIMPL');
-    }
-}
-export class SegmentSE extends Segment {
-    _start;
-    _end;
-    constructor(from, to) {
-        super();
-        this._start = Vector.new(from);
-        this._end = Vector.new(to);
-    }
-    get from() {
-        return this._start;
-    }
-    get to() {
-        return this._end;
-    }
-    cutAt(t) {
-        return t < 0 ? this.splitAt(1 + t)[1] : this.splitAt(t)[0];
-    }
-    cropAt(t0, t1) {
-        t0 = tNorm(t0);
-        t1 = tNorm(t1);
-        if (t0 <= 0) {
-            if (t1 >= 1) {
-                return this;
-            }
-            else if (t1 > 0) {
-                return this.cutAt(t1);
-            }
-        }
-        else if (t0 < 1) {
-            if (t1 >= 1) {
-                return this.cutAt(t0 - 1);
-            }
-            else if (t0 < t1) {
-                return this.cutAt(t0 - 1).cutAt((t1 - t0) / (1 - t0));
-            }
-            else if (t0 > t1) {
-                return this.cropAt(t1, t0);
-            }
-        }
-        else if (t1 < 1) {
-            return this.cropAt(t1, t0);
-        }
     }
 }
 export function tCheck(t) {

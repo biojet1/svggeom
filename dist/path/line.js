@@ -1,5 +1,6 @@
 import { BoundingBox } from '../bbox.js';
-import { SegmentSE, tNorm } from './index.js';
+import { tNorm } from './index.js';
+import { SegmentSE } from './segmentse.js';
 class LineSegment extends SegmentSE {
     bbox() {
         const { from: [p1x, p1y], to: [p2x, p2y], } = this;

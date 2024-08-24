@@ -1,4 +1,4 @@
-import { SegmentSE } from './index.js';
+import { SegmentSE } from './segmentse.js';
 export declare const transforms: RegExp;
 export declare const delimiter: RegExp;
 export declare const hyphen: RegExp;
