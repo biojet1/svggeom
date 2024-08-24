@@ -274,18 +274,18 @@ export function parseLS(d, prev) {
     };
     const isNum = () => peek()?.[2];
     const vec = () => Vector.pos(num(), num());
-    const first = SegmentLS.moveTo(Vector.pos(0, 0));
+    const first = SegmentLS.move_to(Vector.pos(0, 0));
     let cur = prev ?? first;
     let command;
     while ((command = cmd())) {
         switch (command) {
             case 'M':
-                cur = cur === first ? SegmentLS.moveTo(vec()) : cur.M(vec());
+                cur = cur === first ? SegmentLS.move_to(vec()) : cur.M(vec());
                 while (isNum() && (cur = cur.L(vec())))
                     ;
                 break;
             case 'm':
-                cur = cur === first ? SegmentLS.moveTo(vec()) : cur.m(vec());
+                cur = cur === first ? SegmentLS.move_to(vec()) : cur.m(vec());
                 while (isNum() && (cur = cur.l(vec())))
                     ;
                 break;

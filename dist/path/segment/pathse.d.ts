@@ -13,8 +13,8 @@ export declare class PathSE {
     point_at(T: number): import("../../vector.js").Vector | undefined;
     bbox(): BoundingBox;
     split_at(T: number): PathSE[] | undefined;
-    cutAt(T: number): PathSE;
-    cropAt(T0: number, T1?: number): PathSE;
+    cut_at(T: number): PathSE;
+    crop_at(T0: number, T1?: number): PathSE;
     transform(M: any): PathSE;
     reversed(): PathSE;
     get length(): number | undefined;
@@ -29,7 +29,7 @@ export declare class PathSE {
     get from(): import("../../vector.js").Vector | undefined;
     get to(): import("../../vector.js").Vector | undefined;
     get lastSegment(): SegmentSE | undefined;
-    segmentAt(T: number): [SegmentSE | undefined, number, number];
+    segment_at(T: number): [SegmentSE | undefined, number, number];
     isContinuous(): boolean;
     isClosed(): boolean;
     private enumDesc;

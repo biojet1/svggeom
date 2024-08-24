@@ -14,7 +14,8 @@ export declare class PathDraw extends CanvasCompat {
     _: string;
     static get digits(): number;
     static set digits(n: number);
-    moveTo(...args: Vector[] | number[]): this;
+    move_to(...args: Vector[] | number[] | Iterable<number>[]): this;
+    moveTo(x: number, y: number): this;
     lineTo(...args: Vector[] | number[]): this;
     closePath(): this;
     quadraticCurveTo(...args: Vector[] | number[]): this;
@@ -33,7 +34,7 @@ export declare class PathDraw extends CanvasCompat {
         letterSpacing?: number;
     }, text: string): this;
     static new(): PathDraw;
-    static moveTo(): PathDraw;
+    static move_to(): PathDraw;
     static lineTo(): PathDraw;
 }
 import { Font } from 'opentype.js';
@@ -42,7 +43,8 @@ import { DescParams } from './path/index.js';
 export declare class PathLS extends CanvasCompat {
     _tail: SegmentLS | undefined;
     constructor(tail: SegmentLS | undefined);
-    moveTo(...args: Vector[] | number[]): this;
+    move_to(...args: Vector[] | number[] | Iterable<number>[]): this;
+    moveTo(x: number, y: number): this;
     lineTo(...args: Vector[] | number[]): this;
     bezierCurveTo(...args: Vector[] | number[]): this;
     quadraticCurveTo(...args: Vector[] | number[]): this;
@@ -60,7 +62,7 @@ export declare class PathLS extends CanvasCompat {
         letterSpacing?: number;
     }, text: string): this;
     segmentAtLength(T: number, clamp?: boolean): [SegmentLS | undefined, number, number];
-    segmentAt(T: number): [SegmentLS | undefined, number];
+    segment_at(T: number): [SegmentLS | undefined, number];
     get length(): number;
     get from(): Vector | undefined;
     get to(): Vector | undefined;
@@ -70,8 +72,8 @@ export declare class PathLS extends CanvasCompat {
     pointAtLength(L: number, clamp?: boolean): Vector | undefined;
     bbox(): BoundingBox;
     split_at(T: number): PathLS[];
-    cutAt(T: number): PathLS;
-    cropAt(T0: number, T1?: number): PathLS;
+    cut_at(T: number): PathLS;
+    crop_at(T0: number, T1?: number): PathLS;
     reversed(_next?: SegmentLS): PathLS;
     descArray(opt?: DescParams): (number | string)[];
     enumSubPaths(opt?: DescParams): Generator<SegmentLS | undefined, void, unknown>;
@@ -81,7 +83,7 @@ export declare class PathLS extends CanvasCompat {
     get lastSegment(): SegmentLS | undefined;
     toString(): string;
     d(): string;
-    static moveTo(...args: Vector[] | number[]): PathLS;
+    static move_to(...args: Vector[] | number[]): PathLS;
     static parse(d: string): PathLS;
     static rect(...args: Vector[] | number[]): PathLS;
     static get digits(): number;

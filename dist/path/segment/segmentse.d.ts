@@ -9,6 +9,6 @@ export declare abstract class SegmentSE extends Segment {
     abstract transform(M: any): SegmentSE;
     abstract reversed(): SegmentSE;
     abstract split_at(t: number): [SegmentSE, SegmentSE];
-    cutAt(t: number): SegmentSE;
-    cropAt(t0: number, t1: number): SegmentSE | undefined;
+    cut_at(t: number): SegmentSE;
+    crop_at(t0: number, t1: number): SegmentSE | undefined;
 }

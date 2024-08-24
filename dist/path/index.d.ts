@@ -21,5 +21,5 @@ export declare abstract class Segment {
 }
 export declare function tCheck(t: number): number;
 export declare function tNorm(t: number): number;
-export declare function pickPos(args: Vector[] | number[]): Generator<Vector, void, unknown>;
-export declare function pickNum(args: Vector[] | number[]): Generator<number, void, unknown>;
+export declare function pickPos(args: Iterable<number>[] | number[] | Iterable<number>[]): Generator<Vector, void, unknown>;
+export declare function pickNum(args: Iterable<number>[] | number[]): Generator<number, void, unknown>;

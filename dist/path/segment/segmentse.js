@@ -14,10 +14,10 @@ export class SegmentSE extends Segment {
     get to() {
         return this._end;
     }
-    cutAt(t) {
+    cut_at(t) {
         return t < 0 ? this.split_at(1 + t)[1] : this.split_at(t)[0];
     }
-    cropAt(t0, t1) {
+    crop_at(t0, t1) {
         t0 = tNorm(t0);
         t1 = tNorm(t1);
         if (t0 <= 0) {
@@ -25,22 +25,22 @@ export class SegmentSE extends Segment {
                 return this;
             }
             else if (t1 > 0) {
-                return this.cutAt(t1);
+                return this.cut_at(t1);
             }
         }
         else if (t0 < 1) {
             if (t1 >= 1) {
-                return this.cutAt(t0 - 1);
+                return this.cut_at(t0 - 1);
             }
             else if (t0 < t1) {
-                return this.cutAt(t0 - 1).cutAt((t1 - t0) / (1 - t0));
+                return this.cut_at(t0 - 1).cut_at((t1 - t0) / (1 - t0));
             }
             else if (t0 > t1) {
-                return this.cropAt(t1, t0);
+                return this.crop_at(t1, t0);
             }
         }
         else if (t1 < 1) {
-            return this.cropAt(t1, t0);
+            return this.crop_at(t1, t0);
         }
     }
 }

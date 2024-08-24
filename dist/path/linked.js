@@ -68,7 +68,7 @@ export class SegmentLS extends Segment {
             yield cur;
         }
     }
-    moveTo(...args) {
+    move_to(...args) {
         return this.M(...args);
     }
     lineTo(...args) {
@@ -224,10 +224,10 @@ export class SegmentLS extends Segment {
             return [...this._descs(opt)];
         }
     }
-    cutAt(t) {
+    cut_at(t) {
         return t < 0 ? this.split_at(1 + t)[1] : this.split_at(t)[0];
     }
-    cropAt(t0, t1) {
+    crop_at(t0, t1) {
         t0 = tNorm(t0);
         t1 = tNorm(t1);
         if (t0 <= 0) {
@@ -235,30 +235,30 @@ export class SegmentLS extends Segment {
                 return this;
             }
             else if (t1 > 0) {
-                return this.cutAt(t1);
+                return this.cut_at(t1);
             }
         }
         else if (t0 < 1) {
             if (t1 >= 1) {
-                return this.cutAt(t0 - 1);
+                return this.cut_at(t0 - 1);
             }
             else if (t0 < t1) {
-                return this.cutAt(t0 - 1).cutAt((t1 - t0) / (1 - t0));
+                return this.cut_at(t0 - 1).cut_at((t1 - t0) / (1 - t0));
             }
             else if (t0 > t1) {
-                return this.cropAt(t1, t0);
+                return this.crop_at(t1, t0);
             }
         }
         else if (t1 < 1) {
-            return this.cropAt(t1, t0);
+            return this.crop_at(t1, t0);
         }
     }
-    pathLen() {
+    path_len() {
         const { _prev } = this;
-        const len = this.segmentLen();
-        return _prev ? _prev.pathLen() + len : len;
+        const len = this.segment_len();
+        return _prev ? _prev.path_len() + len : len;
     }
-    segmentLen() {
+    segment_len() {
         return this.length;
     }
     bbox() {
@@ -288,10 +288,10 @@ export class SegmentLS extends Segment {
             throw new Error(`No prev`);
         }
     }
-    _asCubic() {
+    as_curve() {
         let { _prev } = this;
         if (_prev) {
-            const newPrev = _prev._asCubic();
+            const newPrev = _prev.as_curve();
             if (newPrev !== _prev) {
                 return this.with_prev(newPrev);
             }
@@ -301,21 +301,21 @@ export class SegmentLS extends Segment {
     parse(d) {
         return parseLS(d, this);
     }
-    static moveTo(...args) {
+    static move_to(...args) {
         const [pos] = pickPos(args);
         return new MoveLS(undefined, pos);
     }
     static lineTo(...args) {
         const [pos] = pickPos(args);
-        return this.moveTo(Vector.new(0, 0)).lineTo(pos);
+        return this.move_to(Vector.new(0, 0)).lineTo(pos);
     }
     static bezierCurveTo(...args) {
         const [c1, c2, to] = pickPos(args);
-        return this.moveTo(Vector.new(0, 0)).bezierCurveTo(c1, c2, to);
+        return this.move_to(Vector.new(0, 0)).bezierCurveTo(c1, c2, to);
     }
     static quadraticCurveTo(...args) {
         const [p, to] = pickPos(args);
-        return this.moveTo(Vector.new(0, 0)).quadraticCurveTo(p, to);
+        return this.move_to(Vector.new(0, 0)).quadraticCurveTo(p, to);
     }
     static parse(d) {
         return parseLS(d, undefined);
@@ -452,7 +452,7 @@ export class MoveLS extends LineLS {
         const { to } = this;
         return new MoveLS(prev, to);
     }
-    segmentLen() {
+    segment_len() {
         return 0;
     }
 }
@@ -586,7 +586,10 @@ export class CubicLS extends SegmentLS {
     split_at(t) {
         const { _prev, _cpts } = this;
         const [a, b] = cubic_split_at(_cpts, tCheck(t));
-        return [new CubicLS(_prev, a[1], a[2], a[3]), new CubicLS(new MoveLS(undefined, b[0]), b[1], b[2], b[3])];
+        return [
+            new CubicLS(_prev, Vector.new(a[1]), Vector.new(a[2]), Vector.new((a[3]))),
+            new CubicLS(new MoveLS(undefined, Vector.new(b[0])), Vector.new(b[1]), Vector.new(b[2]), Vector.new(b[3]))
+        ];
     }
     get length() {
         return cubic_length(this._cpts);
@@ -700,12 +703,12 @@ export class ArcLS extends SegmentLS {
         }
         return ['A', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x, y];
     }
-    _asCubic() {
+    as_curve() {
         let { _prev, to } = this;
         if (_prev) {
             const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = this;
             const segments = arc_to_curve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
-            _prev = _prev._asCubic();
+            _prev = _prev.as_curve();
             if (segments.length === 0) {
                 _prev = _prev.lineTo(to);
             }
