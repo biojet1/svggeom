@@ -1,6 +1,10 @@
 const { sqrt, abs, cos, sin, atan2, PI } = Math;
 const TAU = PI * 2;
 
+function close_enough(a: number, b: number, threshold = 1e-6) {
+	return abs(b - a) <= threshold;
+}
+
 export class Vector extends Float64Array {
 	// **** Query methods ****
 	get x() {
@@ -78,7 +82,7 @@ export class Vector extends Float64Array {
 		return Vector.vec(b * z - c * y, c * x - a * z, a * y - b * x);
 	}
 
-	equals(p: Iterable<number>): boolean {
+	equals(p: Iterable<number>, epsilon = 0): boolean {
 		if (!p) {
 			return false;
 		} else if (p === this) {
@@ -91,7 +95,7 @@ export class Vector extends Float64Array {
 			while (1) {
 				if (a.done && b.done) {
 					return true;
-				} else if (!b.done && a.value == b.value) {
+				} else if (!b.done && (epsilon ? close_enough(a.value, b.value, epsilon) : (a.value == b.value))) {
 					a = A.next();
 					b = B.next();
 				} else {

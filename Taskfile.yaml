@@ -1,25 +1,25 @@
 version: '3'
 
 tasks:
-    tsc:
-        method: timestamp
-        cmds:
-            - npx tsc -d
-        sources:
-            - src/**/*.ts
-        generates:
-            - dist/**/*.js
+  tsc:
+    method: timestamp
+    cmds:
+      - npx tsc -d
+    sources:
+      - src/**/*.ts
+    generates:
+      - dist/**/*.js
 
-    tap:
-        method: none
-        deps: [tsc]
-        cmds:
-            - npx tap {{.CLI_ARGS}}
+  tap:
+    method: none
+    deps: [tsc]
+    cmds:
+      - npx tap {{.CLI_ARGS}}
 
-    c8tap:
-        method: none
-        deps: [tsc]
-        cmds:
-            - |
-                c8 tap {{.CLI_ARGS}}
-                npm run c8rephtml
+  c8tap:
+    method: none
+    deps: [tsc]
+    cmds:
+      - |
+        c8 npx tap -t600 test/*.tap.*js {{.CLI_ARGS}}
+        npm run c8rephtml

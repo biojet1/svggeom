@@ -95,7 +95,7 @@ for await (const [i, item] of enum_box_data({})) {
         t.equal(box2.height, height, 'height', ex);
         t.strictSame(box.clone().center_x, box2.center_x);
         t.strictSame(box2.clone().center_y, box.center_y);
-
+        t.strictSame(box.dump(), [[minX, maxX], [minY, maxY]]);
         {
             const m = Matrix.parse('translate(100, -100)')
             const box3 = box.transform(m);
@@ -126,12 +126,19 @@ test.test(`BoundingBox extra`, { bail: !CI }, function (t) {
     t.notOk(not.is_valid());
     t.strictSame(BoundingBox.new().dump(), not.dump());
     t.same(not.toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
+    t.same(not.dump(), [[Infinity, -Infinity], [Infinity, -Infinity]]);
     // not.merge_self(BoundingBox.not());
     // t.same(not.toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
     // // t.same(not.transform(Matrix.parse('translate(100, -100)')).toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
     // // t.strictSame(not.transform(Matrix.parse('translate(100, -100)')), not);
     t.throws(() => BoundingBox.new(false), TypeError, 'wrong new params');
-
+    const inv = not.clone();
+    t.notOk(not === inv);
+    t.notOk(not[0] === inv[0]);
+    t.notOk(not[1] === inv[1]);
+    t.ok(not.merge_self(BoundingBox.not()) === not);
+    t.same(not.dump(), inv.dump());
+    t.same(not.dump(), inv.dump());
     t.end();
 });
 
@@ -309,5 +316,18 @@ test.test(`BoundingBox with_size with_pos`, { bail: !CI }, function (t) {
     t.same(rect_a(E.with_size([70, 90])), rect_a(F));
     t.same(rect_a(C.with_pos([-60, -50])), rect_a(C));
     t.same(rect_a(E.with_pos([0, 0])), [0, 0, 0, 0]);
+    t.end();
+});
+
+test.test(`BoundingBox Subclass`, { bail: !CI }, function (t) {
+    class BBox extends BoundingBox {
+
+    }
+    let bb = BBox.rect(1, 2, 3, 4);
+    t.ok(bb instanceof BBox);
+    t.ok(bb instanceof BoundingBox);
+    bb = BBox.not();
+    t.ok(bb instanceof BBox);
+    t.ok(bb instanceof BoundingBox);
     t.end();
 });
