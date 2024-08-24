@@ -11,11 +11,10 @@ export declare class BoundingInterval extends Vector {
     is_valid(): boolean;
     static check(p: Iterable<number>): BoundingInterval;
 }
-export declare class BoundingBox {
-    _x: BoundingInterval;
-    _y: BoundingInterval;
+export declare class BoundingBox extends Array<BoundingInterval> {
     constructor(x?: Iterable<number>, y?: Iterable<number>);
-    [Symbol.iterator](): Iterator<BoundingInterval>;
+    get _x(): BoundingInterval;
+    get _y(): BoundingInterval;
     get width(): number;
     get height(): number;
     get top(): number;
@@ -32,6 +31,7 @@ export declare class BoundingBox {
     get center(): Vector;
     get size(): Vector;
     toString(): string;
+    dump(): number[][];
     merge(...args: BoundingBox[]): BoundingBox;
     with_center(p: Iterable<number>): BoundingBox;
     with_size(p: Iterable<number>): BoundingBox;

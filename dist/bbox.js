@@ -2,15 +2,22 @@ import { Vector } from './vector.js';
 const { max, min, abs } = Math;
 export class BoundingInterval extends Vector {
     constructor(p) {
+        if (!p || typeof p == "number") {
+            throw new TypeError(`Unexpected ${p}`);
+        }
         if (p) {
-            let [min, max] = p;
-            if (max == undefined) {
-                max = min;
+            try {
+                let [min, max] = p;
+                if (max == undefined) {
+                    max = min;
+                }
+                if (typeof min != "number" || typeof max != "number") {
+                    throw new TypeError(`Unexpected`);
+                }
+                super([min, max]);
             }
-            if (typeof min != "number" || typeof max != "number") {
-                throw new Error(`Unexpected`);
+            finally {
             }
-            super([min, max]);
         }
         else {
             throw new Error(`Unexpected`);
@@ -34,21 +41,17 @@ export class BoundingInterval extends Vector {
     }
     merge(that) {
         if (this !== that) {
-            if (that.is_valid()) {
-                const [a1, b1] = this;
-                const [a2, b2] = that;
-                return new BoundingInterval([Math.min(a1, a2), Math.max(b1, b2)]);
-            }
+            const [a1, b1] = this;
+            const [a2, b2] = that;
+            return new BoundingInterval([Math.min(a1, a2), Math.max(b1, b2)]);
         }
         return that;
     }
     merge_self(that) {
         if (this !== that) {
-            if (that.is_valid()) {
-                const [a, b] = that;
-                this[0] = Math.min(this[0], a);
-                this[1] = Math.max(this[0], b);
-            }
+            const [a, b] = that;
+            this[0] = Math.min(this[0], a);
+            this[1] = Math.max(this[0], b);
         }
         return this;
     }
@@ -78,17 +81,15 @@ export class BoundingInterval extends Vector {
         }
     }
 }
-export class BoundingBox {
-    _x;
-    _y;
+export class BoundingBox extends Array {
     constructor(x, y) {
-        this._x = new BoundingInterval(x ?? [Infinity, -Infinity]);
-        this._y = new BoundingInterval(y ?? [Infinity, -Infinity]);
+        super(new BoundingInterval(x ?? [Infinity, -Infinity]), new BoundingInterval(y ?? [Infinity, -Infinity]));
     }
-    *[Symbol.iterator]() {
-        const { _x: x, _y: y } = this;
-        yield x;
-        yield y;
+    get _x() {
+        return this[0];
+    }
+    get _y() {
+        return this[1];
     }
     get width() {
         return this._x.size;
@@ -141,10 +142,13 @@ export class BoundingBox {
     toString() {
         return [...this].map(v => `[${v.toString()}]`).join(", ");
     }
+    dump() {
+        return [...this].map(v => [...v]);
+    }
     merge(...args) {
         const bb = this.clone();
         for (const that of args) {
-            if (this !== that && that.is_valid()) {
+            if (this !== that) {
                 bb.merge_self(that);
             }
         }
@@ -188,12 +192,10 @@ export class BoundingBox {
         return new BoundingBox([x.minimum - delta_x, x.maximum + delta_x], [y.minimum - dy, y.maximum + dy]);
     }
     merge_self(that) {
-        if (that.is_valid()) {
-            const [x1, y1] = this;
-            const [x2, y2] = that;
-            this._x = x1.merge(x2);
-            this._y = y1.merge(y2);
-        }
+        const [x1, y1] = this;
+        const [x2, y2] = that;
+        this[0] = x1.merge(x2);
+        this[1] = y1.merge(y2);
         return this;
     }
     equals(that) {
@@ -273,6 +275,9 @@ export class BoundingBox {
             case 'undefined':
                 return this.not();
             case 'object':
+                if (first instanceof BoundingBox) {
+                    return new BoundingBox(...first);
+                }
                 if (Array.isArray(first)) {
                     const x = first[0];
                     if (Array.isArray(x)) {
@@ -285,10 +290,6 @@ export class BoundingBox {
                     }
                 }
                 else {
-                    if (first instanceof BoundingBox) {
-                        const { _x: x, _y: y } = first;
-                        return new BoundingBox(x, y);
-                    }
                 }
             default:
                 throw new TypeError(`Invalid box argument ${arguments}`);
