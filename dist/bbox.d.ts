@@ -15,6 +15,8 @@ export declare class BoundingBox extends Array<BoundingInterval> {
     constructor(x?: Iterable<number>, y?: Iterable<number>);
     get _x(): BoundingInterval;
     get _y(): BoundingInterval;
+    get y(): number;
+    get x(): number;
     get width(): number;
     get height(): number;
     get top(): number;
@@ -32,6 +34,7 @@ export declare class BoundingBox extends Array<BoundingInterval> {
     get size(): Vector;
     toString(): string;
     dump(): number[][];
+    dump_rect(): number[];
     merge(...args: BoundingBox[]): BoundingBox;
     with_center(p: Iterable<number>): BoundingBox;
     with_size(p: Iterable<number>): BoundingBox;
@@ -42,7 +45,7 @@ export declare class BoundingBox extends Array<BoundingInterval> {
     neg(): BoundingBox;
     resize(delta_x: number, delta_y?: number | undefined): BoundingBox;
     merge_self(that: BoundingBox): this;
-    equals(that: BoundingBox): boolean;
+    equals(that: BoundingBox, epsilon?: number): boolean;
     is_valid(): boolean;
     clone(): BoundingBox;
     transform(m: any): BoundingBox;
@@ -51,6 +54,7 @@ export declare class BoundingBox extends Array<BoundingInterval> {
     static rect(x: number, y: number, width: number, height: number): BoundingBox;
     static extrema(x1: number, x2: number, y1: number, y2: number): BoundingBox;
     static check(x: Iterable<number>, y: Iterable<number>): BoundingBox;
+    static empty(): BoundingBox;
     static new(first?: number | number[] | [number[], number[]] | string | BoundingBox, y?: number, width?: number, height?: number): BoundingBox;
     static parse(s: string): BoundingBox;
     static merge(...args: BoundingBox[]): BoundingBox;

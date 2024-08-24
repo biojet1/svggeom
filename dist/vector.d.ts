@@ -11,7 +11,7 @@ export declare class Vector extends Float64Array {
     close_to(p: Iterable<number>, epsilon?: number): boolean;
     dot(p: Iterable<number>): number;
     cross(p: Iterable<number>): Vector;
-    equals(p: Iterable<number>): boolean;
+    equals(p: Iterable<number>, epsilon?: number): boolean;
     angle_to(p: Iterable<number>): number;
     toString(): string;
     toArray(): number[];

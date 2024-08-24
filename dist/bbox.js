@@ -5,23 +5,14 @@ export class BoundingInterval extends Vector {
         if (!p || typeof p == "number") {
             throw new TypeError(`Unexpected ${p}`);
         }
-        if (p) {
-            try {
-                let [min, max] = p;
-                if (max == undefined) {
-                    max = min;
-                }
-                if (typeof min != "number" || typeof max != "number") {
-                    throw new TypeError(`Unexpected`);
-                }
-                super([min, max]);
-            }
-            finally {
-            }
+        let [min, max] = p;
+        if (max == undefined) {
+            max = min;
         }
-        else {
-            throw new Error(`Unexpected`);
+        if (typeof min != "number" || typeof max != "number") {
+            throw new TypeError(`Unexpected`);
         }
+        super([min, max]);
     }
     get center() {
         const { size, minimum } = this;
@@ -91,6 +82,12 @@ export class BoundingBox extends Array {
     get _y() {
         return this[1];
     }
+    get y() {
+        return this._y.minimum;
+    }
+    get x() {
+        return this._x.minimum;
+    }
     get width() {
         return this._x.size;
     }
@@ -145,6 +142,10 @@ export class BoundingBox extends Array {
     dump() {
         return [...this].map(v => [...v]);
     }
+    dump_rect() {
+        const { left, top, width, height } = this;
+        return [left, top, width, height];
+    }
     merge(...args) {
         const bb = this.clone();
         for (const that of args) {
@@ -198,7 +199,7 @@ export class BoundingBox extends Array {
         this[1] = y1.merge(y2);
         return this;
     }
-    equals(that) {
+    equals(that, epsilon = 0) {
         if (!that) {
             return false;
         }
@@ -206,15 +207,14 @@ export class BoundingBox extends Array {
             return true;
         }
         else {
-            return this._x.equals(that._x) && this._y.equals(that._y);
+            return this.every((v, i) => v.equals(that[i], epsilon));
         }
     }
     is_valid() {
-        return this._x.is_valid() && this._y.is_valid();
+        return this.every(v => v.is_valid());
     }
     clone() {
-        const { _x: x, _y: y } = this;
-        return new BoundingBox(x, y);
+        return new this.constructor(...this);
     }
     transform(m) {
         let xMin = Infinity;
@@ -229,7 +229,7 @@ export class BoundingBox extends Array {
             yMin = min(yMin, y);
             maxY = max(maxY, y);
         });
-        return BoundingBox.extrema(xMin, xMax, yMin, maxY);
+        return this.constructor.extrema(xMin, xMax, yMin, maxY);
     }
     overlap(other) {
         if (!this.is_valid()) {
@@ -254,7 +254,7 @@ export class BoundingBox extends Array {
         return BoundingBox.not();
     }
     static not() {
-        return new BoundingBox();
+        return new this();
     }
     static rect(x, y, width, height) {
         return new this([x, x + width], [y, y + height]);
@@ -264,6 +264,9 @@ export class BoundingBox extends Array {
     }
     static check(x, y) {
         return new this(BoundingInterval.check(x), BoundingInterval.check(y));
+    }
+    static empty() {
+        return this.rect(0, 0, 0, 0);
     }
     static new(first, y, width, height) {
         switch (typeof first) {
