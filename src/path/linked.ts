@@ -69,26 +69,26 @@ export abstract class SegmentLS extends Segment {
 			yield cur;
 		}
 	}
-	moveTo(...args: Vector[] | number[]) {
+	move_to(...args: Iterable<number>[] | number[]) {
 		return this.M(...args);
 	}
-	lineTo(...args: Vector[] | number[]) {
+	lineTo(...args: Iterable<number>[] | number[]) {
 		return this.L(...args);
 	}
 	closePath(): SegmentLS {
 		return this.Z();
 	}
-	bezierCurveTo(...args: Vector[] | number[]) {
+	bezierCurveTo(...args: Iterable<number>[] | number[]) {
 		return this.C(...args);
 	}
-	quadraticCurveTo(...args: Vector[] | number[]) {
+	quadraticCurveTo(...args: Iterable<number>[] | number[]) {
 		return this.Q(...args);
 	}
-	M(...args: Vector[] | number[]) {
+	M(...args: Iterable<number>[] | number[]) {
 		const [pos] = pickPos(args);
 		return new MoveLS(this, pos);
 	}
-	m(...args: Vector[] | number[]) {
+	m(...args: Iterable<number>[] | number[]) {
 		const [pos] = pickPos(args);
 		return new MoveLS(this, this.to.add(pos));
 	}
@@ -102,11 +102,11 @@ export abstract class SegmentLS extends Segment {
 	z() {
 		return this.Z();
 	}
-	L(...args: Vector[] | number[]) {
+	L(...args: Iterable<number>[] | number[]) {
 		const [pos] = pickPos(args);
 		return new LineLS(this, pos);
 	}
-	l(...args: Vector[] | number[]) {
+	l(...args: Iterable<number>[] | number[]) {
 		const [pos] = pickPos(args);
 		return new LineLS(this, this.to.add(pos));
 	}
@@ -122,25 +122,25 @@ export abstract class SegmentLS extends Segment {
 	v(n: number) {
 		return new LineLS(this, this.to.shift_y(n));
 	}
-	Q(...args: Vector[] | number[]) {
+	Q(...args: Iterable<number>[] | number[]) {
 		const [p, pE] = pickPos(args);
 		return new QuadLS(this, p, pE);
 	}
-	q(...args: Vector[] | number[]) {
+	q(...args: Iterable<number>[] | number[]) {
 		const [p, pE] = pickPos(args);
 		const { to: rel } = this;
 		return new QuadLS(this, rel.add(p), rel.add(pE));
 	}
-	C(...args: Vector[] | number[]) {
+	C(...args: Iterable<number>[] | number[]) {
 		const [c1, c2, pE] = pickPos(args);
 		return new CubicLS(this, c1, c2, pE);
 	}
-	c(...args: Vector[] | number[]) {
+	c(...args: Iterable<number>[] | number[]) {
 		const [c1, c2, pE] = pickPos(args);
 		const { to: rel } = this;
 		return new CubicLS(this, rel.add(c1), rel.add(c2), rel.add(pE));
 	}
-	S(...args: Vector[] | number[]): CubicLS {
+	S(...args: Iterable<number>[] | number[]): CubicLS {
 		const [p2, pE] = pickPos(args);
 		const { to } = this;
 		if (this instanceof CubicLS) {
@@ -149,7 +149,7 @@ export abstract class SegmentLS extends Segment {
 			return new CubicLS(this, to, p2, pE);
 		}
 	}
-	s(...args: Vector[] | number[]): CubicLS {
+	s(...args: Iterable<number>[] | number[]): CubicLS {
 		const [p2, pE] = pickPos(args);
 		const { to } = this;
 		if (this instanceof CubicLS) {
@@ -158,7 +158,7 @@ export abstract class SegmentLS extends Segment {
 			return new CubicLS(this, to, to.add(p2), to.add(pE));
 		}
 	}
-	T(...args: Vector[] | number[]): QuadLS {
+	T(...args: Iterable<number>[] | number[]): QuadLS {
 		const [pE] = pickPos(args);
 		const { to } = this;
 		if (this instanceof QuadLS) {
@@ -167,7 +167,7 @@ export abstract class SegmentLS extends Segment {
 			return new QuadLS(this, to, pE);
 		}
 	}
-	t(...args: Vector[] | number[]): QuadLS {
+	t(...args: Iterable<number>[] | number[]): QuadLS {
 		const [pE] = pickPos(args);
 		const { to } = this;
 		if (this instanceof QuadLS) {
@@ -177,39 +177,36 @@ export abstract class SegmentLS extends Segment {
 		}
 	}
 
-	A(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, ...args: Vector[] | number[]) {
+	A(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, ...args: Iterable<number>[] | number[]) {
 		const [pE] = pickPos(args);
 		return new ArcLS(this, rx, ry, φ, bigArc, sweep, pE);
 	}
 
-	a(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, ...args: Vector[] | number[]) {
+	a(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, ...args: Iterable<number>[] | number[]) {
 		const [pE] = pickPos(args);
 		const { to: rel } = this;
 		return new ArcLS(this, rx, ry, φ, bigArc, sweep, rel.add(pE));
 	}
 
-	rect(...args: Vector[] | number[]) {
+	rect(...args: Iterable<number>[] | number[]) {
 		const [xy, [w, h]] = pickPos(args);
 		return this.M(xy).h(w).v(h).h(-w).z();
 	}
 
-	arc(...args: Vector[] | number[]): SegmentLS {
+	arc(...args: Iterable<number>[] | number[]): SegmentLS {
 		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
 		return arcHelp(this, x, y, r, a0, a1, ccw);
 	}
-	arcd(...args: Vector[] | number[]): SegmentLS {
+	arcd(...args: Iterable<number>[] | number[]): SegmentLS {
 		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
 		return arcHelp(this, x, y, r, (a0 * PI) / 180, (a1 * PI) / 180, ccw);
 	}
-	arcTo(...args: Vector[] | number[]): SegmentLS {
+	arcTo(...args: Iterable<number>[] | number[]): SegmentLS {
 		const [x1, y1, x2, y2, r] = pickNum(args);
 		return arcToHelp(this, x1, y1, x2, y2, r);
 	}
 
 	override toString() {
-		// return this.descArray()
-		// 	.filter((v) => (typeof v == 'number' ? fmtN(v) : v))
-		// 	.join(' ');
 		return this.describe();
 	}
 
@@ -230,36 +227,36 @@ export abstract class SegmentLS extends Segment {
 			return [...this._descs(opt)];
 		}
 	}
-	cutAt(t: number) {
+	cut_at(t: number) {
 		return t < 0 ? this.split_at(1 + t)[1] : this.split_at(t)[0];
 	}
-	cropAt(t0: number, t1: number): SegmentLS | undefined {
+	crop_at(t0: number, t1: number): SegmentLS | undefined {
 		t0 = tNorm(t0);
 		t1 = tNorm(t1);
 		if (t0 <= 0) {
 			if (t1 >= 1) {
 				return this;
 			} else if (t1 > 0) {
-				return this.cutAt(t1); // t1 < 1
+				return this.cut_at(t1); // t1 < 1
 			}
 		} else if (t0 < 1) {
 			if (t1 >= 1) {
-				return this.cutAt(t0 - 1);
+				return this.cut_at(t0 - 1);
 			} else if (t0 < t1) {
-				return this.cutAt(t0 - 1).cutAt((t1 - t0) / (1 - t0));
+				return this.cut_at(t0 - 1).cut_at((t1 - t0) / (1 - t0));
 			} else if (t0 > t1) {
-				return this.cropAt(t1, t0); // t1 < 1
+				return this.crop_at(t1, t0); // t1 < 1
 			}
 		} else if (t1 < 1) {
-			return this.cropAt(t1, t0); // t0 >= 1
+			return this.crop_at(t1, t0); // t0 >= 1
 		}
 	}
-	pathLen(): number {
+	path_len(): number {
 		const { _prev } = this;
-		const len = this.segmentLen();
-		return _prev ? _prev.pathLen() + len : len;
+		const len = this.segment_len();
+		return _prev ? _prev.path_len() + len : len;
 	}
-	segmentLen() {
+	segment_len() {
 		return this.length;
 	}
 	override bbox() {
@@ -298,10 +295,10 @@ export abstract class SegmentLS extends Segment {
 	// 		throw new Error(`No prev`);
 	// 	}
 	// }
-	_asCubic(): SegmentLS {
+	as_curve(): SegmentLS {
 		let { _prev } = this;
 		if (_prev) {
-			const newPrev = _prev._asCubic();
+			const newPrev = _prev.as_curve();
 			if (newPrev !== _prev) {
 				return this.with_prev(newPrev);
 			}
@@ -330,38 +327,38 @@ export abstract class SegmentLS extends Segment {
 	parse(d: string) {
 		return parseLS(d, this);
 	}
-	static moveTo(...args: Vector[] | number[]) {
+	static move_to(...args: Iterable<number>[] | number[] | Iterable<number>[]) {
 		const [pos] = pickPos(args);
 		return new MoveLS(undefined, pos);
 	}
-	static lineTo(...args: Vector[] | number[]) {
+	static lineTo(...args: Iterable<number>[] | number[]) {
 		const [pos] = pickPos(args);
-		return this.moveTo(Vector.new(0, 0)).lineTo(pos);
+		return this.move_to(Vector.new(0, 0)).lineTo(pos);
 	}
-	static bezierCurveTo(...args: Vector[] | number[]) {
+	static bezierCurveTo(...args: Iterable<number>[] | number[]) {
 		const [c1, c2, to] = pickPos(args);
-		return this.moveTo(Vector.new(0, 0)).bezierCurveTo(c1, c2, to);
+		return this.move_to(Vector.new(0, 0)).bezierCurveTo(c1, c2, to);
 	}
-	static quadraticCurveTo(...args: Vector[] | number[]) {
+	static quadraticCurveTo(...args: Iterable<number>[] | number[]) {
 		const [p, to] = pickPos(args);
-		return this.moveTo(Vector.new(0, 0)).quadraticCurveTo(p, to);
+		return this.move_to(Vector.new(0, 0)).quadraticCurveTo(p, to);
 	}
 	static parse(d: string) {
 		return parseLS(d, undefined);
 	}
-	static arc(...args: Vector[] | number[]): SegmentLS {
+	static arc(...args: Iterable<number>[] | number[]): SegmentLS {
 		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
 		return arcHelp(undefined, x, y, r, a0, a1, ccw);
 	}
-	static arcd(...args: Vector[] | number[]): SegmentLS {
+	static arcd(...args: Iterable<number>[] | number[]): SegmentLS {
 		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);
 		return arcHelp(undefined, x, y, r, (a0 * PI) / 180, (a1 * PI) / 180, ccw);
 	}
-	static arcTo(...args: Vector[] | number[]): SegmentLS {
+	static arcTo(...args: Iterable<number>[] | number[]): SegmentLS {
 		const [x1, y1, x2, y2, r] = pickNum(args);
 		return arcToHelp(undefined, x1, y1, x2, y2, r);
 	}
-	static rect(...args: Vector[] | number[]) {
+	static rect(...args: Iterable<number>[] | number[]) {
 		const [xy, [w, h]] = pickPos(args);
 		return new MoveLS(undefined, xy).h(w).v(h).h(-w).z();
 	}
@@ -487,7 +484,7 @@ export class MoveLS extends LineLS {
 		const { to } = this;
 		return new MoveLS(prev, to);
 	}
-	override segmentLen() {
+	override segment_len() {
 		return 0;
 	}
 }
@@ -621,7 +618,13 @@ export class CubicLS extends SegmentLS {
 	override split_at(t: number): [SegmentLS, SegmentLS] {
 		const { _prev, _cpts } = this;
 		const [a, b] = cubic_split_at(_cpts, tCheck(t));
-		return [new CubicLS(_prev, a[1], a[2], a[3]), new CubicLS(new MoveLS(undefined, b[0]), b[1], b[2], b[3])];
+		return [
+			new CubicLS(_prev, Vector.new(a[1]), Vector.new(a[2]), Vector.new((a[3]))),
+			new CubicLS(new MoveLS(undefined, Vector.new(b[0])),
+				Vector.new(b[1]),
+				Vector.new(b[2]),
+				Vector.new(b[3]))
+		];
 	}
 	override get length() {
 		return cubic_length(this._cpts);
@@ -765,12 +768,12 @@ export class ArcLS extends SegmentLS {
 
 		return ['A', rx, ry, phi, bigArc ? 1 : 0, sweep ? 1 : 0, x, y];
 	}
-	override _asCubic() {
+	override as_curve() {
 		let { _prev, to } = this;
 		if (_prev) {
 			const { rx, ry, cx, cy, cosφ, sinφ, rdelta, rtheta } = this;
 			const segments = arc_to_curve(rx, ry, cx, cy, sinφ, cosφ, rtheta, rdelta);
-			_prev = _prev._asCubic();
+			_prev = _prev.as_curve();
 			if (segments.length === 0) {
 				// Degenerated arcs can be ignored by renderer, but should not be dropped
 				// to avoid collisions with `S A S` and so on. Replace with empty line.

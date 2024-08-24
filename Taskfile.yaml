@@ -11,13 +11,13 @@ tasks:
       - dist/**/*.js
 
   tap:
-    method: none
+    method: timestamp
     deps: [tsc]
     cmds:
       - npx tap {{.CLI_ARGS}}
 
   c8tap:
-    method: none
+    method: timestamp
     deps: [tsc]
     cmds:
       - |

@@ -6,14 +6,14 @@ import { PathSE } from '../dist/path/segment/pathse.js';
 import './utils.js';
 
 test.test(`SegmentLS Extra`, { bail: 1 }, function (t) {
-    const cur = SegmentLS.moveTo(3, 4).lineTo(5, 6).moveTo(7, 8).closePath();
+    const cur = SegmentLS.move_to(3, 4).lineTo(5, 6).move_to(7, 8).closePath();
     t.same([...cur.first.to], [3, 4, 0]);
     t.same([...cur.prev.to], [7, 8, 0]);
     t.same(cur.first.constructor.name, 'MoveLS');
     t.same(cur.prev.constructor.name, 'MoveLS');
 
-    // const seg = SegmentLS.moveTo(3, 4).lineTo(5, 6).lineTo(7, 8);
-    const seg = SegmentLS.moveTo(3, 4).lineTo(5, 6).moveTo(1, 2).moveTo(0, 0).lineTo(7, 8);
+    // const seg = SegmentLS.move_to(3, 4).lineTo(5, 6).lineTo(7, 8);
+    const seg = SegmentLS.move_to(3, 4).lineTo(5, 6).move_to(1, 2).move_to(0, 0).lineTo(7, 8);
     // const seg = cur;
     const rev = seg.reversed();
 

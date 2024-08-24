@@ -377,10 +377,10 @@ test.test(`draw`, { bail: !CI }, function (t) {
 
     // console.log(d);
     const s = 'M1,2Q3,4,5,6';
-    t.equal(PathDraw.moveTo(1, 2).quadraticCurveTo(3, 4, 5, 6) + '', s);
-    t.equal(PathDraw.moveTo(Vector.new(1, 2)).quadraticCurveTo(3, 4, 5, 6) + '', s);
-    t.equal(PathDraw.moveTo(Vector.new(1, 2)).quadraticCurveTo(3, 4, Vector.new(5, 6)) + '', s);
-    t.equal(PathDraw.moveTo(Vector.new(1, 2)).quadraticCurveTo(Vector.new(3, 4), Vector.new(5, 6)) + '', s);
+    t.equal(PathDraw.move_to(1, 2).quadraticCurveTo(3, 4, 5, 6) + '', s);
+    t.equal(PathDraw.move_to(Vector.new(1, 2)).quadraticCurveTo(3, 4, 5, 6) + '', s);
+    t.equal(PathDraw.move_to(Vector.new(1, 2)).quadraticCurveTo(3, 4, Vector.new(5, 6)) + '', s);
+    t.equal(PathDraw.move_to(Vector.new(1, 2)).quadraticCurveTo(Vector.new(3, 4), Vector.new(5, 6)) + '', s);
 
     t.end();
 });

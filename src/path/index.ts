@@ -57,7 +57,7 @@ export function tNorm(t: number) {
 	return t;
 }
 
-export function* pickPos(args: Vector[] | number[]) {
+export function* pickPos(args: Iterable<number>[] | number[] | Iterable<number>[]) {
 	let n: number | undefined = undefined;
 	for (const v of args) {
 		if (typeof v == 'number') {
@@ -77,7 +77,7 @@ export function* pickPos(args: Vector[] | number[]) {
 	}
 }
 
-export function* pickNum(args: Vector[] | number[]) {
+export function* pickNum(args: Iterable<number>[] | number[]) {
 	for (const v of args) {
 		switch (typeof v) {
 			case 'number':

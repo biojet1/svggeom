@@ -21,7 +21,7 @@ test.test(`path parse`, { bail: !CI }, function (t) {
     t.end();
 });
 
-test.test(`PathLS.segmentAt`, { bail: !CI }, function (t) {
+test.test(`PathLS.segment_at`, { bail: !CI }, function (t) {
     let p = PathLS.parse('M 10,10 l 30, -40 h -30 v 30 z');
     // console.log(p._tail?.pathLen())
     t.same(p._tail.length, 10);
@@ -41,7 +41,7 @@ test.test(`PathLS.segmentAt`, { bail: !CI }, function (t) {
         [0.4167, 'LineLS', 30, 0, 10, -30, 0],
         [0.4166, 'LineLS', 50, 1, 40, -30, 0],
     ]) {
-        const [seg, j] = p.segmentAt(T);
+        const [seg, j] = p.segment_at(T);
         const tag = `[${i} ${T} ${cname} ${seg ? seg.to.toString() : ''}]`;
         t.same(seg.constructor.name, cname, tag);
         t.same(seg.length, len, tag);
@@ -85,7 +85,7 @@ test.test(`PathLS.segmentAt`, { bail: !CI }, function (t) {
         const [a, b] = p.split_at(0.08333333333333333);
         t.same(a.describe(), 'M10,10L16,2');
         t.same(b.describe({ short: true }), 'M16,2L40,-30H10V0Z');
-        t.same(p.cutAt(-0.9166666666666666).describe({ short: true }), 'M16,2L40,-30H10V0Z');
+        t.same(p.cut_at(-0.9166666666666666).describe({ short: true }), 'M16,2L40,-30H10V0Z');
     }
 
     t.end();
@@ -94,7 +94,7 @@ test.test(`PathLS.segmentAt`, { bail: !CI }, function (t) {
 test.test(`PathLS empty`, { bail: !CI }, function (t) {
     const p = new PathLS();
     for (const f of [-2, 0, 0.5, 1, 2]) {
-        t.same(p.segmentAt(f), [undefined, NaN]);
+        t.same(p.segment_at(f), [undefined, NaN]);
         t.same(p.segmentAtLength(f), [undefined, NaN, NaN]);
         t.strictSame(p.pointAtLength(f), undefined);
         const [a, b] = p.split_at(f);
@@ -111,7 +111,7 @@ test.test(`PathLS empty`, { bail: !CI }, function (t) {
 });
 
 test.test(`SegmentLS extra`, { bail: !CI }, function (t) {
-    const p = SegmentLS.moveTo(3, 4);
+    const p = SegmentLS.move_to(3, 4);
     t.throwsRE(function () {
         p.prev;
     }, /No prev/);
@@ -126,19 +126,19 @@ test.test(`SegmentLS extra`, { bail: !CI }, function (t) {
         t.same([...l.to], [3, 4, 0]);
     }
     {
-        t.notOk(SegmentLS.moveTo(3, 4).bbox().is_valid());
+        t.notOk(SegmentLS.move_to(3, 4).bbox().is_valid());
     }
     {
-        const [a, b] = SegmentLS.moveTo(0, 0).moveTo(3, 4).split_at(0.5);
+        const [a, b] = SegmentLS.move_to(0, 0).move_to(3, 4).split_at(0.5);
         t.same([...a.to], [(2.5 * 3) / 5, (2.5 * 4) / 5, 0]);
         t.same([...b.to], [3, 4, 0]);
         t.same([...b.from], [1.5, 2, 0]);
     }
     {
-        t.same(SegmentLS.moveTo(3, 4).with_prev(SegmentLS.moveTo(5, 6)).describe(), 'M5,6M3,4');
+        t.same(SegmentLS.move_to(3, 4).with_prev(SegmentLS.move_to(5, 6)).describe(), 'M5,6M3,4');
     }
     {
-        const s = SegmentLS.moveTo(3, 4).arc(100, 100, 50, 0, -1e-16, false);
+        const s = SegmentLS.move_to(3, 4).arc(100, 100, 50, 0, -1e-16, false);
         const segs = [...s.enum()];
         const matc = ['ArcLS', 'ArcLS', 'LineLS', 'MoveLS'];
         segs.forEach((seg, i) => {

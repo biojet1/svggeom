@@ -4,7 +4,7 @@ import { tNorm } from './path/index.js';
 
 const { PI: pi, abs, sqrt, tan, acos, sin, cos } = Math;
 
-function* pick(args: Vector[] | number[] | boolean[]) {
+function* pick(args: Vector[] | number[] | boolean[] | Iterable<number>[]) {
 	for (const v of args) {
 		if (typeof v == 'number') {
 			yield +v;
@@ -58,11 +58,16 @@ export class PathDraw extends CanvasCompat {
 		digits = n;
 	}
 
-	moveTo(...args: Vector[] | number[]) {
+	move_to(...args: Vector[] | number[] | Iterable<number>[]) {
 		const [x, y] = pick(args);
 		this._ += `M${fmtN((this._x0 = this._x1 = +x))},${fmtN((this._y0 = this._y1 = +y))}`;
 		return this;
 	}
+	moveTo(x: number, y: number) {
+		return this.move_to([x, y]);
+	}
+
+
 
 	lineTo(...args: Vector[] | number[]) {
 		const [x, y] = pick(args);
@@ -231,13 +236,13 @@ export class PathDraw extends CanvasCompat {
 		return new PathDraw();
 	}
 
-	static moveTo() {
-		return PathDraw.new().moveTo(...arguments);
+	static move_to() {
+		return PathDraw.new().move_to(...arguments);
 	}
 
 	static lineTo() {
 		return PathDraw.new()
-			.moveTo(0, 0)
+			.move_to(0, 0)
 			.lineTo(...arguments);
 	}
 }
@@ -252,7 +257,7 @@ const len_path = new WeakMap<SegmentLS, number>();
 function lenPath(seg: SegmentLS) {
 	let v = len_path.get(seg);
 	if (v == null) {
-		len_path.set(seg, (v = seg.pathLen()));
+		len_path.set(seg, (v = seg.path_len()));
 	}
 	return v;
 }
@@ -260,7 +265,7 @@ function lenPath(seg: SegmentLS) {
 function lenSegm(seg: SegmentLS) {
 	let v = len_segm.get(seg);
 	if (v == null) {
-		len_segm.set(seg, (v = seg.segmentLen()));
+		len_segm.set(seg, (v = seg.segment_len()));
 	}
 	return v;
 }
@@ -272,11 +277,15 @@ export class PathLS extends CanvasCompat {
 		this._tail = tail;
 	}
 
-	moveTo(...args: Vector[] | number[]) {
+	move_to(...args: Vector[] | number[] | Iterable<number>[]) {
 		const { _tail } = this;
-		this._tail = (_tail ?? SegmentLS).moveTo(...args);
+		this._tail = (_tail ?? SegmentLS).move_to(...args);
 		return this;
 	}
+	moveTo(x: number, y: number) {
+		return this.move_to([x, y]);
+	}
+
 	lineTo(...args: Vector[] | number[]) {
 		const { _tail } = this;
 		this._tail = (_tail ?? SegmentLS).lineTo(...args);
@@ -350,7 +359,7 @@ export class PathLS extends CanvasCompat {
 		}
 		return [undefined, NaN, NaN];
 	}
-	segmentAt(T: number): [SegmentLS | undefined, number] {
+	segment_at(T: number): [SegmentLS | undefined, number] {
 		let cur: SegmentLS | undefined = this._tail;
 		if (cur) {
 			const len = lenPath(cur);
@@ -373,17 +382,17 @@ export class PathLS extends CanvasCompat {
 		return this._tail?.to;
 	}
 	tangent_at(T: number) {
-		const [seg, t] = this.segmentAt(T);
+		const [seg, t] = this.segment_at(T);
 		if (seg) return seg.tangent_at(t);
 	}
 
 	slope_at(T: number) {
-		const [seg, t] = this.segmentAt(T);
+		const [seg, t] = this.segment_at(T);
 		if (seg) return seg.slope_at(t);
 	}
 
 	point_at(T: number) {
-		const [seg, t] = this.segmentAt(T);
+		const [seg, t] = this.segment_at(T);
 		if (seg) return seg.point_at(t);
 	}
 	pointAtLength(L: number, clamp?: boolean) {
@@ -401,13 +410,13 @@ export class PathLS extends CanvasCompat {
 	split_at(T: number) {
 		const { _tail } = this;
 		if (_tail) {
-			const [seg, t] = this.segmentAt(T);
+			const [seg, t] = this.segment_at(T);
 			if (seg) {
 				if (t == 0) {
 					const { prev } = seg;
-					return [new PathLS(prev), new PathLS(_tail.withFarPrev3(seg, SegmentLS.moveTo(prev?.to)))];
+					return [new PathLS(prev), new PathLS(_tail.withFarPrev3(seg, SegmentLS.move_to(prev?.to)))];
 				} else if (t == 1) {
-					return [new PathLS(seg), new PathLS(_tail.withFarPrev(seg, SegmentLS.moveTo(seg.to)))];
+					return [new PathLS(seg), new PathLS(_tail.withFarPrev(seg, SegmentLS.move_to(seg.to)))];
 				}
 				if (t < 0 || t > 1) {
 					throw new Error();
@@ -422,29 +431,29 @@ export class PathLS extends CanvasCompat {
 		}
 		return [new PathLS(undefined), new PathLS(undefined)];
 	}
-	cutAt(T: number): PathLS {
+	cut_at(T: number): PathLS {
 		return T < 0 ? this.split_at(1 + T)[1] : this.split_at(T)[0];
 	}
-	cropAt(T0: number, T1: number = 1): PathLS {
+	crop_at(T0: number, T1: number = 1): PathLS {
 		T0 = tNorm(T0);
 		T1 = tNorm(T1);
 		if (T0 <= 0) {
 			if (T1 >= 1) {
 				return this; // TODO: use clone
 			} else if (T1 > 0) {
-				return this.cutAt(T1);
+				return this.cut_at(T1);
 			}
 		} else if (T0 < 1) {
 			if (T1 >= 1) {
-				return this.cutAt(T0 - 1);
+				return this.cut_at(T0 - 1);
 			} else if (T0 < T1) {
-				return this.cutAt(T0 - 1).cutAt((T1 - T0) / (1 - T0));
+				return this.cut_at(T0 - 1).cut_at((T1 - T0) / (1 - T0));
 			} else if (T0 > T1) {
-				return this.cropAt(T1, T0);
+				return this.crop_at(T1, T0);
 			}
 		} else if (T1 < 1) {
 			// T0 >= 1
-			return this.cropAt(T1, T0);
+			return this.crop_at(T1, T0);
 		}
 		return new PathLS(undefined);
 	}
@@ -500,8 +509,8 @@ export class PathLS extends CanvasCompat {
 	d() {
 		return this.describe();
 	}
-	static moveTo(...args: Vector[] | number[]) {
-		return new PathLS(SegmentLS.moveTo(...args));
+	static move_to(...args: Vector[] | number[]) {
+		return new PathLS(SegmentLS.move_to(...args));
 	}
 	static parse(d: string) {
 		return new PathLS(SegmentLS.parse(d));
@@ -516,7 +525,7 @@ export class PathLS extends CanvasCompat {
 		SegmentLS.digits = n;
 	}
 	static lineTo() {
-		return PathLS.moveTo(0, 0).lineTo(...arguments);
+		return PathLS.move_to(0, 0).lineTo(...arguments);
 	}
 }
 

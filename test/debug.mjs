@@ -10,7 +10,7 @@ const d = `m 182.94048,133.3363 a 71.059525,34.395832 0 0 1 -57.74432,33.78659
         27.993926,-41.70331 71.059525,34.395832 0 0 1 89.875769,5.49583
 `;
 const a = SegmentLS.parse(d);
-const b = a._asCubic();
+const b = a.as_curve();
 console.log(a.describe(), a.point_at(0));
 console.log(b.describe(), b.point_at(0));
 

@@ -71,12 +71,12 @@ export function cubic_point_at([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterabl
     );
 }
 
-export function cubic_split_at([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[], z: number): Vector[][] {
+export function cubic_split_at([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[], z: number): number[][][] {
     const x = split_at_scalar(z, sx, x1, x2, ex);
     const y = split_at_scalar(z, sy, y1, y2, ey);
     return [
-        [Vector.new(x[0][0], y[0][0]), Vector.new(x[0][1], y[0][1]), Vector.new(x[0][2], y[0][2]), Vector.new(x[0][3], y[0][3])],
-        [Vector.new(x[1][0], y[1][0]), Vector.new(x[1][1], y[1][1]), Vector.new(x[1][2], y[1][2]), Vector.new(x[1][3], y[1][3])],
+        [[x[0][0], y[0][0]], [x[0][1], y[0][1]], [x[0][2], y[0][2]], [x[0][3], y[0][3]]],
+        [[x[1][0], y[1][0]], [x[1][1], y[1][1]], [x[1][2], y[1][2]], [x[1][3], y[1][3]]],
     ];
 }
 export function cubic_slope_at([from, c1, c2, to]: Vector[], t: number): Vector {
@@ -111,13 +111,13 @@ export function cubic_slope_at([from, c1, c2, to]: Vector[], t: number): Vector 
     }
 }
 
-export function cubic_length(_cpts: Vector[]): number {
+export function cubic_length(_cpts: Iterable<number>[]): number {
     if (cubic_flatness(_cpts) > 0.15) {
         const [a, b] = cubic_split_at(_cpts, 0.5);
         return cubic_length(a) + cubic_length(b);
     } else {
         const [from, , , to] = _cpts;
-        return to.sub(from).abs();
+        return (new Vector(to)).sub(from).abs();
     }
 }
 

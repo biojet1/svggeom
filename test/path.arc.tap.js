@@ -78,9 +78,9 @@ for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
         t.end();
     });
     test.test(`SegmentLS<${item.d}>`, { bail: CI }, function (t) {
-        const cur = SegmentLS.moveTo(start).A(radius[0], radius[1], rotation, large_arc, sweep, end);
+        const cur = SegmentLS.move_to(start).A(radius[0], radius[1], rotation, large_arc, sweep, end);
         testSegment(t, cur, item, deltp);
-        testSegment(t, new PathLS(cur._asCubic()), item, {
+        testSegment(t, new PathLS(cur.as_curve()), item, {
             ...deltp,
             test_descs: false,
             slope_epsilon: 0.6,

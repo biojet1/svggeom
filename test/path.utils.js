@@ -62,10 +62,10 @@ export function test_segment(t, seg, item, opt = {}) {
                     `split_at(${T}, 1)`,
                     seg
                 );
-                t.sameDescs(seg.cutAt(T).descArray(), pathA, point_epsilon, `cutAt(${T})`, seg);
-                t.sameDescs(seg.cutAt(-T).descArray(), pathB, point_epsilon, `cutAt(${T})`, seg);
-                t.sameDescs(seg.cropAt(0, T).descArray(), pathA, point_epsilon, `cropAt(0, ${T})`, seg);
-                t.sameDescs(seg.cropAt(T, 1).descArray(), pathB, point_epsilon, `cropAt(${T}, 1)`, seg);
+                t.sameDescs(seg.cut_at(T).descArray(), pathA, point_epsilon, `cut_at(${T})`, seg);
+                t.sameDescs(seg.cut_at(-T).descArray(), pathB, point_epsilon, `cut_at(${T})`, seg);
+                t.sameDescs(seg.crop_at(0, T).descArray(), pathA, point_epsilon, `crop_at(0, ${T})`, seg);
+                t.sameDescs(seg.crop_at(T, 1).descArray(), pathB, point_epsilon, `crop_at(${T}, 1)`, seg);
             } catch (err) {
                 console.error('Err split_at', T);
                 console.dir(seg, { depth: null });
@@ -141,15 +141,15 @@ export function testSegment(t, seg, item, opt = {}) {
                 const descs_opt = { epsilon: point_epsilon, write_svg: true, item, pathA, pathB };
                 t.sameDescs(a.descArray(), pathA, descs_opt, `split_at(0, ${T})`, seg);
                 t.sameDescs(b.descArray({ close: false }), pathB, descs_opt, `split_at(${T}, 1)`, seg);
-                t.sameDescs(seg.cropAt(0, T).descArray(), pathA, descs_opt, `cropAt(0, ${T})`, seg);
-                t.sameDescs(seg.cropAt(T, 1).descArray({ close: false }), pathB, descs_opt, `cropAt(${T}, 1)`, seg);
-                t.sameDescs(seg.cutAt(T).descArray(), pathA, descs_opt, `cutAt(${T})`, seg);
-                sub = seg.cutAt(T - 1);
+                t.sameDescs(seg.crop_at(0, T).descArray(), pathA, descs_opt, `crop_at(0, ${T})`, seg);
+                t.sameDescs(seg.crop_at(T, 1).descArray({ close: false }), pathB, descs_opt, `crop_at(${T}, 1)`, seg);
+                t.sameDescs(seg.cut_at(T).descArray(), pathA, descs_opt, `cut_at(${T})`, seg);
+                sub = seg.cut_at(T - 1);
                 t.sameDescs(
                     sub.descArray({ close: false }),
                     pathB,
                     descs_opt,
-                    `cutAt(${T} --> ${T - 1}) ${sub.constructor.name}`,
+                    `cut_at(${T} --> ${T - 1}) ${sub.constructor.name}`,
                     seg
                 );
             } catch (err) {
@@ -171,9 +171,9 @@ export function testSegment(t, seg, item, opt = {}) {
             [baka, sega, reva].map(v => v.join(' '))
         );
 
-        t.same(seg.cropAt(0, 1).descArray(), seg.descArray());
-        t.same(seg.cropAt(1, 0).descArray(), seg.descArray());
+        t.same(seg.crop_at(0, 1).descArray(), seg.descArray());
+        t.same(seg.crop_at(1, 0).descArray(), seg.descArray());
     }
-    t.same(seg.cropAt(0.5, 0.75).descArray(), seg.cropAt(-0.5, -0.25).descArray());
-    t.same(seg.cropAt(0.5, 0.75).descArray(), seg.cropAt(0.75, 0.5).descArray());
+    t.same(seg.crop_at(0.5, 0.75).descArray(), seg.crop_at(-0.5, -0.25).descArray());
+    t.same(seg.crop_at(0.5, 0.75).descArray(), seg.crop_at(0.75, 0.5).descArray());
 }

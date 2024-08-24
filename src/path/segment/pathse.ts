@@ -21,19 +21,19 @@ export class PathSE {
 
 	tangent_at(T: number) {
 		// SegmentSE method
-		const [seg, t] = this.segmentAt(tCheck(T));
+		const [seg, t] = this.segment_at(tCheck(T));
 		if (seg) return seg.tangent_at(t);
 	}
 
 	slope_at(T: number) {
 		// SegmentSE method
-		const [seg, t] = this.segmentAt(tCheck(T));
+		const [seg, t] = this.segment_at(tCheck(T));
 		if (seg) return seg.slope_at(t);
 	}
 
 	point_at(T: number) {
 		// SegmentSE method
-		const [seg, t] = this.segmentAt(tCheck(T));
+		const [seg, t] = this.segment_at(tCheck(T));
 		if (seg) return seg.point_at(t);
 	}
 
@@ -44,31 +44,31 @@ export class PathSE {
 
 	split_at(T: number) {
 		// SegmentSE method
-		const [seg, t, i] = this.segmentAt(tCheck(T));
+		const [seg, t, i] = this.segment_at(tCheck(T));
 		if (seg) {
 			const { _segs: segs } = this;
 			let s;
 			let a = segs.slice(0, i);
 			let b = segs.slice(i + 1);
-			(s = seg.cropAt(0, t)) && a.push(s);
-			(s = seg.cropAt(t, 1)) && b.unshift(s);
+			(s = seg.crop_at(0, t)) && a.push(s);
+			(s = seg.crop_at(t, 1)) && b.unshift(s);
 			return [new PathSE(a), new PathSE(b)];
 		}
 	}
 
-	cutAt(T: number): PathSE {
+	cut_at(T: number): PathSE {
 		// SegmentSE method
-		const [seg, t, i] = this.segmentAt(T < 0 ? 1 + T : T);
+		const [seg, t, i] = this.segment_at(T < 0 ? 1 + T : T);
 		if (seg) {
 			const { _segs: segs } = this;
 			if (T < 0) {
 				const a = segs.slice(i + 1);
-				const s = seg.cropAt(t, 1);
+				const s = seg.crop_at(t, 1);
 				s && a.unshift(s);
 				return new PathSE(a);
 			} else {
 				const a = segs.slice(0, i);
-				const s = seg.cropAt(0, t);
+				const s = seg.crop_at(0, t);
 				s && a.push(s);
 				return new PathSE(a);
 			}
@@ -76,7 +76,7 @@ export class PathSE {
 		return new PathSE([]);
 	}
 
-	cropAt(T0: number, T1: number = 1): PathSE {
+	crop_at(T0: number, T1: number = 1): PathSE {
 		// SegmentSE method
 		T0 = tNorm(T0);
 		T1 = tNorm(T1);
@@ -84,19 +84,19 @@ export class PathSE {
 			if (T1 >= 1) {
 				return this; // TODO: use clone
 			} else if (T1 > 0) {
-				return this.cutAt(T1);
+				return this.cut_at(T1);
 			}
 		} else if (T0 < 1) {
 			if (T1 >= 1) {
-				return this.cutAt(T0 - 1);
+				return this.cut_at(T0 - 1);
 			} else if (T0 < T1) {
-				return this.cutAt(T0 - 1).cutAt((T1 - T0) / (1 - T0));
+				return this.cut_at(T0 - 1).cut_at((T1 - T0) / (1 - T0));
 			} else if (T0 > T1) {
-				return this.cropAt(T1, T0);
+				return this.crop_at(T1, T0);
 			}
 		} else if (T1 < 1) {
 			// T0 >= 1
-			return this.cropAt(T1, T0);
+			return this.crop_at(T1, T0);
 		}
 		return new PathSE([]);
 	}
@@ -178,7 +178,7 @@ export class PathSE {
 		}
 	}
 
-	segmentAt(T: number): [SegmentSE | undefined, number, number] {
+	segment_at(T: number): [SegmentSE | undefined, number, number] {
 		const { _segs: segs } = this;
 		if (segs.length > 0) {
 			this.calcLength();

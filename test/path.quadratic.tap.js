@@ -12,7 +12,7 @@ for await (const item of enum_path_data({ SEGMENTS: 'QuadraticBezier' })) {
         let seg = new Quadratic(...item.points);
         // test_segment(t, seg, item, deltp);
         testSegment(t, seg, item, deltp);
-        // let seg = SegmentLS.moveTo(200, 300).quadraticCurveTo(400, 50, 600, 300);
+        // let seg = SegmentLS.move_to(200, 300).quadraticCurveTo(400, 50, 600, 300);
         // console.log(item.length);
         t.end();
     });
@@ -20,9 +20,9 @@ for await (const item of enum_path_data({ SEGMENTS: 'QuadraticBezier' })) {
         const [start, p, end] = item.points;
         const [[sx, sy], [x1, y1], [ex, ey]] = [start, p, end];
         {
-            const cur = SegmentLS.moveTo(start).quadraticCurveTo(p, end);
+            const cur = SegmentLS.move_to(start).quadraticCurveTo(p, end);
             testSegment(t, cur, item, deltp);
-            const cur2 = SegmentLS.moveTo(sx, sy).quadraticCurveTo(x1, y1, ex, ey);
+            const cur2 = SegmentLS.move_to(sx, sy).quadraticCurveTo(x1, y1, ex, ey);
             t.same(cur.toString(), cur2.toString());
         }
         // if (CI)
@@ -34,7 +34,7 @@ for await (const item of enum_path_data({ SEGMENTS: 'QuadraticBezier' })) {
     });
 }
 test.test('Testing Quadratic Bézier', { bail: !CI }, function (t) {
-    let seg = SegmentLS.moveTo(200, 300).quadraticCurveTo(400, 50, 600, 300);
+    let seg = SegmentLS.move_to(200, 300).quadraticCurveTo(400, 50, 600, 300);
     // console.dir(seg);
     t.almostEqual(seg.length, 487.77, 0.01);
     t.end();

@@ -23,9 +23,9 @@ for await (const item of enum_path_data({ SEGMENTS: 'Line' })) {
     test.test(`SegmentLS<${item.d}>`, { bail: CI }, function (t) {
         const [[x1, y1], [x2, y2]] = [item.start, item.end];
         {
-            const cur = SegmentLS.moveTo(item.start).lineTo(item.end);
+            const cur = SegmentLS.move_to(item.start).lineTo(item.end);
             testSegment(t, cur, item);
-            const cur2 = SegmentLS.moveTo(x1, y1).lineTo(x2, y2);
+            const cur2 = SegmentLS.move_to(x1, y1).lineTo(x2, y2);
             t.same(cur.toString(), cur2.toString());
         }
         // if (CI)

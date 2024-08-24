@@ -15,7 +15,7 @@ for await (const item of enum_path_data({ SEGMENTS: 'CubicBezier' })) {
         // test_segment(t, seg, item, deltp);
 
         // const [s, a, b, e] = item.points;
-        // seg = SegmentLS.moveTo(...s).bezierCurveTo(a, b, e);
+        // seg = SegmentLS.move_to(...s).bezierCurveTo(a, b, e);
         // // test_segment(t, seg, item, { len_epsilon: 0.189, point_epsilon: 1e-10, slope_epsilon: 1e-8 });
         // // console.dir(seg, {depth: null});
         // // console.log(s, a, b, e, seg.d());
@@ -25,9 +25,9 @@ for await (const item of enum_path_data({ SEGMENTS: 'CubicBezier' })) {
         const [start, c1, c2, end] = item.points;
         const [[sx, sy], [x1, y1], [x2, y2], [ex, ey]] = [start, c1, c2, end];
         {
-            const cur = SegmentLS.moveTo(start).bezierCurveTo(c1, c2, end);
+            const cur = SegmentLS.move_to(start).bezierCurveTo(c1, c2, end);
             testSegment(t, cur, item, deltp);
-            const cur2 = SegmentLS.moveTo(sx, sy).bezierCurveTo(x1, y1, x2, y2, ex, ey);
+            const cur2 = SegmentLS.move_to(sx, sy).bezierCurveTo(x1, y1, x2, y2, ex, ey);
             t.same(cur.toString(), cur2.toString());
         }
         // if (CI)

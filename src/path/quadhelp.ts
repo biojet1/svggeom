@@ -17,7 +17,7 @@ export function quadratic_extrema(a: number, b: number, c: number) {
     return [cmin, cmax];
 }// https://github.com/rveciana/svg-path-properties/blob/master/src/bezier-functions.ts
 
-export function quad_length([[x0, y0], [x1, y1], [x2, y2]]: Vector[], t: number = 1) {
+export function quad_length([[x0, y0], [x1, y1], [x2, y2]]: Iterable<number>[], t: number = 1) {
     const ax = x0 - 2 * x1 + x2;
     const ay = y0 - 2 * y1 + y2;
     const bx = 2 * x1 - 2 * x0;
