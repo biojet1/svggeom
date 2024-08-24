@@ -1,9 +1,9 @@
 'uses strict';
-import {spawn} from 'child_process';
+import { spawn } from 'child_process';
 export async function* enum_path_data(env) {
     const pyproc = spawn('python3', ['test/path.py'], {
         stdio: ['ignore', 'pipe', 'inherit'],
-        env: {...process.env, ...env},
+        env: { ...process.env, ...env },
     });
     let last;
     for await (const chunk of pyproc.stdout) {
@@ -16,11 +16,11 @@ export async function* enum_path_data(env) {
     }
 }
 // import {Cubic} from 'svggeom';
-import {Path} from '../dist/path.js';
-Path.digits = 16;
+import { PathSE } from '../dist/pathse.js';
+PathSE.digits = 16;
 
 export function test_segment(t, seg, item, opt = {}) {
-    const {epsilon = 1e-11} = opt;
+    const { epsilon = 1e-11 } = opt;
     const {
         delta_epsilon = epsilon,
         len_epsilon = epsilon,
@@ -31,7 +31,7 @@ export function test_segment(t, seg, item, opt = {}) {
         test_tangents = true,
         descArrayOpt,
     } = opt;
-    const tan_opt = {delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon};
+    const tan_opt = { delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon };
     t.almostEqual(item.from[0], seg.from.x);
     t.almostEqual(item.from[1], seg.from.y);
     t.almostEqual(item.to[0], seg.to.x, end_point_epsilon, 'ENDX');
@@ -40,11 +40,11 @@ export function test_segment(t, seg, item, opt = {}) {
     t.almostEqual(seg.length, item.length, len_epsilon, 'LEN', [item, seg]);
 
     let pv, px, a, b;
-    for (const [T, {x, y, tx, ty, pathA, pathB}] of Object.entries(item.at)) {
+    for (const [T, { x, y, tx, ty, pathA, pathB }] of Object.entries(item.at)) {
         pv = seg.pointAt(T).toArray();
         px = [x, y, 0];
         // console.error(pv, px);
-        t.almostEqual(pv, px, {epsilon: point_epsilon, on_fail: opt?.on_fail}, `pointAt(${T})`, [item, seg, pv, px]);
+        t.almostEqual(pv, px, { epsilon: point_epsilon, on_fail: opt?.on_fail }, `pointAt(${T})`, [item, seg, pv, px]);
 
         pv = seg.slopeAt(T).toArray();
         px = [tx, ty];
@@ -54,11 +54,11 @@ export function test_segment(t, seg, item, opt = {}) {
             try {
                 [a, b] = seg.splitAt(T);
 
-                t.sameDescs(a.descArray(descArrayOpt), pathA, {epsilon: point_epsilon}, `splitAt(0, ${T})`, [item, seg]);
+                t.sameDescs(a.descArray(descArrayOpt), pathA, { epsilon: point_epsilon }, `splitAt(0, ${T})`, [item, seg]);
                 t.sameDescs(
                     b.descArray(descArrayOpt),
                     pathB,
-                    {epsilon: point_epsilon, write_svg: true, item},
+                    { epsilon: point_epsilon, write_svg: true, item },
                     `splitAt(${T}, 1)`,
                     seg
                 );
@@ -68,13 +68,13 @@ export function test_segment(t, seg, item, opt = {}) {
                 t.sameDescs(seg.cropAt(T, 1).descArray(), pathB, point_epsilon, `cropAt(${T}, 1)`, seg);
             } catch (err) {
                 console.error('Err splitAt', T);
-                console.dir(seg, {depth: null});
+                console.dir(seg, { depth: null });
                 throw err;
             }
         }
         const rev = seg.reversed();
         const bak = rev.reversed();
-        if (seg instanceof Path) {
+        if (seg instanceof PathSE) {
             t.notSame(seg._segs, rev._segs);
             t.same(bak._segs, seg._segs);
         } else {
@@ -89,7 +89,7 @@ export function test_segment(t, seg, item, opt = {}) {
     }
 }
 export function testSegment(t, seg, item, opt = {}) {
-    const {epsilon = 1e-11} = opt;
+    const { epsilon = 1e-11 } = opt;
     const {
         delta_epsilon = epsilon,
         len_epsilon = epsilon,
@@ -99,7 +99,7 @@ export function testSegment(t, seg, item, opt = {}) {
         test_descs = true,
         test_tangents = true,
     } = opt;
-    const tan_opt = {delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon};
+    const tan_opt = { delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon };
     t.almostEqual(item.start[0], seg.from.x);
     t.almostEqual(item.start[1], seg.from.y);
     t.almostEqual(item.end[0], seg.to.x, end_point_epsilon, 'ENDX');
@@ -107,12 +107,12 @@ export function testSegment(t, seg, item, opt = {}) {
     t.almostEqual(item.length, seg.length, len_epsilon, 'LEN', [item, seg]);
     t.sameBox(item.bbox, seg.bbox());
     let pv, px, pt, a, b, sub;
-    for (const [T, {x, y, tx, ty, pathA, pathB}] of Object.entries(item.at)) {
+    for (const [T, { x, y, tx, ty, pathA, pathB }] of Object.entries(item.at)) {
         // pointAt
         try {
             pv = seg.pointAt(T).toArray();
             px = [x, y, 0];
-            t.almostEqual(pv, px, {epsilon: point_epsilon, on_fail: opt?.on_fail}, `pointAt(${T})`, [item, seg, pv, px]);
+            t.almostEqual(pv, px, { epsilon: point_epsilon, on_fail: opt?.on_fail }, `pointAt(${T})`, [item, seg, pv, px]);
         } catch (err) {
             console.error('Err pointAt', T, seg.constructor.name, seg?._tail?.constructor.name, seg?._tail?.to);
             // console.dir(seg, {depth: null});
@@ -138,15 +138,15 @@ export function testSegment(t, seg, item, opt = {}) {
         if (test_descs && pathA) {
             try {
                 [a, b] = seg.splitAt(T);
-                const descs_opt = {epsilon: point_epsilon, write_svg: true, item, pathA, pathB};
+                const descs_opt = { epsilon: point_epsilon, write_svg: true, item, pathA, pathB };
                 t.sameDescs(a.descArray(), pathA, descs_opt, `splitAt(0, ${T})`, seg);
-                t.sameDescs(b.descArray({close: false}), pathB, descs_opt, `splitAt(${T}, 1)`, seg);
+                t.sameDescs(b.descArray({ close: false }), pathB, descs_opt, `splitAt(${T}, 1)`, seg);
                 t.sameDescs(seg.cropAt(0, T).descArray(), pathA, descs_opt, `cropAt(0, ${T})`, seg);
-                t.sameDescs(seg.cropAt(T, 1).descArray({close: false}), pathB, descs_opt, `cropAt(${T}, 1)`, seg);
+                t.sameDescs(seg.cropAt(T, 1).descArray({ close: false }), pathB, descs_opt, `cropAt(${T}, 1)`, seg);
                 t.sameDescs(seg.cutAt(T).descArray(), pathA, descs_opt, `cutAt(${T})`, seg);
                 sub = seg.cutAt(T - 1);
                 t.sameDescs(
-                    sub.descArray({close: false}),
+                    sub.descArray({ close: false }),
                     pathB,
                     descs_opt,
                     `cutAt(${T} --> ${T - 1}) ${sub.constructor.name}`,
@@ -154,16 +154,16 @@ export function testSegment(t, seg, item, opt = {}) {
                 );
             } catch (err) {
                 console.error('Err splitAt', T);
-                console.dir(seg, {depth: null});
+                console.dir(seg, { depth: null });
                 throw err;
             }
         }
         // reversed
         const rev = seg.reversed();
         const bak = rev.reversed();
-        const sega = seg.descArray({close: false});
+        const sega = seg.descArray({ close: false });
         const reva = rev.descArray();
-        const baka = bak.descArray({close: false});
+        const baka = bak.descArray({ close: false });
         t.notSame(sega, reva);
         t.same(
             baka,

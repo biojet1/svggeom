@@ -440,7 +440,7 @@ elif DATA.startswith("Parsed"):
     skip = 0
 
     for i, (p, d) in enumerate(paths(data1, data2, data3, parser=PathIX)):
-        # p = Path(d)
+        # p = PathSE(d)
         # D = p.d()
         D = str(p.to_non_shorthand())
         if "A" in D:
@@ -484,7 +484,7 @@ elif DATA.startswith("SEPaths"):
     skip = 0
 
     for i, (p, d) in enumerate(paths(data1, data2, data3, parser=Path)):
-        # p = Path(d)
+        # p = PathSE(d)
         rel = p.d(relative=True, smooth=False)
         abs = p.d(relative=False, smooth=False)
         # rev = p.reversed()

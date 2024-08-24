@@ -1,6 +1,7 @@
 import { Vector } from '../vector.js';
 import { BoundingBox } from '../bbox.js';
-import { SegmentSE, tNorm, DescParams } from './index.js';
+import { tNorm, DescParams } from './index.js';
+import { SegmentSE } from './segmentse.js';
 
 abstract class LineSegment extends SegmentSE {
 	override bbox() {

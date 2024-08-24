@@ -1,5 +1,5 @@
 import { Vector } from '../vector.js';
-import { SegmentSE } from './index.js';
+import { SegmentSE } from './segmentse.js';
 import { Arc } from './arc.js';
 import { Cubic } from './cubic.js';
 import { Line, Close, Vertical, Horizontal } from './line.js';

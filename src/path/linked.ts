@@ -527,7 +527,8 @@ export class CloseLS extends LineLS {
 		return new CloseLS(prev, to);
 	}
 }
-import { quadLength, quadSplitAt, quadSlopeAt, quadPointAt, quadBBox } from './quadratic.js';
+import { quad_split_at, quad_slope_at, quad_point_at, quad_bbox } from './quadhelp.js';
+import { quad_length } from './quadhelp.js';
 export class QuadLS extends SegmentLS {
 	readonly p: Vector;
 	constructor(prev: SegmentLS | undefined, p: Vector, to: Vector) {
@@ -539,21 +540,21 @@ export class QuadLS extends SegmentLS {
 		return [from, p, to];
 	}
 	override get length() {
-		return quadLength(this._qpts);
+		return quad_length(this._qpts);
 	}
 	override slopeAt(t: number): Vector {
-		return quadSlopeAt(this._qpts, tCheck(t));
+		return quad_slope_at(this._qpts, tCheck(t));
 	}
 	override pointAt(t: number) {
-		return quadPointAt(this._qpts, tCheck(t));
+		return quad_point_at(this._qpts, tCheck(t));
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
-		const [a, b] = quadSplitAt(this._qpts, tCheck(t));
+		const [a, b] = quad_split_at(this._qpts, tCheck(t));
 		return [new QuadLS(this._prev, a[1], a[2]), new QuadLS(new MoveLS(undefined, b[0]), b[1], b[2])];
 	}
 	override bbox() {
 		const { _prev } = this;
-		return _prev ? quadBBox(this._qpts) : BoundingBox.not();
+		return _prev ? quad_bbox(this._qpts) : BoundingBox.not();
 	}
 	override _descs(opt?: DescParams) {
 		const {
@@ -593,7 +594,7 @@ export class QuadLS extends SegmentLS {
 		return new QuadLS(prev, p, to);
 	}
 }
-import { cubicLength, cubicSlopeAt, cubicPointAt, cubicBox, cubicSplitAt } from './cubic.js';
+import { cubic_length, cubic_slope_at, cubic_point_at, cubic_box, cubic_split_at } from './cubichelp.js';
 export class CubicLS extends SegmentLS {
 	readonly c1: Vector;
 	readonly c2: Vector;
@@ -608,22 +609,22 @@ export class CubicLS extends SegmentLS {
 	}
 	/////
 	override pointAt(t: number) {
-		return cubicPointAt(this._cpts, tCheck(t));
+		return cubic_point_at(this._cpts, tCheck(t));
 	}
 	override bbox() {
 		const { _prev } = this;
-		return _prev ? cubicBox(this._cpts) : BoundingBox.not();
+		return _prev ? cubic_box(this._cpts) : BoundingBox.not();
 	}
 	override slopeAt(t: number): Vector {
-		return cubicSlopeAt(this._cpts, tCheck(t));
+		return cubic_slope_at(this._cpts, tCheck(t));
 	}
 	override splitAt(t: number): [SegmentLS, SegmentLS] {
 		const { _prev, _cpts } = this;
-		const [a, b] = cubicSplitAt(_cpts, tCheck(t));
+		const [a, b] = cubic_split_at(_cpts, tCheck(t));
 		return [new CubicLS(_prev, a[1], a[2], a[3]), new CubicLS(new MoveLS(undefined, b[0]), b[1], b[2], b[3])];
 	}
 	override get length() {
-		return cubicLength(this._cpts);
+		return cubic_length(this._cpts);
 	}
 	override reversed(next?: SegmentLS): SegmentLS | undefined {
 		const { to, c1, c2, _prev } = this;

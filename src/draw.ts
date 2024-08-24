@@ -478,13 +478,6 @@ export class PathLS extends CanvasCompat {
 		return this;
 	}
 
-	get firstPoint() {
-		return this.from;
-	}
-
-	get lastPoint() {
-		return this.to;
-	}
 	get firstSegment() {
 		let seg;
 		for (let { _tail: cur } = this; cur; cur = cur._prev) {

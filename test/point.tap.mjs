@@ -1,5 +1,4 @@
 'uses strict';
-import { spawn } from 'child_process';
 import { Vector } from 'svggeom';
 import './utils.js';
 
@@ -259,7 +258,7 @@ test.test(`vec Vector`, { bail: !CI }, function (t) {
 
 
 
-import { BoundingInterval, BoundingBox, Matrix } from 'svggeom';
+import { BoundingInterval, BoundingBox } from 'svggeom';
 
 
 test.test(`BoundingInterval check`, { bail: !CI }, function (t) {

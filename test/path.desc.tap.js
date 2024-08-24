@@ -2,7 +2,7 @@
 import test from 'tap';
 import { PathLS, Vector } from 'svggeom';
 import { PathDraw } from '../dist/draw.js';
-import { dSplit } from '../dist/path.js';
+import { dSplit } from '../dist/pathse.js';
 import './utils.js';
 const CI = !!process.env.CI;
 // https://github.com/d3/d3-path/blob/main/test/path-test.js
@@ -28,7 +28,7 @@ function testPath(test, PathClass) {
         return new PathClass();
     };
 
-    test.test(`Path=${PathClass.name}`, { bail: 1 }, function (t) {
+    test.test(`PathSE=${PathClass.name}`, { bail: 1 }, function (t) {
         const it = t.test;
         const path = function () {
             return new PathClass();
@@ -490,7 +490,7 @@ function testPath(test, PathClass) {
         });
         t.end();
     });
-    test.test(`Path<${PathClass.name}>:Font`, { bail: 1 }, async t =>
+    test.test(`PathSE<${PathClass.name}>:Font`, { bail: 1 }, async t =>
         import('opentype.js')
             .then(mod => mod.loadSync('test/CaviarDreams.ttf'))
             .then(font => {
@@ -510,7 +510,7 @@ function testPath(test, PathClass) {
                 t.same(descSplit(p2), descSplit(d2));
             })
     );
-    test.test(`Path<${PathClass.name}>:Extra`, { bail: 1 }, function (t) {
+    test.test(`PathSE<${PathClass.name}>:Extra`, { bail: 1 }, function (t) {
         const p = PathClass.lineTo(3, 4);
         t.same(p.d(), 'M0,0L3,4');
         t.ok(p.fillStyle);
@@ -643,7 +643,7 @@ function testPath(test, PathClass) {
 //         W3C_SVG_11_TestSuite Paths
 //         Test that additional parameters to pathdata commands are treated as additional calls to the most recent command.
 //         """
-// parse_path = Path
+// parse_path = PathSE
 // path19a = parse_path("""M20 20 H40 H60""")
 // path19b = parse_path("""M20 20 H40 60""")
 // self.assertEqual(path19a, path19b)

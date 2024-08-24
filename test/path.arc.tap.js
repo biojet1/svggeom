@@ -1,8 +1,8 @@
 'uses strict';
-import {enum_path_data, test_segment, testSegment} from './path.utils.js';
+import { enum_path_data, testSegment } from './path.utils.js';
 import './utils.js';
-import {PathLS, SegmentLS} from 'svggeom';
-import {Arc, Cubic, Path} from '../dist/path.js';
+import { PathLS, SegmentLS } from 'svggeom';
+import { Arc, PathSE } from '../dist/pathse.js';
 import test from 'tap';
 import os from 'os';
 import fs from 'fs';
@@ -31,17 +31,17 @@ const deltp = {
     point_epsilon: 1.5e-6,
 };
 
-for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
+for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
     ++I;
-    const {start, radius, rotation, large_arc, sweep, end} = item;
+    const { start, radius, rotation, large_arc, sweep, end } = item;
     const [[sx, sy], [rx, ry], [ex, ey]] = [start, radius, end];
 
-    test.test(item.d, {bail: !CI}, function (t) {
+    test.test(item.d, { bail: !CI }, function (t) {
         let seg = Arc.fromEndPoint(start, radius[0], radius[1], rotation, large_arc, sweep, end);
 
         testSegment(t, seg, item, deltp);
 
-        const cubic_segs = new Path(seg.asCubic());
+        const cubic_segs = new PathSE(seg.asCubic());
         const sp = seg.toPath();
         switch (sp) {
             case 'M 110 215 A 36 60 0 0 1 150.71 170.29':
@@ -54,7 +54,7 @@ for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
             case 'M 172.55 152.45 A 30.08739353948759 50.14565589914598 -45 0 1 215.1 109.9':
                 break;
             default:
-                // const arc_seg = Path.parse(seg.toPath());
+                // const arc_seg = PathSE.parse(seg.toPath());
                 // console.dir(arc_seg);
                 // console.dir(cubic_segs, {depth:null});
                 const box = seg.bbox();
@@ -77,7 +77,7 @@ for await (const item of enum_path_data({SEGMENTS: 'Arc'})) {
         }
         t.end();
     });
-    test.test(`SegmentLS<${item.d}>`, {bail: CI}, function (t) {
+    test.test(`SegmentLS<${item.d}>`, { bail: CI }, function (t) {
         const cur = SegmentLS.moveTo(start).A(radius[0], radius[1], rotation, large_arc, sweep, end);
         testSegment(t, cur, item, deltp);
         testSegment(t, new PathLS(cur._asCubic()), item, {

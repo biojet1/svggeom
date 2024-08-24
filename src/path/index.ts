@@ -17,14 +17,6 @@ export abstract class Segment {
 	abstract pointAt(t: number): Vector;
 	abstract slopeAt(t: number): Vector;
 
-	get firstPoint() {
-		return this.from;
-	}
-
-	get lastPoint() {
-		return this.to;
-	}
-
 	toPath(): string {
 		const { x, y } = this.from;
 		return ['M', x, y].concat(this.toPathFragment()).join(' ');
@@ -39,53 +31,6 @@ export abstract class Segment {
 	}
 	toPathFragment(opt?: DescParams): (string | number)[] {
 		throw new Error('NOTIMPL');
-	}
-}
-
-export abstract class SegmentSE extends Segment {
-	private readonly _start: Vector;
-	private readonly _end: Vector;
-
-	constructor(from: Iterable<number>, to: Iterable<number>) {
-		super();
-		this._start = Vector.new(from);
-		this._end = Vector.new(to);
-	}
-
-	get from() {
-		return this._start;
-	}
-
-	get to() {
-		return this._end;
-	}
-
-	abstract transform(M: any): SegmentSE;
-	abstract reversed(): SegmentSE;
-	abstract splitAt(t: number): [SegmentSE, SegmentSE];
-	cutAt(t: number): SegmentSE {
-		return t < 0 ? this.splitAt(1 + t)[1] : this.splitAt(t)[0];
-	}
-	cropAt(t0: number, t1: number): SegmentSE | undefined {
-		t0 = tNorm(t0);
-		t1 = tNorm(t1);
-		if (t0 <= 0) {
-			if (t1 >= 1) {
-				return this;
-			} else if (t1 > 0) {
-				return this.cutAt(t1); // t1 < 1
-			}
-		} else if (t0 < 1) {
-			if (t1 >= 1) {
-				return this.cutAt(t0 - 1);
-			} else if (t0 < t1) {
-				return this.cutAt(t0 - 1).cutAt((t1 - t0) / (1 - t0));
-			} else if (t0 > t1) {
-				return this.cropAt(t1, t0); // t1 < 1
-			}
-		} else if (t1 < 1) {
-			return this.cropAt(t1, t0); // t0 >= 1
-		}
 	}
 }
 

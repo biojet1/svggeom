@@ -23,3 +23,8 @@ tasks:
       - |
         c8 npx tap -t600 test/*.tap.*js {{.CLI_ARGS}}
         npm run c8rephtml
+
+  clean:
+    method: none
+    cmds:
+      - rm -r dist

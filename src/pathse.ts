@@ -1,8 +1,7 @@
-import { parseDesc, dSplit } from './path/parser.js';
-import { SegmentSE, DescParams, tNorm, tCheck } from './path/index.js';
 import { BoundingBox } from './bbox.js';
+import { DescParams, tNorm, tCheck } from './path/index.js';
 
-export class Path {
+export class PathSE {
 	static digits = 5;
 	private _segs: SegmentSE[];
 	private _length?: number;
@@ -53,11 +52,11 @@ export class Path {
 			let b = segs.slice(i + 1);
 			(s = seg.cropAt(0, t)) && a.push(s);
 			(s = seg.cropAt(t, 1)) && b.unshift(s);
-			return [new Path(a), new Path(b)];
+			return [new PathSE(a), new PathSE(b)];
 		}
 	}
 
-	cutAt(T: number): Path {
+	cutAt(T: number): PathSE {
 		// SegmentSE method
 		const [seg, t, i] = this.segmentAt(T < 0 ? 1 + T : T);
 		if (seg) {
@@ -66,18 +65,18 @@ export class Path {
 				const a = segs.slice(i + 1);
 				const s = seg.cropAt(t, 1);
 				s && a.unshift(s);
-				return new Path(a);
+				return new PathSE(a);
 			} else {
 				const a = segs.slice(0, i);
 				const s = seg.cropAt(0, t);
 				s && a.push(s);
-				return new Path(a);
+				return new PathSE(a);
 			}
 		}
-		return new Path([]);
+		return new PathSE([]);
 	}
 
-	cropAt(T0: number, T1: number = 1): Path {
+	cropAt(T0: number, T1: number = 1): PathSE {
 		// SegmentSE method
 		T0 = tNorm(T0);
 		T1 = tNorm(T1);
@@ -99,17 +98,17 @@ export class Path {
 			// T0 >= 1
 			return this.cropAt(T1, T0);
 		}
-		return new Path([]);
+		return new PathSE([]);
 	}
 
 	transform(M: any) {
 		// SegmentSE method
-		return new Path(this._segs.map(seg => seg.transform(M)));
+		return new PathSE(this._segs.map(seg => seg.transform(M)));
 	}
 
 	reversed() {
 		// SegmentSE method
-		return new Path(this._segs.map(seg => seg.reversed()).reverse());
+		return new PathSE(this._segs.map(seg => seg.reversed()).reverse());
 	}
 
 	get length() {
@@ -144,7 +143,7 @@ export class Path {
 		return this._lengths || [];
 	}
 
-	get firstPoint() {
+	get start_point() {
 		const { _segs: segs } = this;
 		for (const seg of segs) {
 			return seg.from;
@@ -158,7 +157,7 @@ export class Path {
 		}
 	}
 
-	get lastPoint() {
+	get end_point() {
 		const { _segs: segs } = this;
 		const { length } = segs;
 		if (length > 0) {
@@ -166,10 +165,10 @@ export class Path {
 		}
 	}
 	get from() {
-		return this.firstPoint;
+		return this.start_point;
 	}
 	get to() {
-		return this.lastPoint;
+		return this.end_point;
 	}
 	get lastSegment() {
 		const { _segs: segs } = this;
@@ -241,7 +240,7 @@ export class Path {
 	}
 
 	private *enumDesc(params: DescParams) {
-		const { relative: rel = false, close = true, smooth = false, short = false, dfix = Path.digits } = params;
+		const { relative: rel = false, close = true, smooth = false, short = false, dfix = PathSE.digits } = params;
 
 		let segs = this._segs;
 		const n = segs.length;
@@ -391,29 +390,29 @@ export class Path {
 		let subpath_start = 0;
 		for (const [i, seg] of segs.entries()) {
 			if (prev && !seg.from.equals(prev.to)) {
-				yield new Path(segs.slice(subpath_start, i));
+				yield new PathSE(segs.slice(subpath_start, i));
 				subpath_start = i;
 			}
 			prev = seg;
 		}
-		yield new Path(segs.slice(subpath_start));
+		yield new PathSE(segs.slice(subpath_start));
 	}
 
-	static parse(d: string): Path {
-		return new Path(parseDesc(d));
+	static parse(d: string): PathSE {
+		return new PathSE(parseDesc(d));
 	}
 
-	static new(v?: SegmentSE[] | string | SegmentSE | Path): Path {
+	static new(v?: SegmentSE[] | string | SegmentSE | PathSE): PathSE {
 		if (Array.isArray(v)) {
-			return new Path(v);
+			return new PathSE(v);
 		} else if (!v) {
-			return new Path([]);
-		} else if (v instanceof Path) {
+			return new PathSE([]);
+		} else if (v instanceof PathSE) {
 			return v;
 		} else if (v instanceof SegmentSE) {
-			return new Path([v]);
+			return new PathSE([v]);
 		} else {
-			return Path.parse(v);
+			return PathSE.parse(v);
 		}
 	}
 }
@@ -422,7 +421,9 @@ import { Line, Close, Vertical, Horizontal } from './path/line.js';
 import { Arc } from './path/arc.js';
 import { Cubic } from './path/cubic.js';
 import { Quadratic } from './path/quadratic.js';
-export * from './path/cubic.js';
-import { SegmentLS } from './path/linked.js';
-export { SegmentLS };
-export { Arc, Quadratic, Line, dSplit };
+import { parseDesc, dSplit } from './path/parser.js';
+import { SegmentSE } from './path/segmentse.js';
+// export * from './path/cubic.js';
+// import { SegmentLS } from './path/linked.js';
+// export { SegmentLS };
+export { Arc, Quadratic, Line, Cubic, dSplit }; 
