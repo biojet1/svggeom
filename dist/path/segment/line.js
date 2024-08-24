@@ -1,5 +1,5 @@
-import { BoundingBox } from '../bbox.js';
-import { tNorm } from './index.js';
+import { BoundingBox } from '../../bbox.js';
+import { tNorm } from '../index.js';
 import { SegmentSE } from './segmentse.js';
 class LineSegment extends SegmentSE {
     bbox() {
@@ -12,18 +12,18 @@ class LineSegment extends SegmentSE {
         const { from, to } = this;
         return to.sub(from).abs();
     }
-    pointAt(t) {
+    point_at(t) {
         const { from, to } = this;
         return to.sub(from).mul(tNorm(t)).post_add(from);
     }
-    slopeAt(t) {
+    slope_at(t) {
         const { from, to } = this;
         const vec = to.sub(from);
         return vec.div(vec.abs());
     }
-    splitAt(t) {
+    split_at(t) {
         const { from, to } = this;
-        const c = this.pointAt(t);
+        const c = this.point_at(t);
         return [this.newFromTo(from, c), this.newFromTo(c, to)];
     }
     transform(M) {

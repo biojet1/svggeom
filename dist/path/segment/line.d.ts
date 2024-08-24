@@ -1,13 +1,13 @@
-import { Vector } from '../vector.js';
-import { BoundingBox } from '../bbox.js';
-import { DescParams } from './index.js';
+import { Vector } from '../../vector.js';
+import { BoundingBox } from '../../bbox.js';
+import { DescParams } from '../index.js';
 import { SegmentSE } from './segmentse.js';
 declare abstract class LineSegment extends SegmentSE {
     bbox(): BoundingBox;
     get length(): number;
-    pointAt(t: number): Vector;
-    slopeAt(t: number): Vector;
-    splitAt(t: number): [SegmentSE, SegmentSE];
+    point_at(t: number): Vector;
+    slope_at(t: number): Vector;
+    split_at(t: number): [SegmentSE, SegmentSE];
     transform(M: any): LineSegment;
     reversed(): LineSegment;
     toPathFragment(opt?: DescParams): (string | number)[];

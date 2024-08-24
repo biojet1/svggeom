@@ -1,4 +1,4 @@
-import { Vector } from '../vector.js';
+import { Vector } from '../../vector.js';
 export class Cubic extends SegmentSE {
     c1;
     c2;
@@ -18,17 +18,17 @@ export class Cubic extends SegmentSE {
     bbox() {
         return cubic_box(this._cpts);
     }
-    pointAt(t) {
+    point_at(t) {
         return cubic_point_at(this._cpts, t);
     }
-    splitAt(z) {
+    split_at(z) {
         const [x, y] = cubic_split_at(this._cpts, z);
         return [this.new(x[0], x[1], x[2], x[3]), this.new(y[0], y[1], y[2], y[3])];
     }
     get length() {
         return cubic_length(this._cpts);
     }
-    slopeAt(t) {
+    slope_at(t) {
         return cubic_slope_at(this._cpts, t);
     }
     toPathFragment() {
@@ -46,5 +46,5 @@ export class Cubic extends SegmentSE {
 }
 export { Cubic as CubicSegment };
 import { SegmentSE } from './segmentse.js';
-import { cubic_box, cubic_length, cubic_point_at, cubic_slope_at, cubic_split_at } from './cubichelp.js';
+import { cubic_box, cubic_length, cubic_point_at, cubic_slope_at, cubic_split_at } from '../cubichelp.js';
 //# sourceMappingURL=cubic.js.map

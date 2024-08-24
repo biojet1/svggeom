@@ -64,12 +64,12 @@ export declare class PathLS extends CanvasCompat {
     get length(): number;
     get from(): Vector | undefined;
     get to(): Vector | undefined;
-    tangentAt(T: number): Vector | undefined;
-    slopeAt(T: number): Vector | undefined;
-    pointAt(T: number): Vector | undefined;
+    tangent_at(T: number): Vector | undefined;
+    slope_at(T: number): Vector | undefined;
+    point_at(T: number): Vector | undefined;
     pointAtLength(L: number, clamp?: boolean): Vector | undefined;
     bbox(): BoundingBox;
-    splitAt(T: number): PathLS[];
+    split_at(T: number): PathLS[];
     cutAt(T: number): PathLS;
     cropAt(T0: number, T1?: number): PathLS;
     reversed(_next?: SegmentLS): PathLS;

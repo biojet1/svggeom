@@ -1,6 +1,6 @@
-import { Vector } from '../vector.js';
+import { Vector } from '../../vector.js';
 import { SegmentSE } from './segmentse.js';
-import { quad_bbox, quad_length, quad_point_at, quad_slope_at, quad_split_at } from './quadhelp.js';
+import { quad_bbox, quad_length, quad_point_at, quad_slope_at, quad_split_at } from '../quadhelp.js';
 export class Quadratic extends SegmentSE {
     c;
     constructor(p1, control, p2) {
@@ -14,13 +14,13 @@ export class Quadratic extends SegmentSE {
     get length() {
         return quad_length(this._qpts);
     }
-    slopeAt(t) {
+    slope_at(t) {
         return quad_slope_at(this._qpts, t);
     }
-    pointAt(t) {
+    point_at(t) {
         return quad_point_at(this._qpts, t);
     }
-    splitAt(t) {
+    split_at(t) {
         const [a, b] = quad_split_at(this._qpts, t);
         return [new Quadratic(a[0], a[1], a[2]), new Quadratic(b[0], b[1], b[2])];
     }

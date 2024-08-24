@@ -1,4 +1,4 @@
-import { Vector } from '../vector.js';
+import { Vector } from '../../vector.js';
 import { Arc } from './arc.js';
 import { Cubic } from './cubic.js';
 import { Line, Close, Vertical, Horizontal } from './line.js';
@@ -241,7 +241,7 @@ export function parseDesc(d) {
     }
     return segments;
 }
-import { SegmentLS } from './linked.js';
+import { SegmentLS } from '../linked.js';
 export function parseLS(d, prev) {
     let mat;
     const dRE = /[\s,]*(?:([MmZzLlHhVvCcSsQqTtAa])|([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?))/y;

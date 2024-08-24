@@ -197,6 +197,12 @@ export class Vector extends Float64Array {
     clone() {
         return Vector.vec(...this);
     }
+    lerp(that, t) {
+        const u = 1 - t;
+        const a = this.map((v, i) => v * u);
+        const b = that.map((v, i) => v * t);
+        return new Vector(a.map((v, i) => v + b[i]));
+    }
     nearest_point_of_line(a, b) {
         const a_to_p = this.sub(a);
         const a_to_b = Vector.subtract(b, a);

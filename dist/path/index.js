@@ -1,5 +1,9 @@
 import { Vector } from '../vector.js';
 export class Segment {
+    tangent_at(t) {
+        const vec = this.slope_at(t);
+        return vec.div(vec.abs());
+    }
     toPath() {
         const { x, y } = this.from;
         return ['M', x, y].concat(this.toPathFragment()).join(' ');
@@ -7,10 +11,6 @@ export class Segment {
     descArray(opt) {
         const { x, y } = this.from;
         return ['M', x, y].concat(this.toPathFragment(opt));
-    }
-    tangentAt(t) {
-        const vec = this.slopeAt(t);
-        return vec.div(vec.abs());
     }
     toPathFragment(opt) {
         throw new Error('NOTIMPL');

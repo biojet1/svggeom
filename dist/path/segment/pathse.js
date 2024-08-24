@@ -1,5 +1,5 @@
-import { BoundingBox } from './bbox.js';
-import { tNorm, tCheck } from './path/index.js';
+import { BoundingBox } from '../../bbox.js';
+import { tNorm, tCheck } from '../index.js';
 export class PathSE {
     static digits = 5;
     _segs;
@@ -14,25 +14,25 @@ export class PathSE {
     getBBox() {
         return this._segs.reduce((box, seg) => box.merge(seg.bbox()), BoundingBox.not());
     }
-    tangentAt(T) {
+    tangent_at(T) {
         const [seg, t] = this.segmentAt(tCheck(T));
         if (seg)
-            return seg.tangentAt(t);
+            return seg.tangent_at(t);
     }
-    slopeAt(T) {
+    slope_at(T) {
         const [seg, t] = this.segmentAt(tCheck(T));
         if (seg)
-            return seg.slopeAt(t);
+            return seg.slope_at(t);
     }
-    pointAt(T) {
+    point_at(T) {
         const [seg, t] = this.segmentAt(tCheck(T));
         if (seg)
-            return seg.pointAt(t);
+            return seg.point_at(t);
     }
     bbox() {
         return this._segs.reduce((box, seg) => box.merge(seg.bbox()), BoundingBox.not());
     }
-    splitAt(T) {
+    split_at(T) {
         const [seg, t, i] = this.segmentAt(tCheck(T));
         if (seg) {
             const { _segs: segs } = this;
@@ -104,7 +104,7 @@ export class PathSE {
     }
     pointAtLength(L) {
         const { totalLength } = this;
-        return totalLength && this.pointAt(L / totalLength);
+        return totalLength && this.point_at(L / totalLength);
     }
     [Symbol.iterator]() {
         return this._segs.values();
@@ -379,11 +379,11 @@ export class PathSE {
         }
     }
 }
-import { Line, Close, Vertical, Horizontal } from './path/line.js';
-import { Arc } from './path/arc.js';
-import { Cubic } from './path/cubic.js';
-import { Quadratic } from './path/quadratic.js';
-import { parseDesc, dSplit } from './path/parser.js';
-import { SegmentSE } from './path/segmentse.js';
+import { Line, Close, Vertical, Horizontal } from './line.js';
+import { Arc } from './arc.js';
+import { Cubic } from './cubic.js';
+import { Quadratic } from './quadratic.js';
+import { parseDesc, dSplit } from './parser.js';
+import { SegmentSE } from './segmentse.js';
 export { Arc, Quadratic, Line, Cubic, dSplit };
 //# sourceMappingURL=pathse.js.map

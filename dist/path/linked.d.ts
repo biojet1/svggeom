@@ -11,7 +11,7 @@ export declare abstract class SegmentLS extends Segment {
     get from(): Vector;
     get to(): Vector;
     get first(): SegmentLS | undefined;
-    get lastMove(): MoveLS | undefined;
+    get last_move(): MoveLS | undefined;
     enum(): Generator<SegmentLS, void, unknown>;
     moveTo(...args: Vector[] | number[]): MoveLS;
     lineTo(...args: Vector[] | number[]): LineLS;
@@ -54,10 +54,10 @@ export declare abstract class SegmentLS extends Segment {
     withFarPrev3(farPrev: SegmentLS, newPrev: SegmentLS | undefined): SegmentLS | undefined;
     _asCubic(): SegmentLS;
     abstract _descs(opt?: DescParams): (number | string)[];
-    abstract splitAt(t: number): [SegmentLS, SegmentLS];
+    abstract split_at(t: number): [SegmentLS, SegmentLS];
     abstract transform(M: any): SegmentLS;
     abstract reversed(next?: SegmentLS): SegmentLS | undefined;
-    abstract withPrev(prev: SegmentLS | undefined): SegmentLS;
+    abstract with_prev(prev: SegmentLS | undefined): SegmentLS;
     parse(d: string): SegmentLS;
     static moveTo(...args: Vector[] | number[]): MoveLS;
     static lineTo(...args: Vector[] | number[]): LineLS;
@@ -72,57 +72,57 @@ export declare abstract class SegmentLS extends Segment {
 export declare class LineLS extends SegmentLS {
     bbox(): BoundingBox;
     get length(): number;
-    pointAt(t: number): Vector;
-    slopeAt(_: number): Vector;
-    splitAt(t: number): [SegmentLS, SegmentLS];
+    point_at(t: number): Vector;
+    slope_at(_: number): Vector;
+    split_at(t: number): [SegmentLS, SegmentLS];
     _descs(opt?: DescParams): (string | number)[];
     reversed(next?: SegmentLS): SegmentLS | undefined;
     transform(M: any): LineLS;
-    withPrev(newPrev: SegmentLS | undefined): LineLS;
+    with_prev(newPrev: SegmentLS | undefined): LineLS;
 }
 export declare class MoveLS extends LineLS {
     _descs(opt?: DescParams): (string | number)[];
-    splitAt(t: number): [SegmentLS, SegmentLS];
+    split_at(t: number): [SegmentLS, SegmentLS];
     transform(M: any): MoveLS;
     reversed(next?: SegmentLS): SegmentLS | undefined;
-    withPrev(prev: SegmentLS | undefined): MoveLS;
+    with_prev(prev: SegmentLS | undefined): MoveLS;
     segmentLen(): number;
 }
 export declare class CloseLS extends LineLS {
-    splitAt(t: number): [SegmentLS, SegmentLS];
+    split_at(t: number): [SegmentLS, SegmentLS];
     transform(M: any): CloseLS;
     _descs(opt?: DescParams): (string | number)[];
     reversed(next?: SegmentLS): SegmentLS | undefined;
-    withPrev(prev: SegmentLS | undefined): CloseLS;
+    with_prev(prev: SegmentLS | undefined): CloseLS;
 }
 export declare class QuadLS extends SegmentLS {
     readonly p: Vector;
     constructor(prev: SegmentLS | undefined, p: Vector, to: Vector);
     private get _qpts();
     get length(): number;
-    slopeAt(t: number): Vector;
-    pointAt(t: number): Vector;
-    splitAt(t: number): [SegmentLS, SegmentLS];
+    slope_at(t: number): Vector;
+    point_at(t: number): Vector;
+    split_at(t: number): [SegmentLS, SegmentLS];
     bbox(): BoundingBox;
     _descs(opt?: DescParams): (string | number)[];
     reversed(next?: SegmentLS): SegmentLS | undefined;
     transform(M: any): QuadLS;
-    withPrev(prev: SegmentLS | undefined): QuadLS;
+    with_prev(prev: SegmentLS | undefined): QuadLS;
 }
 export declare class CubicLS extends SegmentLS {
     readonly c1: Vector;
     readonly c2: Vector;
     constructor(prev: SegmentLS | undefined, c1: Vector, c2: Vector, to: Vector);
     private get _cpts();
-    pointAt(t: number): Vector;
+    point_at(t: number): Vector;
     bbox(): BoundingBox;
-    slopeAt(t: number): Vector;
-    splitAt(t: number): [SegmentLS, SegmentLS];
+    slope_at(t: number): Vector;
+    split_at(t: number): [SegmentLS, SegmentLS];
     get length(): number;
     reversed(next?: SegmentLS): SegmentLS | undefined;
     transform(M: any): CubicLS;
     _descs(opt?: DescParams): (string | number)[];
-    withPrev(prev: SegmentLS | undefined): CubicLS;
+    with_prev(prev: SegmentLS | undefined): CubicLS;
 }
 export declare class ArcLS extends SegmentLS {
     readonly rx: number;
@@ -139,12 +139,12 @@ export declare class ArcLS extends SegmentLS {
     constructor(prev: SegmentLS | undefined, rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, to: Vector);
     bbox(): BoundingBox;
     get length(): number;
-    pointAt(t: number): Vector;
-    slopeAt(t: number): Vector;
-    splitAt(t: number): [SegmentLS, SegmentLS];
+    point_at(t: number): Vector;
+    slope_at(t: number): Vector;
+    split_at(t: number): [SegmentLS, SegmentLS];
     transform(M: any): ArcLS;
     reversed(next?: SegmentLS): SegmentLS | undefined;
     _descs(opt?: DescParams): (string | number)[];
     _asCubic(): SegmentLS;
-    withPrev(prev: SegmentLS | undefined): ArcLS;
+    with_prev(prev: SegmentLS | undefined): ArcLS;
 }

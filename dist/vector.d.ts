@@ -40,6 +40,7 @@ export declare class Vector extends Float64Array {
     with_z(n: number): Vector;
     rotated(rad: number): Vector;
     clone(): Vector;
+    lerp(that: Vector, t: number): Vector;
     nearest_point_of_line(a: Iterable<number>, b: Iterable<number>): Vector;
     static new(x?: number[] | Iterable<number> | number | string, y?: number, z?: number): Vector;
     static vec(...args: number[]): Vector;

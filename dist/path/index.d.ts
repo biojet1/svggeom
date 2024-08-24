@@ -12,11 +12,11 @@ export declare abstract class Segment {
     abstract get to(): Vector;
     abstract get length(): number;
     abstract bbox(): BoundingBox;
-    abstract pointAt(t: number): Vector;
-    abstract slopeAt(t: number): Vector;
+    abstract point_at(t: number): Vector;
+    abstract slope_at(t: number): Vector;
+    tangent_at(t: number): Vector;
     toPath(): string;
     descArray(opt?: DescParams): (string | number)[];
-    tangentAt(t: number): Vector;
     toPathFragment(opt?: DescParams): (string | number)[];
 }
 export declare function tCheck(t: number): number;

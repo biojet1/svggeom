@@ -48,7 +48,7 @@ export class BoundingInterval extends Vector {
     }
     neg() {
         const [a, b] = this;
-        return new BoundingInterval([-a, -b]);
+        return BoundingInterval.check([-a, -b]);
     }
     is_valid() {
         const [a, b] = this;

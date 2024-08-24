@@ -1,5 +1,5 @@
-import { Segment, tNorm } from './index.js';
-import { Vector } from '../vector.js';
+import { Segment, tNorm } from '../index.js';
+import { Vector } from '../../vector.js';
 export class SegmentSE extends Segment {
     _start;
     _end;
@@ -15,7 +15,7 @@ export class SegmentSE extends Segment {
         return this._end;
     }
     cutAt(t) {
-        return t < 0 ? this.splitAt(1 + t)[1] : this.splitAt(t)[0];
+        return t < 0 ? this.split_at(1 + t)[1] : this.split_at(t)[0];
     }
     cropAt(t0, t1) {
         t0 = tNorm(t0);
