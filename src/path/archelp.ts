@@ -1,6 +1,7 @@
+import { BoundingBox } from "../bbox.js";
 import { Vector } from "../vector.js";
 
-const { abs, tan, cos, sin, sqrt, acos, PI, ceil, max } = Math;
+const { abs, tan, cos, sin, sqrt, acos, PI, ceil, min, max, atan } = Math;
 const TAU = PI * 2;
 
 function cossin(θ: number) {
@@ -68,7 +69,7 @@ function unit_vector_angle(
 const LENGTH_MIN_DEPTH = 17;
 const LENGTH_ERROR = 1e-12;
 interface PointAt {
-	pointAt(f: number): Vector;
+	point_at(f: number): Vector;
 }
 
 export function segment_length(
@@ -82,7 +83,7 @@ export function segment_length(
 	depth = 0
 ): number {
 	const mid = (start + end) / 2;
-	const mid_point = curve.pointAt(mid);
+	const mid_point = curve.point_at(mid);
 	const length = end_point.sub(start_point).abs();
 	const first_half = mid_point.sub(start_point).abs();
 	const second_half = end_point.sub(mid_point).abs();
@@ -279,4 +280,125 @@ export function arc_to_curve(
 
 		return curve;
 	});
+} export interface IArc {
+	readonly from: Vector;
+	readonly to: Vector;
+	//
+	readonly rx: number;
+	readonly ry: number;
+	readonly phi: number;
+	readonly bigArc: boolean;
+	readonly sweep: boolean;
+	//
+	readonly cosφ: number;
+	readonly sinφ: number;
+	readonly rtheta: number;
+	readonly rdelta: number;
+	readonly cx: number;
+	readonly cy: number;
+	//
+	point_at(f: number): Vector;
 }
+export function arc_point_at(arc: IArc, t: number) {
+	const { from, to } = arc;
+	if (from.equals(to)) {
+		return from.clone();
+	} else if (t <= 0) {
+		return from;
+	} else if (t >= 1) {
+		return to;
+	}
+	const { rx, ry, cosφ, sinφ, rtheta, rdelta, cx, cy } = arc;
+	const θ = rtheta + rdelta * t;
+	const sinθ = sin(θ);
+	const cosθ = cos(θ);
+	// const [cosθ, sinθ] = cossin((180 * rtheta + 180 * rdelta * t) / PI);
+	// (eq. 3.1) https://svgwg.org/svg2-draft/implnote.html#ArcParameterizationAlternatives
+	try {
+		return Vector.new(
+			rx * cosφ * cosθ - ry * sinφ * sinθ + cx,
+			rx * sinφ * cosθ + ry * cosφ * sinθ + cy
+		);
+	} catch (err) {
+		console.warn(rtheta, rdelta, rx, cosφ, cosθ, ry, sinφ, sinθ, cx, cy);
+		throw err;
+	}
+}
+
+export function arc_bbox(arc: IArc) {
+	const { rx, ry, cosφ, sinφ, from, to, rdelta, rtheta, phi } = arc;
+	let atan_x, atan_y;
+	if (cosφ == 0) {
+		atan_x = PI / 2;
+		atan_y = 0;
+	} else if (sinφ == 0) {
+		atan_x = 0;
+		atan_y = PI / 2;
+	} else {
+		const tanφ = tan(phi);
+		atan_x = atan(-(ry / rx) * tanφ);
+		atan_y = atan(ry / rx / tanφ);
+	}
+	const xtrema = [from.x, to.x];
+	const ytrema = [from.y, to.y];
+	function angle_inv(ang: number, k: number) {
+		return (ang + PI * k - rtheta) / rdelta;
+	}
+	for (let k = -4; k < 5; ++k) {
+		const tx = angle_inv(atan_x, k);
+		const ty = angle_inv(atan_y, k);
+		0 <= tx && tx <= 1 && xtrema.push(arc_point_at(arc, tx).x);
+		0 <= ty && ty <= 1 && ytrema.push(arc_point_at(arc, ty).y);
+	}
+	const [xmin, xmax] = [min(...xtrema), max(...xtrema)];
+	const [ymin, ymax] = [min(...ytrema), max(...ytrema)];
+	return BoundingBox.extrema(xmin, xmax, ymin, ymax);
+}
+
+export function arc_length(arc: IArc) {
+	const { from, to } = arc;
+	if (from.equals(to)) return 0;
+	return segment_length(arc, 0, 1, from, to);
+}
+
+export function arc_slope_at(arc: IArc, t: number): Vector {
+	const { rx, ry, cosφ, sinφ, rdelta, rtheta } = arc;
+	const θ = rtheta + t * rdelta;
+	const sinθ = sin(θ);
+	const cosθ = cos(θ);
+	const k = rdelta;
+	return Vector.new(
+		-rx * cosφ * sinθ * k - ry * sinφ * cosθ * k,
+		-rx * sinφ * sinθ * k + ry * cosφ * cosθ * k
+	);
+}
+
+export function arc_transform(self: IArc, matrix: any) {
+	// const { arc, to, from } = self;
+	let { rx, ry, sweep, phi } = self;
+	// const p1ˈ = from.transform(matrix);
+	// const p2_ = to.transform(matrix);
+	const { rotate, scaleX, scaleY, skewX } = matrix.decompose();
+	if (scaleX == scaleY && scaleX != 1) {
+		rx = rx * scaleX;
+		ry = ry * scaleX;
+	}
+
+	OUT: if (rotate || skewX || scaleX != 1 || scaleY != 1) {
+		phi = (((phi + rotate) % 360) + 360) % 360; // from -30 -> 330
+		const { a, c, b, d } = matrix;
+		const detT = a * d - b * c;
+		const detT2 = detT * detT;
+		if (!rx || !ry || !detT2) break OUT;
+		// const A = (d ** 2 / rx ** 2 + c ** 2 / ry ** 2) / detT2;
+		// const B = -((d * b) / rx ** 2 + (c * a) / ry ** 2) / detT2;
+		// const D = (b ** 2 / rx ** 2 + a ** 2 / ry ** 2) / detT2;
+		// const DA = D - A;
+		if (detT < 0) {
+			sweep = !sweep;
+		}
+	}
+
+	return [rx, ry, phi, sweep ? 1 : 0];
+}
+

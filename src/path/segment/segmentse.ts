@@ -1,5 +1,5 @@
-import { Segment, tNorm } from './index.js';
-import { Vector } from '../vector.js';
+import { Segment, tNorm } from '../index.js';
+import { Vector } from '../../vector.js';
 
 
 export abstract class SegmentSE extends Segment {
@@ -22,9 +22,9 @@ export abstract class SegmentSE extends Segment {
 
     abstract transform(M: any): SegmentSE;
     abstract reversed(): SegmentSE;
-    abstract splitAt(t: number): [SegmentSE, SegmentSE];
+    abstract split_at(t: number): [SegmentSE, SegmentSE];
     cutAt(t: number): SegmentSE {
-        return t < 0 ? this.splitAt(1 + t)[1] : this.splitAt(t)[0];
+        return t < 0 ? this.split_at(1 + t)[1] : this.split_at(t)[0];
     }
     cropAt(t0: number, t1: number): SegmentSE | undefined {
         t0 = tNorm(t0);

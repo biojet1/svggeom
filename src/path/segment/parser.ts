@@ -1,4 +1,4 @@
-import { Vector } from '../vector.js';
+import { Vector } from '../../vector.js';
 import { SegmentSE } from './segmentse.js';
 import { Arc } from './arc.js';
 import { Cubic } from './cubic.js';
@@ -273,7 +273,7 @@ export function parseDesc(d: string) {
 	return segments;
 }
 
-import { SegmentLS } from './linked.js';
+import { SegmentLS } from '../linked.js';
 
 export function parseLS(d: string, prev: SegmentLS | undefined): SegmentLS {
 	let mat: RegExpExecArray | null;

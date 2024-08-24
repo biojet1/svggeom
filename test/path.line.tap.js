@@ -2,7 +2,7 @@
 import { enum_path_data, testSegment } from './path.utils.js';
 import './utils.js';
 import { SegmentLS } from 'svggeom';
-import { Line } from '../dist/pathse.js';
+import { Line } from '../dist/path/segment/pathse.js';
 import test from 'tap';
 const CI = !!process.env.CI;
 test.test(`SegmentLS.parse`, { bail: CI }, function (t) {

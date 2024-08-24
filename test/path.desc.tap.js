@@ -2,7 +2,7 @@
 import test from 'tap';
 import { PathLS, Vector } from 'svggeom';
 import { PathDraw } from '../dist/draw.js';
-import { dSplit } from '../dist/pathse.js';
+import { dSplit } from '../dist/path/segment/pathse.js';
 import './utils.js';
 const CI = !!process.env.CI;
 // https://github.com/d3/d3-path/blob/main/test/path-test.js
@@ -558,7 +558,7 @@ function testPath(test, PathClass) {
                 t.same(len, 6);
             }
             {
-                const [a, b] = p2.splitAt(0);
+                const [a, b] = p2.split_at(0);
                 t.same(b.describe(), 'M3,4L8,4L8,10L3,10Z');
                 t.same(a.describe(), 'M3,4');
             }

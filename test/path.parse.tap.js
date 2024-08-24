@@ -2,7 +2,7 @@
 import test from 'tap';
 import { enum_path_data } from './path.utils.js';
 import { SegmentLS } from 'svggeom';
-import { PathSE } from '../dist/pathse.js';
+import { PathSE } from '../dist/path/segment/pathse.js';
 import './utils.js';
 
 test.test(`SegmentLS Extra`, { bail: 1 }, function (t) {

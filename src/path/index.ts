@@ -14,9 +14,13 @@ export abstract class Segment {
 	abstract get to(): Vector;
 	abstract get length(): number;
 	abstract bbox(): BoundingBox;
-	abstract pointAt(t: number): Vector;
-	abstract slopeAt(t: number): Vector;
+	abstract point_at(t: number): Vector;
+	abstract slope_at(t: number): Vector;
 
+	tangent_at(t: number) {
+		const vec = this.slope_at(t);
+		return vec.div(vec.abs());
+	}
 	toPath(): string {
 		const { x, y } = this.from;
 		return ['M', x, y].concat(this.toPathFragment()).join(' ');
@@ -24,10 +28,6 @@ export abstract class Segment {
 	descArray(opt?: DescParams): (string | number)[] {
 		const { x, y } = this.from;
 		return ['M', x, y].concat(this.toPathFragment(opt));
-	}
-	tangentAt(t: number) {
-		const vec = this.slopeAt(t);
-		return vec.div(vec.abs());
 	}
 	toPathFragment(opt?: DescParams): (string | number)[] {
 		throw new Error('NOTIMPL');

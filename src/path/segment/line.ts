@@ -1,6 +1,6 @@
-import { Vector } from '../vector.js';
-import { BoundingBox } from '../bbox.js';
-import { tNorm, DescParams } from './index.js';
+import { Vector } from '../../vector.js';
+import { BoundingBox } from '../../bbox.js';
+import { tNorm, DescParams } from '../index.js';
 import { SegmentSE } from './segmentse.js';
 
 abstract class LineSegment extends SegmentSE {
@@ -18,20 +18,20 @@ abstract class LineSegment extends SegmentSE {
 		const { from, to } = this;
 		return to.sub(from).abs();
 	}
-	override pointAt(t: number) {
+	override point_at(t: number) {
 		const { from, to } = this;
 		return to.sub(from).mul(tNorm(t)).post_add(from);
 	}
 
-	override slopeAt(t: number) {
+	override slope_at(t: number) {
 		const { from, to } = this;
 		const vec = to.sub(from);
 		return vec.div(vec.abs());
 	}
 
-	override splitAt(t: number): [SegmentSE, SegmentSE] {
+	override split_at(t: number): [SegmentSE, SegmentSE] {
 		const { from, to } = this;
-		const c = this.pointAt(t);
+		const c = this.point_at(t);
 		return [this.newFromTo(from, c), this.newFromTo(c, to)];
 	}
 

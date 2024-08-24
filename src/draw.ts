@@ -372,23 +372,23 @@ export class PathLS extends CanvasCompat {
 	get to() {
 		return this._tail?.to;
 	}
-	tangentAt(T: number) {
+	tangent_at(T: number) {
 		const [seg, t] = this.segmentAt(T);
-		if (seg) return seg.tangentAt(t);
+		if (seg) return seg.tangent_at(t);
 	}
 
-	slopeAt(T: number) {
+	slope_at(T: number) {
 		const [seg, t] = this.segmentAt(T);
-		if (seg) return seg.slopeAt(t);
+		if (seg) return seg.slope_at(t);
 	}
 
-	pointAt(T: number) {
+	point_at(T: number) {
 		const [seg, t] = this.segmentAt(T);
-		if (seg) return seg.pointAt(t);
+		if (seg) return seg.point_at(t);
 	}
 	pointAtLength(L: number, clamp?: boolean) {
 		const [seg, n, N] = this.segmentAtLength(L, clamp);
-		if (seg) return seg.pointAt(n / N);
+		if (seg) return seg.point_at(n / N);
 	}
 
 	bbox() {
@@ -398,7 +398,7 @@ export class PathLS extends CanvasCompat {
 		}
 		return b;
 	}
-	splitAt(T: number) {
+	split_at(T: number) {
 		const { _tail } = this;
 		if (_tail) {
 			const [seg, t] = this.segmentAt(T);
@@ -412,7 +412,7 @@ export class PathLS extends CanvasCompat {
 				if (t < 0 || t > 1) {
 					throw new Error();
 				}
-				let [a, b] = seg.splitAt(t);
+				let [a, b] = seg.split_at(t);
 				if (seg === _tail) {
 					return [new PathLS(a), new PathLS(b)];
 				} else {
@@ -423,7 +423,7 @@ export class PathLS extends CanvasCompat {
 		return [new PathLS(undefined), new PathLS(undefined)];
 	}
 	cutAt(T: number): PathLS {
-		return T < 0 ? this.splitAt(1 + T)[1] : this.splitAt(T)[0];
+		return T < 0 ? this.split_at(1 + T)[1] : this.split_at(T)[0];
 	}
 	cropAt(T0: number, T1: number = 1): PathLS {
 		T0 = tNorm(T0);

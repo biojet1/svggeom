@@ -1,4 +1,4 @@
-import { Vector } from '../vector.js';
+import { Vector } from '../../vector.js';
 
 export class Cubic extends SegmentSE {
 	readonly c1: Vector;
@@ -23,10 +23,10 @@ export class Cubic extends SegmentSE {
 	override bbox() {
 		return cubic_box(this._cpts);
 	}
-	override pointAt(t: number) {
+	override point_at(t: number) {
 		return cubic_point_at(this._cpts, t);
 	}
-	override splitAt(z: number): [SegmentSE, SegmentSE] {
+	override split_at(z: number): [SegmentSE, SegmentSE] {
 		const [x, y] = cubic_split_at(this._cpts, z);
 		return [this.new(x[0], x[1], x[2], x[3]), this.new(y[0], y[1], y[2], y[3])];
 	}
@@ -37,7 +37,7 @@ export class Cubic extends SegmentSE {
 	// lengthAt(t = 1) {
 	// 	return cubicLengthAt(this._cpts, t);
 	// }
-	override slopeAt(t: number): Vector {
+	override slope_at(t: number): Vector {
 		return cubic_slope_at(this._cpts, t);
 	}
 
@@ -63,4 +63,4 @@ export class Cubic extends SegmentSE {
 export { Cubic as CubicSegment };
 
 import { SegmentSE } from './segmentse.js';
-import { cubic_box, cubic_length, cubic_point_at, cubic_slope_at, cubic_split_at } from './cubichelp.js';
+import { cubic_box, cubic_length, cubic_point_at, cubic_slope_at, cubic_split_at } from '../cubichelp.js';

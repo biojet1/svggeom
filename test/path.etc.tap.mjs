@@ -1,6 +1,6 @@
 'uses strict';
 import { PathLS, Vector } from 'svggeom';
-import { PathSE } from '../dist/pathse.js';
+import { PathSE } from '../dist/path/segment/pathse.js';
 import test from 'tap';
 const CI = !!process.env.CI;
 

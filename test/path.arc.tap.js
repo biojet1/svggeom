@@ -2,7 +2,7 @@
 import { enum_path_data, testSegment } from './path.utils.js';
 import './utils.js';
 import { PathLS, SegmentLS } from 'svggeom';
-import { Arc, PathSE } from '../dist/pathse.js';
+import { Arc, PathSE } from '../dist/path/segment/pathse.js';
 import test from 'tap';
 import os from 'os';
 import fs from 'fs';

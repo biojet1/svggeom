@@ -1,7 +1,7 @@
 'uses strict';
 import test from 'tap';
 import { PathLS, SegmentLS, Vector } from 'svggeom';
-import { PathSE } from '../dist/pathse.js';
+import { PathSE } from '../dist/path/segment/pathse.js';
 import './utils.js';
 const CI = !!process.env.CI;
 
@@ -49,17 +49,17 @@ test.test(`PathLS.segmentAt`, { bail: !CI }, function (t) {
         t.same((j * 1000).toFixed(), (sT * 1000).toFixed(), tag);
         ++i;
     }
-    t.same([...p.pointAt(0)], [10, 10, 0]);
-    t.same([...p.pointAt(1)], [10, 10, 0]);
-    t.same([...p.pointAt(0.9583333333333334)], [10, 5, 0]);
-    t.same([...p.pointAt(0.4166666666666667)], [40, -30, 0]);
-    t.same([...p.pointAt(0.9166666666666666)], [10, 0, 0]);
+    t.same([...p.point_at(0)], [10, 10, 0]);
+    t.same([...p.point_at(1)], [10, 10, 0]);
+    t.same([...p.point_at(0.9583333333333334)], [10, 5, 0]);
+    t.same([...p.point_at(0.4166666666666667)], [40, -30, 0]);
+    t.same([...p.point_at(0.9166666666666666)], [10, 0, 0]);
 
     for (i = 0; i < 11; i++) {
         const j = i / 10;
         const tag = `[${i} ${j}]`;
-        const slope = p.slopeAt(j).degrees;
-        const tangent = p.tangentAt(j).degrees;
+        const slope = p.slope_at(j).degrees;
+        const tangent = p.tangent_at(j).degrees;
         if (j < 50 / 120) {
             t.same(slope, 306.86989764584405, tag);
             t.same(tangent, 306.86989764584405, tag);
@@ -82,7 +82,7 @@ test.test(`PathLS.segmentAt`, { bail: !CI }, function (t) {
     }
 
     {
-        const [a, b] = p.splitAt(0.08333333333333333);
+        const [a, b] = p.split_at(0.08333333333333333);
         t.same(a.describe(), 'M10,10L16,2');
         t.same(b.describe({ short: true }), 'M16,2L40,-30H10V0Z');
         t.same(p.cutAt(-0.9166666666666666).describe({ short: true }), 'M16,2L40,-30H10V0Z');
@@ -97,7 +97,7 @@ test.test(`PathLS empty`, { bail: !CI }, function (t) {
         t.same(p.segmentAt(f), [undefined, NaN]);
         t.same(p.segmentAtLength(f), [undefined, NaN, NaN]);
         t.strictSame(p.pointAtLength(f), undefined);
-        const [a, b] = p.splitAt(f);
+        const [a, b] = p.split_at(f);
         t.same(a.describe(), '');
         t.same(b.describe(), '');
         t.same(a.lineTo(3, 4).describe(), 'M0,0L3,4');
@@ -118,9 +118,9 @@ test.test(`SegmentLS extra`, { bail: !CI }, function (t) {
     t.throwsRE(function () {
         p.from;
     }, /No prev/);
-    t.same(SegmentLS.lineTo(3, 4).withPrev(undefined).reversed().constructor.name, 'MoveLS');
+    t.same(SegmentLS.lineTo(3, 4).with_prev(undefined).reversed().constructor.name, 'MoveLS');
     {
-        const l = SegmentLS.lineTo(3, 4).withPrev(undefined);
+        const l = SegmentLS.lineTo(3, 4).with_prev(undefined);
         t.strictSame(l.Z(), l);
         t.notOk(l.bbox().is_valid());
         t.same([...l.to], [3, 4, 0]);
@@ -129,13 +129,13 @@ test.test(`SegmentLS extra`, { bail: !CI }, function (t) {
         t.notOk(SegmentLS.moveTo(3, 4).bbox().is_valid());
     }
     {
-        const [a, b] = SegmentLS.moveTo(0, 0).moveTo(3, 4).splitAt(0.5);
+        const [a, b] = SegmentLS.moveTo(0, 0).moveTo(3, 4).split_at(0.5);
         t.same([...a.to], [(2.5 * 3) / 5, (2.5 * 4) / 5, 0]);
         t.same([...b.to], [3, 4, 0]);
         t.same([...b.from], [1.5, 2, 0]);
     }
     {
-        t.same(SegmentLS.moveTo(3, 4).withPrev(SegmentLS.moveTo(5, 6)).describe(), 'M5,6M3,4');
+        t.same(SegmentLS.moveTo(3, 4).with_prev(SegmentLS.moveTo(5, 6)).describe(), 'M5,6M3,4');
     }
     {
         const s = SegmentLS.moveTo(3, 4).arc(100, 100, 50, 0, -1e-16, false);

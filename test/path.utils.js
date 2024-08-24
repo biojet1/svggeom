@@ -16,7 +16,7 @@ export async function* enum_path_data(env) {
     }
 }
 // import {Cubic} from 'svggeom';
-import { PathSE } from '../dist/pathse.js';
+import { PathSE } from '../dist/path/segment/pathse.js';
 PathSE.digits = 16;
 
 export function test_segment(t, seg, item, opt = {}) {
@@ -41,25 +41,25 @@ export function test_segment(t, seg, item, opt = {}) {
 
     let pv, px, a, b;
     for (const [T, { x, y, tx, ty, pathA, pathB }] of Object.entries(item.at)) {
-        pv = seg.pointAt(T).toArray();
+        pv = seg.point_at(T).toArray();
         px = [x, y, 0];
         // console.error(pv, px);
-        t.almostEqual(pv, px, { epsilon: point_epsilon, on_fail: opt?.on_fail }, `pointAt(${T})`, [item, seg, pv, px]);
+        t.almostEqual(pv, px, { epsilon: point_epsilon, on_fail: opt?.on_fail }, `point_at(${T})`, [item, seg, pv, px]);
 
-        pv = seg.slopeAt(T).toArray();
+        pv = seg.slope_at(T).toArray();
         px = [tx, ty];
-        // t.almostEqual(pv, px, 1e-11, `tangentAt(${T})`, [item, seg, pv, px]);
-        test_tangents && t.sameTangent(pv, px, tan_opt, `tangentAt(${T})`, [item, seg]);
+        // t.almostEqual(pv, px, 1e-11, `tangent_at(${T})`, [item, seg, pv, px]);
+        test_tangents && t.sameTangent(pv, px, tan_opt, `tangent_at(${T})`, [item, seg]);
         if (test_descs && pathA) {
             try {
-                [a, b] = seg.splitAt(T);
+                [a, b] = seg.split_at(T);
 
-                t.sameDescs(a.descArray(descArrayOpt), pathA, { epsilon: point_epsilon }, `splitAt(0, ${T})`, [item, seg]);
+                t.sameDescs(a.descArray(descArrayOpt), pathA, { epsilon: point_epsilon }, `split_at(0, ${T})`, [item, seg]);
                 t.sameDescs(
                     b.descArray(descArrayOpt),
                     pathB,
                     { epsilon: point_epsilon, write_svg: true, item },
-                    `splitAt(${T}, 1)`,
+                    `split_at(${T}, 1)`,
                     seg
                 );
                 t.sameDescs(seg.cutAt(T).descArray(), pathA, point_epsilon, `cutAt(${T})`, seg);
@@ -67,7 +67,7 @@ export function test_segment(t, seg, item, opt = {}) {
                 t.sameDescs(seg.cropAt(0, T).descArray(), pathA, point_epsilon, `cropAt(0, ${T})`, seg);
                 t.sameDescs(seg.cropAt(T, 1).descArray(), pathB, point_epsilon, `cropAt(${T}, 1)`, seg);
             } catch (err) {
-                console.error('Err splitAt', T);
+                console.error('Err split_at', T);
                 console.dir(seg, { depth: null });
                 throw err;
             }
@@ -108,39 +108,39 @@ export function testSegment(t, seg, item, opt = {}) {
     t.sameBox(item.bbox, seg.bbox());
     let pv, px, pt, a, b, sub;
     for (const [T, { x, y, tx, ty, pathA, pathB }] of Object.entries(item.at)) {
-        // pointAt
+        // point_at
         try {
-            pv = seg.pointAt(T).toArray();
+            pv = seg.point_at(T).toArray();
             px = [x, y, 0];
-            t.almostEqual(pv, px, { epsilon: point_epsilon, on_fail: opt?.on_fail }, `pointAt(${T})`, [item, seg, pv, px]);
+            t.almostEqual(pv, px, { epsilon: point_epsilon, on_fail: opt?.on_fail }, `point_at(${T})`, [item, seg, pv, px]);
         } catch (err) {
-            console.error('Err pointAt', T, seg.constructor.name, seg?._tail?.constructor.name, seg?._tail?.to);
+            console.error('Err point_at', T, seg.constructor.name, seg?._tail?.constructor.name, seg?._tail?.to);
             // console.dir(seg, {depth: null});
             // console.error(pv, px);
             throw err;
         }
-        // slopeAt
-        // tangentAt
+        // slope_at
+        // tangent_at
         if (test_tangents) {
             px = [tx, ty];
             try {
-                pv = seg.slopeAt(T).toArray();
-                pt = seg.tangentAt(T).toArray();
-                // t.almostEqual(pv, px, 1e-11, `slopeAt(${T})`, [item, seg, pv, px]);
-                t.sameTangent(pv, [tx, ty], tan_opt, `tangentAt(${T})`, [item, seg, pv, pt, px]);
-                t.sameTangent(pt, [tx, ty], tan_opt, `tangentAt(${T})`, [item, seg, pv, pt, px]);
+                pv = seg.slope_at(T).toArray();
+                pt = seg.tangent_at(T).toArray();
+                // t.almostEqual(pv, px, 1e-11, `slope_at(${T})`, [item, seg, pv, px]);
+                t.sameTangent(pv, [tx, ty], tan_opt, `tangent_at(${T})`, [item, seg, pv, pt, px]);
+                t.sameTangent(pt, [tx, ty], tan_opt, `tangent_at(${T})`, [item, seg, pv, pt, px]);
             } catch (err) {
-                console.error('Err slopeAt/tangentAt', T, seg.constructor.name, pv, pt, px, seg.descArray());
+                console.error('Err slope_at/tangent_at', T, seg.constructor.name, pv, pt, px, seg.descArray());
                 throw err;
             }
         }
-        // splitAt
+        // split_at
         if (test_descs && pathA) {
             try {
-                [a, b] = seg.splitAt(T);
+                [a, b] = seg.split_at(T);
                 const descs_opt = { epsilon: point_epsilon, write_svg: true, item, pathA, pathB };
-                t.sameDescs(a.descArray(), pathA, descs_opt, `splitAt(0, ${T})`, seg);
-                t.sameDescs(b.descArray({ close: false }), pathB, descs_opt, `splitAt(${T}, 1)`, seg);
+                t.sameDescs(a.descArray(), pathA, descs_opt, `split_at(0, ${T})`, seg);
+                t.sameDescs(b.descArray({ close: false }), pathB, descs_opt, `split_at(${T}, 1)`, seg);
                 t.sameDescs(seg.cropAt(0, T).descArray(), pathA, descs_opt, `cropAt(0, ${T})`, seg);
                 t.sameDescs(seg.cropAt(T, 1).descArray({ close: false }), pathB, descs_opt, `cropAt(${T}, 1)`, seg);
                 t.sameDescs(seg.cutAt(T).descArray(), pathA, descs_opt, `cutAt(${T})`, seg);
@@ -153,7 +153,7 @@ export function testSegment(t, seg, item, opt = {}) {
                     seg
                 );
             } catch (err) {
-                console.error('Err splitAt', T);
+                console.error(`Err split_at ${seg?.constructor.name}`, T);
                 console.dir(seg, { depth: null });
                 throw err;
             }

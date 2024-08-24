@@ -1,7 +1,7 @@
 'uses strict';
 import test from 'tap';
 import { Matrix, SegmentLS } from 'svggeom';
-import { PathSE } from '../dist/pathse.js';
+import { PathSE } from '../dist/path/segment/pathse.js';
 
 import { enum_path_data } from './path.utils.js';
 import './utils.js';

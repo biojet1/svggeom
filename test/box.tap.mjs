@@ -43,7 +43,7 @@ for await (const [i, item] of enum_box_data({})) {
         minY,
     } = item;
 
-    test.test(`BoundingBox(${x},${y},${width},${height}) (${[minX, maxX]},${[minY, maxY]})`, { bail: !CI }, function (t) {
+    test.test(`BoundingBox(${x},${y},${width},${height}) (${[minX, maxX]},${[minY, maxY]}) #${i}`, { bail: !CI }, function (t) {
         let box2, box;
         let name = `(${x}, ${y}, ${width}, ${height})(${[minX, maxX]},${[minY, maxY]})`;
         switch (i % 4) {
@@ -87,6 +87,7 @@ for await (const [i, item] of enum_box_data({})) {
         t.equal(box.min_y, minY, 'minY', ex);
         t.equal(box.max_x, maxX, 'maxX', ex);
         t.equal(box.max_y, maxY, 'maxY', ex);
+        // console.error(`box2 ${box2}`)
         t.ok(box2.is_valid());
         t.ok(box.is_valid());
         t.equal(box2.left, x, 'x', ex);
