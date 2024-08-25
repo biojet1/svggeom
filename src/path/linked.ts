@@ -64,7 +64,7 @@ export abstract class SegmentLS extends Segment {
 			}
 		}
 	}
-	*enum() {
+	*walk() {
 		for (let cur: SegmentLS | undefined = this; cur; cur = cur._prev) {
 			yield cur;
 		}
@@ -212,19 +212,19 @@ export abstract class SegmentLS extends Segment {
 
 	describe(opt?: DescParams): string {
 		const { _prev } = this;
-		const [cmd, ...args] = this._descs(opt);
+		const [cmd, ...args] = this.term(opt);
 		const d = `${cmd}${args.map(v => fmtN(v as number)).join(',')}`;
 		return _prev ? _prev.describe(opt) + d : d;
 	}
 
-	override descArray(opt?: DescParams): (number | string)[] {
+	override terms(opt?: DescParams): (number | string)[] {
 		const { _prev } = this;
 		if (_prev) {
-			const a = _prev.descArray(opt);
-			a.push(...this._descs(opt));
+			const a = _prev.terms(opt);
+			a.push(...this.term(opt));
 			return a;
 		} else {
-			return [...this._descs(opt)];
+			return [...this.term(opt)];
 		}
 	}
 	cut_at(t: number) {
@@ -262,22 +262,22 @@ export abstract class SegmentLS extends Segment {
 	override bbox() {
 		return BoundingBox.not();
 	}
-	withFarPrev(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS {
+	with_far_prev(farPrev: SegmentLS, newPrev: SegmentLS): SegmentLS {
 		const { _prev } = this;
 		if (farPrev === this) {
 			return newPrev;
 		} else if (_prev) {
-			return this.with_prev(_prev.withFarPrev(farPrev, newPrev));
+			return this.with_prev(_prev.with_far_prev(farPrev, newPrev));
 		} else {
 			throw new Error(`No prev`);
 		}
 	}
-	withFarPrev3(farPrev: SegmentLS, newPrev: SegmentLS | undefined): SegmentLS | undefined {
+	with_far_prev_3(farPrev: SegmentLS, newPrev: SegmentLS | undefined): SegmentLS | undefined {
 		const { _prev } = this;
 		if (farPrev === this) {
 			return this.with_prev(newPrev);
 		} else if (_prev) {
-			return this.with_prev(_prev.withFarPrev3(farPrev, newPrev));
+			return this.with_prev(_prev.with_far_prev_3(farPrev, newPrev));
 		} else {
 			throw new Error(`No prev`);
 		}
@@ -319,7 +319,7 @@ export abstract class SegmentLS extends Segment {
 	// 	}
 	// 	return this;
 	// }
-	abstract _descs(opt?: DescParams): (number | string)[];
+	abstract term(opt?: DescParams): (number | string)[];
 	abstract split_at(t: number): [SegmentLS, SegmentLS];
 	abstract transform(M: any): SegmentLS;
 	abstract reversed(next?: SegmentLS): SegmentLS | undefined;
@@ -396,7 +396,7 @@ export class LineLS extends SegmentLS {
 		const c = this.point_at(t);
 		return [new LineLS(this._prev, c), new LineLS(new MoveLS(undefined, c), to)];
 	}
-	override _descs(opt?: DescParams) {
+	override term(opt?: DescParams) {
 		const {
 			to: [x, y],
 		} = this;
@@ -446,7 +446,7 @@ export class LineLS extends SegmentLS {
 	}
 }
 export class MoveLS extends LineLS {
-	override _descs(opt?: DescParams) {
+	override term(opt?: DescParams) {
 		const {
 			to: [x, y],
 		} = this;
@@ -498,11 +498,11 @@ export class CloseLS extends LineLS {
 		const { to, _prev } = this;
 		return new CloseLS(_prev?.transform(M), to.transform(M));
 	}
-	override _descs(opt?: DescParams) {
+	override term(opt?: DescParams) {
 		if (opt) {
 			const { relative, close } = opt;
 			if (close === false) {
-				return super._descs(opt);
+				return super.term(opt);
 			} else if (relative) {
 				return ['z'];
 			}
@@ -553,7 +553,7 @@ export class QuadLS extends SegmentLS {
 		const { _prev } = this;
 		return _prev ? quad_bbox(this._qpts) : BoundingBox.not();
 	}
-	override _descs(opt?: DescParams) {
+	override term(opt?: DescParams) {
 		const {
 			p: [x1, y1],
 			to: [ex, ey],
@@ -643,7 +643,7 @@ export class CubicLS extends SegmentLS {
 		const { c1, c2, to, _prev } = this;
 		return new CubicLS(_prev?.transform(M), c1.transform(M), c2.transform(M), to.transform(M));
 	}
-	override _descs(opt?: DescParams) {
+	override term(opt?: DescParams) {
 		const {
 			c1: [x1, y1],
 			c2: [x2, y2],
@@ -749,7 +749,7 @@ export class ArcLS extends SegmentLS {
 		}
 	}
 
-	override _descs(opt?: DescParams) {
+	override term(opt?: DescParams) {
 		const {
 			rx,
 			ry,

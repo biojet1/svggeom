@@ -120,7 +120,7 @@ export class PathSE {
 		return this.calcLength();
 	}
 
-	pointAtLength(L: number) {
+	point_at_length(L: number) {
 		const { totalLength } = this;
 		return totalLength && this.point_at(L / totalLength);
 	}
@@ -372,12 +372,12 @@ export class PathSE {
 		}
 	}
 
-	descArray(params: DescParams = {}) {
+	terms(params: DescParams = {}) {
 		return Array.from(this.enumDesc(params));
 	}
 
 	describe(params: DescParams = {}) {
-		return this.descArray(params).join(' ');
+		return this.terms(params).join(' ');
 	}
 
 	toString() {

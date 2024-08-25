@@ -1,19 +1,22 @@
 'uses strict';
 import test from 'tap';
 import { enum_path_data } from './path.utils.js';
-import { SegmentLS } from 'svggeom';
+// import { SegmentLS as PCX } from 'svggeom';
+import { CommandLink as PCX } from 'svggeom';
 import { PathSE } from '../dist/path/segment/pathse.js';
 import './utils.js';
 
-test.test(`SegmentLS Extra`, { bail: 1 }, function (t) {
-    const cur = SegmentLS.move_to(3, 4).lineTo(5, 6).move_to(7, 8).closePath();
+test.test(`PCX Extra`, { bail: 1 }, function (t) {
+    const cur = PCX.move_to([3, 4]).lineTo(5, 6).move_to([7, 8]).closePath();
+    console.dir(cur, { depth: 10 });
+
     t.same([...cur.first.to], [3, 4, 0]);
     t.same([...cur.prev.to], [7, 8, 0]);
-    t.same(cur.first.constructor.name, 'MoveLS');
-    t.same(cur.prev.constructor.name, 'MoveLS');
+    t.match(cur.first.constructor.name, /^Move../);
+    t.match(cur.prev.constructor.name, /^Move../);
 
-    // const seg = SegmentLS.move_to(3, 4).lineTo(5, 6).lineTo(7, 8);
-    const seg = SegmentLS.move_to(3, 4).lineTo(5, 6).move_to(1, 2).move_to(0, 0).lineTo(7, 8);
+    // const seg = PCX.move_to(3, 4).lineTo(5, 6).lineTo(7, 8);
+    const seg = PCX.move_to([3, 4]).lineTo(5, 6).move_to([1, 2]).move_to([0, 0]).lineTo(7, 8);
     // const seg = cur;
     const rev = seg.reversed();
 
@@ -33,24 +36,24 @@ for await (const item of enum_path_data({ SEGMENTS: 'Parsed' })) {
 
     test.test(`SPTPaths<${d}>`, { bail: 1 }, function (t) {
         const p = PathSE.parse(d);
-        const abs = p.descArray({ relative: false, close: close, short: false });
+        const abs = p.terms({ relative: false, close: close, short: false });
 
         t.sameDescs(abs, item.abs, 5e-5, `ABS`, p);
-        const rel = p.descArray({ relative: true, close: close, short: false });
+        const rel = p.terms({ relative: true, close: close, short: false });
         t.sameDescs(rel, item.rel, 5e-5, `REL`, p);
 
         t.end();
     });
     test.test(`SPTPaths<${d}>`, { bail: 1 }, function (t) {
-        const p = SegmentLS.parse(d);
-        const abs = p.descArray({ relative: false, short: false });
+        const p = PCX.parse(d);
+        const abs = p.terms({ relative: false, short: false });
         const rev = p.reversed();
 
         t.sameDescs(abs, item.abs, 5e-5, `ABS`, p);
-        const rel = p.descArray({ relative: true, short: false });
+        const rel = p.terms({ relative: true, short: false });
         t.sameDescs(rel, item.rel, 5e-5, `REL`, p);
-        t.sameDescs(rev.descArray(), item.rev, 5e-5, `REV`, p);
-        t.sameDescs(rev.descArray({ relative: true, short: false }), item.revr, 5e-5, `REV-REL`, p);
+        t.sameDescs(rev.terms(), item.rev, 5e-5, `REV`, p);
+        t.sameDescs(rev.terms({ relative: true, short: false }), item.revr, 5e-5, `REV-REL`, p);
 
         t.end();
     });
@@ -71,18 +74,18 @@ for await (const item of enum_path_data({ SEGMENTS: 'SEPaths' })) {
     const eps = 0.00005;
     test.test(`SEPaths<${d}>`, { bail: 1 }, function (t) {
         const p = PathSE.parse(item.d);
-        const abs = p.descArray({ relative: false, close: true });
+        const abs = p.terms({ relative: false, close: true });
         t.sameDescs(abs, item.abs, eps, `ABS`, p);
-        const rel = p.descArray({ relative: true });
+        const rel = p.terms({ relative: true });
         t.sameDescs(rel, item.rel, eps, `REL`, p);
 
         t.end();
     });
-    test.test(`SegmentLS:SEPaths<${d}>`, { bail: 1 }, function (t) {
-        const cur = SegmentLS.parse(item.d);
-        // t.same(item.abs, cur.descArray(), [`${cur.toString()}`, item.abs]);
-        t.sameDescs(cur.descArray(), item.abs, eps, `ABS`, cur);
-        t.sameDescs(cur.descArray({ relative: true, smooth: false }), item.rel, eps, `REL`, cur);
+    test.test(`PCX:SEPaths<${d}>`, { bail: 1 }, function (t) {
+        const cur = PCX.parse(item.d);
+        // t.same(item.abs, cur.terms(), [`${cur.toString()}`, item.abs]);
+        t.sameDescs(cur.terms(), item.abs, eps, `ABS`, cur);
+        t.sameDescs(cur.terms({ relative: true, smooth: false }), item.rel, eps, `REL`, cur);
 
         t.end();
     });

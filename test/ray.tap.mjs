@@ -132,7 +132,7 @@ test.test(`delta`, { bail: !CI }, function (t) {
     let A = Ray.new();
     let B = Ray.new();
 
-    t.same(A.delta(-3, 4).toArray(), [-3, 4, 0]);
+    t.same([...A.delta(-3, 4)], [-3, 4, 0]);
     // t.almostEqual(ray.distance(Vector.new(-3, -4)), 5, 1e-11);
     // t.almostEqual(ray.distance(B.forward(-3).left().back(4)), 5, 1e-11);
 
@@ -275,18 +275,18 @@ test.test(`RegularPentagon`, { bail: !CI }, function (t) {
     [x, y] = A.clone()
         .left((PI * 3) / 10)
         .forward(a)
-        .pos.toArray();
+        .pos;
     t.almostEqual(x, 1, 1e-11);
     t.almostEqual(y, 0, 1e-11);
 
     [x, y] = A.clone()
         .right((PI * 3) / 10)
         .forward(a)
-        .pos.toArray();
+        .pos;
     t.almostEqual(x, -c2, 1e-11);
     t.almostEqual(y, s2, 1e-11);
 
-    [x, y] = A.clone().toNearestPointOfLine(Vector.new(-c2, -s2), Vector.new(c1, -s1)).pos.toArray();
+    [x, y] = A.clone().toNearestPointOfLine(Vector.new(-c2, -s2), Vector.new(c1, -s1)).pos;
 
     A = A.toMidPoint(Vector.new(-c2, -s2), Vector.new(c1, -s1));
     t.almostEqual(A.x, x, 1e-11);
@@ -295,7 +295,7 @@ test.test(`RegularPentagon`, { bail: !CI }, function (t) {
     t.almostEqual(A.x, x, 1e-11);
     t.almostEqual(A.y, y, 1e-11);
 
-    [x, y] = A.clone().back(r).pos.toArray();
+    [x, y] = A.clone().back(r).pos;
     t.almostEqual(x, 0, 1e-11);
     t.almostEqual(y, 0, 1e-11);
 

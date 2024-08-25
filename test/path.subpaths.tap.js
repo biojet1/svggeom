@@ -11,15 +11,15 @@ test.test(`sub paths`, { bail: 1 }, function (t) {
     const p = PathLS.parse(d);
     const subPaths = [...p.enumSubPaths()];
     t.same(subPaths.length, 5);
-    t.same(subPaths[0].descArray(), `M 110 90 C 130 90 125 10 150 10 C 175 10 170 90 190 90`.split(/\s+/));
-    t.same(subPaths[1].descArray(), `M 110 10 L 190 90 L 190 10 L 150 10`.split(/\s+/));
+    t.same(subPaths[0].terms(), `M 110 90 C 130 90 125 10 150 10 C 175 10 170 90 190 90`.split(/\s+/));
+    t.same(subPaths[1].terms(), `M 110 10 L 190 90 L 190 10 L 150 10`.split(/\s+/));
     t.same(
-        subPaths[2].descArray(),
+        subPaths[2].terms(),
         'M 10 30 A 20 20 0 0 1 50 30 A 20 20 0 0 1 90 30 Q 90 60 50 90 Q 10 60 10 30 Z'.split(/[,\s]+/)
     );
-    t.same(subPaths[3].descArray(), 'M 10 90 C 30 90 25 10 50 10 C 75 10 70 90 90 90'.split(/[,\s]+/));
+    t.same(subPaths[3].terms(), 'M 10 90 C 30 90 25 10 50 10 C 75 10 70 90 90 90'.split(/[,\s]+/));
     t.same(
-        subPaths[4].descArray({ smooth: true, relative: true }),
+        subPaths[4].terms({ smooth: true, relative: true }),
         'm 10,50 q 15,-25 30,0 t 30,0 t 30,0 t 30,0 t 30,0 t 30,0'.split(/[,\s]+/)
     );
     t.end();

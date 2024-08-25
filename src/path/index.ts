@@ -25,7 +25,7 @@ export abstract class Segment {
 		const { x, y } = this.from;
 		return ['M', x, y].concat(this.toPathFragment()).join(' ');
 	}
-	descArray(opt?: DescParams): (string | number)[] {
+	terms(opt?: DescParams): (string | number)[] {
 		const { x, y } = this.from;
 		return ['M', x, y].concat(this.toPathFragment(opt));
 	}

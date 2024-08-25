@@ -32,7 +32,7 @@ for await (const item of enum_path_data({ DATA: 'transforms', ARCS: 'no' })) {
                 console.error(m, T);
                 throw err;
             }
-            const a = p2.descArray({ smooth: true });
+            const a = p2.terms({ smooth: true });
             t.sameDescs(a, A, 5.1e-8, `${i}, ${T}`, p2);
         }
 
@@ -50,7 +50,7 @@ for await (const item of enum_path_data({ DATA: 'transforms', ARCS: 'no' })) {
                 console.error(m, T);
                 throw err;
             }
-            const a = p2.descArray({ smooth: true });
+            const a = p2.terms({ smooth: true });
             t.sameDescs(a, A, 5.1e-8, `${i}, ${T}`, p2);
         }
 

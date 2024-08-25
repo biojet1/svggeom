@@ -18,7 +18,7 @@ test.test(`point properties`, { bail: !CI }, function (t) {
     t.ok(p.equals([3, 4, 5]));
     t.ok(p.clone().equals(p));
     t.not(p.clone(), p);
-    t.same(p.reflect_at(Vector.new()).toArray(), [-3, -4, -5], 'reflect_at');
+    t.same([...p.reflect_at(Vector.new())], [-3, -4, -5], 'reflect_at');
     t.same(p.toString(), "3, 4, 5");
     t.end();
 });

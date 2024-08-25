@@ -37,7 +37,7 @@ for await (const item of enum_path_data({
                 throw err;
             }
 
-            const a = p2.descArray({ smooth: true });
+            const a = p2.terms({ smooth: true });
             t.sameDescs(a, A, { ...opt, path_source: d, path_transform: T }, `${i}, ${T}`, [p2, m, m.decompose()]);
         }
 
@@ -58,7 +58,7 @@ for await (const item of enum_path_data({
                 throw err;
             }
 
-            const a = p2.descArray();
+            const a = p2.terms();
             // console.dir(p.toString(), p2.toString());
             t.sameDescs(a, A, { ...opt, path_source: d, path_transform: T }, `${i}, ${T}`, [p2, m, m.decompose()]);
         }

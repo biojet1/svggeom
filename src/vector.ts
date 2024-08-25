@@ -114,12 +114,12 @@ export class Vector extends Float64Array {
     toString() {
         // const { x, y, z } = this;
         // return z ? `${x}, ${y}, ${z}` : `${x}, ${y}`;
-        return this.toArray().join(', ')
+        return this.join(', ')
     }
 
-    toArray() {
-        return [...this];
-    }
+    // toArray() {
+    //     return [...this];
+    // }
 
     // Methods returning new Vector
 

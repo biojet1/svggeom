@@ -1,19 +1,32 @@
-import { DescParams, tNorm, tCheck } from './index.js';
-import { BoundingBox } from "../bbox";
-import { Vector } from "../vector";
+import { DescParams, tCheck, tNorm } from './index.js';
+import { BoundingBox } from "../bbox.js";
+import { Vector } from "../vector.js";
+import { quad_split_at, quad_slope_at, quad_point_at, quad_bbox } from './quadhelp.js';
+import { quad_length } from './quadhelp.js';
+import { cubic_length, cubic_slope_at, cubic_point_at, cubic_box, cubic_split_at } from './cubichelp.js';
 const { min, max, abs, PI, cos, sin, sqrt, acos, tan } = Math;
 export abstract class Command {
 
 }
-
+function pos(p: Iterable<number>) {
+    return Vector.pos(...p)
+}
+const tau = 2 * PI;
+const epsilon = 1e-6;
+const tauEpsilon = tau - epsilon;
+let digits = 6;
+function fmtN(n: number) {
+    const v = n.toFixed(digits);
+    return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
+}
 export abstract class CommandLink extends Command {
     _prev?: CommandLink;
     protected readonly _to: Vector;
     static get digits() {
-        return CommandLink.digits;
+        return digits;
     }
     static set digits(n: number) {
-        CommandLink.digits = n;
+        digits = n;
     }
     constructor(prev: CommandLink | undefined, to: Vector) {
         super();
@@ -59,9 +72,7 @@ export abstract class CommandLink extends Command {
     bbox() {
         return BoundingBox.not();
     }
-    segment_len() {
-        return this.length;
-    }
+
     abstract split_at(t: number): [CommandLink, CommandLink];
     abstract transform(M: any): CommandLink;
     abstract reversed(next?: CommandLink): CommandLink | undefined;
@@ -69,8 +80,139 @@ export abstract class CommandLink extends Command {
     abstract point_at(t: number): Vector;
     abstract get length(): number;
     abstract slope_at(t: number): Vector;
-    abstract _descs(opt?: DescParams): (number | string)[];
+    abstract term(opt?: DescParams): (number | string)[];
+    //// Length calc methods
+    cut_at(t: number) {
+        return t < 0 ? this.split_at(1 + t)[1] : this.split_at(t)[0];
+    }
+    crop_at(t0: number, t1: number): CommandLink | undefined {
+        t0 = tNorm(t0);
+        t1 = tNorm(t1);
+        if (t0 <= 0) {
+            if (t1 >= 1) {
+                return this;
+            } else if (t1 > 0) {
+                return this.cut_at(t1); // t1 < 1
+            }
+        } else if (t0 < 1) {
+            if (t1 >= 1) {
+                return this.cut_at(t0 - 1);
+            } else if (t0 < t1) {
+                return this.cut_at(t0 - 1).cut_at((t1 - t0) / (1 - t0));
+            } else if (t0 > t1) {
+                return this.crop_at(t1, t0); // t1 < 1
+            }
+        } else if (t1 < 1) {
+            return this.crop_at(t1, t0); // t0 >= 1
+        }
+    }
+    path_len(): number {
+        const { _prev } = this;
+        const len = this.segment_len();
+        return _prev ? _prev.path_len() + len : len;
+    }
+    segment_len() {
+        return this.length;
+    }
+    tangent_at(t: number) {
+        const vec = this.slope_at(t);
+        return vec.div(vec.abs());
+    }
+    //// Add methods
+    move_to(p: Iterable<number>) {
+        return new MoveCL(this, pos(p));
+    }
+    line_to(p: Iterable<number>) {
+        return new LineCL(this, pos(p));
+    }
+    curve_to(c1: Iterable<number>, c2: Iterable<number>, p2: Iterable<number>) {
+        return new CubicCL(this, pos(c1), pos(c2), pos(p2));
+    }
+    quad_to(c: Iterable<number>, p: Iterable<number>) {
+        return new QuadCL(this, pos(c), pos(p));
+    }
+    close(): CommandLink {
+        const to = this.last_move?.to;
+        return to ? new CloseCL(this, to) : this;
+    }
+    arc_to(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, p: Iterable<number>) {
+        return new ArcCL(this, rx, ry, φ, bigArc, sweep, pos(p));
+    }
 
+    arc_centered_at(c: Iterable<number>, radius: number, startAngle: number, endAngle: number, counterclockwise = false): CommandLink {
+        return arc_centered_at(this, c, radius, startAngle, endAngle, counterclockwise);
+    }
+    arc_tangent_to(p1: Iterable<number>, p2: Iterable<number>, r: number): CommandLink {
+        return arc_tangent_to(this, p1, p2, r);
+    }
+    ////// Canvas method
+    lineTo(x: number, y: number) {
+        return this.line_to([x, y])
+    }
+    moveTo(x: number, y: number) {
+        return this.move_to([x, y])
+    }
+    closePath() {
+        return this.close();
+    }
+    quadraticCurveTo(cx: number, cy: number, px: number, py: number) {
+        return this.quad_to([cx, cy], [px, py]);
+    }
+    bezierCurveTo(cx1: number, cy1: number, cx2: number, cy2: number, px2: number, py2: number) {
+        return this.curve_to([cx1, cy1], [cx2, cy2], [px2, py2]);
+    }
+    arc(cx: number, cy: number, radius: number, startAngle: number, endAngle: number, counterclockwise = false) {
+        return arc_centered_at(this, [cx, cy], radius, startAngle, endAngle, counterclockwise);
+    }
+    arcTo(x1: number, y1: number, x2: number, y2: number, radius: number) {
+        return arc_tangent_to(this, [x1, y1], [x2, y2], radius);
+    }
+    rect(x: number, y: number, w: number, h: number) {
+        return this.M([x, y]).h(w).v(h).h(-w).z();
+    }
+
+    ////// to string methods
+    override toString() {
+        return this.describe();
+    }
+    terms(opt?: DescParams): (number | string)[] {
+        const { _prev } = this;
+        if (_prev) {
+            const a = _prev.terms(opt);
+            a.push(...this.term(opt));
+            return a;
+        } else {
+            return [...this.term(opt)];
+        }
+    }
+    describe(opt?: DescParams): string {
+        const { _prev } = this;
+        const [cmd, ...args] = this.term(opt);
+        const d = `${cmd}${args.map(v => fmtN(v as number)).join(',')}`;
+        return _prev ? _prev.describe(opt) + d : d;
+    }
+
+    ////// etc method
+    with_far_prev(farPrev: CommandLink, newPrev: CommandLink): CommandLink {
+        const { _prev } = this;
+        if (farPrev === this) {
+            return newPrev;
+        } else if (_prev) {
+            return this.with_prev(_prev.with_far_prev(farPrev, newPrev));
+        } else {
+            throw new Error(`No prev`);
+        }
+    }
+    with_far_prev_3(farPrev: CommandLink, newPrev: CommandLink | undefined): CommandLink | undefined {
+        const { _prev } = this;
+        if (farPrev === this) {
+            return this.with_prev(newPrev);
+        } else if (_prev) {
+            return this.with_prev(_prev.with_far_prev_3(farPrev, newPrev));
+        } else {
+            throw new Error(`No prev`);
+        }
+    }
     as_curve(): CommandLink {
         let { _prev } = this;
         if (_prev) {
@@ -81,21 +223,12 @@ export abstract class CommandLink extends Command {
         }
         return this;
     }
-
-    move_to(p: Iterable<number>) {
-        return new MoveCL(this, new Vector(p));
-    }
-    line_to(p: Iterable<number>) {
-        return new LineCL(this, new Vector(p));
-    }
-    curve_to(c1: Iterable<number>, c2: Iterable<number>, p2: Iterable<number>) {
-        return new CubicCL(this, new Vector(c1), new Vector(c2), new Vector(p2));
-    }
-    quad_to(c: Iterable<number>, p: Iterable<number>) {
-        return new QuadCL(this, new Vector(c), new Vector(p));
+    *walk() {
+        for (let cur: CommandLink | undefined = this; cur; cur = cur._prev) {
+            yield cur;
+        }
     }
     //////
-
     M(p: Iterable<number>) {
         return this.move_to(p)
     }
@@ -103,11 +236,7 @@ export abstract class CommandLink extends Command {
         return this.move_to(this.to.add(p));
     }
     Z(): CommandLink {
-        const to = this.last_move?.to;
-        if (to) {
-            return new CloseCL(this, to);
-        }
-        return this;
+        return this.close();
     }
     z() {
         return this.Z();
@@ -178,7 +307,7 @@ export abstract class CommandLink extends Command {
     }
 
     A(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, p: Iterable<number>) {
-        return new ArcCL(this, rx, ry, φ, bigArc, sweep, new Vector(p));
+        return new ArcCL(this, rx, ry, φ, bigArc, sweep, pos(p));
     }
 
     a(rx: number, ry: number, φ: number, bigArc: boolean | number, sweep: boolean | number, p: Iterable<number>) {
@@ -188,10 +317,13 @@ export abstract class CommandLink extends Command {
 
     //////
     static move_to(p: Iterable<number>) {
-        return new MoveCL(undefined, new Vector(p));
+        return new MoveCL(undefined, pos(p));
     }
     static line_to(p: Iterable<number>) {
         return this.move_to([0, 0]).line_to(p);
+    }
+    static lineTo(x: number, y: number) {
+        return this.line_to([x, y]);
     }
     static curve_to(c1: Iterable<number>, c2: Iterable<number>, p2: Iterable<number>) {
         return this.move_to([0, 0]).curve_to(c1, c2, p2);
@@ -199,10 +331,28 @@ export abstract class CommandLink extends Command {
     static quad_to(c: Iterable<number>, p: Iterable<number>) {
         return this.move_to([0, 0]).quad_to(c, p);
     }
-
+    static arc_centered_at(c: Iterable<number>, radius: number, startAngle: number, endAngle: number, counterclockwise = false) {
+        return arc_centered_at(undefined, c, radius, startAngle, endAngle, counterclockwise);
+    }
+    static rect(x: number, y: number, w: number, h: number) {
+        return this.move_to([x, y]).h(w).v(h).h(-w).z();
+    }
+    static arc_tangent_to(p1: Iterable<number>, p2: Iterable<number>, r: number) {
+        return arc_tangent_to(undefined, p1, p2, r);
+    }
     static parse(d: string) {
         return parseCL(d, undefined);
     }
+    static bezierCurveTo(cx1: number, cy1: number, cx2: number, cy2: number, px2: number, py2: number) {
+        return this.curve_to([cx1, cy1], [cx2, cy2], [px2, py2]);
+    }
+    static quadraticCurveTo(cx: number, cy: number, px: number, py: number) {
+        return this.quad_to([cx, cy], [px, py]);
+    }
+    static arcd(cx: number, cy: number, radius: number, startAngle: number, endAngle: number, counterclockwise = false) {
+        return this.arc_centered_at([cx, cy], radius, (startAngle * PI) / 180, (endAngle * PI) / 180, counterclockwise);
+    }
+
 }
 
 export class LineCL extends CommandLink {
@@ -237,7 +387,7 @@ export class LineCL extends CommandLink {
         const c = this.point_at(t);
         return [new LineCL(this._prev, c), new LineCL(new MoveCL(undefined, c), to)];
     }
-    override _descs(opt?: DescParams) {
+    override term(opt?: DescParams) {
         const {
             to: [x, y],
         } = this;
@@ -288,7 +438,7 @@ export class LineCL extends CommandLink {
 
 }
 export class MoveCL extends LineCL {
-    override _descs(opt?: DescParams) {
+    override term(opt?: DescParams) {
         const {
             to: [x, y],
         } = this;
@@ -340,11 +490,11 @@ export class CloseCL extends LineCL {
         const { to, _prev } = this;
         return new CloseCL(_prev?.transform(M), to.transform(M));
     }
-    override _descs(opt?: DescParams) {
+    override term(opt?: DescParams) {
         if (opt) {
             const { relative, close } = opt;
             if (close === false) {
-                return super._descs(opt);
+                return super.term(opt);
             } else if (relative) {
                 return ['z'];
             }
@@ -366,8 +516,6 @@ export class CloseCL extends LineCL {
         return new CloseCL(prev, to);
     }
 }
-import { quad_split_at, quad_slope_at, quad_point_at, quad_bbox } from './quadhelp.js';
-import { quad_length } from './quadhelp.js';
 export class QuadCL extends CommandLink {
     readonly p: Vector;
     constructor(prev: CommandLink | undefined, p: Vector, to: Vector) {
@@ -395,7 +543,7 @@ export class QuadCL extends CommandLink {
         const { _prev } = this;
         return _prev ? quad_bbox(this._qpts) : BoundingBox.not();
     }
-    override _descs(opt?: DescParams) {
+    override term(opt?: DescParams) {
         const {
             p: [x1, y1],
             to: [ex, ey],
@@ -433,7 +581,6 @@ export class QuadCL extends CommandLink {
         return new QuadCL(prev, p, to);
     }
 }
-import { cubic_length, cubic_slope_at, cubic_point_at, cubic_box, cubic_split_at } from './cubichelp.js';
 export class CubicCL extends CommandLink {
     readonly c1: Vector;
     readonly c2: Vector;
@@ -482,7 +629,7 @@ export class CubicCL extends CommandLink {
         const { c1, c2, to, _prev } = this;
         return new CubicCL(_prev?.transform(M), c1.transform(M), c2.transform(M), to.transform(M));
     }
-    override _descs(opt?: DescParams) {
+    override term(opt?: DescParams) {
         const {
             c1: [x1, y1],
             c2: [x2, y2],
@@ -588,7 +735,7 @@ export class ArcCL extends CommandLink {
         }
     }
 
-    override _descs(opt?: DescParams) {
+    override term(opt?: DescParams) {
         const {
             rx,
             ry,
@@ -733,6 +880,90 @@ function parseCL(d: string, prev: CommandLink | undefined): CommandLink {
             default:
                 throw new Error(`Invalid path command ${command} from "${d}"`);
         }
+    }
+    return cur;
+}
+
+function arc_centered_at(cur: CommandLink | undefined, c: Iterable<number>, radius: number, startAngle: number, endAngle: number, counterclockwise = false): CommandLink {
+    const [x, y] = c;
+    const a0 = startAngle;
+    const a1 = endAngle;
+    const cw = !counterclockwise;
+    const r = radius;
+    const dx = r * cos(a0);
+    const dy = r * sin(a0);
+    const x0 = x + dx;
+    const y0 = y + dy;
+    if (r < 0) {
+        // Is the radius negative? Error.
+        throw new Error('negative radius: ' + r);
+    } else if (!cur) {
+        cur = new MoveCL(undefined, Vector.new(x0, y0));
+    } else if (!cur.to.close_to(Vector.new(x0, y0), epsilon)) {
+        // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
+        cur = cur.line_to(Vector.new(x0, y0));
+    }
+    let da = cw ? a1 - a0 : a0 - a1;
+    // Is this arc empty? We’re done.
+    if (!r) {
+        return cur;
+    } else if (da < 0) {
+        da = (da % tau) + tau;
+    }
+    if (da > tauEpsilon) {
+        // Is this a complete circle? PathDraw two arcs to complete the circle.
+        return cur.arc_to(r, r, 0, 1, cw, [x - dx, y - dy]).arc_to(r, r, 0, 1, cw, [x0, y0]);
+    } else if (da > epsilon) {
+        // Is this arc non-empty? PathDraw an arc!
+        return cur.arc_to(r, r, 0, da >= PI, cw, [x + r * cos(a1), y + r * sin(a1)]);
+    }
+    return cur;
+}
+
+function arc_tangent_to(cur: CommandLink | undefined, p1: Iterable<number>, p2: Iterable<number>, r: number) {
+
+    const [x1, y1] = p1;
+    const [x2, y2] = p2;
+    const [x0, y0] = cur ? cur.to : [0, 0];
+    const x21 = x2 - x1;
+    const y21 = y2 - y1;
+    const x01 = x0 - x1;
+    const y01 = y0 - y1;
+    const l01_2 = x01 * x01 + y01 * y01;
+
+    // Is the radius negative? Error.
+    if (r < 0) {
+        throw new Error('negative radius: ' + r);
+    } else if (!cur) {
+        // Is this path empty? Move to (x1,y1).
+        cur = CommandLink.move_to(Vector.new(x1, y1));
+    } else if (!(l01_2 > epsilon)) {
+        // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
+    } else if (!(abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
+        // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
+        // Equivalently, is (x1,y1) coincident with (x2,y2)?
+        // Or, is the radius zero? Line to (x1,y1).
+        cur = cur.line_to(Vector.new(x1, y1));
+    } else {
+        // Otherwise, draw an arc!
+        const x20 = x2 - x0,
+            y20 = y2 - y0,
+            l21_2 = x21 * x21 + y21 * y21,
+            l20_2 = x20 * x20 + y20 * y20,
+            l21 = sqrt(l21_2),
+            l01 = sqrt(l01_2),
+            l = r * tan((PI - acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
+            t01 = l / l01,
+            t21 = l / l21;
+
+        // If the start tangent is not coincident with (x0,y0), line to.
+        if (abs(t01 - 1) > epsilon) {
+            cur = cur.L(Vector.new(x1 + t01 * x01, y1 + t01 * y01));
+        }
+        cur = cur.arc_to(r, r, 0, 0, y01 * x20 > x01 * y20 ? 1 : 0, [x1 + t21 * x21, y1 + t21 * y21]);
+        // this._ += `A${fmtN(r)},${fmtN(r)},0,0,${y01 * x20 > x01 * y20 ? 1 : 0},${fmtN(
+        // 	(this._x1 = x1 + t21 * x21),
+        // )},${fmtN((this._y1 = y1 + t21 * y21))}`;
     }
     return cur;
 }
