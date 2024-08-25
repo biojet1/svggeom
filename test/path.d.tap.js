@@ -94,7 +94,7 @@ test.test(`PathLS empty`, { bail: !CI }, function (t) {
     t.end();
 });
 
-test.test(`SegmentLS extra`, { bail: !CI }, function (t) {
+test.test(`Path segment extra`, { bail: !CI }, function (t) {
     const p = SegYY.move_to([3, 4]);
     t.throwsRE(function () {
         p.prev;

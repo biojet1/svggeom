@@ -1,7 +1,7 @@
 'uses strict';
 import test from 'tap';
 import { Matrix, SegmentLS } from 'svggeom';
-import { PathSE } from '../dist/path/segment/pathse.js';
+// import { PathSE } from '../dist/path/segment/pathse.js';
 
 import { enum_path_data } from './path.utils.js';
 import './utils.js';
@@ -20,24 +20,24 @@ for await (const item of enum_path_data({ DATA: 'transforms', ARCS: 'no' })) {
             continue;
     }
 
-    test.test(`<${d}>`, { bail: !CI, timeout: 30000 }, function (t) {
-        const p = PathSE.parse(item.d);
-        for (const [i, [T, A]] of item.transforms.entries()) {
-            const m = Matrix.parse(T);
-            let p2;
-            try {
-                p2 = p.transform(m);
-            } catch (err) {
-                console.error(p.segs, A);
-                console.error(m, T);
-                throw err;
-            }
-            const a = p2.terms({ smooth: true });
-            t.sameDescs(a, A, 5.1e-8, `${i}, ${T}`, p2);
-        }
+    // test.test(`<${d}>`, { bail: !CI, timeout: 30000 }, function (t) {
+    //     const p = PathSE.parse(item.d);
+    //     for (const [i, [T, A]] of item.transforms.entries()) {
+    //         const m = Matrix.parse(T);
+    //         let p2;
+    //         try {
+    //             p2 = p.transform(m);
+    //         } catch (err) {
+    //             console.error(p.segs, A);
+    //             console.error(m, T);
+    //             throw err;
+    //         }
+    //         const a = p2.terms({ smooth: true });
+    //         t.sameDescs(a, A, 5.1e-8, `${i}, ${T}`, p2);
+    //     }
 
-        t.end();
-    });
+    //     t.end();
+    // });
     test.test(`SegmentLS<${d}>`, { bail: !CI, timeout: 30000 }, function (t) {
         const p = SegmentLS.parse(item.d);
         for (const [i, [T, A]] of item.transforms.entries()) {

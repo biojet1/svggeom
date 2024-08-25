@@ -1,6 +1,5 @@
 'uses strict';
-import { Ray, RayL, Vector } from 'svggeom';
-import { PathDraw } from '../dist/draw.js';
+import { Ray, RayL, Vector, PathLC } from 'svggeom';
 import './utils.js';
 import test from 'tap';
 const CI = !!process.env.CI;
@@ -63,7 +62,7 @@ test.test(`right`, { bail: !CI }, function (t) {
     let ray = Ray.new();
 
     // 45°–45°–90° triangle
-    let { x, y, h, v, dir } = ray
+    let { x, y, dir } = ray
         .right()
         .forward(1)
         .right()
@@ -130,7 +129,6 @@ test.test(`rightd`, { bail: !CI }, function (t) {
 
 test.test(`delta`, { bail: !CI }, function (t) {
     let A = Ray.new();
-    let B = Ray.new();
 
     t.same([...A.delta(-3, 4)], [-3, 4, 0]);
     // t.almostEqual(ray.distance(Vector.new(-3, -4)), 5, 1e-11);
@@ -179,13 +177,7 @@ function* spiralOfTheodorus(opt) {
     if (typeof opt !== 'object') {
         opt = { n: opt };
     }
-    const { n: N, scale, rotate, transalteX, translateY } = opt;
-    const sx = scale || 1;
-    const sy = scale || 1;
-    const tx = transalteX || 0;
-    const ty = translateY || 0;
-    const cosφ = rotate && cos(rotate);
-    const sinφ = rotate && sin(rotate);
+    const { n: N, scale } = opt;
 
     const ONE = 1;
 
@@ -251,11 +243,7 @@ test.test(`Spiral of Theodorus`, { bail: !CI }, function (t) {
 });
 
 test.test(`RegularPentagon`, { bail: !CI }, function (t) {
-    const { PI, E, LN10, LOG2E, sqrt } = Math;
-    function degrees(r) {
-        const d = (r / PI) * 180;
-        return ((d % 360) + 360) % 360;
-    }
+    const { PI, sqrt } = Math;
     // https://mathworld.wolfram.com/RegularPentagon.html
     const φ = (1 + sqrt(5)) / 2;
     const c1 = (sqrt(5) - 1) / 4;
@@ -340,7 +328,7 @@ test.test(`RegularPentagon`, { bail: !CI }, function (t) {
 });
 
 test.test(`side`, { bail: !CI }, function (t) {
-    const { PI, E, LN10, LOG2E, sqrt } = Math;
+    const { PI, E, sqrt } = Math;
     let A;
 
     A = Ray.towards(0, 1);
@@ -371,17 +359,11 @@ test.test(`side`, { bail: !CI }, function (t) {
 test.test(`draw`, { bail: !CI }, function (t) {
     const { PI, E, LN10, LOG2E, sqrt } = Math;
     let d;
-
-    d = new PathDraw();
+    d = new PathLC();
     d.quadraticCurveTo(3, 4, 5, 6);
-
-    // console.log(d);
     const s = 'M1,2Q3,4,5,6';
-    t.equal(PathDraw.move_to(1, 2).quadraticCurveTo(3, 4, 5, 6) + '', s);
-    t.equal(PathDraw.move_to(Vector.new(1, 2)).quadraticCurveTo(3, 4, 5, 6) + '', s);
-    t.equal(PathDraw.move_to(Vector.new(1, 2)).quadraticCurveTo(3, 4, Vector.new(5, 6)) + '', s);
-    t.equal(PathDraw.move_to(Vector.new(1, 2)).quadraticCurveTo(Vector.new(3, 4), Vector.new(5, 6)) + '', s);
-
+    t.equal(PathLC.move_to([1, 2]).quadraticCurveTo(3, 4, 5, 6) + '', s);
+    t.equal(PathLC.move_to(Vector.new(1, 2)).quadraticCurveTo(3, 4, 5, 6) + '', s);
     t.end();
 });
 

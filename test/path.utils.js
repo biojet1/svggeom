@@ -16,8 +16,8 @@ export async function* enum_path_data(env) {
     }
 }
 // import {Cubic} from 'svggeom';
-import { PathSE } from '../dist/path/segment/pathse.js';
-PathSE.digits = 16;
+// import { PathSE } from '../dist/path/segment/pathse.js';
+// PathSE.digits = 16;
 
 export function test_segment(t, seg, item, opt = {}) {
     const { epsilon = 1e-11 } = opt;
@@ -74,13 +74,13 @@ export function test_segment(t, seg, item, opt = {}) {
         }
         const rev = seg.reversed();
         const bak = rev.reversed();
-        if (seg instanceof PathSE) {
-            t.notSame(seg._segs, rev._segs);
-            t.same(bak._segs, seg._segs);
-        } else {
-            t.notSame(seg, rev);
-            t.same(bak, seg);
-        }
+        // if (seg instanceof PathSE) {
+        //     t.notSame(seg._segs, rev._segs);
+        //     t.same(bak._segs, seg._segs);
+        // } else {
+        t.notSame(seg, rev);
+        t.same(bak, seg);
+        // }
         const sega = seg.terms();
         const reva = rev.terms();
         const baka = bak.terms();
