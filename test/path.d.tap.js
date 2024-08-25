@@ -1,12 +1,12 @@
 'uses strict';
 import test from 'tap';
-import { PathLC as PathYY } from 'svggeom';
+import { PathLC } from 'svggeom';
 import './utils.js';
 const CI = !!process.env.CI;
-const { Unit: SegYY } = PathYY;
+const { Unit: SegYY } = PathLC;
 
-test.test(`PathLS.segment_at`, { bail: !CI }, function (t) {
-    let p = PathYY.parse('M 10,10 l 30, -40 h -30 v 30 z');
+test.test(`PathLC.segment_at`, { bail: !CI }, function (t) {
+    let p = PathLC.parse('M 10,10 l 30, -40 h -30 v 30 z');
     // console.log(p._tail?.pathLen())
     t.same(p._tail.length, 10);
     t.same(p._tail._prev.length, 30);
@@ -75,8 +75,8 @@ test.test(`PathLS.segment_at`, { bail: !CI }, function (t) {
     t.end();
 });
 
-test.test(`PathLS empty`, { bail: !CI }, function (t) {
-    const p = new PathYY();
+test.test(`PathLC empty`, { bail: !CI }, function (t) {
+    const p = new PathLC();
     for (const f of [-2, 0, 0.5, 1, 2]) {
         t.same(p.segment_at(f), [undefined, NaN]);
         t.same(p.segment_at_length(f), [undefined, NaN, NaN]);

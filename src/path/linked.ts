@@ -2,7 +2,7 @@ import { Vector } from '../vector.js';
 import { BoundingBox } from '../bbox.js';
 import { Segment, DescParams, tNorm, tCheck } from './index.js';
 import { pickPos, pickNum } from './index.js';
-import { parseLS } from './segment/parser.js';
+// import { parseLS } from './segment/parser.js';
 const { min, max, abs, PI, cos, sin, sqrt, acos, tan } = Math;
 const tau = 2 * PI;
 const epsilon = 1e-6;
@@ -325,7 +325,7 @@ export abstract class SegmentLS extends Segment {
 	abstract reversed(next?: SegmentLS): SegmentLS | undefined;
 	abstract with_prev(prev: SegmentLS | undefined): SegmentLS;
 	parse(d: string) {
-		return parseLS(d, this);
+		// return parseLS(d, this);
 	}
 	static move_to(...args: Iterable<number>[] | number[] | Iterable<number>[]) {
 		const [pos] = pickPos(args);
@@ -344,7 +344,7 @@ export abstract class SegmentLS extends Segment {
 		return this.move_to(Vector.new(0, 0)).quadraticCurveTo(p, to);
 	}
 	static parse(d: string) {
-		return parseLS(d, undefined);
+		// return parseLS(d, undefined);
 	}
 	static arc(...args: Iterable<number>[] | number[]): SegmentLS {
 		const [x, y, r, a0, a1, ccw = 0] = pickNum(args);

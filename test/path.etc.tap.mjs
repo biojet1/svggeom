@@ -1,10 +1,10 @@
 'uses strict';
-import { PathLS, Vector } from 'svggeom';
+import { PathLC, Vector } from 'svggeom';
 import test from 'tap';
 const CI = !!process.env.CI;
 
-test.test(`PathLS etc`, { bail: !CI }, function (t) {
-    let p = PathLS.parse(`m 100,45 h 125 v 80 h -125 z`);
+test.test(`PathLC etc`, { bail: !CI }, function (t) {
+    let p = PathLC.parse(`m 100,45 h 125 v 80 h -125 z`);
 
     let segs = Array.from(p);
     console.log(p.toString())

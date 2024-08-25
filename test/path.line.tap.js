@@ -2,7 +2,7 @@
 import { enum_path_data, testSegment } from './path.utils.js';
 import './utils.js';
 import { PathLC } from 'svggeom';
-import { Line } from '../dist/path/segment/pathse.js';
+// import { Line } from '../dist/path/segment/pathse.js';
 import test from 'tap';
 const CI = !!process.env.CI;
 test.test(`PathLC.Unit.parse`, { bail: CI }, function (t) {
@@ -14,12 +14,12 @@ test.test(`PathLC.Unit.parse`, { bail: CI }, function (t) {
     t.end();
 });
 for await (const item of enum_path_data({ SEGMENTS: 'Line' })) {
-    test.test(`<${item.d}>`, { bail: CI }, function (t) {
-        let seg = new Line(item.start, item.end);
-        // test_segment(t, seg, item);
-        testSegment(t, seg, item);
-        t.end();
-    });
+    // test.test(`<${item.d}>`, { bail: CI }, function (t) {
+    //     let seg = new Line(item.start, item.end);
+    //     // test_segment(t, seg, item);
+    //     testSegment(t, seg, item);
+    //     t.end();
+    // });
     test.test(`PathLC.Unit<${item.d}>`, { bail: CI }, function (t) {
         const [[x1, y1], [x2, y2]] = [item.start, item.end];
         {

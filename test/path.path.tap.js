@@ -1,6 +1,6 @@
 'uses strict';
 import test from 'tap';
-import { PathLS } from 'svggeom';
+import { PathLC } from 'svggeom';
 import { enum_path_data, testSegment } from './path.utils.js';
 import './utils.js';
 const CI = !!process.env.CI;
@@ -46,7 +46,7 @@ for await (const item of enum_path_data({ SEGMENTS: '' })) {
         //     t.sameBox(seg.getBBox(), item.bbox);
         // }
         {
-            let seg = PathLS.parse(d);
+            let seg = PathLC.parse(d);
             testSegment(t, seg, item, opt);
         }
         t.end();

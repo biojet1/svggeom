@@ -1,9 +1,7 @@
 'uses strict';
 import { enum_path_data, test_segment, testSegment } from './path.utils.js';
 import './utils.js';
-// import { PathLS as PathChain } from 'svggeom';
 import { PathLC as PathChain } from 'svggeom';
-import { Cubic } from '../dist/path/segment/pathse.js';
 import test from 'tap';
 const { Unit: PathUnit } = PathChain
 const CI = !!process.env.CI;
