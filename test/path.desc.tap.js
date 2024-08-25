@@ -2,7 +2,7 @@
 import test from 'tap';
 import { PathLS, Vector } from 'svggeom';
 import { PathDraw } from '../dist/draw.js';
-import { PathCL } from '../dist/path/pathcl.js';
+import { PathLC } from '../dist/path/pathcl.js';
 import { dSplit } from '../dist/path/segment/pathse.js';
 import './utils.js';
 const CI = !!process.env.CI;
@@ -443,6 +443,7 @@ function testPath(test, PathClass) {
             'path.arcTo(x1, y1, x2, y2, radius) appends L and A commands if the arc does not start at the current point',
             t => {
                 const p1 = path();
+                PathClass.digits = 6;
                 p1.move_to([270, 182]), p1.arcTo(270, 39, 163, 100, 53);
                 t.samePath(p1, 'M270,182L270,130.222686A53,53,0,0,0,190.750991,84.179342');
                 const p2 = path();
@@ -470,7 +471,7 @@ function testPath(test, PathClass) {
         t.test('path.rect(x, y, w, h) appends M, h, v, h, and Z commands', t => {
             const p = path();
             p.move_to([150, 100]), p.rect(100, 200, 50, 25);
-            if (/^PathLS|PathCL$/.test(p.constructor.name)) {
+            if (/^PathLS|PathLC$/.test(p.constructor.name)) {
                 t.samePath(p, 'M150,100M100,200L150,200L150,225L100,225Z');
                 t.samePath(p.describe({ relative: true }), 'm150,100m-50,100l50,0l0,25l-50,0z');
                 t.samePath(p.describe({ relative: true, short: true }), 'm150,100m-50,100h50v25h-50z');
@@ -516,7 +517,7 @@ function testPath(test, PathClass) {
         t.same(p.toString(), 'M0,0L3,4');
         t.ok(p.fillStyle);
         t.same(PathClass.move_to(Vector.new(3, 4)).toString(), 'M3,4');
-        if (/^PathLS|PathCL$/.test(p.constructor.name)) {
+        if (/^PathLS|PathLC$/.test(p.constructor.name)) {
             const p2 = PathClass.rect(3, 4, 5, 6);
             t.same(p2.describe({ relative: true, short: true }), 'm3,4h5v6h-5z');
             // console.log(p2.describe());
@@ -703,5 +704,5 @@ function testPath(test, PathClass) {
 
 testPath(test, PathDraw);
 testPath(test, PathLS);
-testPath(test, PathCL);
+testPath(test, PathLC);
 

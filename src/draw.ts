@@ -271,6 +271,7 @@ function segment_length(seg: SegmentLS) {
 }
 
 export class PathLS extends CanvasCompat {
+	static Unit = SegmentLS
 	_tail: SegmentLS | undefined;
 	constructor(tail: SegmentLS | undefined) {
 		super();
@@ -467,10 +468,10 @@ export class PathLS extends CanvasCompat {
 	terms(opt?: DescParams): (number | string)[] {
 		return this?._tail?.terms(opt) ?? [];
 	}
-	*enumSubPaths(opt?: DescParams) {
+	*shapes(opt?: DescParams) {
 		const { _tail } = this;
 		if (_tail) {
-			yield* enum_sub_paths(_tail);
+			yield* enum_shapes(_tail);
 		}
 	}
 	*[Symbol.iterator]() {
@@ -487,7 +488,7 @@ export class PathLS extends CanvasCompat {
 		return this;
 	}
 
-	get firstSegment() {
+	get first() {
 		let seg;
 		for (let { _tail: cur } = this; cur; cur = cur._prev) {
 			if (!(cur instanceof MoveLS)) {
@@ -496,7 +497,7 @@ export class PathLS extends CanvasCompat {
 		}
 		return seg;
 	}
-	get lastSegment() {
+	get last() {
 		for (let { _tail: cur } = this; cur; cur = cur._prev) {
 			if (!(cur instanceof MoveLS)) {
 				return cur;
@@ -580,7 +581,8 @@ function segment_at_length(
 	return [undefined, NaN, NaN];
 }
 
-function* enum_sub_paths(cur: SegmentLS | undefined) {
+function* enum_shapes(cur: SegmentLS | undefined) {
+	// sub continues path is a path
 	let tail: undefined | SegmentLS;
 	for (; cur; cur = cur._prev) {
 		if (cur instanceof MoveLS) {

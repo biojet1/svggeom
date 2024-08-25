@@ -2,13 +2,14 @@
 import test from 'tap';
 import { enum_path_data } from './path.utils.js';
 // import { SegmentLS as PCX } from 'svggeom';
-import { CommandLink as PCX } from 'svggeom';
+import { PathLC as PathXL } from 'svggeom';
 import { PathSE } from '../dist/path/segment/pathse.js';
 import './utils.js';
+const { Unit: PCX } = PathXL;
 
 test.test(`PCX Extra`, { bail: 1 }, function (t) {
     const cur = PCX.move_to([3, 4]).lineTo(5, 6).move_to([7, 8]).closePath();
-    console.dir(cur, { depth: 10 });
+    // console.dir(cur, { depth: 10 });
 
     t.same([...cur.first.to], [3, 4, 0]);
     t.same([...cur.prev.to], [7, 8, 0]);
@@ -21,7 +22,7 @@ test.test(`PCX Extra`, { bail: 1 }, function (t) {
     const rev = seg.reversed();
 
     // console.dir();
-    console.log(seg.toString(), '-->', rev.toString());
+    // console.log(seg.toString(), '-->', rev.toString());
     t.end();
 });
 // process.exit();

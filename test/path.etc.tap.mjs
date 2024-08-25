@@ -66,10 +66,10 @@ test.test(`PathLS etc`, { bail: !CI }, function (t) {
     t.same(segs[0].from.slice(0, 2), [100, 125]);
     t.same(segs[0].to.slice(0, 2), [100, 45]);
 
-    t.same(p.firstSegment.to.slice(0, 2), [225, 45]);
-    t.same(p.firstSegment.from.slice(0, 2), [100, 45]);
-    t.same(p.lastSegment.from.slice(0, 2), [100, 125]);
-    t.same(p.lastSegment.to.slice(0, 2), [100, 45]);
+    t.same(p.first.to.slice(0, 2), [225, 45]);
+    t.same(p.first.from.slice(0, 2), [100, 45]);
+    t.same(p.last.from.slice(0, 2), [100, 125]);
+    t.same(p.last.to.slice(0, 2), [100, 45]);
 
     t.strictSame(segs.length, 5);
 

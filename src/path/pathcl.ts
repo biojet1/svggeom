@@ -1,47 +1,70 @@
 import { BoundingBox } from "../bbox.js";
-import { CommandLink, MoveCL } from "./command.js";
+import { BaseLC, MoveLC } from "./command.js";
 import { DescParams, tNorm } from "./index.js";
 
-export class PathCL {
-    _tail: CommandLink | undefined;
-    constructor(tail: CommandLink | undefined) {
+export class PathLC {
+    static Unit = BaseLC;
+    _tail: BaseLC | undefined;
+    constructor(tail: BaseLC | undefined) {
         this._tail = tail;
     }
     get length() {
-        let cur: CommandLink | undefined = this._tail;
+        let cur: BaseLC | undefined = this._tail;
         if (cur) {
             return path_length(cur);
         }
         return 0;
     }
+    get first() {
+        let seg;
+        for (let { _tail: cur } = this; cur; cur = cur._prev) {
+            if (!(cur instanceof MoveLC)) {
+                seg = cur;
+            }
+        }
+        return seg;
+    }
+    get last() {
+        for (let { _tail: cur } = this; cur; cur = cur._prev) {
+            if (!(cur instanceof MoveLC)) {
+                return cur;
+            }
+        }
+    }
+    get from() {
+        return this._tail?.first?.to;
+    }
+    get to() {
+        return this._tail?.to;
+    }
     //// Add methods
     move_to(p: Iterable<number>) {
-        this._tail = (this._tail ?? CommandLink).move_to(p);
+        this._tail = (this._tail ?? BaseLC).move_to(p);
         return this;
     }
     line_to(p: Iterable<number>) {
-        this._tail = (this._tail ?? CommandLink).line_to(p);
+        this._tail = (this._tail ?? BaseLC).line_to(p);
         return this;
     }
     curve_to(c1: Iterable<number>, c2: Iterable<number>, p2: Iterable<number>) {
-        this._tail = (this._tail ?? CommandLink).curve_to(c1, c2, p2);
+        this._tail = (this._tail ?? BaseLC).curve_to(c1, c2, p2);
         return this;
     }
     quad_to(c: Iterable<number>, p: Iterable<number>) {
-        this._tail = (this._tail ?? CommandLink).quad_to(c, p);
+        this._tail = (this._tail ?? BaseLC).quad_to(c, p);
         return this;
     }
 
     arc_centered_at(c: Iterable<number>, radius: number, startAngle: number, endAngle: number, counterclockwise = false) {
-        this._tail = (this._tail ?? CommandLink).arc_centered_at(c, radius, startAngle, endAngle, counterclockwise);
+        this._tail = (this._tail ?? BaseLC).arc_centered_at(c, radius, startAngle, endAngle, counterclockwise);
         return this;
     }
     arc_tangent_to(p1: Iterable<number>, p2: Iterable<number>, r: number) {
-        this._tail = (this._tail ?? CommandLink).arc_tangent_to(p1, p2, r);
+        this._tail = (this._tail ?? BaseLC).arc_tangent_to(p1, p2, r);
         return this;
     }
     rect(x: number, y: number, w: number, h: number) {
-        this._tail = (this._tail ?? CommandLink).rect(x, y, w, h);
+        this._tail = (this._tail ?? BaseLC).rect(x, y, w, h);
         return this;
     }
     close() {
@@ -50,6 +73,18 @@ export class PathCL {
             this._tail = _tail.close();
         }
         return this;
+    }
+    *[Symbol.iterator]() {
+        let { _tail: cur } = this;
+        for (; cur; cur = cur._prev) {
+            yield cur;
+        }
+    }
+    *shapes(opt?: DescParams) {
+        const { _tail } = this;
+        if (_tail) {
+            yield* enum_shapes(_tail);
+        }
     }
     //// Canvas methods
     set fillStyle(_x: any) { }
@@ -115,15 +150,15 @@ export class PathCL {
         return this.describe();
     }
     //// Length methods
-    segment_at_length(T: number, clamp?: boolean): [CommandLink | undefined, number, number] {
-        let cur: CommandLink | undefined = this._tail;
+    segment_at_length(T: number, clamp?: boolean): [BaseLC | undefined, number, number] {
+        let cur: BaseLC | undefined = this._tail;
         if (cur) {
             return segment_at_length(cur, T, path_length(cur), clamp);
         }
         return [undefined, NaN, NaN];
     }
-    segment_at(T: number): [CommandLink | undefined, number] {
-        let cur: CommandLink | undefined = this._tail;
+    segment_at(T: number): [BaseLC | undefined, number] {
+        let cur: BaseLC | undefined = this._tail;
         if (cur) {
             const len = path_length(cur);
             const [seg, n, N] = segment_at_length(cur, T * len, len);
@@ -151,7 +186,7 @@ export class PathCL {
     ////
     bbox() {
         let b = BoundingBox.not();
-        for (let cur: CommandLink | undefined = this._tail; cur; cur = cur._prev) {
+        for (let cur: BaseLC | undefined = this._tail; cur; cur = cur._prev) {
             b = b.merge(cur.bbox());
         }
         return b;
@@ -163,27 +198,27 @@ export class PathCL {
             if (seg) {
                 if (t == 0) {
                     const { prev } = seg;
-                    return [new PathCL(prev), new PathCL(_tail.with_far_prev_3(seg, CommandLink.move_to(prev?.to)))];
+                    return [new PathLC(prev), new PathLC(_tail.with_far_prev_3(seg, BaseLC.move_to(prev?.to)))];
                 } else if (t == 1) {
-                    return [new PathCL(seg), new PathCL(_tail.with_far_prev(seg, CommandLink.move_to(seg.to)))];
+                    return [new PathLC(seg), new PathLC(_tail.with_far_prev(seg, BaseLC.move_to(seg.to)))];
                 }
                 if (t < 0 || t > 1) {
                     throw new Error();
                 }
                 let [a, b] = seg.split_at(t);
                 if (seg === _tail) {
-                    return [new PathCL(a), new PathCL(b)];
+                    return [new PathLC(a), new PathLC(b)];
                 } else {
-                    return [new PathCL(a), new PathCL(_tail.with_far_prev(seg, b))];
+                    return [new PathLC(a), new PathLC(_tail.with_far_prev(seg, b))];
                 }
             }
         }
-        return [new PathCL(undefined), new PathCL(undefined)];
+        return [new PathLC(undefined), new PathLC(undefined)];
     }
-    cut_at(T: number): PathCL {
+    cut_at(T: number): PathLC {
         return T < 0 ? this.split_at(1 + T)[1] : this.split_at(T)[0];
     }
-    crop_at(T0: number, T1: number = 1): PathCL {
+    crop_at(T0: number, T1: number = 1): PathLC {
         T0 = tNorm(T0);
         T1 = tNorm(T1);
         if (T0 <= 0) {
@@ -204,12 +239,12 @@ export class PathCL {
             // T0 >= 1
             return this.crop_at(T1, T0);
         }
-        return new PathCL(undefined);
+        return new PathLC(undefined);
     }
-    reversed(_next?: CommandLink): PathCL {
+    reversed(_next?: BaseLC): PathLC {
         const { _tail } = this;
         if (_tail) {
-            return new PathCL(_tail.reversed());
+            return new PathLC(_tail.reversed());
         }
         return this;
     }
@@ -221,27 +256,27 @@ export class PathCL {
         return this.move_to([0, 0]).line_to([x, y]);
     }
     static move_to(p: Iterable<number>) {
-        return new this(CommandLink.move_to(p));
+        return new this(BaseLC.move_to(p));
     }
     static parse(d: string) {
-        return new this(CommandLink.parse(d));
+        return new this(BaseLC.parse(d));
     }
     static rect(x: number, y: number, w: number, h: number) {
         return (new this(undefined)).rect(x, y, w, h);
     }
     static get digits() {
-        return CommandLink.digits;
+        return BaseLC.digits;
     }
     static set digits(n: number) {
-        CommandLink.digits = n;
+        BaseLC.digits = n;
     }
 }
 
 
-const len_segment_map = new WeakMap<CommandLink, number>();
-const len_path_map = new WeakMap<CommandLink, number>();
+const len_segment_map = new WeakMap<BaseLC, number>();
+const len_path_map = new WeakMap<BaseLC, number>();
 
-function path_length(seg: CommandLink) {
+function path_length(seg: BaseLC) {
     let v = len_path_map.get(seg);
     if (v == null) {
         len_path_map.set(seg, (v = seg.path_len()));
@@ -249,7 +284,7 @@ function path_length(seg: CommandLink) {
     return v;
 }
 
-function segment_length(seg: CommandLink) {
+function segment_length(seg: BaseLC) {
     let v = len_segment_map.get(seg);
     if (v == null) {
         len_segment_map.set(seg, (v = seg.segment_len()));
@@ -258,11 +293,11 @@ function segment_length(seg: CommandLink) {
 }
 
 function segment_at_length(
-    cur: CommandLink | undefined,
+    cur: BaseLC | undefined,
     lenP: number,
     LEN: number,
     clamp?: boolean
-): [CommandLink | undefined, number, number] {
+): [BaseLC | undefined, number, number] {
     S1: if (cur) {
         if (lenP < 0) {
             if (clamp) {
@@ -272,9 +307,9 @@ function segment_at_length(
             }
         }
         if (lenP == 0) {
-            let last: CommandLink | undefined;
+            let last: BaseLC | undefined;
             do {
-                if (!(cur instanceof MoveCL)) {
+                if (!(cur instanceof MoveLC)) {
                     last = cur;
                 }
             } while ((cur = cur._prev));
@@ -292,7 +327,7 @@ function segment_at_length(
         }
         let to = LEN;
         do {
-            if (cur instanceof MoveCL) {
+            if (cur instanceof MoveLC) {
                 // pass
             } else {
                 const lenS = segment_length(cur);
@@ -308,10 +343,10 @@ function segment_at_length(
     return [undefined, NaN, NaN];
 }
 
-function* enum_sub_paths(cur: CommandLink | undefined) {
-    let tail: undefined | CommandLink;
+function* enum_sub_paths(cur: BaseLC | undefined) {
+    let tail: undefined | BaseLC;
     for (; cur; cur = cur._prev) {
-        if (cur instanceof MoveCL) {
+        if (cur instanceof MoveLC) {
             if (tail) {
                 if (tail === cur) {
                     throw new Error();
@@ -328,5 +363,24 @@ function* enum_sub_paths(cur: CommandLink | undefined) {
         yield tail;
     }
 }
-
-export { CommandLink }
+function* enum_shapes(cur: BaseLC | undefined) {
+    // sub continues path is a path
+    let tail: undefined | BaseLC;
+    for (; cur; cur = cur._prev) {
+        if (cur instanceof MoveLC) {
+            if (tail) {
+                if (tail === cur) {
+                    throw new Error();
+                } else {
+                    yield tail.with_far_prev_3(cur, undefined);
+                }
+                tail = undefined;
+            }
+        } else if (!tail) {
+            tail = cur;
+        }
+    }
+    if (tail) {
+        yield tail;
+    }
+}

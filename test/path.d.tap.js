@@ -1,11 +1,11 @@
 'uses strict';
 import test from 'tap';
-import { Vector } from 'svggeom';
-// import { PathLS as PathYY, SegmentLS as SegYY, Vector } from 'svggeom';
+// import { PathLS as PathYY } from 'svggeom';
 import { PathSE as PathXX } from '../dist/path/segment/pathse.js';
-import { PathCL as PathYY, CommandLink as SegYY } from '../dist/path/pathcl.js';
+import { PathLC as PathYY } from 'svggeom';
 import './utils.js';
 const CI = !!process.env.CI;
+const { Unit: SegYY } = PathYY;
 
 test.test(`path parse`, { bail: !CI }, function (t) {
     // let p = PathXX.parse("M3");
@@ -15,9 +15,9 @@ test.test(`path parse`, { bail: !CI }, function (t) {
 
 test.test(`path parse`, { bail: !CI }, function (t) {
     let p = PathXX.parse('M 10,10 l 30, -40 h -30 v 30 z');
-    let kind = p.firstSegment.constructor.name;
+    let kind = p.first.constructor.name;
     t.ok(kind.startsWith("Line"), kind);
-    kind = p.lastSegment.constructor.name;
+    kind = p.last.constructor.name;
     t.ok(kind.startsWith("Close"), kind);
 
     t.end();

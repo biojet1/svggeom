@@ -100,6 +100,7 @@ export function testSegment(t, seg, item, opt = {}) {
         test_tangents = true,
     } = opt;
     const tan_opt = { delta_epsilon: delta_epsilon, slope_epsilon: slope_epsilon };
+    // console.dir([seg, seg.from], { depth: 10 })
     t.almostEqual(item.start[0], seg.from.x);
     t.almostEqual(item.start[1], seg.from.y);
     t.almostEqual(item.end[0], seg.to.x, end_point_epsilon, 'ENDX');

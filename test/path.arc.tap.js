@@ -1,15 +1,18 @@
 'uses strict';
 import { enum_path_data, testSegment } from './path.utils.js';
 import './utils.js';
-import { PathLS, SegmentLS } from 'svggeom';
+// import { PathLS as PathChain } from 'svggeom';
+import { PathLC as PathChain } from 'svggeom';
 import { Arc, PathSE } from '../dist/path/segment/pathse.js';
 import test from 'tap';
 import os from 'os';
 import fs from 'fs';
+const { Unit: PathUnit } = PathChain
+
 const CI = !!process.env.CI;
 function dbgwrite(name, pC, pX) {
     function* gen() {
-        const b = PathLS.parse(pC).bbox().merge(PathLS.parse(pX).bbox());
+        const b = PathChain.parse(pC).bbox().merge(PathChain.parse(pX).bbox());
 
         let style;
         yield `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${b.left} ${b.top} ${b.width} ${b.height}" width="${b.width}" height="${b.height}">`;
@@ -77,10 +80,10 @@ for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
         }
         t.end();
     });
-    test.test(`SegmentLS<${item.d}>`, { bail: CI }, function (t) {
-        const cur = SegmentLS.move_to(start).A(radius[0], radius[1], rotation, large_arc, sweep, end);
+    test.test(`PathU<${item.d}>`, { bail: CI }, function (t) {
+        const cur = PathUnit.move_to(start).A(radius[0], radius[1], rotation, large_arc, sweep, [ex, ey]);
         testSegment(t, cur, item, deltp);
-        testSegment(t, new PathLS(cur.as_curve()), item, {
+        testSegment(t, new PathChain(cur.as_curve()), item, {
             ...deltp,
             test_descs: false,
             slope_epsilon: 0.6,
@@ -91,11 +94,11 @@ for await (const item of enum_path_data({ SEGMENTS: 'Arc' })) {
         {
             testSegment(
                 t,
-                SegmentLS.parse(`M ${sx},${sy} A ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex},${ey}`),
+                PathUnit.parse(`M ${sx},${sy} A ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex},${ey}`),
                 item,
                 deltp
             );
-            const rel = SegmentLS.parse(`m ${sx},${sy} a ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex - sx},${ey - sy}`);
+            const rel = PathUnit.parse(`m ${sx},${sy} a ${rx},${ry} ${rotation} ${large_arc} ${sweep} ${ex - sx},${ey - sy}`);
             testSegment(t, rel, item, deltp);
         }
         t.end();
