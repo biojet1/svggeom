@@ -18,7 +18,7 @@ function fmtN(n) {
     const v = n.toFixed(digits);
     return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
 }
-export class CommandLink extends Command {
+export class BaseLC extends Command {
     _prev;
     _to;
     static get digits() {
@@ -64,7 +64,7 @@ export class CommandLink extends Command {
     }
     get last_move() {
         for (let cur = this; cur; cur = cur._prev) {
-            if (cur instanceof MoveCL) {
+            if (cur instanceof MoveLC) {
                 return cur;
             }
         }
@@ -114,23 +114,23 @@ export class CommandLink extends Command {
         return vec.div(vec.abs());
     }
     move_to(p) {
-        return new MoveCL(this, pos(p));
+        return new MoveLC(this, pos(p));
     }
     line_to(p) {
         return new LineCL(this, pos(p));
     }
     curve_to(c1, c2, p2) {
-        return new CubicCL(this, pos(c1), pos(c2), pos(p2));
+        return new CubicLC(this, pos(c1), pos(c2), pos(p2));
     }
     quad_to(c, p) {
-        return new QuadCL(this, pos(c), pos(p));
+        return new QuadLC(this, pos(c), pos(p));
     }
     close() {
         const to = this.last_move?.to;
-        return to ? new CloseCL(this, to) : this;
+        return to ? new CloseLC(this, to) : this;
     }
     arc_to(rx, ry, φ, bigArc, sweep, p) {
-        return new ArcCL(this, rx, ry, φ, bigArc, sweep, pos(p));
+        return new ArcLC(this, rx, ry, φ, bigArc, sweep, pos(p));
     }
     arc_centered_at(c, radius, startAngle, endAngle, counterclockwise = false) {
         return arc_centered_at(this, c, radius, startAngle, endAngle, counterclockwise);
@@ -267,7 +267,7 @@ export class CommandLink extends Command {
     }
     S(c, p) {
         const { to } = this;
-        if (this instanceof CubicCL) {
+        if (this instanceof CubicLC) {
             return this.curve_to(this.c2.reflect_at(to), c, p);
         }
         else {
@@ -276,7 +276,7 @@ export class CommandLink extends Command {
     }
     s(c, p) {
         const { to } = this;
-        if (this instanceof CubicCL) {
+        if (this instanceof CubicLC) {
             return this.curve_to(this.c2.reflect_at(to), to.add(c), to.add(p));
         }
         else {
@@ -285,7 +285,7 @@ export class CommandLink extends Command {
     }
     T(p) {
         const { to } = this;
-        if (this instanceof QuadCL) {
+        if (this instanceof QuadLC) {
             return this.quad_to(this.p.reflect_at(to), p);
         }
         else {
@@ -294,7 +294,7 @@ export class CommandLink extends Command {
     }
     t(p) {
         const { to } = this;
-        if (this instanceof QuadCL) {
+        if (this instanceof QuadLC) {
             return this.quad_to(this.p.reflect_at(to), to.add(p));
         }
         else {
@@ -302,20 +302,23 @@ export class CommandLink extends Command {
         }
     }
     A(rx, ry, φ, bigArc, sweep, p) {
-        return new ArcCL(this, rx, ry, φ, bigArc, sweep, pos(p));
+        return new ArcLC(this, rx, ry, φ, bigArc, sweep, pos(p));
     }
     a(rx, ry, φ, bigArc, sweep, p) {
         const { to: rel } = this;
-        return new ArcCL(this, rx, ry, φ, bigArc, sweep, rel.add(p));
+        return new ArcLC(this, rx, ry, φ, bigArc, sweep, rel.add(p));
     }
     static move_to(p) {
-        return new MoveCL(undefined, pos(p));
+        return new MoveLC(undefined, pos(p));
     }
     static line_to(p) {
         return this.move_to([0, 0]).line_to(p);
     }
     static lineTo(x, y) {
         return this.line_to([x, y]);
+    }
+    static moveTo(x, y) {
+        return this.move_to([x, y]);
     }
     static curve_to(c1, c2, p2) {
         return this.move_to([0, 0]).curve_to(c1, c2, p2);
@@ -333,7 +336,7 @@ export class CommandLink extends Command {
         return arc_tangent_to(undefined, p1, p2, r);
     }
     static parse(d) {
-        return parseCL(d, undefined);
+        return parse(d, undefined);
     }
     static bezierCurveTo(cx1, cy1, cx2, cy2, px2, py2) {
         return this.curve_to([cx1, cy1], [cx2, cy2], [px2, py2]);
@@ -345,7 +348,7 @@ export class CommandLink extends Command {
         return this.arc_centered_at([cx, cy], radius, (startAngle * PI) / 180, (endAngle * PI) / 180, counterclockwise);
     }
 }
-export class LineCL extends CommandLink {
+export class LineCL extends BaseLC {
     bbox() {
         const { to: [x2, y2], _prev, } = this;
         if (_prev) {
@@ -372,7 +375,7 @@ export class LineCL extends CommandLink {
     split_at(t) {
         const { to } = this;
         const c = this.point_at(t);
-        return [new LineCL(this._prev, c), new LineCL(new MoveCL(undefined, c), to)];
+        return [new LineCL(this._prev, c), new LineCL(new MoveLC(undefined, c), to)];
     }
     term(opt) {
         const { to: [x, y], } = this;
@@ -406,7 +409,7 @@ export class LineCL extends CommandLink {
     }
     reversed(next) {
         const { to, _prev } = this;
-        next || (next = new MoveCL(undefined, to));
+        next || (next = new MoveLC(undefined, to));
         if (_prev) {
             const rev = new LineCL(next, _prev.to);
             return _prev.reversed(rev) ?? rev;
@@ -424,7 +427,7 @@ export class LineCL extends CommandLink {
         return new LineCL(newPrev, to);
     }
 }
-export class MoveCL extends LineCL {
+export class MoveLC extends LineCL {
     term(opt) {
         const { to: [x, y], } = this;
         if (opt?.relative) {
@@ -440,16 +443,16 @@ export class MoveCL extends LineCL {
     split_at(t) {
         const { to } = this;
         const c = this.point_at(t);
-        return [new MoveCL(this._prev, c), new MoveCL(new MoveCL(undefined, c), to)];
+        return [new MoveLC(this._prev, c), new MoveLC(new MoveLC(undefined, c), to)];
     }
     transform(M) {
         const { to, _prev } = this;
-        return new MoveCL(_prev?.transform(M), to.transform(M));
+        return new MoveLC(_prev?.transform(M), to.transform(M));
     }
     reversed(next) {
         const { _prev } = this;
         if (_prev) {
-            const seg = new MoveCL(next, _prev.to);
+            const seg = new MoveLC(next, _prev.to);
             return _prev.reversed(seg) ?? seg;
         }
         else {
@@ -458,21 +461,21 @@ export class MoveCL extends LineCL {
     }
     with_prev(prev) {
         const { to } = this;
-        return new MoveCL(prev, to);
+        return new MoveLC(prev, to);
     }
     segment_len() {
         return 0;
     }
 }
-export class CloseCL extends LineCL {
+export class CloseLC extends LineCL {
     split_at(t) {
         const { to } = this;
         const c = this.point_at(t);
-        return [new LineCL(this._prev, c), new CloseCL(new MoveCL(undefined, c), to)];
+        return [new LineCL(this._prev, c), new CloseLC(new MoveLC(undefined, c), to)];
     }
     transform(M) {
         const { to, _prev } = this;
-        return new CloseCL(_prev?.transform(M), to.transform(M));
+        return new CloseLC(_prev?.transform(M), to.transform(M));
     }
     term(opt) {
         if (opt) {
@@ -488,7 +491,7 @@ export class CloseCL extends LineCL {
     }
     reversed(next) {
         const { to, _prev } = this;
-        next || (next = new MoveCL(undefined, to));
+        next || (next = new MoveLC(undefined, to));
         if (_prev) {
             const rev = new LineCL(next, _prev.to);
             return _prev.reversed(rev) ?? rev;
@@ -499,10 +502,10 @@ export class CloseCL extends LineCL {
     }
     with_prev(prev) {
         const { to } = this;
-        return new CloseCL(prev, to);
+        return new CloseLC(prev, to);
     }
 }
-export class QuadCL extends CommandLink {
+export class QuadLC extends BaseLC {
     p;
     constructor(prev, p, to) {
         super(prev, to);
@@ -523,7 +526,7 @@ export class QuadCL extends CommandLink {
     }
     split_at(t) {
         const [a, b] = quad_split_at(this._qpts, tCheck(t));
-        return [new QuadCL(this._prev, a[1], a[2]), new QuadCL(new MoveCL(undefined, b[0]), b[1], b[2])];
+        return [new QuadLC(this._prev, a[1], a[2]), new QuadLC(new MoveLC(undefined, b[0]), b[1], b[2])];
     }
     bbox() {
         const { _prev } = this;
@@ -536,7 +539,7 @@ export class QuadCL extends CommandLink {
             const { p, _prev } = this;
             if (_prev) {
                 const [sx, sy] = _prev.to;
-                if (smooth && (_prev instanceof QuadCL ? _prev.p.reflect_at(_prev.to).close_to(p) : _prev.to.close_to(p))) {
+                if (smooth && (_prev instanceof QuadLC ? _prev.p.reflect_at(_prev.to).close_to(p) : _prev.to.close_to(p))) {
                     return relative ? ['t', ex - sx, ey - sy] : ['T', ex, ey];
                 }
                 else if (relative) {
@@ -548,9 +551,9 @@ export class QuadCL extends CommandLink {
     }
     reversed(next) {
         const { to, p, _prev } = this;
-        next || (next = new MoveCL(undefined, to));
+        next || (next = new MoveLC(undefined, to));
         if (_prev) {
-            const rev = new QuadCL(next, p, _prev.to);
+            const rev = new QuadLC(next, p, _prev.to);
             return _prev.reversed(rev) ?? rev;
         }
         else {
@@ -559,14 +562,14 @@ export class QuadCL extends CommandLink {
     }
     transform(M) {
         const { p, to, _prev } = this;
-        return new QuadCL(_prev?.transform(M), p.transform(M), to.transform(M));
+        return new QuadLC(_prev?.transform(M), p.transform(M), to.transform(M));
     }
     with_prev(prev) {
         const { p, to } = this;
-        return new QuadCL(prev, p, to);
+        return new QuadLC(prev, p, to);
     }
 }
-export class CubicCL extends CommandLink {
+export class CubicLC extends BaseLC {
     c1;
     c2;
     constructor(prev, c1, c2, to) {
@@ -592,8 +595,8 @@ export class CubicCL extends CommandLink {
         const { _prev, _cpts } = this;
         const [a, b] = cubic_split_at(_cpts, tCheck(t));
         return [
-            new CubicCL(_prev, Vector.new(a[1]), Vector.new(a[2]), Vector.new(a[3])),
-            new CubicCL(new MoveCL(undefined, Vector.new(b[0])), Vector.new(b[1]), Vector.new(b[2]), Vector.new(b[3]))
+            new CubicLC(_prev, Vector.new(a[1]), Vector.new(a[2]), Vector.new(a[3])),
+            new CubicLC(new MoveLC(undefined, Vector.new(b[0])), Vector.new(b[1]), Vector.new(b[2]), Vector.new(b[3]))
         ];
     }
     get length() {
@@ -601,9 +604,9 @@ export class CubicCL extends CommandLink {
     }
     reversed(next) {
         const { to, c1, c2, _prev } = this;
-        next || (next = new MoveCL(undefined, to));
+        next || (next = new MoveLC(undefined, to));
         if (_prev) {
-            const rev = new CubicCL(next, c2, c1, _prev.to);
+            const rev = new CubicLC(next, c2, c1, _prev.to);
             return _prev.reversed(rev) ?? rev;
         }
         else {
@@ -612,7 +615,7 @@ export class CubicCL extends CommandLink {
     }
     transform(M) {
         const { c1, c2, to, _prev } = this;
-        return new CubicCL(_prev?.transform(M), c1.transform(M), c2.transform(M), to.transform(M));
+        return new CubicLC(_prev?.transform(M), c1.transform(M), c2.transform(M), to.transform(M));
     }
     term(opt) {
         const { c1: [x1, y1], c2: [x2, y2], to: [ex, ey], } = this;
@@ -622,7 +625,7 @@ export class CubicCL extends CommandLink {
             if (_prev) {
                 const { to: from } = _prev;
                 const [sx, sy] = from;
-                if (smooth && (_prev instanceof CubicCL ? _prev.c2.reflect_at(from).close_to(c1) : from.close_to(c1))) {
+                if (smooth && (_prev instanceof CubicLC ? _prev.c2.reflect_at(from).close_to(c1) : from.close_to(c1))) {
                     return relative ? ['s', x2 - sx, y2 - sy, ex - sx, ey - sy] : ['S', x2, y2, ex, ey];
                 }
                 else if (relative) {
@@ -634,12 +637,12 @@ export class CubicCL extends CommandLink {
     }
     with_prev(prev) {
         const { c1, c2, to } = this;
-        return new CubicCL(prev, c1, c2, to);
+        return new CubicLC(prev, c1, c2, to);
     }
 }
 import { arc_bbox, arc_length, arc_point_at, arc_slope_at, arc_transform } from './archelp.js';
 import { arc_params, arc_to_curve } from './archelp.js';
-export class ArcCL extends CommandLink {
+export class ArcLC extends BaseLC {
     rx;
     ry;
     phi;
@@ -677,20 +680,20 @@ export class ArcCL extends CommandLink {
         const deltaA = abs(rdelta);
         const mid = arc_point_at(this, tCheck(t));
         return [
-            new ArcCL(_prev, rx, ry, phi, deltaA * t > PI, sweep, mid),
-            new ArcCL(new MoveCL(undefined, mid), rx, ry, phi, deltaA * (1 - t) > PI, sweep, to),
+            new ArcLC(_prev, rx, ry, phi, deltaA * t > PI, sweep, mid),
+            new ArcLC(new MoveLC(undefined, mid), rx, ry, phi, deltaA * (1 - t) > PI, sweep, to),
         ];
     }
     transform(M) {
         const { bigArc, to, _prev } = this;
         const [rx, ry, phi, sweep] = arc_transform(this, M);
-        return new ArcCL(_prev?.transform(M), rx, ry, phi, bigArc, sweep, to.transform(M));
+        return new ArcLC(_prev?.transform(M), rx, ry, phi, bigArc, sweep, to.transform(M));
     }
     reversed(next) {
         const { rx, ry, phi, bigArc, sweep, to, _prev } = this;
-        next || (next = new MoveCL(undefined, to));
+        next || (next = new MoveLC(undefined, to));
         if (_prev) {
-            const rev = new ArcCL(next, rx, ry, phi, bigArc, !sweep, _prev.to);
+            const rev = new ArcLC(next, rx, ry, phi, bigArc, !sweep, _prev.to);
             return _prev.reversed(rev) ?? rev;
         }
         else {
@@ -724,14 +727,14 @@ export class ArcCL extends CommandLink {
             }
             return _prev;
         }
-        return CommandLink.line_to(to);
+        return BaseLC.line_to(to);
     }
     with_prev(prev) {
         const { rx, ry, phi, sweep, bigArc, to } = this;
-        return new ArcCL(prev, rx, ry, phi, bigArc, sweep, to);
+        return new ArcLC(prev, rx, ry, phi, bigArc, sweep, to);
     }
 }
-function parseCL(d, prev) {
+function parse(d, prev) {
     let mat;
     const dRE = /[\s,]*(?:([MmZzLlHhVvCcSsQqTtAa])|([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?))/y;
     const peek = function () {
@@ -763,18 +766,18 @@ function parseCL(d, prev) {
     };
     const isNum = () => peek()?.[2];
     const vec = () => Vector.pos(num(), num());
-    const first = CommandLink.move_to([0, 0]);
+    const first = BaseLC.move_to([0, 0]);
     let cur = prev ?? first;
     let command;
     while ((command = cmd())) {
         switch (command) {
             case 'M':
-                cur = cur === first ? CommandLink.move_to(vec()) : cur.M(vec());
+                cur = cur === first ? BaseLC.move_to(vec()) : cur.M(vec());
                 while (isNum() && (cur = cur.L(vec())))
                     ;
                 break;
             case 'm':
-                cur = cur === first ? CommandLink.move_to(vec()) : cur.m(vec());
+                cur = cur === first ? BaseLC.move_to(vec()) : cur.m(vec());
                 while (isNum() && (cur = cur.l(vec())))
                     ;
                 break;
@@ -866,7 +869,7 @@ function arc_centered_at(cur, c, radius, startAngle, endAngle, counterclockwise 
         throw new Error('negative radius: ' + r);
     }
     else if (!cur) {
-        cur = new MoveCL(undefined, Vector.new(x0, y0));
+        cur = new MoveLC(undefined, Vector.new(x0, y0));
     }
     else if (!cur.to.close_to(Vector.new(x0, y0), epsilon)) {
         cur = cur.line_to(Vector.new(x0, y0));
@@ -899,7 +902,7 @@ function arc_tangent_to(cur, p1, p2, r) {
         throw new Error('negative radius: ' + r);
     }
     else if (!cur) {
-        cur = CommandLink.move_to(Vector.new(x1, y1));
+        cur = BaseLC.move_to(Vector.new(x1, y1));
     }
     else if (!(l01_2 > epsilon)) {
     }

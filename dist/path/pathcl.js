@@ -1,7 +1,8 @@
 import { BoundingBox } from "../bbox.js";
-import { CommandLink, MoveCL } from "./command.js";
+import { BaseLC, MoveLC } from "./command.js";
 import { tNorm } from "./index.js";
-export class PathCL {
+export class PathLC {
+    static Unit = BaseLC;
     _tail;
     constructor(tail) {
         this._tail = tail;
@@ -13,32 +14,54 @@ export class PathCL {
         }
         return 0;
     }
+    get first() {
+        let seg;
+        for (let { _tail: cur } = this; cur; cur = cur._prev) {
+            if (!(cur instanceof MoveLC)) {
+                seg = cur;
+            }
+        }
+        return seg;
+    }
+    get last() {
+        for (let { _tail: cur } = this; cur; cur = cur._prev) {
+            if (!(cur instanceof MoveLC)) {
+                return cur;
+            }
+        }
+    }
+    get from() {
+        return this._tail?.first?.to;
+    }
+    get to() {
+        return this._tail?.to;
+    }
     move_to(p) {
-        this._tail = (this._tail ?? CommandLink).move_to(p);
+        this._tail = (this._tail ?? BaseLC).move_to(p);
         return this;
     }
     line_to(p) {
-        this._tail = (this._tail ?? CommandLink).line_to(p);
+        this._tail = (this._tail ?? BaseLC).line_to(p);
         return this;
     }
     curve_to(c1, c2, p2) {
-        this._tail = (this._tail ?? CommandLink).curve_to(c1, c2, p2);
+        this._tail = (this._tail ?? BaseLC).curve_to(c1, c2, p2);
         return this;
     }
     quad_to(c, p) {
-        this._tail = (this._tail ?? CommandLink).quad_to(c, p);
+        this._tail = (this._tail ?? BaseLC).quad_to(c, p);
         return this;
     }
     arc_centered_at(c, radius, startAngle, endAngle, counterclockwise = false) {
-        this._tail = (this._tail ?? CommandLink).arc_centered_at(c, radius, startAngle, endAngle, counterclockwise);
+        this._tail = (this._tail ?? BaseLC).arc_centered_at(c, radius, startAngle, endAngle, counterclockwise);
         return this;
     }
     arc_tangent_to(p1, p2, r) {
-        this._tail = (this._tail ?? CommandLink).arc_tangent_to(p1, p2, r);
+        this._tail = (this._tail ?? BaseLC).arc_tangent_to(p1, p2, r);
         return this;
     }
     rect(x, y, w, h) {
-        this._tail = (this._tail ?? CommandLink).rect(x, y, w, h);
+        this._tail = (this._tail ?? BaseLC).rect(x, y, w, h);
         return this;
     }
     close() {
@@ -47,6 +70,18 @@ export class PathCL {
             this._tail = _tail.close();
         }
         return this;
+    }
+    *[Symbol.iterator]() {
+        let { _tail: cur } = this;
+        for (; cur; cur = cur._prev) {
+            yield cur;
+        }
+    }
+    *shapes(opt) {
+        const { _tail } = this;
+        if (_tail) {
+            yield* enum_shapes(_tail);
+        }
     }
     set fillStyle(_x) { }
     get fillStyle() {
@@ -148,24 +183,24 @@ export class PathCL {
             if (seg) {
                 if (t == 0) {
                     const { prev } = seg;
-                    return [new PathCL(prev), new PathCL(_tail.with_far_prev_3(seg, CommandLink.move_to(prev?.to)))];
+                    return [new PathLC(prev), new PathLC(_tail.with_far_prev_3(seg, BaseLC.move_to(prev?.to)))];
                 }
                 else if (t == 1) {
-                    return [new PathCL(seg), new PathCL(_tail.with_far_prev(seg, CommandLink.move_to(seg.to)))];
+                    return [new PathLC(seg), new PathLC(_tail.with_far_prev(seg, BaseLC.move_to(seg.to)))];
                 }
                 if (t < 0 || t > 1) {
                     throw new Error();
                 }
                 let [a, b] = seg.split_at(t);
                 if (seg === _tail) {
-                    return [new PathCL(a), new PathCL(b)];
+                    return [new PathLC(a), new PathLC(b)];
                 }
                 else {
-                    return [new PathCL(a), new PathCL(_tail.with_far_prev(seg, b))];
+                    return [new PathLC(a), new PathLC(_tail.with_far_prev(seg, b))];
                 }
             }
         }
-        return [new PathCL(undefined), new PathCL(undefined)];
+        return [new PathLC(undefined), new PathLC(undefined)];
     }
     cut_at(T) {
         return T < 0 ? this.split_at(1 + T)[1] : this.split_at(T)[0];
@@ -195,12 +230,12 @@ export class PathCL {
         else if (T1 < 1) {
             return this.crop_at(T1, T0);
         }
-        return new PathCL(undefined);
+        return new PathLC(undefined);
     }
     reversed(_next) {
         const { _tail } = this;
         if (_tail) {
-            return new PathCL(_tail.reversed());
+            return new PathLC(_tail.reversed());
         }
         return this;
     }
@@ -211,19 +246,19 @@ export class PathCL {
         return this.move_to([0, 0]).line_to([x, y]);
     }
     static move_to(p) {
-        return new this(CommandLink.move_to(p));
+        return new this(BaseLC.move_to(p));
     }
     static parse(d) {
-        return new this(CommandLink.parse(d));
+        return new this(BaseLC.parse(d));
     }
     static rect(x, y, w, h) {
         return (new this(undefined)).rect(x, y, w, h);
     }
     static get digits() {
-        return CommandLink.digits;
+        return BaseLC.digits;
     }
     static set digits(n) {
-        CommandLink.digits = n;
+        BaseLC.digits = n;
     }
 }
 const len_segment_map = new WeakMap();
@@ -255,7 +290,7 @@ function segment_at_length(cur, lenP, LEN, clamp) {
         if (lenP == 0) {
             let last;
             do {
-                if (!(cur instanceof MoveCL)) {
+                if (!(cur instanceof MoveLC)) {
                     last = cur;
                 }
             } while ((cur = cur._prev));
@@ -274,7 +309,7 @@ function segment_at_length(cur, lenP, LEN, clamp) {
         }
         let to = LEN;
         do {
-            if (cur instanceof MoveCL) {
+            if (cur instanceof MoveLC) {
             }
             else {
                 const lenS = segment_length(cur);
@@ -292,7 +327,7 @@ function segment_at_length(cur, lenP, LEN, clamp) {
 function* enum_sub_paths(cur) {
     let tail;
     for (; cur; cur = cur._prev) {
-        if (cur instanceof MoveCL) {
+        if (cur instanceof MoveLC) {
             if (tail) {
                 if (tail === cur) {
                     throw new Error();
@@ -311,5 +346,26 @@ function* enum_sub_paths(cur) {
         yield tail;
     }
 }
-export { CommandLink };
+function* enum_shapes(cur) {
+    let tail;
+    for (; cur; cur = cur._prev) {
+        if (cur instanceof MoveLC) {
+            if (tail) {
+                if (tail === cur) {
+                    throw new Error();
+                }
+                else {
+                    yield tail.with_far_prev_3(cur, undefined);
+                }
+                tail = undefined;
+            }
+        }
+        else if (!tail) {
+            tail = cur;
+        }
+    }
+    if (tail) {
+        yield tail;
+    }
+}
 //# sourceMappingURL=pathcl.js.map

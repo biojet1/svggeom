@@ -1,10 +1,15 @@
 import { BoundingBox } from "../bbox.js";
-import { CommandLink } from "./command.js";
+import { BaseLC } from "./command.js";
 import { DescParams } from "./index.js";
-export declare class PathCL {
-    _tail: CommandLink | undefined;
-    constructor(tail: CommandLink | undefined);
+export declare class PathLC {
+    static Unit: typeof BaseLC;
+    _tail: BaseLC | undefined;
+    constructor(tail: BaseLC | undefined);
     get length(): number;
+    get first(): BaseLC | undefined;
+    get last(): BaseLC | undefined;
+    get from(): import("../vector.js").Vector | undefined;
+    get to(): import("../vector.js").Vector | undefined;
     move_to(p: Iterable<number>): this;
     line_to(p: Iterable<number>): this;
     curve_to(c1: Iterable<number>, c2: Iterable<number>, p2: Iterable<number>): this;
@@ -13,6 +18,8 @@ export declare class PathCL {
     arc_tangent_to(p1: Iterable<number>, p2: Iterable<number>, r: number): this;
     rect(x: number, y: number, w: number, h: number): this;
     close(): this;
+    [Symbol.iterator](): Generator<BaseLC, void, unknown>;
+    shapes(opt?: DescParams): Generator<BaseLC | undefined, void, unknown>;
     set fillStyle(_x: any);
     get fillStyle(): any;
     fill(): this;
@@ -34,23 +41,22 @@ export declare class PathCL {
     }, text: string): this;
     describe(opt?: DescParams): string;
     toString(): string;
-    segment_at_length(T: number, clamp?: boolean): [CommandLink | undefined, number, number];
-    segment_at(T: number): [CommandLink | undefined, number];
+    segment_at_length(T: number, clamp?: boolean): [BaseLC | undefined, number, number];
+    segment_at(T: number): [BaseLC | undefined, number];
     tangent_at(T: number): import("../vector.js").Vector | undefined;
     slope_at(T: number): import("../vector.js").Vector | undefined;
     point_at(T: number): import("../vector.js").Vector | undefined;
     point_at_length(L: number, clamp?: boolean): import("../vector.js").Vector | undefined;
     bbox(): BoundingBox;
-    split_at(T: number): PathCL[];
-    cut_at(T: number): PathCL;
-    crop_at(T0: number, T1?: number): PathCL;
-    reversed(_next?: CommandLink): PathCL;
+    split_at(T: number): PathLC[];
+    cut_at(T: number): PathLC;
+    crop_at(T0: number, T1?: number): PathLC;
+    reversed(_next?: BaseLC): PathLC;
     terms(opt?: DescParams): (number | string)[];
-    static lineTo(x: number, y: number): PathCL;
-    static move_to(p: Iterable<number>): PathCL;
-    static parse(d: string): PathCL;
-    static rect(x: number, y: number, w: number, h: number): PathCL;
+    static lineTo(x: number, y: number): PathLC;
+    static move_to(p: Iterable<number>): PathLC;
+    static parse(d: string): PathLC;
+    static rect(x: number, y: number, w: number, h: number): PathLC;
     static get digits(): number;
     static set digits(n: number);
 }
-export { CommandLink };

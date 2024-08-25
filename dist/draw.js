@@ -189,6 +189,7 @@ function segment_length(seg) {
     return v;
 }
 export class PathLS extends CanvasCompat {
+    static Unit = SegmentLS;
     _tail;
     constructor(tail) {
         super();
@@ -379,10 +380,10 @@ export class PathLS extends CanvasCompat {
     terms(opt) {
         return this?._tail?.terms(opt) ?? [];
     }
-    *enumSubPaths(opt) {
+    *shapes(opt) {
         const { _tail } = this;
         if (_tail) {
-            yield* enum_sub_paths(_tail);
+            yield* enum_shapes(_tail);
         }
     }
     *[Symbol.iterator]() {
@@ -398,7 +399,7 @@ export class PathLS extends CanvasCompat {
         }
         return this;
     }
-    get firstSegment() {
+    get first() {
         let seg;
         for (let { _tail: cur } = this; cur; cur = cur._prev) {
             if (!(cur instanceof MoveLS)) {
@@ -407,7 +408,7 @@ export class PathLS extends CanvasCompat {
         }
         return seg;
     }
-    get lastSegment() {
+    get last() {
         for (let { _tail: cur } = this; cur; cur = cur._prev) {
             if (!(cur instanceof MoveLS)) {
                 return cur;
@@ -486,7 +487,7 @@ function segment_at_length(cur, lenP, LEN, clamp) {
     }
     return [undefined, NaN, NaN];
 }
-function* enum_sub_paths(cur) {
+function* enum_shapes(cur) {
     let tail;
     for (; cur; cur = cur._prev) {
         if (cur instanceof MoveLS) {

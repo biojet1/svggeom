@@ -127,7 +127,7 @@ export class PathSE {
             return seg.from;
         }
     }
-    get firstSegment() {
+    get first() {
         const { _segs: segs } = this;
         for (const seg of segs) {
             return seg;
@@ -146,7 +146,7 @@ export class PathSE {
     get to() {
         return this.end_point;
     }
-    get lastSegment() {
+    get last() {
         const { _segs: segs } = this;
         const { length } = segs;
         if (length > 0) {
@@ -345,7 +345,7 @@ export class PathSE {
     toString() {
         return this.describe();
     }
-    *enumSubPaths() {
+    *shapes() {
         const { _segs: segs } = this;
         let prev;
         let subpath_start = 0;

@@ -24,11 +24,11 @@ export declare class PathSE {
     private calcLength;
     private get lengths();
     get start_point(): import("../../vector.js").Vector | undefined;
-    get firstSegment(): SegmentSE | undefined;
+    get first(): SegmentSE | undefined;
     get end_point(): import("../../vector.js").Vector | undefined;
     get from(): import("../../vector.js").Vector | undefined;
     get to(): import("../../vector.js").Vector | undefined;
-    get lastSegment(): SegmentSE | undefined;
+    get last(): SegmentSE | undefined;
     segment_at(T: number): [SegmentSE | undefined, number, number];
     isContinuous(): boolean;
     isClosed(): boolean;
@@ -36,7 +36,7 @@ export declare class PathSE {
     terms(params?: DescParams): (string | 0 | 1)[];
     describe(params?: DescParams): string;
     toString(): string;
-    enumSubPaths(): Generator<PathSE, void, unknown>;
+    shapes(): Generator<PathSE, void, unknown>;
     static parse(d: string): PathSE;
     static new(v?: SegmentSE[] | string | SegmentSE | PathSE): PathSE;
 }

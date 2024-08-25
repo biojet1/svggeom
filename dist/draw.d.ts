@@ -41,6 +41,7 @@ import { Font } from 'opentype.js';
 import { SegmentLS } from './path/linked.js';
 import { DescParams } from './path/index.js';
 export declare class PathLS extends CanvasCompat {
+    static Unit: typeof SegmentLS;
     _tail: SegmentLS | undefined;
     constructor(tail: SegmentLS | undefined);
     move_to(...args: Vector[] | number[] | Iterable<number>[]): this;
@@ -76,11 +77,11 @@ export declare class PathLS extends CanvasCompat {
     crop_at(T0: number, T1?: number): PathLS;
     reversed(_next?: SegmentLS): PathLS;
     terms(opt?: DescParams): (number | string)[];
-    enumSubPaths(opt?: DescParams): Generator<SegmentLS | undefined, void, unknown>;
+    shapes(opt?: DescParams): Generator<SegmentLS | undefined, void, unknown>;
     [Symbol.iterator](): Generator<SegmentLS, void, unknown>;
     transform(M: any): PathLS;
-    get firstSegment(): SegmentLS | undefined;
-    get lastSegment(): SegmentLS | undefined;
+    get first(): SegmentLS | undefined;
+    get last(): SegmentLS | undefined;
     toString(): string;
     d(): string;
     static move_to(...args: Vector[] | number[]): PathLS;
