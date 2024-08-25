@@ -2,7 +2,6 @@ import { Vector } from '../vector.js';
 import { BoundingBox } from '../bbox.js';
 import { Segment, tNorm, tCheck } from './index.js';
 import { pickPos, pickNum } from './index.js';
-import { parseLS } from './segment/parser.js';
 const { min, max, abs, PI, cos, sin, sqrt, acos, tan } = Math;
 const tau = 2 * PI;
 const epsilon = 1e-6;
@@ -299,7 +298,6 @@ export class SegmentLS extends Segment {
         return this;
     }
     parse(d) {
-        return parseLS(d, this);
     }
     static move_to(...args) {
         const [pos] = pickPos(args);
@@ -318,7 +316,6 @@ export class SegmentLS extends Segment {
         return this.move_to(Vector.new(0, 0)).quadraticCurveTo(p, to);
     }
     static parse(d) {
-        return parseLS(d, undefined);
     }
     static arc(...args) {
         const [x, y, r, a0, a1, ccw = 0] = pickNum(args);

@@ -58,12 +58,12 @@ export declare abstract class SegmentLS extends Segment {
     abstract transform(M: any): SegmentLS;
     abstract reversed(next?: SegmentLS): SegmentLS | undefined;
     abstract with_prev(prev: SegmentLS | undefined): SegmentLS;
-    parse(d: string): SegmentLS;
+    parse(d: string): void;
     static move_to(...args: Iterable<number>[] | number[] | Iterable<number>[]): MoveLS;
     static lineTo(...args: Iterable<number>[] | number[]): LineLS;
     static bezierCurveTo(...args: Iterable<number>[] | number[]): CubicLS;
     static quadraticCurveTo(...args: Iterable<number>[] | number[]): QuadLS;
-    static parse(d: string): SegmentLS;
+    static parse(d: string): void;
     static arc(...args: Iterable<number>[] | number[]): SegmentLS;
     static arcd(...args: Iterable<number>[] | number[]): SegmentLS;
     static arcTo(...args: Iterable<number>[] | number[]): SegmentLS;
