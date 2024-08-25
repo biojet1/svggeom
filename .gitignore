@@ -117,4 +117,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# FuseBox cache
+.task/
+
+
 package-lock.json
