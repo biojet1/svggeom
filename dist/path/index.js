@@ -8,7 +8,7 @@ export class Segment {
         const { x, y } = this.from;
         return ['M', x, y].concat(this.toPathFragment()).join(' ');
     }
-    descArray(opt) {
+    terms(opt) {
         const { x, y } = this.from;
         return ['M', x, y].concat(this.toPathFragment(opt));
     }

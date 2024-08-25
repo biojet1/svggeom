@@ -61,7 +61,7 @@ export declare class PathLS extends CanvasCompat {
         tracking?: number;
         letterSpacing?: number;
     }, text: string): this;
-    segmentAtLength(T: number, clamp?: boolean): [SegmentLS | undefined, number, number];
+    segment_at_length(T: number, clamp?: boolean): [SegmentLS | undefined, number, number];
     segment_at(T: number): [SegmentLS | undefined, number];
     get length(): number;
     get from(): Vector | undefined;
@@ -69,13 +69,13 @@ export declare class PathLS extends CanvasCompat {
     tangent_at(T: number): Vector | undefined;
     slope_at(T: number): Vector | undefined;
     point_at(T: number): Vector | undefined;
-    pointAtLength(L: number, clamp?: boolean): Vector | undefined;
+    point_at_length(L: number, clamp?: boolean): Vector | undefined;
     bbox(): BoundingBox;
     split_at(T: number): PathLS[];
     cut_at(T: number): PathLS;
     crop_at(T0: number, T1?: number): PathLS;
     reversed(_next?: SegmentLS): PathLS;
-    descArray(opt?: DescParams): (number | string)[];
+    terms(opt?: DescParams): (number | string)[];
     enumSubPaths(opt?: DescParams): Generator<SegmentLS | undefined, void, unknown>;
     [Symbol.iterator](): Generator<SegmentLS, void, unknown>;
     transform(M: any): PathLS;

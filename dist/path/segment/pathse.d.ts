@@ -19,7 +19,7 @@ export declare class PathSE {
     reversed(): PathSE;
     get length(): number | undefined;
     get totalLength(): number | undefined;
-    pointAtLength(L: number): 0 | import("../../vector.js").Vector | undefined;
+    point_at_length(L: number): 0 | import("../../vector.js").Vector | undefined;
     [Symbol.iterator](): IterableIterator<SegmentSE>;
     private calcLength;
     private get lengths();
@@ -33,7 +33,7 @@ export declare class PathSE {
     isContinuous(): boolean;
     isClosed(): boolean;
     private enumDesc;
-    descArray(params?: DescParams): (string | 0 | 1)[];
+    terms(params?: DescParams): (string | 0 | 1)[];
     describe(params?: DescParams): string;
     toString(): string;
     enumSubPaths(): Generator<PathSE, void, unknown>;

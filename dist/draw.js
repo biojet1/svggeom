@@ -172,19 +172,19 @@ export class PathDraw extends CanvasCompat {
     }
 }
 import { SegmentLS, MoveLS } from './path/linked.js';
-const len_segm = new WeakMap();
-const len_path = new WeakMap();
-function lenPath(seg) {
-    let v = len_path.get(seg);
+const len_segment_map = new WeakMap();
+const len_path_map = new WeakMap();
+function path_length(seg) {
+    let v = len_path_map.get(seg);
     if (v == null) {
-        len_path.set(seg, (v = seg.path_len()));
+        len_path_map.set(seg, (v = seg.path_len()));
     }
     return v;
 }
-function lenSegm(seg) {
-    let v = len_segm.get(seg);
+function segment_length(seg) {
+    let v = len_segment_map.get(seg);
     if (v == null) {
-        len_segm.set(seg, (v = seg.segment_len()));
+        len_segment_map.set(seg, (v = seg.segment_len()));
     }
     return v;
 }
@@ -257,18 +257,18 @@ export class PathLS extends CanvasCompat {
         }).draw(this);
         return this;
     }
-    segmentAtLength(T, clamp) {
+    segment_at_length(T, clamp) {
         let cur = this._tail;
         if (cur) {
-            return _segmentAtLen(cur, T, lenPath(cur), clamp);
+            return segment_at_length(cur, T, path_length(cur), clamp);
         }
         return [undefined, NaN, NaN];
     }
     segment_at(T) {
         let cur = this._tail;
         if (cur) {
-            const len = lenPath(cur);
-            const [seg, n, N] = _segmentAtLen(cur, T * len, len);
+            const len = path_length(cur);
+            const [seg, n, N] = segment_at_length(cur, T * len, len);
             return [seg, N == 0 ? 0 : n / N];
         }
         return [undefined, NaN];
@@ -276,7 +276,7 @@ export class PathLS extends CanvasCompat {
     get length() {
         let cur = this._tail;
         if (cur) {
-            return lenPath(cur);
+            return path_length(cur);
         }
         return 0;
     }
@@ -301,8 +301,8 @@ export class PathLS extends CanvasCompat {
         if (seg)
             return seg.point_at(t);
     }
-    pointAtLength(L, clamp) {
-        const [seg, n, N] = this.segmentAtLength(L, clamp);
+    point_at_length(L, clamp) {
+        const [seg, n, N] = this.segment_at_length(L, clamp);
         if (seg)
             return seg.point_at(n / N);
     }
@@ -320,10 +320,10 @@ export class PathLS extends CanvasCompat {
             if (seg) {
                 if (t == 0) {
                     const { prev } = seg;
-                    return [new PathLS(prev), new PathLS(_tail.withFarPrev3(seg, SegmentLS.move_to(prev?.to)))];
+                    return [new PathLS(prev), new PathLS(_tail.with_far_prev_3(seg, SegmentLS.move_to(prev?.to)))];
                 }
                 else if (t == 1) {
-                    return [new PathLS(seg), new PathLS(_tail.withFarPrev(seg, SegmentLS.move_to(seg.to)))];
+                    return [new PathLS(seg), new PathLS(_tail.with_far_prev(seg, SegmentLS.move_to(seg.to)))];
                 }
                 if (t < 0 || t > 1) {
                     throw new Error();
@@ -333,7 +333,7 @@ export class PathLS extends CanvasCompat {
                     return [new PathLS(a), new PathLS(b)];
                 }
                 else {
-                    return [new PathLS(a), new PathLS(_tail.withFarPrev(seg, b))];
+                    return [new PathLS(a), new PathLS(_tail.with_far_prev(seg, b))];
                 }
             }
         }
@@ -376,13 +376,13 @@ export class PathLS extends CanvasCompat {
         }
         return this;
     }
-    descArray(opt) {
-        return this?._tail?.descArray(opt) ?? [];
+    terms(opt) {
+        return this?._tail?.terms(opt) ?? [];
     }
     *enumSubPaths(opt) {
         const { _tail } = this;
         if (_tail) {
-            yield* _subPaths(_tail);
+            yield* enum_sub_paths(_tail);
         }
     }
     *[Symbol.iterator]() {
@@ -439,7 +439,7 @@ export class PathLS extends CanvasCompat {
         return PathLS.move_to(0, 0).lineTo(...arguments);
     }
 }
-function _segmentAtLen(cur, lenP, LEN, clamp) {
+function segment_at_length(cur, lenP, LEN, clamp) {
     S1: if (cur) {
         if (lenP < 0) {
             if (clamp) {
@@ -457,7 +457,7 @@ function _segmentAtLen(cur, lenP, LEN, clamp) {
                 }
             } while ((cur = cur._prev));
             if (last) {
-                return [last, 0, lenSegm(last)];
+                return [last, 0, segment_length(last)];
             }
             break S1;
         }
@@ -474,7 +474,7 @@ function _segmentAtLen(cur, lenP, LEN, clamp) {
             if (cur instanceof MoveLS) {
             }
             else {
-                const lenS = lenSegm(cur);
+                const lenS = segment_length(cur);
                 if (lenS >= 0) {
                     const lenT = lenP - (to -= lenS);
                     if (lenT >= 0) {
@@ -486,7 +486,7 @@ function _segmentAtLen(cur, lenP, LEN, clamp) {
     }
     return [undefined, NaN, NaN];
 }
-function* _subPaths(cur) {
+function* enum_sub_paths(cur) {
     let tail;
     for (; cur; cur = cur._prev) {
         if (cur instanceof MoveLS) {
@@ -495,7 +495,7 @@ function* _subPaths(cur) {
                     throw new Error();
                 }
                 else {
-                    yield tail.withFarPrev3(cur, undefined);
+                    yield tail.with_far_prev_3(cur, undefined);
                 }
                 tail = undefined;
             }

@@ -63,7 +63,7 @@ export class SegmentLS extends Segment {
             }
         }
     }
-    *enum() {
+    *walk() {
         for (let cur = this; cur; cur = cur._prev) {
             yield cur;
         }
@@ -209,19 +209,19 @@ export class SegmentLS extends Segment {
     }
     describe(opt) {
         const { _prev } = this;
-        const [cmd, ...args] = this._descs(opt);
+        const [cmd, ...args] = this.term(opt);
         const d = `${cmd}${args.map(v => fmtN(v)).join(',')}`;
         return _prev ? _prev.describe(opt) + d : d;
     }
-    descArray(opt) {
+    terms(opt) {
         const { _prev } = this;
         if (_prev) {
-            const a = _prev.descArray(opt);
-            a.push(...this._descs(opt));
+            const a = _prev.terms(opt);
+            a.push(...this.term(opt));
             return a;
         }
         else {
-            return [...this._descs(opt)];
+            return [...this.term(opt)];
         }
     }
     cut_at(t) {
@@ -264,25 +264,25 @@ export class SegmentLS extends Segment {
     bbox() {
         return BoundingBox.not();
     }
-    withFarPrev(farPrev, newPrev) {
+    with_far_prev(farPrev, newPrev) {
         const { _prev } = this;
         if (farPrev === this) {
             return newPrev;
         }
         else if (_prev) {
-            return this.with_prev(_prev.withFarPrev(farPrev, newPrev));
+            return this.with_prev(_prev.with_far_prev(farPrev, newPrev));
         }
         else {
             throw new Error(`No prev`);
         }
     }
-    withFarPrev3(farPrev, newPrev) {
+    with_far_prev_3(farPrev, newPrev) {
         const { _prev } = this;
         if (farPrev === this) {
             return this.with_prev(newPrev);
         }
         else if (_prev) {
-            return this.with_prev(_prev.withFarPrev3(farPrev, newPrev));
+            return this.with_prev(_prev.with_far_prev_3(farPrev, newPrev));
         }
         else {
             throw new Error(`No prev`);
@@ -366,7 +366,7 @@ export class LineLS extends SegmentLS {
         const c = this.point_at(t);
         return [new LineLS(this._prev, c), new LineLS(new MoveLS(undefined, c), to)];
     }
-    _descs(opt) {
+    term(opt) {
         const { to: [x, y], } = this;
         if (opt) {
             const { relative, short } = opt;
@@ -417,7 +417,7 @@ export class LineLS extends SegmentLS {
     }
 }
 export class MoveLS extends LineLS {
-    _descs(opt) {
+    term(opt) {
         const { to: [x, y], } = this;
         if (opt?.relative) {
             const { _prev } = this;
@@ -466,11 +466,11 @@ export class CloseLS extends LineLS {
         const { to, _prev } = this;
         return new CloseLS(_prev?.transform(M), to.transform(M));
     }
-    _descs(opt) {
+    term(opt) {
         if (opt) {
             const { relative, close } = opt;
             if (close === false) {
-                return super._descs(opt);
+                return super.term(opt);
             }
             else if (relative) {
                 return ['z'];
@@ -523,7 +523,7 @@ export class QuadLS extends SegmentLS {
         const { _prev } = this;
         return _prev ? quad_bbox(this._qpts) : BoundingBox.not();
     }
-    _descs(opt) {
+    term(opt) {
         const { p: [x1, y1], to: [ex, ey], } = this;
         if (opt) {
             const { relative, smooth } = opt;
@@ -609,7 +609,7 @@ export class CubicLS extends SegmentLS {
         const { c1, c2, to, _prev } = this;
         return new CubicLS(_prev?.transform(M), c1.transform(M), c2.transform(M), to.transform(M));
     }
-    _descs(opt) {
+    term(opt) {
         const { c1: [x1, y1], c2: [x2, y2], to: [ex, ey], } = this;
         if (opt) {
             const { smooth, relative } = opt;
@@ -692,7 +692,7 @@ export class ArcLS extends SegmentLS {
             return next;
         }
     }
-    _descs(opt) {
+    term(opt) {
         const { rx, ry, phi, sweep, bigArc, to: [x, y], } = this;
         if (opt?.relative) {
             const { _prev } = this;

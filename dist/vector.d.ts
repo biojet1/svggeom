@@ -14,7 +14,6 @@ export declare class Vector extends Float64Array {
     equals(p: Iterable<number>, epsilon?: number): boolean;
     angle_to(p: Iterable<number>): number;
     toString(): string;
-    toArray(): number[];
     normal(): Vector;
     div(factor: number): Vector;
     mul(factor: number): Vector;

@@ -16,7 +16,7 @@ export declare abstract class Segment {
     abstract slope_at(t: number): Vector;
     tangent_at(t: number): Vector;
     toPath(): string;
-    descArray(opt?: DescParams): (string | number)[];
+    terms(opt?: DescParams): (string | number)[];
     toPathFragment(opt?: DescParams): (string | number)[];
 }
 export declare function tCheck(t: number): number;

@@ -1,17 +1,31 @@
-import { tCheck } from './index.js';
-import { BoundingBox } from "../bbox";
-import { Vector } from "../vector";
+import { tCheck, tNorm } from './index.js';
+import { BoundingBox } from "../bbox.js";
+import { Vector } from "../vector.js";
+import { quad_split_at, quad_slope_at, quad_point_at, quad_bbox } from './quadhelp.js';
+import { quad_length } from './quadhelp.js';
+import { cubic_length, cubic_slope_at, cubic_point_at, cubic_box, cubic_split_at } from './cubichelp.js';
 const { min, max, abs, PI, cos, sin, sqrt, acos, tan } = Math;
 export class Command {
+}
+function pos(p) {
+    return Vector.pos(...p);
+}
+const tau = 2 * PI;
+const epsilon = 1e-6;
+const tauEpsilon = tau - epsilon;
+let digits = 6;
+function fmtN(n) {
+    const v = n.toFixed(digits);
+    return v.indexOf('.') < 0 ? v : v.replace(/0+$/g, '').replace(/\.$/g, '');
 }
 export class CommandLink extends Command {
     _prev;
     _to;
     static get digits() {
-        return CommandLink.digits;
+        return digits;
     }
     static set digits(n) {
-        CommandLink.digits = n;
+        digits = n;
     }
     constructor(prev, to) {
         super();
@@ -58,8 +72,139 @@ export class CommandLink extends Command {
     bbox() {
         return BoundingBox.not();
     }
+    cut_at(t) {
+        return t < 0 ? this.split_at(1 + t)[1] : this.split_at(t)[0];
+    }
+    crop_at(t0, t1) {
+        t0 = tNorm(t0);
+        t1 = tNorm(t1);
+        if (t0 <= 0) {
+            if (t1 >= 1) {
+                return this;
+            }
+            else if (t1 > 0) {
+                return this.cut_at(t1);
+            }
+        }
+        else if (t0 < 1) {
+            if (t1 >= 1) {
+                return this.cut_at(t0 - 1);
+            }
+            else if (t0 < t1) {
+                return this.cut_at(t0 - 1).cut_at((t1 - t0) / (1 - t0));
+            }
+            else if (t0 > t1) {
+                return this.crop_at(t1, t0);
+            }
+        }
+        else if (t1 < 1) {
+            return this.crop_at(t1, t0);
+        }
+    }
+    path_len() {
+        const { _prev } = this;
+        const len = this.segment_len();
+        return _prev ? _prev.path_len() + len : len;
+    }
     segment_len() {
         return this.length;
+    }
+    tangent_at(t) {
+        const vec = this.slope_at(t);
+        return vec.div(vec.abs());
+    }
+    move_to(p) {
+        return new MoveCL(this, pos(p));
+    }
+    line_to(p) {
+        return new LineCL(this, pos(p));
+    }
+    curve_to(c1, c2, p2) {
+        return new CubicCL(this, pos(c1), pos(c2), pos(p2));
+    }
+    quad_to(c, p) {
+        return new QuadCL(this, pos(c), pos(p));
+    }
+    close() {
+        const to = this.last_move?.to;
+        return to ? new CloseCL(this, to) : this;
+    }
+    arc_to(rx, ry, φ, bigArc, sweep, p) {
+        return new ArcCL(this, rx, ry, φ, bigArc, sweep, pos(p));
+    }
+    arc_centered_at(c, radius, startAngle, endAngle, counterclockwise = false) {
+        return arc_centered_at(this, c, radius, startAngle, endAngle, counterclockwise);
+    }
+    arc_tangent_to(p1, p2, r) {
+        return arc_tangent_to(this, p1, p2, r);
+    }
+    lineTo(x, y) {
+        return this.line_to([x, y]);
+    }
+    moveTo(x, y) {
+        return this.move_to([x, y]);
+    }
+    closePath() {
+        return this.close();
+    }
+    quadraticCurveTo(cx, cy, px, py) {
+        return this.quad_to([cx, cy], [px, py]);
+    }
+    bezierCurveTo(cx1, cy1, cx2, cy2, px2, py2) {
+        return this.curve_to([cx1, cy1], [cx2, cy2], [px2, py2]);
+    }
+    arc(cx, cy, radius, startAngle, endAngle, counterclockwise = false) {
+        return arc_centered_at(this, [cx, cy], radius, startAngle, endAngle, counterclockwise);
+    }
+    arcTo(x1, y1, x2, y2, radius) {
+        return arc_tangent_to(this, [x1, y1], [x2, y2], radius);
+    }
+    rect(x, y, w, h) {
+        return this.M([x, y]).h(w).v(h).h(-w).z();
+    }
+    toString() {
+        return this.describe();
+    }
+    terms(opt) {
+        const { _prev } = this;
+        if (_prev) {
+            const a = _prev.terms(opt);
+            a.push(...this.term(opt));
+            return a;
+        }
+        else {
+            return [...this.term(opt)];
+        }
+    }
+    describe(opt) {
+        const { _prev } = this;
+        const [cmd, ...args] = this.term(opt);
+        const d = `${cmd}${args.map(v => fmtN(v)).join(',')}`;
+        return _prev ? _prev.describe(opt) + d : d;
+    }
+    with_far_prev(farPrev, newPrev) {
+        const { _prev } = this;
+        if (farPrev === this) {
+            return newPrev;
+        }
+        else if (_prev) {
+            return this.with_prev(_prev.with_far_prev(farPrev, newPrev));
+        }
+        else {
+            throw new Error(`No prev`);
+        }
+    }
+    with_far_prev_3(farPrev, newPrev) {
+        const { _prev } = this;
+        if (farPrev === this) {
+            return this.with_prev(newPrev);
+        }
+        else if (_prev) {
+            return this.with_prev(_prev.with_far_prev_3(farPrev, newPrev));
+        }
+        else {
+            throw new Error(`No prev`);
+        }
     }
     as_curve() {
         let { _prev } = this;
@@ -71,17 +216,10 @@ export class CommandLink extends Command {
         }
         return this;
     }
-    move_to(p) {
-        return new MoveCL(this, new Vector(p));
-    }
-    line_to(p) {
-        return new LineCL(this, new Vector(p));
-    }
-    curve_to(c1, c2, p2) {
-        return new CubicCL(this, new Vector(c1), new Vector(c2), new Vector(p2));
-    }
-    quad_to(c, p) {
-        return new QuadCL(this, new Vector(c), new Vector(p));
+    *walk() {
+        for (let cur = this; cur; cur = cur._prev) {
+            yield cur;
+        }
     }
     M(p) {
         return this.move_to(p);
@@ -90,11 +228,7 @@ export class CommandLink extends Command {
         return this.move_to(this.to.add(p));
     }
     Z() {
-        const to = this.last_move?.to;
-        if (to) {
-            return new CloseCL(this, to);
-        }
-        return this;
+        return this.close();
     }
     z() {
         return this.Z();
@@ -168,17 +302,20 @@ export class CommandLink extends Command {
         }
     }
     A(rx, ry, φ, bigArc, sweep, p) {
-        return new ArcCL(this, rx, ry, φ, bigArc, sweep, new Vector(p));
+        return new ArcCL(this, rx, ry, φ, bigArc, sweep, pos(p));
     }
     a(rx, ry, φ, bigArc, sweep, p) {
         const { to: rel } = this;
         return new ArcCL(this, rx, ry, φ, bigArc, sweep, rel.add(p));
     }
     static move_to(p) {
-        return new MoveCL(undefined, new Vector(p));
+        return new MoveCL(undefined, pos(p));
     }
     static line_to(p) {
         return this.move_to([0, 0]).line_to(p);
+    }
+    static lineTo(x, y) {
+        return this.line_to([x, y]);
     }
     static curve_to(c1, c2, p2) {
         return this.move_to([0, 0]).curve_to(c1, c2, p2);
@@ -186,8 +323,26 @@ export class CommandLink extends Command {
     static quad_to(c, p) {
         return this.move_to([0, 0]).quad_to(c, p);
     }
+    static arc_centered_at(c, radius, startAngle, endAngle, counterclockwise = false) {
+        return arc_centered_at(undefined, c, radius, startAngle, endAngle, counterclockwise);
+    }
+    static rect(x, y, w, h) {
+        return this.move_to([x, y]).h(w).v(h).h(-w).z();
+    }
+    static arc_tangent_to(p1, p2, r) {
+        return arc_tangent_to(undefined, p1, p2, r);
+    }
     static parse(d) {
         return parseCL(d, undefined);
+    }
+    static bezierCurveTo(cx1, cy1, cx2, cy2, px2, py2) {
+        return this.curve_to([cx1, cy1], [cx2, cy2], [px2, py2]);
+    }
+    static quadraticCurveTo(cx, cy, px, py) {
+        return this.quad_to([cx, cy], [px, py]);
+    }
+    static arcd(cx, cy, radius, startAngle, endAngle, counterclockwise = false) {
+        return this.arc_centered_at([cx, cy], radius, (startAngle * PI) / 180, (endAngle * PI) / 180, counterclockwise);
     }
 }
 export class LineCL extends CommandLink {
@@ -219,7 +374,7 @@ export class LineCL extends CommandLink {
         const c = this.point_at(t);
         return [new LineCL(this._prev, c), new LineCL(new MoveCL(undefined, c), to)];
     }
-    _descs(opt) {
+    term(opt) {
         const { to: [x, y], } = this;
         if (opt) {
             const { relative, short } = opt;
@@ -270,7 +425,7 @@ export class LineCL extends CommandLink {
     }
 }
 export class MoveCL extends LineCL {
-    _descs(opt) {
+    term(opt) {
         const { to: [x, y], } = this;
         if (opt?.relative) {
             const { _prev } = this;
@@ -319,11 +474,11 @@ export class CloseCL extends LineCL {
         const { to, _prev } = this;
         return new CloseCL(_prev?.transform(M), to.transform(M));
     }
-    _descs(opt) {
+    term(opt) {
         if (opt) {
             const { relative, close } = opt;
             if (close === false) {
-                return super._descs(opt);
+                return super.term(opt);
             }
             else if (relative) {
                 return ['z'];
@@ -347,8 +502,6 @@ export class CloseCL extends LineCL {
         return new CloseCL(prev, to);
     }
 }
-import { quad_split_at, quad_slope_at, quad_point_at, quad_bbox } from './quadhelp.js';
-import { quad_length } from './quadhelp.js';
 export class QuadCL extends CommandLink {
     p;
     constructor(prev, p, to) {
@@ -376,7 +529,7 @@ export class QuadCL extends CommandLink {
         const { _prev } = this;
         return _prev ? quad_bbox(this._qpts) : BoundingBox.not();
     }
-    _descs(opt) {
+    term(opt) {
         const { p: [x1, y1], to: [ex, ey], } = this;
         if (opt) {
             const { relative, smooth } = opt;
@@ -413,7 +566,6 @@ export class QuadCL extends CommandLink {
         return new QuadCL(prev, p, to);
     }
 }
-import { cubic_length, cubic_slope_at, cubic_point_at, cubic_box, cubic_split_at } from './cubichelp.js';
 export class CubicCL extends CommandLink {
     c1;
     c2;
@@ -462,7 +614,7 @@ export class CubicCL extends CommandLink {
         const { c1, c2, to, _prev } = this;
         return new CubicCL(_prev?.transform(M), c1.transform(M), c2.transform(M), to.transform(M));
     }
-    _descs(opt) {
+    term(opt) {
         const { c1: [x1, y1], c2: [x2, y2], to: [ex, ey], } = this;
         if (opt) {
             const { smooth, relative } = opt;
@@ -545,7 +697,7 @@ export class ArcCL extends CommandLink {
             return next;
         }
     }
-    _descs(opt) {
+    term(opt) {
         const { rx, ry, phi, sweep, bigArc, to: [x, y], } = this;
         if (opt?.relative) {
             const { _prev } = this;
@@ -697,6 +849,69 @@ function parseCL(d, prev) {
             default:
                 throw new Error(`Invalid path command ${command} from "${d}"`);
         }
+    }
+    return cur;
+}
+function arc_centered_at(cur, c, radius, startAngle, endAngle, counterclockwise = false) {
+    const [x, y] = c;
+    const a0 = startAngle;
+    const a1 = endAngle;
+    const cw = !counterclockwise;
+    const r = radius;
+    const dx = r * cos(a0);
+    const dy = r * sin(a0);
+    const x0 = x + dx;
+    const y0 = y + dy;
+    if (r < 0) {
+        throw new Error('negative radius: ' + r);
+    }
+    else if (!cur) {
+        cur = new MoveCL(undefined, Vector.new(x0, y0));
+    }
+    else if (!cur.to.close_to(Vector.new(x0, y0), epsilon)) {
+        cur = cur.line_to(Vector.new(x0, y0));
+    }
+    let da = cw ? a1 - a0 : a0 - a1;
+    if (!r) {
+        return cur;
+    }
+    else if (da < 0) {
+        da = (da % tau) + tau;
+    }
+    if (da > tauEpsilon) {
+        return cur.arc_to(r, r, 0, 1, cw, [x - dx, y - dy]).arc_to(r, r, 0, 1, cw, [x0, y0]);
+    }
+    else if (da > epsilon) {
+        return cur.arc_to(r, r, 0, da >= PI, cw, [x + r * cos(a1), y + r * sin(a1)]);
+    }
+    return cur;
+}
+function arc_tangent_to(cur, p1, p2, r) {
+    const [x1, y1] = p1;
+    const [x2, y2] = p2;
+    const [x0, y0] = cur ? cur.to : [0, 0];
+    const x21 = x2 - x1;
+    const y21 = y2 - y1;
+    const x01 = x0 - x1;
+    const y01 = y0 - y1;
+    const l01_2 = x01 * x01 + y01 * y01;
+    if (r < 0) {
+        throw new Error('negative radius: ' + r);
+    }
+    else if (!cur) {
+        cur = CommandLink.move_to(Vector.new(x1, y1));
+    }
+    else if (!(l01_2 > epsilon)) {
+    }
+    else if (!(abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
+        cur = cur.line_to(Vector.new(x1, y1));
+    }
+    else {
+        const x20 = x2 - x0, y20 = y2 - y0, l21_2 = x21 * x21 + y21 * y21, l20_2 = x20 * x20 + y20 * y20, l21 = sqrt(l21_2), l01 = sqrt(l01_2), l = r * tan((PI - acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2), t01 = l / l01, t21 = l / l21;
+        if (abs(t01 - 1) > epsilon) {
+            cur = cur.L(Vector.new(x1 + t01 * x01, y1 + t01 * y01));
+        }
+        cur = cur.arc_to(r, r, 0, 0, y01 * x20 > x01 * y20 ? 1 : 0, [x1 + t21 * x21, y1 + t21 * y21]);
     }
     return cur;
 }

@@ -105,10 +105,7 @@ export class Vector extends Float64Array {
         return this.post_subtract(p).angle;
     }
     toString() {
-        return this.toArray().join(', ');
-    }
-    toArray() {
-        return [...this];
+        return this.join(', ');
     }
     normal() {
         const [x, y, ...a] = this;
