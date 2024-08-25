@@ -368,4 +368,4 @@ function* enum_shapes(cur) {
         yield tail;
     }
 }
-//# sourceMappingURL=pathcl.js.map
+//# sourceMappingURL=pathlc.js.map
