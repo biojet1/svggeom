@@ -1,10 +1,37 @@
 'uses strict';
 import test from 'tap';
-import { PathLS, Vector } from 'svggeom';
-import { PathDraw } from '../dist/draw.js';
-import { PathLC } from '../dist/path/pathcl.js';
-import { dSplit } from '../dist/path/segment/pathse.js';
+import { PathLC, Vector } from 'svggeom';
 import './utils.js';
+// splits a transformation chain
+export const transforms = /\)\s*,?\s*/;
+
+// split at whitespace and comma
+export const delimiter = /[\s,]+/;
+
+// The following regex are used to parse the d attribute of a path
+
+// Matches all hyphens which are not after an exponent
+export const hyphen = /([^e])-/gi;
+
+// Replaces and tests for all path letters
+export const pathLetters = /[MLHVCSQTAZ]/gi;
+
+// yes we need this one, too
+export const isPathLetter = /[MLHVCSQTAZ]/i;
+
+// matches 0.154.23.45
+export const numbersWithDots = /((\d?\.\d+(?:e[+-]?\d+)?)((?:\.\d+(?:e[+-]?\d+)?)+))+/gi;
+function pathRegReplace(_a, _b, c, d) {
+    return c + d.replace(dots, ' .');
+}
+export function dSplit(d) {
+    return d
+        .replace(numbersWithDots, pathRegReplace) // convert 45.123.123 to 45.123 .123
+        .replace(pathLetters, ' $& ') // put some room between letters and numbers
+        .replace(hyphen, '$1 -') // add space before hyphen
+        .trim() // trim
+        .split(delimiter);
+}
 const CI = !!process.env.CI;
 // https://github.com/d3/d3-path/blob/main/test/path-test.js
 function D(p) {
@@ -640,69 +667,5 @@ function testPath(test, PathClass) {
     });
 }
 
-//     def test_wc3_examples19(self):
-//         """
-//         W3C_SVG_11_TestSuite Paths
-//         Test that additional parameters to pathdata commands are treated as additional calls to the most recent command.
-//         """
-// parse_path = PathSE
-// path19a = parse_path("""M20 20 H40 H60""")
-// path19b = parse_path("""M20 20 H40 60""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M20 40 h20 h20""")
-// path19b = parse_path("""M20 40 h20 20""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M120 20 V40 V60""")
-// path19b = parse_path("""M120 20 V40 60""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M140 20 v20 v20""")
-// path19b = parse_path("""M140 20 v20 20""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M220 20 L 240 20 L260 20""")
-// path19b = parse_path("""M220 20 L 240 20 260 20 """)
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M220 40 l 20 0 l 20 0""")
-// path19b = parse_path("""M220 40 l 20 0 20 0""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M50 150 C50 50 200 50 200 150 C200 50 350 50 350 150""")
-// path19b = parse_path("""M50 150 C50 50 200 50 200 150 200 50 350 50 350 150""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path(
-//     """M50, 200 c0,-100 150,-100 150,0 c0,-100 150,-100 150,0"""
-// )
-// path19b = parse_path(
-//     """M50, 200 c0,-100 150,-100 150,0 0,-100 150,-100 150,0"""
-// )
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M50 250 S125 200 200 250 S275, 200 350 250""")
-// path19b = parse_path("""M50 250 S125 200 200 250 275, 200 350 250""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M50 275 s75 -50 150 0 s75, -50 150 0""")
-// path19b = parse_path("""M50 275 s75 -50 150 0 75, -50 150 0""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M50 300 Q 125 275 200 300 Q 275 325 350 300""")
-// path19b = parse_path("""M50 300 Q 125 275 200 300 275 325 350 300""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M50 325 q 75 -25 150 0 q 75 25 150 0""")
-// path19b = parse_path("""M50 325 q 75 -25 150 0 75 25 150 0""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M425 25 T 425 75 T 425 125""")
-// path19b = parse_path("""M425 25 T 425 75 425 125""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M450 25 t 0 50 t 0 50""")
-// path19b = parse_path("""M450 25 t 0 50 0 50""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M400,200 A25 25 0 0 0 425 150 A25 25 0 0 0 400 200""")
-// path19b = parse_path("""M400,200 A25 25 0 0 0 425 150 25 25 0 0 0 400 200""")
-// self.assertEqual(path19a, path19b)
-// path19a = parse_path("""M400,300 a25 25 0 0 0 25 -50 a25 25 0 0 0 -25 50""")
-// path19b = parse_path("""M400,300 a25 25 0 0 0 25 -50 25 25 0 0 0 -25 50""")
-// self.assertEqual(path19a, path19b)
-
-// class O(object):
-//     pass
-
-testPath(test, PathDraw);
-testPath(test, PathLS);
 testPath(test, PathLC);
 

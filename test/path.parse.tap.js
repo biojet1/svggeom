@@ -3,7 +3,6 @@ import test from 'tap';
 import { enum_path_data } from './path.utils.js';
 // import { SegmentLS as PCX } from 'svggeom';
 import { PathLC as PathXL } from 'svggeom';
-import { PathSE } from '../dist/path/segment/pathse.js';
 import './utils.js';
 const { Unit: PCX } = PathXL;
 
@@ -35,16 +34,7 @@ for await (const item of enum_path_data({ SEGMENTS: 'Parsed' })) {
             continue;
     }
 
-    test.test(`SPTPaths<${d}>`, { bail: 1 }, function (t) {
-        const p = PathSE.parse(d);
-        const abs = p.terms({ relative: false, close: close, short: false });
 
-        t.sameDescs(abs, item.abs, 5e-5, `ABS`, p);
-        const rel = p.terms({ relative: true, close: close, short: false });
-        t.sameDescs(rel, item.rel, 5e-5, `REL`, p);
-
-        t.end();
-    });
     test.test(`SPTPaths<${d}>`, { bail: 1 }, function (t) {
         const p = PCX.parse(d);
         const abs = p.terms({ relative: false, short: false });
@@ -73,15 +63,7 @@ for await (const item of enum_path_data({ SEGMENTS: 'SEPaths' })) {
             continue;
     }
     const eps = 0.00005;
-    test.test(`SEPaths<${d}>`, { bail: 1 }, function (t) {
-        const p = PathSE.parse(item.d);
-        const abs = p.terms({ relative: false, close: true });
-        t.sameDescs(abs, item.abs, eps, `ABS`, p);
-        const rel = p.terms({ relative: true });
-        t.sameDescs(rel, item.rel, eps, `REL`, p);
 
-        t.end();
-    });
     test.test(`PCX:SEPaths<${d}>`, { bail: 1 }, function (t) {
         const cur = PCX.parse(item.d);
         // t.same(item.abs, cur.terms(), [`${cur.toString()}`, item.abs]);
