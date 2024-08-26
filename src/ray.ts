@@ -8,7 +8,9 @@ type NumOrVec = number | Iterable<number>;
 function* pickXY(args: NumOrVec[]) {
 	for (const v of args) {
 		if (typeof v == 'number') {
-			yield v;
+			// console.warn(`pickXY number is depreciated`);
+			throw new Error(`pickXY number is depreciated`);
+			// yield v;
 		} else {
 			const [x, y] = v;
 			yield x;
@@ -21,7 +23,9 @@ function Pt(x: NumOrVec, y?: number) {
 	if (typeof x === 'object') {
 		return Vector.pos(...x);
 	} else {
-		return Vector.pos(x, y);
+		console.warn(`Pt number is depreciated`);
+		throw new Error(`Pt number is depreciated`);
+		// return Vector.pos(x, y);
 	}
 }
 
@@ -404,43 +408,27 @@ export class Ray extends VecRay {
 	}
 
 	static towards(x: NumOrVec, y?: number) {
-		return this.new().towards(Pt(x, y));
+		return this.home.towards(Pt(x, y));
 	}
 
 	static away(x: NumOrVec, y?: number) {
-		return this.new().away(Pt(x, y));
+		return this.home.away(Pt(x, y));
 	}
 
 	static after(x: NumOrVec, y?: number) {
-		return this.new().after(Pt(x, y));
+		return this.home.after(Pt(x, y));
 	}
 
 	static before(x: NumOrVec, y?: number) {
-		return this.new().before(Pt(x, y));
+		return this.home.before(Pt(x, y));
 	}
-
-	// static fromLine(a: Iterable<number>, b: Iterable<number>) {
-	// 	return this.pos(a).towards(b);
-	// }
 
 	static get home() {
 		return new this(Vector.pos(0, 0), Vector.pos(1, 0));
 	}
 }
 
-// export class RayStack extends VecRay {
-// 	_prev: Ray;
-// 	constructor(ray: Ray) {
-// 		const {pos, dir} = ray;
-// 		super(pos, dir);
-// 		this._prev = ray;
-// 	}
-// 	end() {
-// 		return this._prev;
-// 	}
-// }
-
-export class RayL extends Ray {
+export class LinkedRay extends Ray {
 	_prev: Ray | undefined;
 	constructor(pos: Vector, dir: Vector, ray?: Ray) {
 		super(pos, dir);
@@ -449,13 +437,13 @@ export class RayL extends Ray {
 	prev() {
 		return this._prev;
 	}
-	protected override new_pos(v: Vector): RayL {
-		return new RayL(v, this.dir, this);
+	protected override new_pos(v: Vector): LinkedRay {
+		return new LinkedRay(v, this.dir, this);
 	}
-	protected override new_dir(v: Vector): RayL {
-		return new RayL(this.pos, v, this);
+	protected override new_dir(v: Vector): LinkedRay {
+		return new LinkedRay(this.pos, v, this);
 	}
-	protected override new_ray(p: Vector, a: Vector): RayL {
-		return new RayL(p, a, this);
+	protected override new_ray(p: Vector, a: Vector): LinkedRay {
+		return new LinkedRay(p, a, this);
 	}
 }
