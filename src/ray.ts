@@ -80,7 +80,7 @@ export class VecRay {
 		return this.delta(x, y).abs();
 	}
 
-	pointAlong(d: number): Vector {
+	point_along(d: number): Vector {
 		const { pos, dir } = this;
 		return pos.add(Vector.polar(d, dir.radians));
 	}
@@ -99,7 +99,7 @@ export class VecRay {
 	}
 
 	// Calc
-	distanceFromLine(a: Iterable<number>, b: Iterable<number>): number {
+	distance_from_line(a: Iterable<number>, b: Iterable<number>): number {
 		const [x, y] = this.pos;
 		const [x1, y1] = a;
 		const [x2, y2] = b;
@@ -115,11 +115,11 @@ export class VecRay {
 		return NaN;
 	}
 
-	nearestPointOfLine(a: Iterable<number>, b: Iterable<number>): Vector {
+	nearest_point_of_line(a: Iterable<number>, b: Iterable<number>): Vector {
 		return this.pos.nearest_point_of_line(a, b);
 	}
 
-	intersectOfLine(a: Iterable<number>, b: Iterable<number>): Vector {
+	intersect_of_line(a: Iterable<number>, b: Iterable<number>): Vector {
 		const { pos, dir } = this;
 		const [x1, y1] = a;
 		const [x2, y2] = b;
@@ -151,12 +151,12 @@ export class VecRay {
 		return Vector.pos((e1 * dx[1] - dx[0] * e2) / d, (e1 * dy[1] - dy[0] * e2) / d);
 	}
 
-	intersectOfRay(r: Ray): Vector {
+	intersect_of_ray(r: Ray): Vector {
 		const { pos, dir } = this;
-		return r.intersectOfLine(pos, pos.add(dir));
+		return r.intersect_of_line(pos, pos.add(dir));
 	}
 
-	nearestPointFromPoint(p: Iterable<number>): Vector {
+	nearest_point_from_point(p: Iterable<number>): Vector {
 		const { pos, dir } = this;
 		return Vector.new(p).nearest_point_of_line(pos, pos.add(dir));
 	}
@@ -168,111 +168,111 @@ export class Ray extends VecRay {
 		return new Ray(pos, dir);
 	}
 
-	protected _Pos(v: Vector) {
+	protected new_pos(v: Vector) {
 		return new Ray(v, this.dir);
 	}
 
-	protected _Dir(v: Vector) {
+	protected new_dir(v: Vector) {
 		return new Ray(this.pos, v);
 	}
 
-	protected _Set(p: Vector, a: Vector) {
+	protected new_ray(p: Vector, a: Vector) {
 		return new Ray(p, a);
 	}
 
-	withDir(rad: NumOrVec) {
-		// turned withDir
+	with_dir(rad: NumOrVec) {
+		// turned with_dir
 		if (typeof rad === 'object') {
-			return this._Dir(Vector.pos(...rad));
+			return this.new_dir(Vector.pos(...rad));
 		} else {
-			return this._Dir(Vector.radians(rad));
+			return this.new_dir(Vector.radians(rad));
 		}
 	}
 
-	withH(h = 0) {
+	with_h(h = 0) {
 		const { v } = this;
-		return this._Dir(Vector.pos(h, v));
+		return this.new_dir(Vector.pos(h, v));
 	}
 
-	withV(v = 0) {
+	with_v(v = 0) {
 		const { h } = this;
-		return this._Dir(Vector.pos(h, v));
+		return this.new_dir(Vector.pos(h, v));
 	}
 
-	withX(x = 0) {
+	with_x(x = 0) {
 		const { pos } = this;
-		return this._Pos(pos.with_x(x));
+		return this.new_pos(pos.with_x(x));
 	}
 
-	withY(y = 0) {
+	with_y(y = 0) {
 		const { pos } = this;
-		return this._Pos(pos.with_y(y));
+		return this.new_pos(pos.with_y(y));
 	}
 
-	withZ(z = 0) {
+	with_z(z = 0) {
 		const { pos } = this;
-		return this._Pos(pos.with_z(z));
+		return this.new_pos(pos.with_z(z));
 	}
-	shiftX(d: number) {
-		return this._Pos(this.pos.shift_x(d));
-	}
-
-	shiftY(d: number) {
-		return this._Pos(this.pos.shift_y(d));
+	shift_x(d: number) {
+		return this.new_pos(this.pos.shift_x(d));
 	}
 
-	shiftZ(d: number) {
-		return this._Pos(this.pos.shift_z(d));
+	shift_y(d: number) {
+		return this.new_pos(this.pos.shift_y(d));
 	}
 
-	flipX() {
-		return this._Pos(this.pos.flip_x());
+	shift_z(d: number) {
+		return this.new_pos(this.pos.shift_z(d));
 	}
 
-	flipY() {
-		return this._Pos(this.pos.flip_y());
+	flip_x() {
+		return this.new_pos(this.pos.flip_x());
 	}
 
-	flipZ() {
-		return this._Pos(this.pos.flip_z());
+	flip_y() {
+		return this.new_pos(this.pos.flip_y());
+	}
+
+	flip_z() {
+		return this.new_pos(this.pos.flip_z());
 	}
 
 	// Move
 	goto(x: NumOrVec, y?: number) {
-		return this._Pos(Pt(x, y));
+		return this.new_pos(Pt(x, y));
 	}
 
 	forward(d: number) {
 		const { pos, dir } = this;
-		return this._Pos(dir.normalize().multiply(d).post_add(pos));
+		return this.new_pos(dir.normalize().multiply(d).post_add(pos));
 	}
 
 	back(d?: number) {
 		if (d) {
 			return this.forward(-d);
 		} else {
-			return this._Dir(this.dir.multiply(-1));
+			return this.new_dir(this.dir.multiply(-1));
 		}
 	}
 
 	translate(x: NumOrVec, y?: number) {
 		const { pos } = this;
-		return this._Pos(Pt(x, y).post_add(pos));
+		return this.new_pos(Pt(x, y).post_add(pos));
 	}
 
 	along(t: number, x: NumOrVec, y?: number) {
 		const { pos } = this;
-		return this._Pos(Pt(x, y).subtract(pos).multiply(t).post_add(pos));
+		return this.new_pos(Pt(x, y).subtract(pos).multiply(t).post_add(pos));
 	}
 
 	// Turn
 
 	turn(rad: NumOrVec) {
-		// turned withDir
+		// turned with_dir
 		if (typeof rad === 'object') {
-			return this._Dir(Vector.pos(...rad));
+			return this.new_dir(Vector.pos(...rad));
 		} else {
-			return this._Dir(Vector.radians(rad));
+			return this.new_dir(Vector.radians(rad));
 		}
 	}
 
@@ -280,18 +280,18 @@ export class Ray extends VecRay {
 		switch (rad) {
 			case undefined:
 				const { h, v } = this;
-				return this._Dir(Vector.pos(-v, h));
+				return this.new_dir(Vector.pos(-v, h));
 			default:
-				return this._Dir(this.dir.rotated(rad));
+				return this.new_dir(this.dir.rotated(rad));
 		}
 	}
 
 	right(rad?: number) {
 		if (rad === undefined) {
 			const { h, v } = this;
-			return this._Dir(Vector.pos(v, -h));
+			return this.new_dir(Vector.pos(v, -h));
 		} else {
-			return this._Dir(this.dir.rotated(-rad));
+			return this.new_dir(this.dir.rotated(-rad));
 		}
 	}
 
@@ -328,60 +328,60 @@ export class Ray extends VecRay {
 	// Aimed Move
 
 	towards(x: NumOrVec, y?: number) {
-		return this._Dir(Pt(x, y).subtract(this.pos));
+		return this.new_dir(Pt(x, y).subtract(this.pos));
 	}
 
 	away(x: NumOrVec, y?: number) {
-		return this._Dir(this.pos.subtract(Pt(x, y)));
+		return this.new_dir(this.pos.subtract(Pt(x, y)));
 	}
 
 	after(x: NumOrVec, y?: number) {
 		const v = Pt(x, y);
-		return this._Set(v, this.pos.subtract(v));
+		return this.new_ray(v, this.pos.subtract(v));
 	}
 
 	before(x: NumOrVec, y?: number) {
 		const v = Pt(x, y);
-		return this._Set(v, v.subtract(this.pos));
+		return this.new_ray(v, v.subtract(this.pos));
 	}
 
 	// Calc Aim
 
-	normalToSide(a: Iterable<number>) {
+	normal_to_side(a: Iterable<number>) {
 		const s = this.side(a);
 		const { dir: [x, y] } = this;
 		if (s > 0) {
-			return this._Dir(Vector.pos(-y, x));
+			return this.new_dir(Vector.pos(-y, x));
 		} else if (s < 0) {
-			return this._Dir(Vector.pos(y, -x));
+			return this.new_dir(Vector.pos(y, -x));
 		}
 		return this;
 	}
 
-	normalToLine(a: Iterable<number>, b: Iterable<number>) {
-		return this._Dir(this.nearestPointOfLine(a, b).subtract(this.pos));
+	normal_to_line(a: Iterable<number>, b: Iterable<number>) {
+		return this.new_dir(this.nearest_point_of_line(a, b).subtract(this.pos));
 	}
 
 	// Calc Move
 
-	toNearestPointOfLine(a: Iterable<number>, b: Iterable<number>) {
-		return this._Pos(this.nearestPointOfLine(a, b));
+	to_nearest_point_of_line(a: Iterable<number>, b: Iterable<number>) {
+		return this.new_pos(this.nearest_point_of_line(a, b));
 	}
 
-	toNearestPointFromPoint(p: Iterable<number>) {
+	to_nearest_point_from_point(p: Iterable<number>) {
 		const { pos, dir } = this;
-		return this._Pos(Ray.pos(p).nearestPointOfLine(pos, pos.add(dir)));
+		return this.new_pos(Ray.pos(p).nearest_point_of_line(pos, pos.add(dir)));
 	}
 
-	toPointT(t: number, a: Iterable<number>, b: Iterable<number>) {
-		return this._Pos(Vector.subtract(b, a).multiply(t).add(a));
+	to_point_t(t: number, a: Iterable<number>, b: Iterable<number>) {
+		return this.new_pos(Vector.subtract(b, a).multiply(t).add(a));
 	}
 
-	toMidPoint(a: Iterable<number>, b: Iterable<number>) {
-		return this.toPointT(0.5, a, b);
+	to_mid_point(a: Iterable<number>, b: Iterable<number>) {
+		return this.to_point_t(0.5, a, b);
 	}
 
-	////// contructors
+	////// constructors
 	static new(...args: NumOrVec[]) {
 		const [x = 0, y = 0, h = 1, v = 0] = pickXY(args);
 		return new this(Vector.pos(x, y), Vector.pos(h, v));
@@ -449,13 +449,13 @@ export class RayL extends Ray {
 	prev() {
 		return this._prev;
 	}
-	protected override _Pos(v: Vector): RayL {
+	protected override new_pos(v: Vector): RayL {
 		return new RayL(v, this.dir, this);
 	}
-	protected override _Dir(v: Vector): RayL {
+	protected override new_dir(v: Vector): RayL {
 		return new RayL(this.pos, v, this);
 	}
-	protected override _Set(p: Vector, a: Vector): RayL {
+	protected override new_ray(p: Vector, a: Vector): RayL {
 		return new RayL(p, a, this);
 	}
 }

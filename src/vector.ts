@@ -35,7 +35,7 @@ export class Vector extends Float64Array {
         let r = 0;
         for (const n of this) {
             if (!isFinite(n)) {
-                throw new Error(`{this}`)
+                throw new Error(`${this}`)
             }
             r += (n * n)
         }

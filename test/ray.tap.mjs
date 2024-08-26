@@ -235,8 +235,8 @@ test.test(`Spiral of Theodorus`, { bail: !CI }, function (t) {
         B = B.left(φ).forward(1);
 
         t.ok(B.clone().back(1).pos.close_to(P));
-        t.almostEqual(B.distanceFromLine(O, P), 1, 1e-11);
-        t.ok(B.clone().nearestPointOfLine(P, O).close_to(P));
+        t.almostEqual(B.distance_from_line(O, P), 1, 1e-11);
+        t.ok(B.clone().nearest_point_of_line(P, O).close_to(P));
     }
 
     t.end();
@@ -274,12 +274,12 @@ test.test(`RegularPentagon`, { bail: !CI }, function (t) {
     t.almostEqual(x, -c2, 1e-11);
     t.almostEqual(y, s2, 1e-11);
 
-    [x, y] = A.clone().toNearestPointOfLine(Vector.new(-c2, -s2), Vector.new(c1, -s1)).pos;
+    [x, y] = A.clone().to_nearest_point_of_line(Vector.new(-c2, -s2), Vector.new(c1, -s1)).pos;
 
-    A = A.toMidPoint(Vector.new(-c2, -s2), Vector.new(c1, -s1));
+    A = A.to_mid_point(Vector.new(-c2, -s2), Vector.new(c1, -s1));
     t.almostEqual(A.x, x, 1e-11);
     t.almostEqual(A.y, y, 1e-11);
-    A = A.toNearestPointFromPoint(Vector.new(c1, -s1));
+    A = A.to_nearest_point_from_point(Vector.new(c1, -s1));
     t.almostEqual(A.x, x, 1e-11);
     t.almostEqual(A.y, y, 1e-11);
 
@@ -287,9 +287,9 @@ test.test(`RegularPentagon`, { bail: !CI }, function (t) {
     t.almostEqual(x, 0, 1e-11);
     t.almostEqual(y, 0, 1e-11);
 
-    t.almostEqual(Ray.at(1, 0).distanceFromLine(Vector.new(-c2, s2), Vector.new(-c2, -s2)), r + R, 1e-11);
-    t.almostEqual(Ray.at(0, 1).distanceFromLine(Vector.new(-s2, -c2), Vector.new(s2, -c2)), r + R, 1e-11);
-    t.ok(isNaN(Ray.at(1, 0).distanceFromLine(Vector.new(-s2, -c2), Vector.new(-s2, -c2))));
+    t.almostEqual(Ray.at(1, 0).distance_from_line(Vector.new(-c2, s2), Vector.new(-c2, -s2)), r + R, 1e-11);
+    t.almostEqual(Ray.at(0, 1).distance_from_line(Vector.new(-s2, -c2), Vector.new(s2, -c2)), r + R, 1e-11);
+    t.ok(isNaN(Ray.at(1, 0).distance_from_line(Vector.new(-s2, -c2), Vector.new(-s2, -c2))));
     // console.log(Array.from(Ray.away(Vector.new(c1, s1)).leftd(72 / 2)))
     t.almostEqual(
         Array.from(
@@ -309,19 +309,19 @@ test.test(`RegularPentagon`, { bail: !CI }, function (t) {
     );
     A = Ray.towards(s1, c1);
     t.almostEqual(
-        Array.from(A.intersectOfLine(Vector.new(-s1, c1), Vector.new(-s2, -c2))),
-        Array.from(Ray.at(4, 4).toMidPoint(Vector.new(-s1, c1), Vector.new(-s2, -c2)))
+        Array.from(A.intersect_of_line(Vector.new(-s1, c1), Vector.new(-s2, -c2))),
+        Array.from(Ray.at(4, 4).to_mid_point(Vector.new(-s1, c1), Vector.new(-s2, -c2)))
     );
     t.almostEqual(
-        Array.from(A.nearestPointFromPoint(Vector.new(-s2, -c2))),
-        Array.from(Ray.at(4, 4).toMidPoint(Vector.new(-s1, c1), Vector.new(-s2, -c2)))
+        Array.from(A.nearest_point_from_point(Vector.new(-s2, -c2))),
+        Array.from(Ray.at(4, 4).to_mid_point(Vector.new(-s1, c1), Vector.new(-s2, -c2)))
     );
 
     A = Ray.at(-s1, c1)
         .turnd(-18)
         .back()
         .back(r + R);
-    t.almostEqual(Array.from(A), Array.from(Ray.at(4, 4).toMidPoint(Vector.pos(s1, c1), Vector.pos(s2, -c2))));
+    t.almostEqual(Array.from(A), Array.from(Ray.at(4, 4).to_mid_point(Vector.pos(s1, c1), Vector.pos(s2, -c2))));
     t.almostEqual(Array.from(A.along(-1, s1, c1)), Array.from(Vector.new(s2, -c2)));
 
     t.end();
@@ -345,11 +345,11 @@ test.test(`side`, { bail: !CI }, function (t) {
     t.equal(A.side(E, -E), 1);
     t.equal(A.side(0, PI), 0);
 
-    A = Ray.towards(1 / 2, sqrt(3) / 2).normalToSide(Vector.new(-PI, E));
+    A = Ray.towards(1 / 2, sqrt(3) / 2).normal_to_side(Vector.new(-PI, E));
     t.almostEqual(A.h, -sqrt(3) / 2, 1e-11);
     t.almostEqual(A.v, 1 / 2, 1e-11);
 
-    A = Ray.towards(1 / 2, sqrt(3) / 2).normalToSide(Vector.new(0, -E));
+    A = Ray.towards(1 / 2, sqrt(3) / 2).normal_to_side(Vector.new(0, -E));
     t.almostEqual(A.h, sqrt(3) / 2, 1e-11);
     t.almostEqual(A.v, -1 / 2, 1e-11);
 
@@ -367,12 +367,12 @@ test.test(`draw`, { bail: !CI }, function (t) {
     t.end();
 });
 
-test.test(`pointAlong`, { bail: !CI }, function (t) {
+test.test(`point_along`, { bail: !CI }, function (t) {
     const { PI, E, LN10, LOG2E, sqrt } = Math;
     let r = Ray.new().turnd(53.13010235415598);
 
-    t.almostEqual(Array.from(r.pointAlong(+5)), [+3, +4, 0]);
-    t.almostEqual(Array.from(r.pointAlong(-5)), [-3, -4, 0]);
+    t.almostEqual(Array.from(r.point_along(+5)), [+3, +4, 0]);
+    t.almostEqual(Array.from(r.point_along(-5)), [-3, -4, 0]);
 
     t.end();
 });
@@ -382,47 +382,47 @@ test.test(`with*`, { bail: !CI }, function (t) {
     let r = Ray.new([1, 2], [3, 4]);
 
     {
-        const { x, y, z, h, v } = r.withH(5);
+        const { x, y, z, h, v } = r.with_h(5);
         t.match([x, y, z, h, v], [1, 2, 0, 5, 4]);
     }
     {
-        const { x, y, z, h, v } = r.withV(5);
+        const { x, y, z, h, v } = r.with_v(5);
         t.match([x, y, z, h, v], [1, 2, 0, 3, 5]);
     }
     {
-        const { x, y, z, h, v } = r.withX(5);
+        const { x, y, z, h, v } = r.with_x(5);
         t.match([x, y, z, h, v], [5, 2, 0, 3, 4]);
     }
     {
-        const { x, y, z, h, v } = r.withY(5);
+        const { x, y, z, h, v } = r.with_y(5);
         t.match([x, y, z, h, v], [1, 5, 0, 3, 4]);
     }
     {
-        const { x, y, z, h, v } = r.withZ(5);
+        const { x, y, z, h, v } = r.with_z(5);
         t.match([x, y, z, h, v], [1, 2, 5, 3, 4]);
     }
     {
-        const { x, y, z, h, v } = r.shiftX(-11);
+        const { x, y, z, h, v } = r.shift_x(-11);
         t.match([x, y, z, h, v], [-10, 2, 0, 3, 4]);
     }
     {
-        const { x, y, z, h, v } = r.shiftY(-11);
+        const { x, y, z, h, v } = r.shift_y(-11);
         t.match([x, y, z, h, v], [1, -9, 0, 3, 4]);
     }
     {
-        const { x, y, z, h, v } = r.shiftZ(-11);
+        const { x, y, z, h, v } = r.shift_z(-11);
         t.match([x, y, z, h, v], [1, 2, -11, 3, 4]);
     }
     {
-        const { x, y, z, h, v } = r.flipX();
+        const { x, y, z, h, v } = r.flip_x();
         t.match([x, y, z, h, v], [-1, 2, 0, 3, 4]);
     }
     {
-        const { x, y, z, h, v } = r.flipY();
+        const { x, y, z, h, v } = r.flip_y();
         t.match([x, y, z, h, v], [1, -2, 0, 3, 4]);
     }
     {
-        const { x, y, z, h, v } = r.shiftZ(-11).flipZ();
+        const { x, y, z, h, v } = r.shift_z(-11).flip_z();
         t.match([x, y, z, h, v], [1, 2, 11, 3, 4]);
     }
 
@@ -451,10 +451,10 @@ test.test(`Ray.dir`, { bail: !CI }, function (t) {
 
 test.test(`RayL`, { bail: !CI }, function (t) {
     const r = RayL.new([1, 2], [3, 4]);
-    const a = r.shiftX(10);
-    const b = a.shiftY(10);
-    const c = b.withDir(Vector.degrees(45));
-    const d = c.withX(30).withY(40).before(Vector.new(0, 0));
+    const a = r.shift_x(10);
+    const b = a.shift_y(10);
+    const c = b.with_dir(Vector.degrees(45));
+    const d = c.with_x(30).with_y(40).before(Vector.new(0, 0));
     {
         const { x, y, z, h, v } = b.prev();
         t.match([x, y, z, h, v], [11, 2, 0, 3, 4]);
@@ -487,18 +487,18 @@ test.test(`RayL`, { bail: !CI }, function (t) {
     t.end();
 });
 
-test.test(`intersectOfRay`, { bail: !CI }, function (t) {
+test.test(`intersect_of_ray`, { bail: !CI }, function (t) {
     const r = RayL.new([1, 2], [3, 4]);
-    const a = r.withX(4).withH(0);
+    const a = r.with_x(4).with_h(0);
     {
-        const [x, y] = a.intersectOfRay(r);
+        const [x, y] = a.intersect_of_ray(r);
         t.almostEqual([x, y], [1 + 3, 2 + 4]);
     }
     t.end();
 });
 
-test.test(`normalToLine`, { bail: !CI }, function (t) {
-    const r = RayL.pos([3, 0]).normalToLine([0, 0], [3, 4]);
+test.test(`normal_to_line`, { bail: !CI }, function (t) {
+    const r = RayL.pos([3, 0]).normal_to_line([0, 0], [3, 4]);
     {
         const { x, y, z, dir } = r;
         t.almostEqual([x, y, z, dir.degrees], [3, 0, 0, 180 - (90 - 53.13010235415598)]);
@@ -506,9 +506,9 @@ test.test(`normalToLine`, { bail: !CI }, function (t) {
     t.end();
 });
 
-test.test(`normalToSide`, { bail: !CI }, function (t) {
+test.test(`normal_to_side`, { bail: !CI }, function (t) {
     const r = Ray.dir(Vector.new(3, 4));
-    const b = r.normalToSide(Vector.new(30, 40));
+    const b = r.normal_to_side(Vector.new(30, 40));
     t.strictSame(b, r);
     t.end();
 });
