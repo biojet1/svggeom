@@ -63,7 +63,7 @@ export class VecRay {
     distance(x, y) {
         return this.delta(x, y).abs();
     }
-    pointAlong(d) {
+    point_along(d) {
         const { pos, dir } = this;
         return pos.add(Vector.polar(d, dir.radians));
     }
@@ -78,7 +78,7 @@ export class VecRay {
         const d = (Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax);
         return d > 0 ? 1 : d < 0 ? -1 : 0;
     }
-    distanceFromLine(a, b) {
+    distance_from_line(a, b) {
         const [x, y] = this.pos;
         const [x1, y1] = a;
         const [x2, y2] = b;
@@ -94,10 +94,10 @@ export class VecRay {
         }
         return NaN;
     }
-    nearestPointOfLine(a, b) {
+    nearest_point_of_line(a, b) {
         return this.pos.nearest_point_of_line(a, b);
     }
-    intersectOfLine(a, b) {
+    intersect_of_line(a, b) {
         const { pos, dir } = this;
         const [x1, y1] = a;
         const [x2, y2] = b;
@@ -110,11 +110,11 @@ export class VecRay {
         const d = dx[0] * dy[1] - dy[0] * dx[1];
         return Vector.pos((e1 * dx[1] - dx[0] * e2) / d, (e1 * dy[1] - dy[0] * e2) / d);
     }
-    intersectOfRay(r) {
+    intersect_of_ray(r) {
         const { pos, dir } = this;
-        return r.intersectOfLine(pos, pos.add(dir));
+        return r.intersect_of_line(pos, pos.add(dir));
     }
-    nearestPointFromPoint(p) {
+    nearest_point_from_point(p) {
         const { pos, dir } = this;
         return Vector.new(p).nearest_point_of_line(pos, pos.add(dir));
     }
@@ -124,108 +124,108 @@ export class Ray extends VecRay {
         const { pos, dir } = this;
         return new Ray(pos, dir);
     }
-    _Pos(v) {
+    new_pos(v) {
         return new Ray(v, this.dir);
     }
-    _Dir(v) {
+    new_dir(v) {
         return new Ray(this.pos, v);
     }
-    _Set(p, a) {
+    new_ray(p, a) {
         return new Ray(p, a);
     }
-    withDir(rad) {
+    with_dir(rad) {
         if (typeof rad === 'object') {
-            return this._Dir(Vector.pos(...rad));
+            return this.new_dir(Vector.pos(...rad));
         }
         else {
-            return this._Dir(Vector.radians(rad));
+            return this.new_dir(Vector.radians(rad));
         }
     }
-    withH(h = 0) {
+    with_h(h = 0) {
         const { v } = this;
-        return this._Dir(Vector.pos(h, v));
+        return this.new_dir(Vector.pos(h, v));
     }
-    withV(v = 0) {
+    with_v(v = 0) {
         const { h } = this;
-        return this._Dir(Vector.pos(h, v));
+        return this.new_dir(Vector.pos(h, v));
     }
-    withX(x = 0) {
+    with_x(x = 0) {
         const { pos } = this;
-        return this._Pos(pos.with_x(x));
+        return this.new_pos(pos.with_x(x));
     }
-    withY(y = 0) {
+    with_y(y = 0) {
         const { pos } = this;
-        return this._Pos(pos.with_y(y));
+        return this.new_pos(pos.with_y(y));
     }
-    withZ(z = 0) {
+    with_z(z = 0) {
         const { pos } = this;
-        return this._Pos(pos.with_z(z));
+        return this.new_pos(pos.with_z(z));
     }
-    shiftX(d) {
-        return this._Pos(this.pos.shift_x(d));
+    shift_x(d) {
+        return this.new_pos(this.pos.shift_x(d));
     }
-    shiftY(d) {
-        return this._Pos(this.pos.shift_y(d));
+    shift_y(d) {
+        return this.new_pos(this.pos.shift_y(d));
     }
-    shiftZ(d) {
-        return this._Pos(this.pos.shift_z(d));
+    shift_z(d) {
+        return this.new_pos(this.pos.shift_z(d));
     }
-    flipX() {
-        return this._Pos(this.pos.flip_x());
+    flip_x() {
+        return this.new_pos(this.pos.flip_x());
     }
-    flipY() {
-        return this._Pos(this.pos.flip_y());
+    flip_y() {
+        return this.new_pos(this.pos.flip_y());
     }
-    flipZ() {
-        return this._Pos(this.pos.flip_z());
+    flip_z() {
+        return this.new_pos(this.pos.flip_z());
     }
     goto(x, y) {
-        return this._Pos(Pt(x, y));
+        return this.new_pos(Pt(x, y));
     }
     forward(d) {
         const { pos, dir } = this;
-        return this._Pos(dir.normalize().multiply(d).post_add(pos));
+        return this.new_pos(dir.normalize().multiply(d).post_add(pos));
     }
     back(d) {
         if (d) {
             return this.forward(-d);
         }
         else {
-            return this._Dir(this.dir.multiply(-1));
+            return this.new_dir(this.dir.multiply(-1));
         }
     }
     translate(x, y) {
         const { pos } = this;
-        return this._Pos(Pt(x, y).post_add(pos));
+        return this.new_pos(Pt(x, y).post_add(pos));
     }
     along(t, x, y) {
         const { pos } = this;
-        return this._Pos(Pt(x, y).subtract(pos).multiply(t).post_add(pos));
+        return this.new_pos(Pt(x, y).subtract(pos).multiply(t).post_add(pos));
     }
     turn(rad) {
         if (typeof rad === 'object') {
-            return this._Dir(Vector.pos(...rad));
+            return this.new_dir(Vector.pos(...rad));
         }
         else {
-            return this._Dir(Vector.radians(rad));
+            return this.new_dir(Vector.radians(rad));
         }
     }
     left(rad) {
         switch (rad) {
             case undefined:
                 const { h, v } = this;
-                return this._Dir(Vector.pos(-v, h));
+                return this.new_dir(Vector.pos(-v, h));
             default:
-                return this._Dir(this.dir.rotated(rad));
+                return this.new_dir(this.dir.rotated(rad));
         }
     }
     right(rad) {
         if (rad === undefined) {
             const { h, v } = this;
-            return this._Dir(Vector.pos(v, -h));
+            return this.new_dir(Vector.pos(v, -h));
         }
         else {
-            return this._Dir(this.dir.rotated(-rad));
+            return this.new_dir(this.dir.rotated(-rad));
         }
     }
     turnd(deg) {
@@ -238,45 +238,45 @@ export class Ray extends VecRay {
         return this.right((deg * TAU) / 360);
     }
     towards(x, y) {
-        return this._Dir(Pt(x, y).subtract(this.pos));
+        return this.new_dir(Pt(x, y).subtract(this.pos));
     }
     away(x, y) {
-        return this._Dir(this.pos.subtract(Pt(x, y)));
+        return this.new_dir(this.pos.subtract(Pt(x, y)));
     }
     after(x, y) {
         const v = Pt(x, y);
-        return this._Set(v, this.pos.subtract(v));
+        return this.new_ray(v, this.pos.subtract(v));
     }
     before(x, y) {
         const v = Pt(x, y);
-        return this._Set(v, v.subtract(this.pos));
+        return this.new_ray(v, v.subtract(this.pos));
     }
-    normalToSide(a) {
+    normal_to_side(a) {
         const s = this.side(a);
         const { dir: [x, y] } = this;
         if (s > 0) {
-            return this._Dir(Vector.pos(-y, x));
+            return this.new_dir(Vector.pos(-y, x));
         }
         else if (s < 0) {
-            return this._Dir(Vector.pos(y, -x));
+            return this.new_dir(Vector.pos(y, -x));
         }
         return this;
     }
-    normalToLine(a, b) {
-        return this._Dir(this.nearestPointOfLine(a, b).subtract(this.pos));
+    normal_to_line(a, b) {
+        return this.new_dir(this.nearest_point_of_line(a, b).subtract(this.pos));
     }
-    toNearestPointOfLine(a, b) {
-        return this._Pos(this.nearestPointOfLine(a, b));
+    to_nearest_point_of_line(a, b) {
+        return this.new_pos(this.nearest_point_of_line(a, b));
     }
-    toNearestPointFromPoint(p) {
+    to_nearest_point_from_point(p) {
         const { pos, dir } = this;
-        return this._Pos(Ray.pos(p).nearestPointOfLine(pos, pos.add(dir)));
+        return this.new_pos(Ray.pos(p).nearest_point_of_line(pos, pos.add(dir)));
     }
-    toPointT(t, a, b) {
-        return this._Pos(Vector.subtract(b, a).multiply(t).add(a));
+    to_point_t(t, a, b) {
+        return this.new_pos(Vector.subtract(b, a).multiply(t).add(a));
     }
-    toMidPoint(a, b) {
-        return this.toPointT(0.5, a, b);
+    to_mid_point(a, b) {
+        return this.to_point_t(0.5, a, b);
     }
     static new(...args) {
         const [x = 0, y = 0, h = 1, v = 0] = pickXY(args);
@@ -321,13 +321,13 @@ export class RayL extends Ray {
     prev() {
         return this._prev;
     }
-    _Pos(v) {
+    new_pos(v) {
         return new RayL(v, this.dir, this);
     }
-    _Dir(v) {
+    new_dir(v) {
         return new RayL(this.pos, v, this);
     }
-    _Set(p, a) {
+    new_ray(p, a) {
         return new RayL(p, a, this);
     }
 }
