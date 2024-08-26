@@ -361,15 +361,15 @@ export class LineCL extends BaseLC {
     }
     get length() {
         const { from, to } = this;
-        return to.sub(from).abs();
+        return to.subtract(from).abs();
     }
     point_at(t) {
         const { from, to } = this;
-        return to.sub(from).mul(tCheck(t)).post_add(from);
+        return to.subtract(from).multiply(tCheck(t)).post_add(from);
     }
     slope_at(_) {
         const { from, to } = this;
-        const vec = to.sub(from);
+        const vec = to.subtract(from);
         return vec.div(vec.abs());
     }
     split_at(t) {

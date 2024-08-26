@@ -111,19 +111,28 @@ export class Vector extends Float64Array {
         const [x, y, ...a] = this;
         return Vector.vec(y, -x, ...a);
     }
-    div(factor) {
-        return Vector.vec(...[...this].map(v => v / factor));
-    }
-    mul(factor) {
-        return Vector.vec(...[...this].map(v => v * factor));
-    }
     add(that) {
         const I = that[Symbol.iterator]();
         return new Vector(this.map((v, i) => v + (I.next().value ?? 0)));
     }
-    sub(that) {
+    divide(factor) {
+        return Vector.vec(...[...this].map(v => v / factor));
+    }
+    multiply(factor) {
+        return Vector.vec(...[...this].map(v => v * factor));
+    }
+    subtract(that) {
         const I = that[Symbol.iterator]();
         return new Vector(this.map((v, i) => v - (I.next().value ?? 0)));
+    }
+    div(factor) {
+        return this.divide(factor);
+    }
+    mul(factor) {
+        return this.multiply(factor);
+    }
+    sub(that) {
+        return this.subtract(that);
     }
     post_subtract(that) {
         const I = that[Symbol.iterator]();
@@ -134,7 +143,7 @@ export class Vector extends Float64Array {
         return new Vector(this.map((v, i) => (I.next().value ?? 0) + v));
     }
     distance(p) {
-        return this.sub(p).abs();
+        return this.subtract(p).abs();
     }
     normalize() {
         const abs = this.abs();
@@ -146,9 +155,9 @@ export class Vector extends Float64Array {
         return this.post_subtract(p).post_add(p);
     }
     transform(matrix) {
-        const [x, y] = this;
+        const [x, y, ...o] = this;
         const { a, b, c, d, e, f } = matrix;
-        return Vector.vec(a * x + c * y + e, b * x + d * y + f);
+        return Vector.vec(a * x + c * y + e, b * x + d * y + f, ...o);
     }
     flip_x() {
         return new Vector(this.map((v, i) => (i == 0 ? -v : v)));
@@ -201,10 +210,10 @@ export class Vector extends Float64Array {
         return new Vector(a.map((v, i) => v + b[i]));
     }
     nearest_point_of_line(a, b) {
-        const a_to_p = this.sub(a);
+        const a_to_p = this.subtract(a);
         const a_to_b = Vector.subtract(b, a);
         const t = a_to_p.dot(a_to_b) / a_to_b.abs_quad();
-        return a_to_b.mul(t).post_add(a);
+        return a_to_b.multiply(t).post_add(a);
     }
     static new(x, y, z) {
         switch (typeof x) {

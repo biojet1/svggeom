@@ -51,18 +51,18 @@ export function quad_point_at([[x1, y1], [cx, cy], [x2, y2]], t) {
 }
 export function quad_slope_at([from, c, to], t) {
     if (c.equals(from) || c.equals(to)) {
-        const vec = to.sub(from);
+        const vec = to.subtract(from);
         return vec.div(vec.abs());
     }
     if (t >= 1) {
-        return to.sub(c);
+        return to.subtract(c);
     }
     else if (t <= 0) {
-        return c.sub(from);
+        return c.subtract(from);
     }
-    const a = c.sub(from).mul(1 - t);
-    const b = to.sub(c).mul(t);
-    return a.add(b).mul(2);
+    const a = c.subtract(from).multiply(1 - t);
+    const b = to.subtract(c).multiply(t);
+    return a.add(b).multiply(2);
 }
 export function quad_bbox([[x1, y1], [x2, y2], [x3, y3]]) {
     const [xmin, xmax] = quadratic_extrema(x1, x2, x3);

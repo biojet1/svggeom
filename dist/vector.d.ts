@@ -15,9 +15,12 @@ export declare class Vector extends Float64Array {
     angle_to(p: Iterable<number>): number;
     toString(): string;
     normal(): Vector;
+    add(that: Iterable<number>): Vector;
+    divide(factor: number): Vector;
+    multiply(factor: number): Vector;
+    subtract(that: Iterable<number>): Vector;
     div(factor: number): Vector;
     mul(factor: number): Vector;
-    add(that: Iterable<number>): Vector;
     sub(that: Iterable<number>): Vector;
     post_subtract(that: Iterable<number> | Vector): Vector;
     post_add(that: Iterable<number>): Vector;

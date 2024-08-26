@@ -68,7 +68,7 @@ export class VecRay {
         return pos.add(Vector.polar(d, dir.radians));
     }
     delta(x, y) {
-        return Pt(x, y).sub(this.pos);
+        return Pt(x, y).subtract(this.pos);
     }
     side(x, y) {
         const { pos, dir } = this;
@@ -184,14 +184,14 @@ export class Ray extends VecRay {
     }
     forward(d) {
         const { pos, dir } = this;
-        return this._Pos(dir.normalize().mul(d).post_add(pos));
+        return this._Pos(dir.normalize().multiply(d).post_add(pos));
     }
     back(d) {
         if (d) {
             return this.forward(-d);
         }
         else {
-            return this._Dir(this.dir.mul(-1));
+            return this._Dir(this.dir.multiply(-1));
         }
     }
     translate(x, y) {
@@ -200,7 +200,7 @@ export class Ray extends VecRay {
     }
     along(t, x, y) {
         const { pos } = this;
-        return this._Pos(Pt(x, y).sub(pos).mul(t).post_add(pos));
+        return this._Pos(Pt(x, y).subtract(pos).multiply(t).post_add(pos));
     }
     turn(rad) {
         if (typeof rad === 'object') {
@@ -238,18 +238,18 @@ export class Ray extends VecRay {
         return this.right((deg * TAU) / 360);
     }
     towards(x, y) {
-        return this._Dir(Pt(x, y).sub(this.pos));
+        return this._Dir(Pt(x, y).subtract(this.pos));
     }
     away(x, y) {
-        return this._Dir(this.pos.sub(Pt(x, y)));
+        return this._Dir(this.pos.subtract(Pt(x, y)));
     }
     after(x, y) {
         const v = Pt(x, y);
-        return this._Set(v, this.pos.sub(v));
+        return this._Set(v, this.pos.subtract(v));
     }
     before(x, y) {
         const v = Pt(x, y);
-        return this._Set(v, v.sub(this.pos));
+        return this._Set(v, v.subtract(this.pos));
     }
     normalToSide(a) {
         const s = this.side(a);
@@ -263,7 +263,7 @@ export class Ray extends VecRay {
         return this;
     }
     normalToLine(a, b) {
-        return this._Dir(this.nearestPointOfLine(a, b).sub(this.pos));
+        return this._Dir(this.nearestPointOfLine(a, b).subtract(this.pos));
     }
     toNearestPointOfLine(a, b) {
         return this._Pos(this.nearestPointOfLine(a, b));
@@ -273,7 +273,7 @@ export class Ray extends VecRay {
         return this._Pos(Ray.pos(p).nearestPointOfLine(pos, pos.add(dir)));
     }
     toPointT(t, a, b) {
-        return this._Pos(Vector.subtract(b, a).mul(t).add(a));
+        return this._Pos(Vector.subtract(b, a).multiply(t).add(a));
     }
     toMidPoint(a, b) {
         return this.toPointT(0.5, a, b);

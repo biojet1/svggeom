@@ -29,6 +29,7 @@ export declare class Matrix {
         translation: number[];
     };
     toArray(): number[];
+    dump_hexad(): number[];
     describe(): string;
     protected _set_hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): this;
     protected _hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;

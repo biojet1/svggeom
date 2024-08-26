@@ -128,6 +128,9 @@ export class Matrix {
         return { rotation, scale, skew, skew_axis, translation: [e, f] };
     }
     toArray() {
+        return this.dump_hexad();
+    }
+    dump_hexad() {
         const { a, b, c, d, e, f } = this;
         return [a, b, c, d, e, f];
     }
@@ -273,8 +276,8 @@ export class Matrix {
         }
     }
     static interpolate(A, B, opt) {
-        const a = this.new(A).toArray();
-        const b = this.new(B).toArray();
+        const a = this.new(A).dump_hexad();
+        const b = this.new(B).dump_hexad();
         const n = a.length;
         const klass = this;
         return function (t) {
