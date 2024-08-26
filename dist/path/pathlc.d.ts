@@ -53,6 +53,7 @@ export declare class PathLC {
     crop_at(T0: number, T1?: number): PathLC;
     reversed(_next?: BaseLC): PathLC;
     terms(opt?: DescParams): (number | string)[];
+    transform(M: any): PathLC;
     static lineTo(x: number, y: number): PathLC;
     static move_to(p: Iterable<number>): PathLC;
     static parse(d: string): PathLC;

@@ -242,6 +242,13 @@ export class PathLC {
     terms(opt) {
         return this?._tail?.terms(opt) ?? [];
     }
+    transform(M) {
+        const { _tail } = this;
+        if (_tail) {
+            return new PathLC(_tail.transform(M));
+        }
+        return this;
+    }
     static lineTo(x, y) {
         return this.move_to([0, 0]).line_to([x, y]);
     }
