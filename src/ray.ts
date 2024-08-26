@@ -86,7 +86,7 @@ export class VecRay {
 	}
 
 	delta(x: NumOrVec, y?: number) {
-		return Pt(x, y).sub(this.pos);
+		return Pt(x, y).subtract(this.pos);
 	}
 
 	side(x: NumOrVec, y?: number) {
@@ -244,14 +244,14 @@ export class Ray extends VecRay {
 
 	forward(d: number) {
 		const { pos, dir } = this;
-		return this._Pos(dir.normalize().mul(d).post_add(pos));
+		return this._Pos(dir.normalize().multiply(d).post_add(pos));
 	}
 
 	back(d?: number) {
 		if (d) {
 			return this.forward(-d);
 		} else {
-			return this._Dir(this.dir.mul(-1));
+			return this._Dir(this.dir.multiply(-1));
 		}
 	}
 
@@ -262,7 +262,7 @@ export class Ray extends VecRay {
 
 	along(t: number, x: NumOrVec, y?: number) {
 		const { pos } = this;
-		return this._Pos(Pt(x, y).sub(pos).mul(t).post_add(pos));
+		return this._Pos(Pt(x, y).subtract(pos).multiply(t).post_add(pos));
 	}
 
 	// Turn
@@ -328,21 +328,21 @@ export class Ray extends VecRay {
 	// Aimed Move
 
 	towards(x: NumOrVec, y?: number) {
-		return this._Dir(Pt(x, y).sub(this.pos));
+		return this._Dir(Pt(x, y).subtract(this.pos));
 	}
 
 	away(x: NumOrVec, y?: number) {
-		return this._Dir(this.pos.sub(Pt(x, y)));
+		return this._Dir(this.pos.subtract(Pt(x, y)));
 	}
 
 	after(x: NumOrVec, y?: number) {
 		const v = Pt(x, y);
-		return this._Set(v, this.pos.sub(v));
+		return this._Set(v, this.pos.subtract(v));
 	}
 
 	before(x: NumOrVec, y?: number) {
 		const v = Pt(x, y);
-		return this._Set(v, v.sub(this.pos));
+		return this._Set(v, v.subtract(this.pos));
 	}
 
 	// Calc Aim
@@ -359,7 +359,7 @@ export class Ray extends VecRay {
 	}
 
 	normalToLine(a: Iterable<number>, b: Iterable<number>) {
-		return this._Dir(this.nearestPointOfLine(a, b).sub(this.pos));
+		return this._Dir(this.nearestPointOfLine(a, b).subtract(this.pos));
 	}
 
 	// Calc Move
@@ -374,7 +374,7 @@ export class Ray extends VecRay {
 	}
 
 	toPointT(t: number, a: Iterable<number>, b: Iterable<number>) {
-		return this._Pos(Vector.subtract(b, a).mul(t).add(a));
+		return this._Pos(Vector.subtract(b, a).multiply(t).add(a));
 	}
 
 	toMidPoint(a: Iterable<number>, b: Iterable<number>) {

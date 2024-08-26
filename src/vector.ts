@@ -107,19 +107,12 @@ export class Vector extends Float64Array {
     }
 
     angle_to(p: Iterable<number>) {
-        // return p.sub(this).angle;
         return this.post_subtract(p).angle;
     }
 
     toString() {
-        // const { x, y, z } = this;
-        // return z ? `${x}, ${y}, ${z}` : `${x}, ${y}`;
         return this.join(', ')
     }
-
-    // toArray() {
-    //     return [...this];
-    // }
 
     // Methods returning new Vector
 
@@ -127,23 +120,30 @@ export class Vector extends Float64Array {
         const [x, y, ...a] = this;
         return Vector.vec(y, -x, ...a);
     }
-
-    div(factor: number) {
-        return Vector.vec(...[...this].map(v => v / factor));
-    }
-
-    mul(factor: number) {
-        return Vector.vec(...[...this].map(v => v * factor));
-    }
-
     add(that: Iterable<number>) {
         const I = that[Symbol.iterator]();
         return new Vector(this.map((v, i) => v + (I.next().value ?? 0)));
     }
-
-    sub(that: Iterable<number>) {
+    divide(factor: number) {
+        return Vector.vec(...[...this].map(v => v / factor));
+    }
+    multiply(factor: number) {
+        return Vector.vec(...[...this].map(v => v * factor));
+    }
+    subtract(that: Iterable<number>) {
         const I = that[Symbol.iterator]();
         return new Vector(this.map((v, i) => v - (I.next().value ?? 0)));
+    }
+    div(factor: number) {
+        return this.divide(factor);
+    }
+
+    mul(factor: number) {
+        return this.multiply(factor);
+    }
+
+    sub(that: Iterable<number>) {
+        return this.subtract(that);
     }
 
     // subtract, divide, multiply
@@ -158,7 +158,7 @@ export class Vector extends Float64Array {
     }
 
     distance(p: Iterable<number>): number {
-        return this.sub(p).abs();
+        return this.subtract(p).abs();
     }
 
     normalize() {
@@ -168,14 +168,14 @@ export class Vector extends Float64Array {
     }
 
     reflect_at(p: Iterable<number>) {
-        // return p.add(p.sub(this));
+        // return p.add(p.subtract(this));
         return this.post_subtract(p).post_add(p);
     }
 
     transform(matrix: any) {
-        const [x, y] = this;
+        const [x, y, ...o] = this;
         const { a, b, c, d, e, f } = matrix;
-        return Vector.vec(a * x + c * y + e, b * x + d * y + f);
+        return Vector.vec(a * x + c * y + e, b * x + d * y + f, ...o);
     }
 
     flip_x() {
@@ -240,10 +240,10 @@ export class Vector extends Float64Array {
         return new Vector(a.map((v, i) => v + b[i]));
     }
     nearest_point_of_line(a: Iterable<number>, b: Iterable<number>): Vector {
-        const a_to_p = this.sub(a); // a → p
+        const a_to_p = this.subtract(a); // a → p
         const a_to_b = Vector.subtract(b, a); // a → b
         const t = a_to_p.dot(a_to_b) / a_to_b.abs_quad();
-        return a_to_b.mul(t).post_add(a);
+        return a_to_b.multiply(t).post_add(a);
     }
     // Modify self methods
     //***** static methods ****

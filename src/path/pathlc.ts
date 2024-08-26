@@ -243,20 +243,14 @@ export class PathLC {
     }
     reversed(_next?: BaseLC): PathLC {
         const { _tail } = this;
-        if (_tail) {
-            return new PathLC(_tail.reversed());
-        }
-        return this;
+        return _tail ? new PathLC(_tail.reversed()) : this;
     }
     terms(opt?: DescParams): (number | string)[] {
         return this?._tail?.terms(opt) ?? [];
     }
     transform(M: any) {
         const { _tail } = this;
-        if (_tail) {
-            return new PathLC(_tail.transform(M));
-        }
-        return this;
+        return _tail ? new PathLC(_tail.transform(M)) : this;
     }
     ////
     static lineTo(x: number, y: number) {

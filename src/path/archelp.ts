@@ -84,9 +84,9 @@ export function segment_length(
 ): number {
 	const mid = (start + end) / 2;
 	const mid_point = curve.point_at(mid);
-	const length = end_point.sub(start_point).abs();
-	const first_half = mid_point.sub(start_point).abs();
-	const second_half = end_point.sub(mid_point).abs();
+	const length = end_point.subtract(start_point).abs();
+	const first_half = mid_point.subtract(start_point).abs();
+	const second_half = end_point.subtract(mid_point).abs();
 	const length2 = first_half + second_half;
 	if (length2 - length > error || depth < min_depth) {
 		// Calculate the length of each segment:

@@ -82,31 +82,31 @@ export function cubic_split_at([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterabl
 export function cubic_slope_at([from, c1, c2, to]: Vector[], t: number): Vector {
     if (t <= 0) {
         if (from.equals(c1)) {
-            return c2.sub(from);
+            return c2.subtract(from);
         }
-        return c1.sub(from);
+        return c1.subtract(from);
     } else if (t >= 1) {
-        return to.sub(c2);
+        return to.subtract(c2);
     }
     if (from.equals(c1)) {
         if (to.equals(c2)) {
-            return to.sub(from);
+            return to.subtract(from);
         }
         if (t <= 0) {
-            return c2.sub(from).mul(2);
+            return c2.subtract(from).multiply(2);
         } else {
-            const a = c2.sub(from).mul(2 * (1 - t));
-            const b = to.sub(c2).mul(t);
+            const a = c2.subtract(from).multiply(2 * (1 - t));
+            const b = to.subtract(c2).multiply(t);
             return a.add(b);
         }
     } else if (to.equals(c2)) {
-        const a = c1.sub(from).mul(2 * (1 - t));
-        const b = to.sub(c1).mul(t);
+        const a = c1.subtract(from).multiply(2 * (1 - t));
+        const b = to.subtract(c1).multiply(t);
         return a.add(b);
     } else {
-        const a = c1.sub(from).mul(3 * (1 - t) ** 2);
-        const b = c2.sub(c1).mul(6 * (1 - t) * t);
-        const c = to.sub(c2).mul(3 * t ** 2);
+        const a = c1.subtract(from).multiply(3 * (1 - t) ** 2);
+        const b = c2.subtract(c1).multiply(6 * (1 - t) * t);
+        const c = to.subtract(c2).multiply(3 * t ** 2);
         return a.add(b).add(c);
     }
 }
@@ -117,7 +117,7 @@ export function cubic_length(_cpts: Iterable<number>[]): number {
         return cubic_length(a) + cubic_length(b);
     } else {
         const [from, , , to] = _cpts;
-        return (new Vector(to)).sub(from).abs();
+        return (new Vector(to)).subtract(from).abs();
     }
 }
 

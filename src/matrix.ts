@@ -158,6 +158,9 @@ export class Matrix {
 	}
 
 	toArray() {
+		return this.dump_hexad();
+	}
+	dump_hexad() {
 		const { a, b, c, d, e, f } = this;
 
 		return [a, b, c, d, e, f];
@@ -381,8 +384,8 @@ export class Matrix {
 		B: number[] | string | Matrix | ElementLike,
 		opt?: any
 	) {
-		const a = this.new(A).toArray();
-		const b = this.new(B).toArray();
+		const a = this.new(A).dump_hexad();
+		const b = this.new(B).dump_hexad();
 		const n = a.length;
 		const klass = this;
 		// console.warn("interpolate T", A, B, a, b);

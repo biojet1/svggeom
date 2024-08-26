@@ -375,15 +375,15 @@ export class LineCL extends BaseLC {
     }
     override get length() {
         const { from, to } = this;
-        return to.sub(from).abs();
+        return to.subtract(from).abs();
     }
     override point_at(t: number) {
         const { from, to } = this;
-        return to.sub(from).mul(tCheck(t)).post_add(from);
+        return to.subtract(from).multiply(tCheck(t)).post_add(from);
     }
     override slope_at(_: number) {
         const { from, to } = this;
-        const vec = to.sub(from);
+        const vec = to.subtract(from);
         return vec.div(vec.abs());
     }
     override split_at(t: number): [BaseLC, BaseLC] {
