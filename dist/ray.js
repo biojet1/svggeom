@@ -4,7 +4,7 @@ const TAU = PI * 2;
 function* pickXY(args) {
     for (const v of args) {
         if (typeof v == 'number') {
-            yield v;
+            throw new Error(`pickXY number is depreciated`);
         }
         else {
             const [x, y] = v;
@@ -18,7 +18,8 @@ function Pt(x, y) {
         return Vector.pos(...x);
     }
     else {
-        return Vector.pos(x, y);
+        console.warn(`Pt number is depreciated`);
+        throw new Error(`Pt number is depreciated`);
     }
 }
 export class VecRay {
@@ -297,22 +298,22 @@ export class Ray extends VecRay {
         }
     }
     static towards(x, y) {
-        return this.new().towards(Pt(x, y));
+        return this.home.towards(Pt(x, y));
     }
     static away(x, y) {
-        return this.new().away(Pt(x, y));
+        return this.home.away(Pt(x, y));
     }
     static after(x, y) {
-        return this.new().after(Pt(x, y));
+        return this.home.after(Pt(x, y));
     }
     static before(x, y) {
-        return this.new().before(Pt(x, y));
+        return this.home.before(Pt(x, y));
     }
     static get home() {
         return new this(Vector.pos(0, 0), Vector.pos(1, 0));
     }
 }
-export class RayL extends Ray {
+export class LinkedRay extends Ray {
     _prev;
     constructor(pos, dir, ray) {
         super(pos, dir);
@@ -322,13 +323,13 @@ export class RayL extends Ray {
         return this._prev;
     }
     new_pos(v) {
-        return new RayL(v, this.dir, this);
+        return new LinkedRay(v, this.dir, this);
     }
     new_dir(v) {
-        return new RayL(this.pos, v, this);
+        return new LinkedRay(this.pos, v, this);
     }
     new_ray(p, a) {
-        return new RayL(p, a, this);
+        return new LinkedRay(p, a, this);
     }
 }
 //# sourceMappingURL=ray.js.map

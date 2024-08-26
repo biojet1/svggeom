@@ -71,12 +71,12 @@ export declare class Ray extends VecRay {
     static before(x: NumOrVec, y?: number): Ray;
     static get home(): Ray;
 }
-export declare class RayL extends Ray {
+export declare class LinkedRay extends Ray {
     _prev: Ray | undefined;
     constructor(pos: Vector, dir: Vector, ray?: Ray);
     prev(): Ray | undefined;
-    protected new_pos(v: Vector): RayL;
-    protected new_dir(v: Vector): RayL;
-    protected new_ray(p: Vector, a: Vector): RayL;
+    protected new_pos(v: Vector): LinkedRay;
+    protected new_dir(v: Vector): LinkedRay;
+    protected new_ray(p: Vector, a: Vector): LinkedRay;
 }
 export {};
