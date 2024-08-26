@@ -167,12 +167,7 @@ export class Ray extends VecRay {
 		const { pos, dir } = this;
 		return new Ray(pos, dir);
 	}
-	// begin() {
-	// 	return new RayStack(this);
-	// }
-	// end(): Ray | undefined {
-	// 	return undefined;
-	// }
+
 	protected _Pos(v: Vector) {
 		return new Ray(v, this.dir);
 	}

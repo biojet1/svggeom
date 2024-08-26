@@ -251,6 +251,13 @@ export class PathLC {
     terms(opt?: DescParams): (number | string)[] {
         return this?._tail?.terms(opt) ?? [];
     }
+    transform(M: any) {
+        const { _tail } = this;
+        if (_tail) {
+            return new PathLC(_tail.transform(M));
+        }
+        return this;
+    }
     ////
     static lineTo(x: number, y: number) {
         return this.move_to([0, 0]).line_to([x, y]);
