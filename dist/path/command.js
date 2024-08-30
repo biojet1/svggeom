@@ -353,9 +353,7 @@ export class LineCL extends BaseLC {
         const { to: [x2, y2], _prev, } = this;
         if (_prev) {
             const [x1, y1] = _prev.to;
-            const [xmin, xmax] = [min(x1, x2), max(x1, x2)];
-            const [ymin, ymax] = [min(y1, y2), max(y1, y2)];
-            return BoundingBox.extrema(xmin, xmax, ymin, ymax);
+            return BoundingBox.extrema([min(x1, x2), max(x1, x2)], [min(y1, y2), max(y1, y2)]);
         }
         return BoundingBox.not();
     }

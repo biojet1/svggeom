@@ -35,9 +35,7 @@ function split_at_scalar(z, from, a, b, to) {
     ];
 }
 export function cubic_box([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]) {
-    const [xmin, xmax] = cubic_extrema(sx, x1, x2, ex);
-    const [ymin, ymax] = cubic_extrema(sy, y1, y2, ey);
-    return BoundingBox.extrema(xmin, xmax, ymin, ymax);
+    return BoundingBox.extrema(cubic_extrema(sx, x1, x2, ex), cubic_extrema(sy, y1, y2, ey));
 }
 const { pow } = Math;
 function cubic_flatness([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]) {

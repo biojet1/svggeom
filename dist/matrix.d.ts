@@ -8,10 +8,11 @@ export declare class Matrix {
     constructor(M?: Iterable<number>);
     get isIdentity(): boolean;
     get is2D(): boolean;
+    is_identity(): boolean;
     toString(): string;
     clone(): Matrix;
     equals(other: Matrix, epsilon?: number): boolean;
-    isURT(epsilon?: number): boolean;
+    is_urt(epsilon?: number): boolean;
     decompose(): {
         translateX: number;
         translateY: number;
@@ -34,9 +35,9 @@ export declare class Matrix {
     protected _set_hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): this;
     protected _hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;
     _cat_self(m: Matrix): this;
-    _post_cat_self(m: Matrix): this;
-    _cat(m: Matrix): Matrix;
-    _post_cat(m: Matrix): Matrix;
+    protected _post_cat_self(m: Matrix): this;
+    protected _cat(m: Matrix): Matrix;
+    protected _post_cat(m: Matrix): Matrix;
     inverse(): Matrix;
     cat(m: Matrix): Matrix;
     multiply(m: Matrix): Matrix;
@@ -49,6 +50,8 @@ export declare class Matrix {
     skew(x: number, y: number): Matrix;
     skewX(deg: number): Matrix;
     skewY(deg: number): Matrix;
+    cat_self(m: Matrix): this;
+    post_cat_self(m: Matrix): this;
     static hexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;
     static matrix(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): Matrix;
     static fromArray(m: number[]): Matrix;
@@ -72,7 +75,6 @@ interface ElementLike {
     getAttribute(name: string): null | string;
 }
 export declare class MatrixMut extends Matrix {
-    protected setHexad(a?: number, b?: number, c?: number, d?: number, e?: number, f?: number): this;
     invertSelf(): this;
     cat_self(m: Matrix): this;
     post_cat_self(m: Matrix): this;

@@ -9,6 +9,7 @@ export declare class BoundingInterval extends Vector {
     merge_self(that: BoundingInterval): this;
     neg(): BoundingInterval;
     is_valid(): boolean;
+    toString(): string;
     static check(p: Iterable<number>): BoundingInterval;
 }
 export declare class BoundingBox extends Array<BoundingInterval> {
@@ -52,7 +53,7 @@ export declare class BoundingBox extends Array<BoundingInterval> {
     overlap(other: BoundingBox): BoundingBox;
     static not(): BoundingBox;
     static rect(x: number, y: number, width: number, height: number): BoundingBox;
-    static extrema(x1: number, x2: number, y1: number, y2: number): BoundingBox;
+    static extrema(x: number | Iterable<number>, ...args: (number | Iterable<number>)[]): BoundingBox;
     static check(x: Iterable<number>, y: Iterable<number>): BoundingBox;
     static empty(): BoundingBox;
     static new(first?: number | number[] | [number[], number[]] | string | BoundingBox, y?: number, width?: number, height?: number): BoundingBox;

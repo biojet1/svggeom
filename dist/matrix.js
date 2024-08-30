@@ -58,6 +58,10 @@ export class Matrix {
     get is2D() {
         return true;
     }
+    is_identity() {
+        const { a, b, c, d, e, f } = this;
+        return a === 1 && b === 0 && c === 0 && d === 1 && e === 0 && f === 0;
+    }
     toString() {
         const { a, b, c, d, e, f } = this;
         return `matrix(${a} ${b} ${c} ${d} ${e} ${f})`;
@@ -77,7 +81,7 @@ export class Matrix {
                 closeEnough(e, E, epsilon) &&
                 closeEnough(f, F, epsilon)));
     }
-    isURT(epsilon = 1e-15) {
+    is_urt(epsilon = 1e-15) {
         const { a, d, b, c } = this;
         return a - d <= epsilon && b + c <= epsilon;
     }
@@ -199,6 +203,12 @@ export class Matrix {
     }
     skewY(deg) {
         return this.skew(0, deg);
+    }
+    cat_self(m) {
+        throw new Error(`Not implemented`);
+    }
+    post_cat_self(m) {
+        throw new Error(`Not implemented`);
     }
     static hexad(a = 1, b = 0, c = 0, d = 1, e = 0, f = 0) {
         return new this([a, b, c, d, e, f]);
@@ -322,17 +332,8 @@ function closeEnough(a, b, threshold = 1e-6) {
     return abs(b - a) <= threshold;
 }
 export class MatrixMut extends Matrix {
-    setHexad(a = 1, b = 0, c = 0, d = 1, e = 0, f = 0) {
-        this.a = a;
-        this.b = b;
-        this.c = c;
-        this.d = d;
-        this.e = e;
-        this.f = f;
-        return this;
-    }
     invertSelf() {
-        return this.setHexad(..._inv(this));
+        return this._set_hexad(..._inv(this));
     }
     cat_self(m) {
         return this._cat_self(m);

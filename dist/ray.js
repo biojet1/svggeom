@@ -18,7 +18,6 @@ function Pt(x, y) {
         return Vector.pos(...x);
     }
     else {
-        console.warn(`Pt number is depreciated`);
         throw new Error(`Pt number is depreciated`);
     }
 }

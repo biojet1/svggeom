@@ -1,7 +1,7 @@
-import { Matrix } from './matrix.js';
+import { MatrixMut } from './matrix.js';
 const { PI, cos, sin, tan } = Math;
-export { Matrix as SVGMatrix };
-export class SVGTransform extends Matrix {
+export { MatrixMut as SVGMatrix };
+export class SVGTransform extends MatrixMut {
     static SVG_TRANSFORM_UNKNOWN = 0;
     static SVG_TRANSFORM_MATRIX = 1;
     static SVG_TRANSFORM_TRANSLATE = 2;
@@ -172,7 +172,7 @@ export class SVGTransformList extends Array {
                 M = m.clone();
             }
         }
-        return M ?? Matrix.identity();
+        return M ?? MatrixMut.identity();
     }
     consolidate() {
         const m = new SVGTransform();
@@ -199,7 +199,7 @@ export class SVGTransformList extends Array {
             const t = new SVGTransform();
             switch (name) {
                 case 'matrix':
-                    t.setMatrix(Matrix.fromArray(args));
+                    t.setMatrix(MatrixMut.fromArray(args));
                     break;
                 case 'translate':
                     t.setTranslate(args[0], args[1]);

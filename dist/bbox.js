@@ -54,6 +54,9 @@ export class BoundingInterval extends Vector {
         const [a, b] = this;
         return b >= a;
     }
+    toString() {
+        return '[' + this.join('..') + ']';
+    }
     static check(p) {
         if (p) {
             let [min, max] = p;
@@ -137,7 +140,7 @@ export class BoundingBox extends Array {
         return new Vector([x.size, y.size]);
     }
     toString() {
-        return [...this].map(v => `[${v.toString()}]`).join(", ");
+        return "(" + [...this].map(v => v.toString()).join(", ") + ")";
     }
     dump() {
         return [...this].map(v => [...v]);
@@ -229,7 +232,7 @@ export class BoundingBox extends Array {
             yMin = min(yMin, y);
             maxY = max(maxY, y);
         });
-        return this.constructor.extrema(xMin, xMax, yMin, maxY);
+        return this.constructor.extrema([xMin, xMax], [yMin, maxY]);
     }
     overlap(other) {
         if (!this.is_valid()) {
@@ -247,7 +250,7 @@ export class BoundingBox extends Array {
                 const yMin = max(yMin1, yMin2);
                 const yMax = min(yMax1, yMax2);
                 if (yMax >= yMin) {
-                    return BoundingBox.extrema(xMin, xMax, yMin, yMax);
+                    return BoundingBox.extrema([xMin, xMax], [yMin, yMax]);
                 }
             }
         }
@@ -259,8 +262,15 @@ export class BoundingBox extends Array {
     static rect(x, y, width, height) {
         return new this([x, x + width], [y, y + height]);
     }
-    static extrema(x1, x2, y1, y2) {
-        return new this([x1, x2], [y1, y2]);
+    static extrema(x, ...args) {
+        if (typeof x == 'number') {
+            const [x2, y1, y2] = args;
+            return new this([x, x2], [y1, y2]);
+        }
+        else {
+            const [y,] = args;
+            return new this(x, y);
+        }
     }
     static check(x, y) {
         return new this(BoundingInterval.check(x), BoundingInterval.check(y));
@@ -286,7 +296,7 @@ export class BoundingBox extends Array {
                     if (Array.isArray(x)) {
                         const [x1, x2] = first[0];
                         const [y1, y2] = first[1];
-                        return this.extrema(x1, x2, y1, y2);
+                        return this.extrema([x1, x2], [y1, y2]);
                     }
                     else {
                         return this.rect(first[0], first[1], first[2], first[3]);

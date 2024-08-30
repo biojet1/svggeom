@@ -1,6 +1,6 @@
-import { Matrix } from './matrix.js';
-export { Matrix as SVGMatrix };
-export declare class SVGTransform extends Matrix {
+import { Matrix, MatrixMut } from './matrix.js';
+export { MatrixMut as SVGMatrix };
+export declare class SVGTransform extends MatrixMut {
     static readonly SVG_TRANSFORM_UNKNOWN = 0;
     static readonly SVG_TRANSFORM_MATRIX = 1;
     static readonly SVG_TRANSFORM_TRANSLATE = 2;
@@ -29,7 +29,7 @@ export declare class SVGTransformList extends Array<SVGTransform> {
     initialize(newItem: SVGTransform): SVGTransform;
     insertItemBefore(newItem: SVGTransform, i: number): void;
     replaceItem(newItem: SVGTransform, i: number): void;
-    createSVGTransformFromMatrix(newItem: Matrix): SVGTransform;
+    createSVGTransformFromMatrix(newItem: MatrixMut): SVGTransform;
     combine(): Matrix;
     consolidate(): SVGTransform;
     toString(): string;
