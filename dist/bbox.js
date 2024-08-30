@@ -1,5 +1,5 @@
 import { Vector } from './vector.js';
-const { max, min, abs } = Math;
+const { max, min } = Math;
 export class BoundingInterval extends Vector {
     constructor(p) {
         if (!p || typeof p == "number") {
