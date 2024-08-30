@@ -1,5 +1,5 @@
 import { Vector } from './vector.js';
-const { max, min, abs } = Math;
+const { max, min } = Math;
 export class BoundingInterval extends Vector {
     constructor(p: Iterable<number>) {
         if (!p || typeof p == "number") {
@@ -60,7 +60,7 @@ export class BoundingInterval extends Vector {
         // !isNaN(a) && !isNaN(b)
         return b >= a;
     }
-    toString() {
+    override toString() {
         return '[' + this.join('..') + ']';
     }
     static check(p: Iterable<number>) {
@@ -144,7 +144,7 @@ export class BoundingBox extends Array<BoundingInterval> {
         const [x, y] = this;
         return new Vector([x.size, y.size]);
     }
-    toString(): string {
+    override toString(): string {
         return "(" + [...this].map(v => v.toString()).join(", ") + ")"
     }
     dump() {
@@ -298,17 +298,13 @@ export class BoundingBox extends Array<BoundingInterval> {
     public static empty() {
         return this.rect(0, 0, 0, 0);
     }
-
-    public static new(
-        first?: number | number[] | [number[], number[]] | string | BoundingBox,
-        y?: number,
-        width?: number,
-        height?: number
-    ) {
+    /**
+     * @deprecated The method should not be used
+     */
+    public static new(first?: number | number[] | [number[], number[]] | string | BoundingBox) {
         switch (typeof first) {
-            case 'string': {
+            case 'string':
                 return this.parse(first);
-            }
             case 'number':
                 return this.rect(first, arguments[1], arguments[2], arguments[3]);
             case 'undefined':
@@ -317,7 +313,6 @@ export class BoundingBox extends Array<BoundingInterval> {
                 if (first instanceof BoundingBox) {
                     return new BoundingBox(...first);
                 }
-
                 if (Array.isArray(first)) {
                     const x = first[0];
                     if (Array.isArray(x)) {
@@ -335,9 +330,6 @@ export class BoundingBox extends Array<BoundingInterval> {
                             first[3] as number
                         );
                     }
-                } else {
-
-
                 }
             default:
                 throw new TypeError(`Invalid box argument ${arguments}`);

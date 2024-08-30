@@ -6,16 +6,16 @@ jobs:
   start:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: workflow
 
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v2
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 20.x
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: release
           path: release

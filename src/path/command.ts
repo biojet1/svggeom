@@ -116,7 +116,7 @@ export abstract class BaseLC extends Command {
     }
     tangent_at(t: number) {
         const vec = this.slope_at(t);
-        return vec.div(vec.abs());
+        return vec.divide(vec.abs());
     }
     //// Add methods
     move_to(p: Iterable<number>) {
@@ -382,7 +382,7 @@ export class LineCL extends BaseLC {
     override slope_at(_: number) {
         const { from, to } = this;
         const vec = to.subtract(from);
-        return vec.div(vec.abs());
+        return vec.divide(vec.abs());
     }
     override split_at(t: number): [BaseLC, BaseLC] {
         const { to } = this;
@@ -597,7 +597,7 @@ export class CubicLC extends BaseLC {
     }
     /////
     override point_at(t: number) {
-        return cubic_point_at(this._cpts, tCheck(t));
+        return Vector.new(cubic_point_at(this._cpts, tCheck(t)));
     }
     override bbox() {
         const { _prev } = this;

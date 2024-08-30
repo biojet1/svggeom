@@ -43,7 +43,7 @@ export function cubic_extrema(s: number, a: number, b: number, e: number) {
     ];
 }
 
-export function cubic_box([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Vector[]) {
+export function cubic_box([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<Iterable<number>>) {
     return BoundingBox.extrema(cubic_extrema(sx, x1, x2, ex), cubic_extrema(sy, y1, y2, ey));
 }
 const { pow } = Math;
@@ -63,10 +63,10 @@ function cubic_flatness([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<numbe
 
 export function cubic_point_at([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[], t: number) {
     const F = 1 - t;
-    return Vector.new(
+    return [
         F * F * F * sx + 3 * F * F * t * x1 + 3 * F * t * t * x2 + t * t * t * ex,
         F * F * F * sy + 3 * F * F * t * y1 + 3 * F * t * t * y2 + t * t * t * ey
-    );
+    ];
 }
 
 export function cubic_split_at([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]: Iterable<number>[], z: number): number[][][] {

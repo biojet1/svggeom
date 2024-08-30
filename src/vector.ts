@@ -134,14 +134,21 @@ export class Vector extends Float64Array {
         const I = that[Symbol.iterator]();
         return new Vector(this.map((v, i) => v - (I.next().value ?? 0)));
     }
+    /**
+     * @deprecated The method should not be used
+     */
     div(factor: number) {
         return this.divide(factor);
     }
-
+    /**
+     * @deprecated The method should not be used
+     */
     mul(factor: number) {
         return this.multiply(factor);
     }
-
+    /**
+     * @deprecated The method should not be used
+     */
     sub(that: Iterable<number>) {
         return this.subtract(that);
     }
@@ -164,7 +171,7 @@ export class Vector extends Float64Array {
     normalize() {
         const abs = this.abs();
         if (!abs) throw new TypeError(`Can't normalize vector of zero length [${this}]`);
-        return this.div(abs);
+        return this.divide(abs);
     }
 
     reflect_at(p: Iterable<number>) {
@@ -247,7 +254,9 @@ export class Vector extends Float64Array {
     }
     // Modify self methods
     //***** static methods ****
-
+    /**
+     * @deprecated The method should not be used
+     */
     static new(x?: number[] | Iterable<number> | number | string, y?: number, z?: number) {
         switch (typeof x) {
             case 'number':

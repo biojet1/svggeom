@@ -64,7 +64,7 @@ export function quad_point_at([[x1, y1], [cx, cy], [x2, y2]]: Vector[], t: numbe
 export function quad_slope_at([from, c, to]: Vector[], t: number): Vector {
     if (c.equals(from) || c.equals(to)) {
         const vec = to.subtract(from);
-        return vec.div(vec.abs());
+        return vec.divide(vec.abs());
     }
     if (t >= 1) {
         return to.subtract(c);

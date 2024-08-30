@@ -279,6 +279,7 @@ export class Matrix {
 	skewY(deg: number) {
 		return this.skew(0, deg);
 	}
+
 	cat_self(m: Matrix): this {
 		throw new Error(`Not implemented`);
 	}
