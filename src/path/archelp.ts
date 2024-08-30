@@ -350,9 +350,7 @@ export function arc_bbox(arc: IArc) {
 		0 <= tx && tx <= 1 && xtrema.push(arc_point_at(arc, tx).x);
 		0 <= ty && ty <= 1 && ytrema.push(arc_point_at(arc, ty).y);
 	}
-	const [xmin, xmax] = [min(...xtrema), max(...xtrema)];
-	const [ymin, ymax] = [min(...ytrema), max(...ytrema)];
-	return BoundingBox.extrema(xmin, xmax, ymin, ymax);
+	return BoundingBox.extrema([min(...xtrema), max(...xtrema)], [min(...ytrema), max(...ytrema)]);
 }
 
 export function arc_length(arc: IArc) {

@@ -47,10 +47,10 @@ for await (const [m1, m2] of matrixes()) {
     const M2 = Matrix.new(m2);
     const extra = [M1, M2];
 
-    // if (!M1.isURT()) {
+    // if (!M1.is_urt()) {
     //  continue;
     // }
-    // if (!M2.isURT()) {
+    // if (!M2.is_urt()) {
     //  continue;
     // }
 
@@ -63,7 +63,7 @@ for await (const [m1, m2] of matrixes()) {
         t.almostEqual(M1.d, M2.d, 1e-11, 'D: sy * cosθ', extra);
         t.almostEqual(M1.e, M2.e, 1e-11, 'E: tx', extra);
         t.almostEqual(M1.f, M2.f, 1e-11, 'F: ty', extra);
-        t.equal(M1.isURT(1e-14), M2.isURT(1e-14), `isURT`, extra);
+        t.equal(M1.is_urt(1e-14), M2.is_urt(1e-14), `is_urt`, extra);
         t.ok(M1.equals(M2, 1e-15), `M1==M2`, extra);
         t.ok(M2.equals(M1, 1e-15), `M2==M1`, extra);
         const A = M1.inverse();

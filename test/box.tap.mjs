@@ -126,7 +126,7 @@ test.test(`BoundingBox extra`, { bail: !CI }, function (t) {
     const not = BoundingBox.not();
     t.notOk(not.is_valid());
     t.strictSame(BoundingBox.new().dump(), not.dump());
-    t.same(not.toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
+    t.same(not.toString(), `([Infinity..-Infinity], [Infinity..-Infinity])`);
     t.same(not.dump(), [[Infinity, -Infinity], [Infinity, -Infinity]]);
     // not.merge_self(BoundingBox.not());
     // t.same(not.toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
@@ -202,9 +202,9 @@ test.test(`BoundingBox merge`, { bail: !CI }, function (t) {
     t.same(BoundingBox.merge(C, not).toString(), C.toString());
     t.same(BoundingBox.merge(not, C).toString(), C.toString());
     t.same(BoundingBox.merge(not, not).toString(), not.toString());
-    t.same(not.toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
+    t.same(not.toString(), `([Infinity..-Infinity], [Infinity..-Infinity])`);
     not.merge_self(not)
-    t.same(not.toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
+    t.same(not.toString(), `([Infinity..-Infinity], [Infinity..-Infinity])`);
     // t.same(not.merge(not).toString(), `[Infinity, -Infinity], [Infinity, -Infinity]`);
     t.same(not.merge(not).toString(), not.toString());
     t.notOk(not.is_valid());
@@ -303,12 +303,11 @@ test.test(`BoundingBox inflated`, { bail: !CI }, function (t) {
     t.end();
 });
 
-// test.test(`BoundingBox isEmpty`, {bail: !CI }, function (t) {
-//     t.same(A.isEmpty(), false);
-//     t.same(BoundingBox.not().isEmpty(), false);
-//     t.same(BoundingBox.new('-0,0,0,-0').isEmpty(), true);
-//     t.end();
-// });
+test.test(`BoundingBox isEmpty`, { bail: !CI }, function (t) {
+    t.notOk(BoundingBox.not().equals(BoundingBox.empty()));
+    t.ok(BoundingBox.rect(0, 0, 0, 0).equals(BoundingBox.empty()));
+    t.end();
+});
 
 test.test(`BoundingBox with_size with_pos`, { bail: !CI }, function (t) {
     t.same(rect_a(B.with_size([150, 90]).with_pos([-60, -50])), rect_a(D));

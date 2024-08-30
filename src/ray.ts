@@ -8,8 +8,8 @@ type NumOrVec = number | Iterable<number>;
 function* pickXY(args: NumOrVec[]) {
 	for (const v of args) {
 		if (typeof v == 'number') {
-			// console.warn(`pickXY number is depreciated`);
 			throw new Error(`pickXY number is depreciated`);
+			// console.warn(`pickXY number is depreciated`);
 			// yield v;
 		} else {
 			const [x, y] = v;
@@ -23,8 +23,8 @@ function Pt(x: NumOrVec, y?: number) {
 	if (typeof x === 'object') {
 		return Vector.pos(...x);
 	} else {
-		console.warn(`Pt number is depreciated`);
 		throw new Error(`Pt number is depreciated`);
+		// console.warn(`Pt number is depreciated`);
 		// return Vector.pos(x, y);
 	}
 }

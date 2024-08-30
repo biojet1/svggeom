@@ -80,6 +80,11 @@ export class Matrix {
 		return true;
 	}
 
+	is_identity() {
+		const { a, b, c, d, e, f } = this;
+		return a === 1 && b === 0 && c === 0 && d === 1 && e === 0 && f === 0;
+	}
+
 	toString() {
 		const { a, b, c, d, e, f } = this;
 		return `matrix(${a} ${b} ${c} ${d} ${e} ${f})`;
@@ -104,7 +109,7 @@ export class Matrix {
 		);
 	}
 
-	isURT(epsilon = 1e-15) {
+	is_urt(epsilon = 1e-15) {
 		// decomposition as U*R*T is possible
 		const { a, d, b, c } = this;
 		return a - d <= epsilon && b + c <= epsilon;
@@ -203,15 +208,15 @@ export class Matrix {
 		return this._set_hexad(..._cat(this, m));
 	}
 
-	_post_cat_self(m: Matrix): this {
+	protected _post_cat_self(m: Matrix): this {
 		return this._set_hexad(..._cat(m, this));
 	}
 
-	_cat(m: Matrix): Matrix {
+	protected _cat(m: Matrix): Matrix {
 		return this._hexad(..._cat(this, m));
 	}
 
-	_post_cat(m: Matrix): Matrix {
+	protected _post_cat(m: Matrix): Matrix {
 		return this._hexad(..._cat(m, this));
 	}
 
@@ -274,7 +279,13 @@ export class Matrix {
 	skewY(deg: number) {
 		return this.skew(0, deg);
 	}
+	cat_self(m: Matrix): this {
+		throw new Error(`Not implemented`);
+	}
 
+	post_cat_self(m: Matrix): this {
+		throw new Error(`Not implemented`);
+	}
 	// Static methods
 
 	public static hexad(
@@ -448,39 +459,16 @@ function closeEnough(a: number, b: number, threshold = 1e-6) {
 }
 
 export class MatrixMut extends Matrix {
-	protected setHexad(
-		a: number = 1,
-		b: number = 0,
-		c: number = 0,
-		d: number = 1,
-		e: number = 0,
-		f: number = 0
-	) {
-		this.a = a;
-		this.b = b;
-		this.c = c;
-		this.d = d;
-		this.e = e;
-		this.f = f;
-		return this;
-	}
-	// _catSelf(m: Matrix) {
-	// 	return this.setHexad(..._cat(this, m));
-	// }
-
-	// _postCatSelf(m: Matrix) {
-	// 	return this.setHexad(..._cat(m, this));
-	// }
 
 	invertSelf() {
-		return this.setHexad(..._inv(this));
+		return this._set_hexad(..._inv(this));
 	}
 
-	cat_self(m: Matrix): this {
+	override cat_self(m: Matrix): this {
 		return this._cat_self(m);
 	}
 
-	post_cat_self(m: Matrix): this {
+	override post_cat_self(m: Matrix): this {
 		return this._post_cat_self(m);
 	}
 }

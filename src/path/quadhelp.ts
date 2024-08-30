@@ -78,8 +78,6 @@ export function quad_slope_at([from, c, to]: Vector[], t: number): Vector {
 }
 
 export function quad_bbox([[x1, y1], [x2, y2], [x3, y3]]: Vector[]) {
-    const [xmin, xmax] = quadratic_extrema(x1, x2, x3);
-    const [ymin, ymax] = quadratic_extrema(y1, y2, y3);
-    return BoundingBox.extrema(xmin, xmax, ymin, ymax);
+    return BoundingBox.extrema(quadratic_extrema(x1, x2, x3), quadratic_extrema(y1, y2, y3));
 }
 
