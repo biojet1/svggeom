@@ -278,11 +278,10 @@ export class BoundingBox extends Array {
     static empty() {
         return this.rect(0, 0, 0, 0);
     }
-    static new(first, y, width, height) {
+    static new(first) {
         switch (typeof first) {
-            case 'string': {
+            case 'string':
                 return this.parse(first);
-            }
             case 'number':
                 return this.rect(first, arguments[1], arguments[2], arguments[3]);
             case 'undefined':
@@ -301,8 +300,6 @@ export class BoundingBox extends Array {
                     else {
                         return this.rect(first[0], first[1], first[2], first[3]);
                     }
-                }
-                else {
                 }
             default:
                 throw new TypeError(`Invalid box argument ${arguments}`);

@@ -111,7 +111,7 @@ export class BaseLC extends Command {
     }
     tangent_at(t) {
         const vec = this.slope_at(t);
-        return vec.div(vec.abs());
+        return vec.divide(vec.abs());
     }
     move_to(p) {
         return new MoveLC(this, pos(p));
@@ -368,7 +368,7 @@ export class LineCL extends BaseLC {
     slope_at(_) {
         const { from, to } = this;
         const vec = to.subtract(from);
-        return vec.div(vec.abs());
+        return vec.divide(vec.abs());
     }
     split_at(t) {
         const { to } = this;

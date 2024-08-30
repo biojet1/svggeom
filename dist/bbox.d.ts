@@ -56,7 +56,7 @@ export declare class BoundingBox extends Array<BoundingInterval> {
     static extrema(x: number | Iterable<number>, ...args: (number | Iterable<number>)[]): BoundingBox;
     static check(x: Iterable<number>, y: Iterable<number>): BoundingBox;
     static empty(): BoundingBox;
-    static new(first?: number | number[] | [number[], number[]] | string | BoundingBox, y?: number, width?: number, height?: number): BoundingBox;
+    static new(first?: number | number[] | [number[], number[]] | string | BoundingBox): BoundingBox;
     static parse(s: string): BoundingBox;
     static merge(...args: BoundingBox[]): BoundingBox;
 }

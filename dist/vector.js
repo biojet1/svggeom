@@ -149,7 +149,7 @@ export class Vector extends Float64Array {
         const abs = this.abs();
         if (!abs)
             throw new TypeError(`Can't normalize vector of zero length [${this}]`);
-        return this.div(abs);
+        return this.divide(abs);
     }
     reflect_at(p) {
         return this.post_subtract(p).post_add(p);
