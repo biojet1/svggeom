@@ -53,7 +53,10 @@ function cubic_flatness([[sx, sy], [x1, y1], [x2, y2], [ex, ey]]) {
 }
 export function cubic_point_at([[sx, sy], [x1, y1], [x2, y2], [ex, ey]], t) {
     const F = 1 - t;
-    return Vector.new(F * F * F * sx + 3 * F * F * t * x1 + 3 * F * t * t * x2 + t * t * t * ex, F * F * F * sy + 3 * F * F * t * y1 + 3 * F * t * t * y2 + t * t * t * ey);
+    return [
+        F * F * F * sx + 3 * F * F * t * x1 + 3 * F * t * t * x2 + t * t * t * ex,
+        F * F * F * sy + 3 * F * F * t * y1 + 3 * F * t * t * y2 + t * t * t * ey
+    ];
 }
 export function cubic_split_at([[sx, sy], [x1, y1], [x2, y2], [ex, ey]], z) {
     const x = split_at_scalar(z, sx, x1, x2, ex);

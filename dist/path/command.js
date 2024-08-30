@@ -580,7 +580,7 @@ export class CubicLC extends BaseLC {
         return [from, c1, c2, to];
     }
     point_at(t) {
-        return cubic_point_at(this._cpts, tCheck(t));
+        return Vector.new(cubic_point_at(this._cpts, tCheck(t)));
     }
     bbox() {
         const { _prev } = this;
