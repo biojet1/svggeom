@@ -122,7 +122,7 @@ export class Vector extends Float64Array {
     }
     add(that: Iterable<number>) {
         const I = that[Symbol.iterator]();
-        return new Vector(this.map((v, i) => v + (I.next().value ?? 0)));
+        return new Vector(this.map((v) => v + (I.next().value ?? 0)));
     }
     divide(factor: number) {
         return Vector.vec(...[...this].map(v => v / factor));
@@ -132,7 +132,7 @@ export class Vector extends Float64Array {
     }
     subtract(that: Iterable<number>) {
         const I = that[Symbol.iterator]();
-        return new Vector(this.map((v, i) => v - (I.next().value ?? 0)));
+        return new Vector(this.map((v) => v - (I.next().value ?? 0)));
     }
     /**
      * @deprecated The method should not be used
@@ -156,12 +156,12 @@ export class Vector extends Float64Array {
     // subtract, divide, multiply
     post_subtract(that: Iterable<number> | Vector) {
         const I = that[Symbol.iterator]();
-        return new Vector(this.map((v, i) => (I.next().value ?? 0) - v));
+        return new Vector(this.map((v) => (I.next().value ?? 0) - v));
     }
 
     post_add(that: Iterable<number>) {
         const I = that[Symbol.iterator]();
-        return new Vector(this.map((v, i) => (I.next().value ?? 0) + v));
+        return new Vector(this.map((v) => (I.next().value ?? 0) + v));
     }
 
     distance(p: Iterable<number>): number {
@@ -242,8 +242,8 @@ export class Vector extends Float64Array {
     }
     lerp(that: Vector, t: number) {
         const u = 1 - t;
-        const a = this.map((v, i) => v * u);
-        const b = that.map((v, i) => v * t);
+        const a = this.map((v) => v * u);
+        const b = that.map((v) => v * t);
         return new Vector(a.map((v, i) => v + b[i]));
     }
     nearest_point_of_line(a: Iterable<number>, b: Iterable<number>): Vector {
