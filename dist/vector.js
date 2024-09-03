@@ -113,7 +113,7 @@ export class Vector extends Float64Array {
     }
     add(that) {
         const I = that[Symbol.iterator]();
-        return new Vector(this.map((v, i) => v + (I.next().value ?? 0)));
+        return new Vector(this.map((v) => v + (I.next().value ?? 0)));
     }
     divide(factor) {
         return Vector.vec(...[...this].map(v => v / factor));
@@ -123,7 +123,7 @@ export class Vector extends Float64Array {
     }
     subtract(that) {
         const I = that[Symbol.iterator]();
-        return new Vector(this.map((v, i) => v - (I.next().value ?? 0)));
+        return new Vector(this.map((v) => v - (I.next().value ?? 0)));
     }
     div(factor) {
         return this.divide(factor);
@@ -136,11 +136,11 @@ export class Vector extends Float64Array {
     }
     post_subtract(that) {
         const I = that[Symbol.iterator]();
-        return new Vector(this.map((v, i) => (I.next().value ?? 0) - v));
+        return new Vector(this.map((v) => (I.next().value ?? 0) - v));
     }
     post_add(that) {
         const I = that[Symbol.iterator]();
-        return new Vector(this.map((v, i) => (I.next().value ?? 0) + v));
+        return new Vector(this.map((v) => (I.next().value ?? 0) + v));
     }
     distance(p) {
         return this.subtract(p).abs();
@@ -205,8 +205,8 @@ export class Vector extends Float64Array {
     }
     lerp(that, t) {
         const u = 1 - t;
-        const a = this.map((v, i) => v * u);
-        const b = that.map((v, i) => v * t);
+        const a = this.map((v) => v * u);
+        const b = that.map((v) => v * t);
         return new Vector(a.map((v, i) => v + b[i]));
     }
     nearest_point_of_line(a, b) {
